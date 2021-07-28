@@ -16,9 +16,9 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('family_name')->nullable();
+            $table->string('given_name')->nullable();
             $table->string('name')->nullable();
-            $table->string('last_name')->nullable();
-            $table->string('first_name')->nullable();
             $table->string('nickname');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable()->comment('이메일 인증 일시');
@@ -46,6 +46,8 @@ class CreateUsersTable extends Migration
             $table->float('lat')->nullable()->comment('위도');
             $table->float('lng')->nullable()->comment('경도');
         });
+
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE users comment '고객'");
     }
 
     /**
