@@ -28,6 +28,10 @@ Route::group(['prefix' => 'auth'], function () {
         Route::get('/nickname/{nickname}', 'AuthController@exists_nickname');
     });
 
+    /* 회원가입 */
+    Route::post('/signup', 'AuthController@signup');
+
     /* 로그인 */
-    Route::post('login', 'AuthController@login');
+    Route::post('/login', 'AuthController@login');
+    Route::post('/login/sns', 'AuthController@login/sns');
 });

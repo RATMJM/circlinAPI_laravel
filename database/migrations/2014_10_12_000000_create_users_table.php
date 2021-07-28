@@ -28,9 +28,9 @@ class CreateUsersTable extends Migration
             $table->integer('point')->default(0);
             $table->string('profile_image')->nullable()->comment('프로필 사진');
             $table->string('greeting')->nullable()->comment('인사말');
-            $table->string('area_code')->nullable();
+            $table->string('area_code')->nullable()->comment('사는 곳');
+            $table->timestamp('tutorial_completed_at')->nullable();
             $table->softDeletes();
-            $table->rememberToken();
             $table->string('device_type')->nullable()->comment('접속한 기기 종류(android/iphone)');
             $table->string('device_token')->nullable()->comment('푸시 전송 토큰');
             $table->string('access_token')->nullable();
@@ -47,7 +47,8 @@ class CreateUsersTable extends Migration
             $table->float('lng')->nullable()->comment('경도');
         });
 
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE users comment '고객'");
+        $comment = "고객";
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE users comment '$comment'");
     }
 
     /**

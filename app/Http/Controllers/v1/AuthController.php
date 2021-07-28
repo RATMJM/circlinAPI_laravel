@@ -7,50 +7,105 @@ use App\Models\User;
 use App\Models\UserStat;
 use Exception;
 use Firebase\JWT\JWT;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function exists_email($email): JsonResponse
+    public function exists_email($email): array
     {
         try {
             $exists = User::where('email', $email)->exists();
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'exists' => $exists,
-                ]
+            return success([
+                'exists' => $exists,
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-            ]);
+            return failed($e);
         }
     }
 
-    public function exists_nickname($nickname): JsonResponse
+    public function exists_nickname($nickname): array
     {
         try {
             $exists = User::where('nickname', $nickname)->exists();
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'exists' => $exists,
-                ]
+            return success([
+                'exists' => $exists,
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-            ]);
+            return failed($e);
         }
     }
 
-    public function login(Request $request): JsonResponse
+    public function signup(Request $request, $sns = false): array
+    {
+        try {
+            $email = $request->get('email');
+            $password = $request->get('password');
+            $nickname = $request->get('nickname');
+            $device_token = $request->get('device_token');
+            $access_token = $request->get('access_token');
+            $refresh_token = $request->get('refresh_token');
+            $refresh_token_expire_in = $request->get('refresh_token_expire_in');
+
+            $user = User::where(['email' => $email])->exists();
+            if ($user) {
+                return success([
+                    'result' => false,
+                    'reason' => 'exists_email',
+                ]);
+            } else {
+                DB::beginTransaction();
+
+                $user = User::create([
+                    'email' => $email,
+                    'password' => $sns ? '' : Hash::make($password),
+                    'nickname' => $nickname,
+                    'access_token' => $access_token,
+                    'refresh_token' => $refresh_token,
+                    'refresh_token_expire_in' => $refresh_token_expire_in,
+                ]);
+
+                DB::commit();
+                return success([
+                    'result' => true,
+                    'user' => $user,
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return failed($e);
+        }
+    }
+
+    /* 로그인 */
+    public function login_user($user): array
+    {
+        return success([
+            'token' => JWT::encode([
+                'iss' => 'https://www.circlin.co.kr',
+                'aud' => 'https://www.circlin.co.kr',
+                'iat' => 1356999524,
+                'nbf' => 1357000000,
+                'uid' => $user->id,
+            ], env('JWT_SECRET')),
+            'user' => [
+                'name' => $user->name,
+                'nickname' => $user->nickname,
+                'phone' => $user->phone,
+                'point' => $user->point,
+                'birth' => $user->stat->birth,
+                'gender' => $user->stat->gender,
+                'height' => $user->stat->height,
+                'weight' => $user->stat->weight,
+                'bmi' => $user->stat->bmi,
+            ],
+        ]);
+    }
+
+    public function login(Request $request): array
     {
         try {
             $email = $request->get('email');
@@ -58,40 +113,31 @@ class AuthController extends Controller
 
             $user = User::where(['email' => $email])->first();
             if (isset($user) && ($user->password === '' || Hash::check($password, $user->password))) {
-                $user_stat = $user->stat;
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'token' => JWT::encode([
-                            'iss' => 'https://www.circlin.co.kr',
-                            'aud' => 'https://www.circlin.co.kr',
-                            'iat' => 1356999524,
-                            'nbf' => 1357000000,
-                            'uid' => $user->id,
-                        ], env('JWT_SECRET')),
-                        'user' => [
-                            'name' => $user->name,
-                            'nickname' => $user->nickname,
-                            'phone' => $user->phone,
-                            'point' => $user->point,
-                            'birth' => $user->stat->birth,
-                            'gender' => $user->stat->gender,
-                            'height' => $user->stat->height,
-                            'weight' => $user->stat->weight,
-                            'bmi' => $user->stat->bmi,
-                        ],
-                    ],
-                ]);
+                return $this->login_user($user);
             } else {
-                return response()->json([
-                    'success' => true,
-                    'data' => ['token' => null, 'user' => null],
-                ]);
+                return success(['token' => null, 'user' => null]);
             }
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-            ]);
+            return failed($e);
+        }
+    }
+
+    public function login_sns(Request $request): array
+    {
+        try {
+            $email = $request->get('email');
+
+            $user = User::where(['email' => $email])->first();
+            if (isset($user) && ($user->password === '')) {
+                return $this->login_user($user);
+            } else {
+                $user = $this->signup($request);
+                if ($user['data']['result']) {
+                    return $this->login_user($user['data']['user']);
+                }
+            }
+        } catch (Exception $e) {
+            return failed($e);
         }
     }
 }

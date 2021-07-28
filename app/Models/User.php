@@ -41,4 +41,9 @@ class User extends Authenticatable
     {
         return $this->hasOne('App\Models\UserStat');
     }
+
+    public function favorite_categories()
+    {
+        return $this->hasMany('App\Models\UserFavoriteCategory');
+    }
 }
