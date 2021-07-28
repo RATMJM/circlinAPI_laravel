@@ -29,5 +29,5 @@ Route::group(['prefix' => 'auth'], function () {
     });
 
     /* 로그인 */
-    Route::get('login', 'AuthController@login');
+    Route::post('login', 'AuthController@login');
 });
