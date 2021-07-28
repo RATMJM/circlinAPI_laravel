@@ -20,7 +20,7 @@ class CreatePushReservationsTable extends Migration
             $table->string('description');
             $table->string('title');
             $table->string('message');
-            $table->timestamp('send_date');
+            $table->timestamp('send_date')->nullable();
             $table->foreignId('mission_id')->nullable()->constrained();
             $table->softDeletes();
         });

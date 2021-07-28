@@ -18,7 +18,7 @@ class CreateMissionStatsTable extends Migration
             $table->timestamps();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('mission_id')->constrained();
-            $table->timestamp('end_date');
+            $table->timestamp('end_date')->nullable();
         });
     }
 
