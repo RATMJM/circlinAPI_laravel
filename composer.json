@@ -12,6 +12,7 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.40",
         "laravel/socialite": "^5.2",
+        "laravel/telescope": "^4.6",
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1"
     },
