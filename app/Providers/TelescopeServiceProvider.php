@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\BlockIp;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\Telescope;
@@ -68,9 +69,10 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate()
     {
         Gate::define('viewTelescope', function ($user) {
-            return in_array($user->email, [
+            return in_array($_SERVER['REMOTE_ADDR'], ALLOW_IP);
+            /*return in_array($user->email, [
                 //
-            ]);
+            ]);*/
         });
     }
 }
