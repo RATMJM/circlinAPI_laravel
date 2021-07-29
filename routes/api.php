@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,9 @@ Route::group(['prefix' => 'user'], function () {
     Route::delete('{user_id}/unfollow/{target_id}', 'UserController@update_area');
 });
 
-Route::get('area', function (Request $request) {
+Route::get('/area', function (Request $request) {
+    $text = $request->get('searchText');
+    $text = mb_ereg_replace('/\s/', '', $text);
 
+    $areas = \App\Models\Area::select()->where(DB::raw('CONCAT(name_lg, name_md, name_sm)'), 'like', "%$text%")->take(10)->get();
 });
