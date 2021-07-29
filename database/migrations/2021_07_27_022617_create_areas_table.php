@@ -22,7 +22,7 @@ class CreateAreasTable extends Migration
             $table->string('name_md')->nullable();
             $table->string('ctg_sm')->nullable();
             $table->string('name_sm')->nullable();
-            $table->string('name_en');
+            $table->string('name_en')->nullable();
             $table->string('lat_md')->nullable();
             $table->string('lng_md')->nullable();
             $table->string('lat_sm')->nullable();
