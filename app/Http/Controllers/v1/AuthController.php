@@ -83,26 +83,30 @@ class AuthController extends Controller
     /* 로그인 */
     public function login_user($user): array
     {
-        return success([
-            'token' => JWT::encode([
-                'iss' => 'https://www.circlin.co.kr',
-                'aud' => 'https://www.circlin.co.kr',
-                'iat' => 1356999524,
-                'nbf' => 1357000000,
-                'uid' => $user->id,
-            ], env('JWT_SECRET')),
-            'user' => [
-                'name' => $user->name,
-                'nickname' => $user->nickname,
-                'phone' => $user->phone,
-                'point' => $user->point,
-                'birth' => $user->stat->birth,
-                'gender' => $user->stat->gender,
-                'height' => $user->stat->height,
-                'weight' => $user->stat->weight,
-                'bmi' => $user->stat->bmi,
-            ],
-        ]);
+        try {
+            return success([
+                'token' => JWT::encode([
+                    'iss' => 'https://www.circlin.co.kr',
+                    'aud' => 'https://www.circlin.co.kr',
+                    'iat' => 1356999524,
+                    'nbf' => 1357000000,
+                    'uid' => $user->id,
+                ], env('JWT_SECRET')),
+                'user' => [
+                    'name' => $user->name,
+                    'nickname' => $user->nickname,
+                    'phone' => $user->phone,
+                    'point' => $user->point,
+                    'birth' => $user->stat->birth,
+                    'gender' => $user->stat->gender,
+                    'height' => $user->stat->height,
+                    'weight' => $user->stat->weight,
+                    'bmi' => $user->stat->bmi,
+                ],
+            ]);
+        } catch (Exception $e) {
+            return failed($e);
+        }
     }
 
     public function login(Request $request): array

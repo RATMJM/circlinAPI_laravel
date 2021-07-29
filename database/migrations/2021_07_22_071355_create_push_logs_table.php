@@ -19,8 +19,8 @@ class CreatePushLogsTable extends Migration
             $table->foreignId('user_id')->constrained();
             $table->string('title');
             $table->string('message');
-            $table->string('result');
             $table->foreignId('mission_id')->constrained();
+            $table->timestamp('read_at')->nullable();
         });
     }
 
