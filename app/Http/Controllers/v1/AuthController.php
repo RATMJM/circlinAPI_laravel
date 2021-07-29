@@ -77,6 +77,8 @@ class AuthController extends Controller
     public function login_user($user): array
     {
         try {
+            $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
+
             return success([
                 'result' => true,
                 'token' => JWT::encode([
@@ -91,11 +93,11 @@ class AuthController extends Controller
                     'nickname' => $user->nickname,
                     'phone' => $user->phone,
                     'point' => $user->point,
-                    'birth' => $user->stat?->birth,
-                    'gender' => $user->stat?->gender,
-                    'height' => $user->stat?->height,
-                    'weight' => $user->stat?->weight,
-                    'bmi' => $user->stat?->bmi,
+                    'birth' => $user_stat?->birth,
+                    'gender' => $user_stat?->gender,
+                    'height' => $user_stat?->height,
+                    'weight' => $user_stat?->weight,
+                    'bmi' => $user_stat?->bmi,
                 ],
             ]);
         } catch (Exception $e) {
