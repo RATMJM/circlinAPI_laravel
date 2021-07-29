@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('family_name')->nullable();
             $table->string('given_name')->nullable();
             $table->string('name')->nullable();
-            $table->string('nickname');
+            $table->string('nickname')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable()->comment('이메일 인증 일시');
             $table->string('password');
