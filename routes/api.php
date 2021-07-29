@@ -1,9 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use \Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +13,7 @@ use App\Models\User;
 |
 */
 
-Route::get('/', function (Request $request) {
+Route::get('/', function () {
     return ['success' => true];
 });
 
@@ -35,6 +32,14 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', 'AuthController@login');
     Route::post('/login/sns', 'AuthController@login_sns');
 
-    /* 초기데이터 구성 확인 */
+    /* 초기데이터 구성 */
     Route::get('/check/init', 'AuthController@check_init');
+});
+
+Route::group(['prefix' => 'user'], function () {
+    Route::patch('{user_id}/profile', 'UserController@update_profile');
+    Route::post('{user_id}/favorite_category', 'UserController@add_favorite_category');
+    Route::delete('{user_id}/favorite_category', 'UserController@remove_favorite_category');
+    Route::post('{user_id}/follow/{target_id}', 'UserController@update_area');
+    Route::delete('{user_id}/unfollow/{target_id}', 'UserController@update_area');
 });

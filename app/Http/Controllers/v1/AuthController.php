@@ -44,11 +44,6 @@ class AuthController extends Controller
         try {
             $email = $request->get('email');
             $password = $request->get('password');
-            $nickname = $request->get('nickname');
-            $device_token = $request->get('device_token');
-            $access_token = $request->get('access_token');
-            $refresh_token = $request->get('refresh_token');
-            $refresh_token_expire_in = $request->get('refresh_token_expire_in');
 
             $user = User::where(['email' => $email])->exists();
             if ($user) {
@@ -59,19 +54,17 @@ class AuthController extends Controller
             } else {
                 DB::beginTransaction();
 
+                /* 유저 기본 데이터 생성 */
                 $user = User::create([
                     'email' => $email,
                     'password' => $sns ? '' : Hash::make($password),
-                    'nickname' => $nickname,
-                    'access_token' => $access_token,
-                    'refresh_token' => $refresh_token,
-                    'refresh_token_expire_in' => $refresh_token_expire_in,
                 ]);
+
+                $user_stat = UserStat::create(['user_id' => $user->id]);
 
                 DB::commit();
                 return success([
                     'result' => true,
-                    'user' => $user,
                 ]);
             }
         } catch (Exception $e) {
@@ -85,6 +78,7 @@ class AuthController extends Controller
     {
         try {
             return success([
+                'result' => true,
                 'token' => JWT::encode([
                     'iss' => 'https://www.circlin.co.kr',
                     'aud' => 'https://www.circlin.co.kr',
@@ -97,11 +91,11 @@ class AuthController extends Controller
                     'nickname' => $user->nickname,
                     'phone' => $user->phone,
                     'point' => $user->point,
-                    'birth' => $user->stat->birth,
-                    'gender' => $user->stat->gender,
-                    'height' => $user->stat->height,
-                    'weight' => $user->stat->weight,
-                    'bmi' => $user->stat->bmi,
+                    'birth' => $user->stat?->birth,
+                    'gender' => $user->stat?->gender,
+                    'height' => $user->stat?->height,
+                    'weight' => $user->stat?->weight,
+                    'bmi' => $user->stat?->bmi,
                 ],
             ]);
         } catch (Exception $e) {
@@ -116,10 +110,10 @@ class AuthController extends Controller
             $password = $request->get('password');
 
             $user = User::where(['email' => $email])->first();
-            if (isset($user) && ($user->password === '' || Hash::check($password, $user->password))) {
+            if (isset($user) && Hash::check($password, $user->password)) {
                 return $this->login_user($user);
             } else {
-                return success(['token' => null, 'user' => null]);
+                return success(['result' => false, 'token' => null, 'user' => null]);
             }
         } catch (Exception $e) {
             return failed($e);
@@ -135,9 +129,11 @@ class AuthController extends Controller
             if (isset($user) && ($user->password === '')) {
                 return $this->login_user($user);
             } else {
-                $user = $this->signup($request);
+                $user = $this->signup($request, true);
                 if ($user['data']['result']) {
                     return $this->login_user($user['data']['user']);
+                } else {
+                    return success(['result' => false, 'token' => null, 'user' => null]);
                 }
             }
         } catch (Exception $e) {
