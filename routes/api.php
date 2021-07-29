@@ -33,5 +33,8 @@ Route::group(['prefix' => 'auth'], function () {
 
     /* 로그인 */
     Route::post('/login', 'AuthController@login');
-    Route::post('/login/sns', 'AuthController@login/sns');
+    Route::post('/login/sns', 'AuthController@login_sns');
+
+    /* 초기데이터 구성 확인 */
+    Route::get('/check/init', 'AuthController@check_init');
 });

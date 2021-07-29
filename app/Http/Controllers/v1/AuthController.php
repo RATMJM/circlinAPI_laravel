@@ -54,7 +54,7 @@ class AuthController extends Controller
             if ($user) {
                 return success([
                     'result' => false,
-                    'reason' => 'exists_email',
+                    'reason' => 'exists email',
                 ]);
             } else {
                 DB::beginTransaction();
@@ -136,6 +136,43 @@ class AuthController extends Controller
                     return $this->login_user($user['data']['user']);
                 }
             }
+        } catch (Exception $e) {
+            return failed($e);
+        }
+    }
+
+    public function check_init(Request $request, User $user = null)
+    {
+        try {
+            $user = $user ?? User::where('id', $request->user_id)->first();
+
+            if (is_null($user)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data'
+                ]);
+            }
+
+            $need = [];
+            if (is_null($user->nickname) || trim($user->nickname) === '') {
+                $need[] = 'nickname';
+            }
+            if (is_null($user->area_code) || trim($user->area_code) === '') {
+                $need[] = 'area';
+            }
+            if ($user->favorite_categories->count() === 0) {
+                $need[] = 'favorite_category';
+            }
+            if (is_null($user->profile_image)) {
+                $need[] = 'profile_image';
+            }
+            if ($user->follows->count() === 0) {
+                $need[] = 'follows';
+            }
+            return success([
+                'result' => true,
+                'need' => $need,
+            ]);
         } catch (Exception $e) {
             return failed($e);
         }
