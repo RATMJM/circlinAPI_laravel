@@ -143,15 +143,15 @@ class AuthController extends Controller
         }
     }
 
-    public function check_init(Request $request, User $user = null)
+    public function check_init(Request $request, $user_id)
     {
         try {
-            $user = $user ?? User::where('id', $request->user_id)->first();
+            $user = User::where('id', $user_id)->first();
 
             if (is_null($user)) {
                 return success([
                     'result' => false,
-                    'reason' => 'not enough data'
+                    'reason' => 'not enough data',
                 ]);
             }
 

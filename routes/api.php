@@ -33,7 +33,7 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/login/sns', 'AuthController@login_sns');
 
     /* 초기데이터 구성 */
-    Route::get('/check/init', 'AuthController@check_init');
+    Route::get('/check/init/{user_id}', 'AuthController@check_init');
 });
 
 Route::group(['prefix' => 'user'], function () {
@@ -42,4 +42,8 @@ Route::group(['prefix' => 'user'], function () {
     Route::delete('{user_id}/favorite_category', 'UserController@remove_favorite_category');
     Route::post('{user_id}/follow/{target_id}', 'UserController@update_area');
     Route::delete('{user_id}/unfollow/{target_id}', 'UserController@update_area');
+});
+
+Route::get('area', function (Request $request) {
+
 });
