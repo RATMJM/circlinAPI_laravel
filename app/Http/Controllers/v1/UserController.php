@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Follow;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -48,13 +49,31 @@ class UserController extends Controller
 
     }
 
-    public function follow(Request $request, $user_id)
+    public function follow(Request $request, $user_id, $target_id)
     {
-
+        try {
+            $follow = Follow::create(['user_id' => $user_id, 'target_id' => $target_id]);
+            if ($follow) {
+                return success(['result' => true]);
+            } else {
+                return success(['result' => false]);
+            }
+        } catch (Exception $e) {
+            return failed($e);
+        }
     }
 
-    public function unfollow(Request $request, $user_id)
+    public function unfollow(Request $request, $user_id, $target_id)
     {
-
+        try {
+            $follow = Follow::where(['user_id' => $user_id, 'target_id' => $target_id])->delete();
+            if ($follow) {
+                return success(['result' => true]);
+            } else {
+                return success(['result' => false]);
+            }
+        } catch (Exception $e) {
+            return failed($e);
+        }
     }
 }
