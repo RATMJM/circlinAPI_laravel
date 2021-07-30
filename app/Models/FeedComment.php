@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class FeedComment extends Model
 {
     use HasFactory;
+
+    protected $guarded = [];
 }
