@@ -44,6 +44,19 @@ class AuthController extends Controller
         try {
             $email = $request->get('email');
             $password = $request->get('password');
+            $email_agree = $request->get('email_agree');
+            $sms_agree = $request->get('sms_agree');
+            $market_agree = $request->get('market_agree');
+            $ad_push_agree = $request->get('ad_push_agree');
+            $privacy_agree = $request->get('privacy_agree');
+
+            // 이메일 검증 (SNS 계정 형태도 인증에서 넘어갈 수 있도록
+            if (mb_ereg_match('/[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$)/', $email)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'email validation failed',
+                ]);
+            }
 
             $user = User::where(['email' => $email])->exists();
             if ($user) {
@@ -58,6 +71,11 @@ class AuthController extends Controller
                 $user = User::create([
                     'email' => $email,
                     'password' => $sns ? '' : Hash::make($password),
+                    'email_agree' => $email_agree,
+                    'sms_agree' => $sms_agree,
+                    'market_agree' => $market_agree,
+                    'ad_push_agree' => $ad_push_agree,
+                    'privacy_agree' => $privacy_agree,
                 ]);
 
                 $user_stat = UserStat::create(['user_id' => $user->id]);
