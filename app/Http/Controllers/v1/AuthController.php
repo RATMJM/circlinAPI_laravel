@@ -176,7 +176,7 @@ class AuthController extends Controller
         }
     }
 
-    public function check_init(Request $request)
+    public function check_init(Request $request, $need)
     {
         try {
             $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
@@ -189,25 +189,14 @@ class AuthController extends Controller
                 ]);
             }
 
-            $need = [];
-            if (is_null($user->nickname) || trim($user->nickname) === '') {
-                $need[] = 'nickname';
-            }
-            if (is_null($user->area_code) || trim($user->area_code) === '') {
-                $need[] = 'area';
-            }
-            if ($user->favorite_categories->count() === 0) {
-                $need[] = 'favorite_category';
-            }
-            if (is_null($user->profile_image)) {
-                $need[] = 'profile_image';
-            }
-            if ($user->follows->count() === 0) {
-                $need[] = 'follows';
-            }
+            $result = match ($need) {
+                'nickname' => (is_null($user->nickname) || trim($user->nickname) === ''),
+                'area' => (is_null($user->area_code) || trim($user->area_code) === ''),
+                'category' => ($user->favorite_categories->count() === 0),
+                'follow' => $user->follows->count() < 3,
+            };
             return success([
-                'result' => true,
-                'need' => $need,
+                'result' => !$result,
             ]);
         } catch (Exception $e) {
             return failed($e);

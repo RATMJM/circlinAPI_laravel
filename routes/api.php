@@ -36,7 +36,8 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/login/sns', 'AuthController@login_sns');
 
     /* 초기데이터 구성 */
-    Route::get('/check/init', 'AuthController@check_init');
+    Route::get('/check/init/{need}', 'AuthController@check_init')
+        ->where(['need' => '(nickname|area|category|follow)']);
 });
 
 Route::group(['prefix' => 'user'], function () {
@@ -47,13 +48,8 @@ Route::group(['prefix' => 'user'], function () {
     Route::delete('/follow', 'UserController@unfollow');
 });
 
-Route::get('/area', function (Request $request) {
-    $text = $request->get('searchText');
-    $text = mb_ereg_replace('/\s/', '', $text);
-
-    return \App\Models\Area::select()->where(DB::raw('CONCAT(name_lg, name_md, name_sm)'), 'like', "%$text%")
-        ->take(10)->get();
-});
+Route::get('/area', 'BaseController@area');
+Route::get('/category', 'BaseController@categorgy');
 
 Route::group(['prefix' => 'feed'], function () {
     //
