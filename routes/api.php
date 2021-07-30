@@ -29,13 +29,14 @@ Route::group(['prefix' => 'auth'], function () {
 
     /* 회원가입 */
     Route::post('/signup', 'AuthController@signup');
+    Route::post('/signup/sns', 'AuthController@signup_sns');
 
     /* 로그인 */
     Route::post('/login', 'AuthController@login');
     Route::post('/login/sns', 'AuthController@login_sns');
 
     /* 초기데이터 구성 */
-    Route::get('/check/init/{user_id}', 'AuthController@check_init');
+    Route::get('/check/init', 'AuthController@check_init');
 });
 
 Route::group(['prefix' => 'user'], function () {

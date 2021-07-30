@@ -91,6 +91,11 @@ class AuthController extends Controller
         }
     }
 
+    public function signup_sns(Request $request): array
+    {
+        return $this->signup($request, true);
+    }
+
     /* 로그인 */
     public function login_user($user): array
     {
@@ -149,21 +154,17 @@ class AuthController extends Controller
             if (isset($user) && ($user->password === '')) {
                 return $this->login_user($user);
             } else {
-                $user = $this->signup($request, true);
-                if ($user['data']['result']) {
-                    return $this->login_user($user['data']['user']);
-                } else {
-                    return success(['result' => false, 'token' => null, 'user' => null]);
-                }
+                return success(['result' => false, 'token' => null, 'user' => null]);
             }
         } catch (Exception $e) {
             return failed($e);
         }
     }
 
-    public function check_init(Request $request, $user_id)
+    public function check_init(Request $request)
     {
         try {
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
             $user = User::where('id', $user_id)->first();
 
             if (is_null($user)) {

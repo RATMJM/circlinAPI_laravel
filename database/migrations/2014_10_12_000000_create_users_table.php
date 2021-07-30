@@ -38,11 +38,11 @@ class CreateUsersTable extends Migration
             $table->string('refresh_token_expire_in')->nullable();
             $table->timestamp('last_login_at')->nullable()->comment('마지막 로그인 시점');
             $table->string('last_login_ip')->nullable()->comment('마지막 로그인 IP');
-            $table->boolean('email_agree')->default(false)->comment('이메일 수신 동의');
-            $table->boolean('sms_agree')->default(false)->comment('SMS 수신 동의');
-            $table->boolean('market_agree')->default(false)->comment('마케팅 동의');
-            $table->boolean('ad_push_agree')->default(false)->comment('광고 푸시 동의');
-            $table->boolean('privacy_agree')->default(false)->comment('개인정보 제공 동의');
+            $table->boolean('agree1')->default(false)->comment('서비스 이용약관 동의');
+            $table->boolean('agree2')->default(false)->comment('개인정보 수집 및 이용약관 동의');
+            $table->boolean('agree3')->default(false)->comment('위치정보 이용약관 동의');
+            $table->boolean('agree4')->default(false)->comment('이메일 마케팅 동의');
+            $table->boolean('agree5')->default(false)->comment('SMS 마케팅 동의');
             $table->float('lat')->nullable()->comment('위도');
             $table->float('lng')->nullable()->comment('경도');
         });

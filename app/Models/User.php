@@ -49,11 +49,11 @@ class User extends Authenticatable
 
     public function follows()
     {
-        return $this->hasMany('App\Models\Follow', 'from_user_id');
+        return $this->hasMany('App\Models\Follow');
     }
 
     public function followers()
     {
-        return $this->hasMany('App\Models\Follow', 'to_user_id');
+        return $this->hasMany('App\Models\Follow', 'target_id');
     }
 }
