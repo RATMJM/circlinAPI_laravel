@@ -44,22 +44,37 @@ class AuthController extends Controller
         try {
             $email = $request->get('email');
             $password = $request->get('password');
-            $email_agree = $request->get('email_agree');
-            $sms_agree = $request->get('sms_agree');
-            $market_agree = $request->get('market_agree');
-            $ad_push_agree = $request->get('ad_push_agree');
-            $privacy_agree = $request->get('privacy_agree');
+            $agree1 = $request->get('agree1', false);
+            $agree2 = $request->get('agree2', false);
+            $agree3 = $request->get('agree3', false);
+            $agree4 = $request->get('agree4', false);
+            $agree5 = $request->get('agree5', false);
 
-            // 이메일 검증 (SNS 계정 형태도 인증에서 넘어갈 수 있도록
-            /*if (mb_ereg_match('/^[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3})$/', $email)) {
+            // 필수 동의 항목 체크
+            if (!$agree1 || !$agree2 || !$agree3) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough agreements',
+                ]);
+            }
+
+            // 이메일 validation (SNS 계정 형태도 인증에서 넘어갈 수 있도록
+            if (!preg_match('/^[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3})$/', $email)) {
                 return success([
                     'result' => false,
                     'reason' => 'email validation failed',
                 ]);
             }
 
-            $user = User::where(['email' => $email])->exists();
-            if ($user) {
+            // 비밀번호 validation
+            if (!$sns && !preg_match('/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{6,}$/', $password)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'password validation failed',
+                ]);
+            }
+
+            if (User::where(['email' => $email])->exists()) {
                 return success([
                     'result' => false,
                     'reason' => 'exists email',
@@ -71,11 +86,11 @@ class AuthController extends Controller
                 $user = User::create([
                     'email' => $email,
                     'password' => $sns ? '' : Hash::make($password),
-                    'email_agree' => $email_agree,
-                    'sms_agree' => $sms_agree,
-                    'market_agree' => $market_agree,
-                    'ad_push_agree' => $ad_push_agree,
-                    'privacy_agree' => $privacy_agree,
+                    'agree1' => $agree1,
+                    'agree2' => $agree2,
+                    'agree3' => $agree3,
+                    'agree4' => $agree4,
+                    'agree5' => $agree5,
                 ]);
 
                 $user_stat = UserStat::create(['user_id' => $user->id]);
