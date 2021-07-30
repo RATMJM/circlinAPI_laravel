@@ -51,6 +51,7 @@ Route::group(['prefix' => 'user'], function () {
 
 Route::get('/area', 'BaseController@area');
 Route::get('/category', 'BaseController@category');
+Route::get('/suggest_user', 'BaseController@suggest_user');
 
 Route::group(['prefix' => 'feed'], function () {
     //
