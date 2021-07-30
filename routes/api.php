@@ -38,11 +38,11 @@ Route::group(['prefix' => 'auth'], function () {
 });
 
 Route::group(['prefix' => 'user'], function () {
-    Route::patch('{user_id}/profile', 'UserController@update_profile');
-    Route::post('{user_id}/favorite_category/{category_id}', 'UserController@add_favorite_category');
-    Route::delete('{user_id}/favorite_category/{category_id}', 'UserController@remove_favorite_category');
-    Route::post('{user_id}/follow/{target_id}', 'UserController@follow');
-    Route::delete('{user_id}/follow/{target_id}', 'UserController@unfollow');
+    Route::patch('/profile', 'UserController@update_profile');
+    Route::post('/favorite_category', 'UserController@add_favorite_category');
+    Route::delete('/favorite_category', 'UserController@remove_favorite_category');
+    Route::post('/follow', 'UserController@follow');
+    Route::delete('/follow', 'UserController@unfollow');
 });
 
 Route::get('/area', function (Request $request) {
