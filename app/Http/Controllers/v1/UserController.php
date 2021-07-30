@@ -10,12 +10,15 @@ use App\Models\UserStat;
 use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     public function update_profile(Request $request): array
     {
         try {
+            DB::beginTransaction();
+
             $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
             $nickname = $request->get('nickname');
             $area_code = $request->get('area_code');
@@ -38,16 +41,19 @@ class UserController extends Controller
                 }
                 $user_stat = UserStat::where('user_id', $user_id)->update($user_stat_data);
 
+                DB::commit();
                 return success([
                     'result' => true,
                 ]);
             } else {
+                DB::rollBack();
                 return success([
                     'result' => false,
                     'reason' => 'not enough data',
                 ]);
             }
         } catch (Exception $e) {
+            DB::rollBack();
             return failed($e);
         }
     }
