@@ -70,10 +70,10 @@ class UserController extends Controller
                 ]);
             }
 
-            if (UserFavoriteCategory::where(['user_id' => $user_id, 'category_id' => $category_id])->exists()) {
+            if (UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $category_id])->exists()) {
                 return success(['result' => false, 'reason' => 'already following']);
             } else {
-                $data = UserFavoriteCategory::create(['user_id' => $user_id, 'category_id' => $category_id]);
+                $data = UserFavoriteCategory::create(['user_id' => $user_id, 'mission_category_id' => $category_id]);
                 if ($data) {
                     return success(['result' => true]);
                 } else {
@@ -87,7 +87,27 @@ class UserController extends Controller
 
     public function remove_favorite_category(Request $request)
     {
+        try {
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $category_id = $request->get('category_id');
 
+            if (is_null($category_id)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            $data = UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $category_id])->first();
+            if ($data) {
+                $result = $data->delete();
+                return success(['result' => $result]);
+            } else {
+                return success(['result' => false, 'reason' => 'not favorite']);
+            }
+        } catch (Exception $e) {
+            return failed($e);
+        }
     }
 
     public function follow(Request $request)
@@ -131,15 +151,12 @@ class UserController extends Controller
                 ]);
             }
 
-            if (Follow::where(['user_id' => $user_id, 'target_id' => $target_id])->doesntExist()) {
-                return success(['result' => false, 'reason' => 'not following']);
+            $data = Follow::where(['user_id' => $user_id, 'target_id' => $target_id])->first();
+            if ($data) {
+                $result = $data->delete();
+                return success(['result' => $result]);
             } else {
-                $data = Follow::where(['user_id' => $user_id, 'target_id' => $target_id])->delete();
-                if ($data) {
-                    return success(['result' => true]);
-                } else {
-                    return success(['result' => false]);
-                }
+                return success(['result' => false, 'not following']);
             }
         } catch (Exception $e) {
             return failed($e);
