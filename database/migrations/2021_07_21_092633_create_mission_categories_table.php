@@ -17,7 +17,7 @@ class CreateMissionCategoriesTable extends Migration
             $table->id();
             $table->timestamps();
             $table->string('title');
-            $table->string('image_url');
+            $table->foreignId('mission_category_id')->nullable()->constrained();
         });
     }
 
