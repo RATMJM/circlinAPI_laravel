@@ -37,6 +37,10 @@ class UserController extends Controller
                     $user_stat_date['gender'] = $gender;
                 }
                 $user_stat = UserStat::where('user_id', $user_id)->update($user_stat_data);
+
+                return success([
+                    'result' => true,
+                ]);
             } else {
                 return success([
                     'result' => false,
@@ -46,6 +50,11 @@ class UserController extends Controller
         } catch (Exception $e) {
             return failed($e);
         }
+    }
+
+    public function change_profile_image(): array
+    {
+
     }
 
     public function add_favorite_category(Request $request)

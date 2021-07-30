@@ -50,6 +50,17 @@ class AuthController extends Controller
             $agree4 = $request->get('agree4', false);
             $agree5 = $request->get('agree5', false);
 
+            // SNS 한정 먼저 받을 수도 있음
+            $nickname = $request->get('nickname');
+            $name = $request->get('name');
+            $family_name = $request->get('family_name');
+            $given_name = $request->get('given_name');
+            $device_type = $request->get('device_type');
+            $device_token = $request->get('device_token');
+            $access_token = $request->get('access_token');
+            $refresh_token = $request->get('refresh_token');
+            $refresh_token_expire_in = $request->get('refresh_token_expire_in');
+
             // 필수 동의 항목 체크
             if (!$agree1 || !$agree2 || !$agree3) {
                 return success([
@@ -91,6 +102,16 @@ class AuthController extends Controller
                     'agree3' => $agree3,
                     'agree4' => $agree4,
                     'agree5' => $agree5,
+                    // SNS 한정 미리 받을 수도 있음
+                    'nickname' => $nickname,
+                    'name' => $name,
+                    'family_name' => $family_name,
+                    'given_name' => $given_name,
+                    'device_type' => $device_type,
+                    'device_token' => $device_token,
+                    'access_token' => $access_token,
+                    'refresh_token' => $refresh_token,
+                    'refresh_token_expire_in' => $refresh_token_expire_in,
                 ]);
 
                 $user_stat = UserStat::create(['user_id' => $user->id]);

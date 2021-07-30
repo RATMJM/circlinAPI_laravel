@@ -21,6 +21,6 @@ class BaseController extends Controller
 
     public function category(Request $request): array
     {
-        return MissionCategory::all();
+        return MissionCategory::all()->toArray();
     }
 }
