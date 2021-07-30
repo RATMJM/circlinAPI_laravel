@@ -51,7 +51,7 @@ class AuthController extends Controller
             $privacy_agree = $request->get('privacy_agree');
 
             // 이메일 검증 (SNS 계정 형태도 인증에서 넘어갈 수 있도록
-            if (mb_ereg_match('/[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$)/', $email)) {
+            if (mb_ereg_match('/^[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3})$/', $email)) {
                 return success([
                     'result' => false,
                     'reason' => 'email validation failed',
