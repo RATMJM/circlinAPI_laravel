@@ -197,27 +197,38 @@ class AuthController extends Controller
         }
     }
 
-    public function check_init(Request $request, $need)
+    public function check_init(Request $request): array
     {
         try {
             $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
-            $user = User::where('id', $user_id)->first();
+            $data = User::where('users.id', $user_id)->first();
 
-            if (is_null($user)) {
+            if (is_null($data)) {
                 return success([
                     'result' => false,
-                    'reason' => 'not enough data',
+                    'reason' => 'not enough data'
                 ]);
             }
 
-            $result = match ($need) {
-                'nickname' => (is_null($user->nickname) || trim($user->nickname) === ''),
-                'area' => (is_null($user->area_code) || trim($user->area_code) === ''),
-                'category' => ($user->favorite_categories->count() === 0),
-                'follow' => $user->follows->count() < 3,
-            };
+            $need = [];
+            if (is_null($data->nickname) || trim($data->nickname) === '') {
+                $need[] = 'nickname';
+            }
+            if (is_null($data->area_code) || trim($data->area_code) === '') {
+                $need[] = 'area';
+            }
+            if ($data->favorite_categories->count() === 0) {
+                $need[] = 'category';
+            }
+            if ($data->follows->count() < 3) {
+                $target_id = $data->follows->pluck('target_id')->toArray();
+                $users = User::whereIn('id', $target_id)->select(['id', 'nickname', 'profile_image'])->get();
+
+                $need[] = ['follow' => $users];
+            }
             return success([
-                'result' => !$result,
+                'result' => true,
+                'need' => $need,
             ]);
         } catch (Exception $e) {
             return failed($e);

@@ -10,4 +10,9 @@ class Follow extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function target()
+    {
+        return $this->belongsTo('App\Models\User', 'target_id');
+    }
 }
