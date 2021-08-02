@@ -41,12 +41,12 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::group(['prefix' => 'user'], function () {
     Route::patch('/profile', 'UserController@update_profile');
-    Route::post('/profile_image', 'UserController@change_profile_image');
     Route::post('/favorite_category', 'UserController@add_favorite_category');
     Route::delete('/favorite_category', 'UserController@remove_favorite_category');
     Route::post('/follow', 'UserController@follow');
     Route::delete('/follow', 'UserController@unfollow');
 });
+Route::get('/change_profile_image', 'UserController@change_profile_image');
 
 Route::get('/area', 'BaseController@area');
 Route::get('/category', 'BaseController@category');
