@@ -56,6 +56,8 @@ Route::get('/suggest_user', 'BaseController@suggest_user');
 
 Route::group(['prefix' => 'mission'], function () {
     Route::get('/category', 'MissionController@category');
+    Route::post('/bookmark', 'MissionController@add_bookmark');
+    Route::delete('/bookmark', 'MissionController@remove_bookmark');
 });
 
 Route::group(['prefix' => 'feed'], function () {
