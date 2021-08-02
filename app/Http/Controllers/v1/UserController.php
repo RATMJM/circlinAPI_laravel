@@ -67,7 +67,8 @@ class UserController extends Controller
 
     public function change_profile_image(): array
     {
-        try {
+        //커밋테스트
+        try { 
             DB::beginTransaction();
             $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
             $id = $request->get('id');
