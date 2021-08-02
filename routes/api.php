@@ -36,7 +36,7 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/login/sns', 'AuthController@login_sns');
 
     /* 초기데이터 구성 */
-    Route::get('/check/init/{need}', 'AuthController@check_init')
+    Route::get('/check/{need}', 'AuthController@check_init')
         ->where(['need' => '(nickname|area|category|follow)']);
 });
 
