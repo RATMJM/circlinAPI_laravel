@@ -19,11 +19,20 @@ class UserController extends Controller
     {
         $user_id = token()->uid;
 
+        $user = User::where('users.id', $user_id)
+            ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->join('areas', 'areas.ctg_sm', 'users.area_code')
+            ->select('users.*', DB::raw("CONCAT_WS(' ', name_lg, name_md, name_sm) as area"), 'user_stats.gender')->first();
+
+        $category = UserFavoriteCategory::where('user_id', $user_id)
+            ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
+            ->select(['mission_categories.title'])
+            ->get();
+
         return success([
             'result' => true,
-            'user' => User::where('users.id', $user_id)
-                ->join('user_stats', 'user_stats.user_id', 'users.id')
-                ->select('users.*', 'user_stats.gender')->first(),
+            'user' => $user,
+            'category' => $category,
         ]);
     }
 
