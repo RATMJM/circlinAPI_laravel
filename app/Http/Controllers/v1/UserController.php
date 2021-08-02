@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Follow;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
@@ -26,24 +27,30 @@ class UserController extends Controller
 
             $data = User::where('id', $user_id)->first();
             if (isset($data)) {
+                $result = [];
                 $user_data = [];
                 $user_stat_data = [];
-                if ($nickname && (new AuthController())->exists_nickname($nickname)['data']['exists']) {
+
+                if ($nickname && !(new AuthController())->exists_nickname($nickname)['data']['exists']) {
                     $user_data['nickname'] = $nickname;
+                    $result[] = 'nickname';
                 }
-                if ($area_code) {
+                if ($area_code && Area::where('ctg_sm', $area_code)->exists()) {
                     $user_data['area_code'] = $area_code;
+                    $result[] = 'area_code';
                 }
                 $user = User::where('id', $user_id)->update($user_data);
 
                 if ($gender) {
                     $user_stat_date['gender'] = $gender;
+                    $result[] = 'gender';
                 }
                 $user_stat = UserStat::where('user_id', $user_id)->update($user_stat_data);
 
                 DB::commit();
                 return success([
-                    'result' => true,
+                    'result' => count($result) > 0,
+                    'changed' => $result,
                 ]);
             } else {
                 DB::rollBack();
