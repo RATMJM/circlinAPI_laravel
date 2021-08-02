@@ -200,7 +200,7 @@ class AuthController extends Controller
     public function check_init(Request $request): array
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $data = User::where('users.id', $user_id)->first();
 
             if (is_null($data)) {

@@ -15,12 +15,24 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
+    public function user(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        return success([
+            'result' => true,
+            'user' => User::where('users.id', $user_id)
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->select('users.*', 'user_stats.gender')->first(),
+        ]);
+    }
+
     public function update_profile(Request $request): array
     {
         try {
             DB::beginTransaction();
 
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $nickname = $request->get('nickname');
             $area_code = $request->get('area_code');
             $gender = $request->get('gender');
@@ -50,7 +62,7 @@ class UserController extends Controller
                 DB::commit();
                 return success([
                     'result' => count($result) > 0,
-                    'changed' => $result,
+                    'updated' => $result,
                 ]);
             } else {
                 DB::rollBack();
@@ -65,23 +77,23 @@ class UserController extends Controller
         }
     }
 
-    public function change_profile_image(): array
+    public function change_profile_image(Request $request): array
     {
         //커밋테스트
-        try { 
+        try {
             DB::beginTransaction();
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $id = $request->get('id');
             $profile_image_dir = $request->get('imgUrl');
-            $profile_image_dir = base64_decode([$profile_image_dir]);
+            $profile_image_dir = base64_decode($profile_image_dir);
             echo $profile_image_dir;
             $data = User::where('id', $user_id)->first();
-            
+
             if (isset($data)) {
-                $user_data = []; 
-              
-                $changeProfileImage = DB::update('update users set profile_image =110 where id = ? ',array($profile_image_dir,$id)); 
-                
+                $user_data = [];
+
+                $changeProfileImage = DB::update('update users set profile_image=? where id=? ', array($profile_image_dir, $id));
+
                 DB::commit();
                 return success([
                     'result' => true,
@@ -102,7 +114,7 @@ class UserController extends Controller
     public function add_favorite_category(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $category_id = $request->get('category_id');
 
             if (is_null($category_id)) {
@@ -130,7 +142,7 @@ class UserController extends Controller
     public function remove_favorite_category(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $category_id = $request->get('category_id');
 
             if (is_null($category_id)) {
@@ -155,7 +167,7 @@ class UserController extends Controller
     public function follow(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $target_id = $request->get('target_id');
 
             if (is_null($target_id)) {
@@ -183,7 +195,7 @@ class UserController extends Controller
     public function unfollow(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $target_id = $request->get('target_id');
 
             if (is_null($target_id)) {
@@ -203,5 +215,15 @@ class UserController extends Controller
         } catch (Exception $e) {
             return failed($e);
         }
+    }
+
+    public function my_follower(Request $request): array
+    {
+
+    }
+
+    public function my_following(Request $request): array
+    {
+
     }
 }

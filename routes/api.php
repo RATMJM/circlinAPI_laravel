@@ -40,6 +40,7 @@ Route::group(['prefix' => 'auth'], function () {
 });
 
 Route::group(['prefix' => 'user'], function () {
+    Route::get('/', 'UserController@user');
     Route::patch('/profile', 'UserController@update_profile');
     Route::post('/profile_image', 'UserController@change_profile_image');
     Route::post('/favorite_category', 'UserController@add_favorite_category');
