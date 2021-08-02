@@ -29,3 +29,8 @@ function failed(Exception $e): array
         'message' => $e->getMessage(),
     ];
 }
+
+function token(): object
+{
+    return JWT::decode(request()->header('token'), env('JWT_SECRET'), ['HS256']);
+}
