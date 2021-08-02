@@ -53,6 +53,21 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
         ],
 
+        'ftp' => [
+            'driver' => 'ftp',
+            'host' => 'cyld20182.speedgabia.com',
+            'username' => 'cyld20182',  //아이디
+            'password' => 'teamcyld2018', //암호
+
+        
+            // Optional FTP Settings...
+            'port' => 21,
+            // 'root' => '',
+            // 'passive' => true,
+            // 'ssl' => true,
+            // 'timeout' => 30,
+        ],
+
     ],
 
     /*
