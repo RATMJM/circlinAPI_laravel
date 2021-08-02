@@ -15,12 +15,33 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
+    public function user(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        $user = User::where('users.id', $user_id)
+            ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->join('areas', 'areas.ctg_sm', 'users.area_code')
+            ->select('users.*', DB::raw("CONCAT_WS(' ', name_lg, name_md, name_sm) as area"), 'user_stats.gender')->first();
+
+        $category = UserFavoriteCategory::where('user_id', $user_id)
+            ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
+            ->select(['mission_categories.title'])
+            ->get();
+
+        return success([
+            'result' => true,
+            'user' => $user,
+            'category' => $category,
+        ]);
+    }
+
     public function update_profile(Request $request): array
     {
         try {
             DB::beginTransaction();
 
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $nickname = $request->get('nickname');
             $area_code = $request->get('area_code');
             $gender = $request->get('gender');
@@ -50,7 +71,7 @@ class UserController extends Controller
                 DB::commit();
                 return success([
                     'result' => count($result) > 0,
-                    'changed' => $result,
+                    'updated' => $result,
                 ]);
             } else {
                 DB::rollBack();
@@ -102,7 +123,7 @@ class UserController extends Controller
     public function add_favorite_category(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $category_id = $request->get('category_id');
 
             if (is_null($category_id)) {
@@ -130,7 +151,7 @@ class UserController extends Controller
     public function remove_favorite_category(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $category_id = $request->get('category_id');
 
             if (is_null($category_id)) {
@@ -155,7 +176,7 @@ class UserController extends Controller
     public function follow(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $target_id = $request->get('target_id');
 
             if (is_null($target_id)) {
@@ -183,7 +204,7 @@ class UserController extends Controller
     public function unfollow(Request $request)
     {
         try {
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $user_id = token()->uid;
             $target_id = $request->get('target_id');
 
             if (is_null($target_id)) {
@@ -205,14 +226,31 @@ class UserController extends Controller
         }
     }
 
-
-    public function area11(Request $request): array
+    // 나를 팔로우
+    public function follower(Request $request): array
     {
-        $text = $request->get('searchText');
-        $text = mb_ereg_replace('/\s/', '', $text);
+        $user_id = token()->uid;
 
-        return Area::select()->where(DB::raw('CONCAT(name_lg, name_md, name_sm)'), 'like', "%$text%")
-            ->take(10)->get()->toArray();
+        return success([
+            'result' => true,
+            'users' => Follow::where('follows.target_id', $user_id)
+                ->join('users', 'users.id', 'follows.user_id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image'])
+                ->get(),
+        ]);
     }
 
+    // 내가 팔로우
+    public function following(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        return success([
+            'result' => true,
+            'users' => Follow::where('follows.user_id', $user_id)
+                ->join('users', 'users.id', 'follows.target_id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image'])
+                ->get(),
+        ]);
+    }
 }
