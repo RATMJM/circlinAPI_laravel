@@ -211,20 +211,16 @@ class AuthController extends Controller
             }
 
             $need = [];
-            if (is_null($data->nickname) || trim($data->nickname) === '') {
-                $need[] = 'nickname';
-            }
-            if (is_null($data->area_code) || trim($data->area_code) === '') {
-                $need[] = 'area';
-            }
-            if ($data->favorite_categories->count() === 0) {
-                $need[] = 'category';
-            }
+            $need['nickname'] = is_null($data->nickname) || trim($data->nickname) === '';
+            $need['area'] = is_null($data->area_code) || trim($data->area_code) === '';
+            $need['category'] = $data->favorite_categories->count() === 0;
             if ($data->follows->count() < 3) {
                 $target_id = $data->follows->pluck('target_id')->toArray();
                 $users = User::whereIn('id', $target_id)->select(['id', 'nickname', 'profile_image'])->get();
 
                 $need['follow'] = $users;
+            } else {
+                $need['follow'] = false;
             }
             return success([
                 'result' => true,
