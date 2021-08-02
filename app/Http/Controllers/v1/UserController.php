@@ -88,20 +88,20 @@ class UserController extends Controller
 
     public function change_profile_image(Request $request): array
     {
-        
-        try { 
+
+        try {
             DB::beginTransaction();
-            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;           
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
             $profile_image_dir = $request->get('imgUrl');
             $profile_image_dir = base64_decode($profile_image_dir);
           //  echo $profile_image_dir;
             $data = User::where('id', $user_id)->first();
-            
+
             if (isset($data)) {
-                $user_data = []; 
-              
-                $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($profile_image_dir,$user_id)); 
-                
+                $user_data = [];
+
+                $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($profile_image_dir,$user_id));
+
                 DB::commit();
                 return success([
                     'result' => true,
@@ -117,7 +117,7 @@ class UserController extends Controller
             DB::rollBack();
             return failed($e);
         }
-       
+
     }
 
     public function add_favorite_category(Request $request)
@@ -235,7 +235,11 @@ class UserController extends Controller
             'result' => true,
             'users' => Follow::where('follows.target_id', $user_id)
                 ->join('users', 'users.id', 'follows.user_id')
-                ->select(['users.id', 'users.nickname', 'users.profile_image'])
+                ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
+                ->leftJoin('follows', 'follows.target_id', 'users.id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                    DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
+                    DB::raw("COUNT(distinct follows.id) as follower")])
                 ->get(),
         ]);
     }

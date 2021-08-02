@@ -47,7 +47,7 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\UserFavoriteCategory');
     }
 
-    public function follows()
+    public function followings()
     {
         return $this->hasMany('App\Models\Follow');
     }

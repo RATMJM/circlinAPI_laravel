@@ -214,8 +214,8 @@ class AuthController extends Controller
             $need['nickname'] = is_null($data->nickname) || trim($data->nickname) === '';
             $need['area'] = is_null($data->area_code) || trim($data->area_code) === '';
             $need['category'] = $data->favorite_categories->count() === 0;
-            if ($data->follows->count() < 3) {
-                $target_id = $data->follows->pluck('target_id')->toArray();
+            if ($data->followings->count() < 3) {
+                $target_id = $data->followings->pluck('target_id')->toArray();
                 $users = User::whereIn('id', $target_id)->select(['id', 'nickname', 'profile_image'])->get();
 
                 $need['follow'] = $users;
