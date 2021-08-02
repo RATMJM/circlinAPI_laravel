@@ -217,13 +217,31 @@ class UserController extends Controller
         }
     }
 
-    public function my_follower(Request $request): array
+    // 나를 팔로우
+    public function follower(Request $request): array
     {
+        $user_id = token()->uid;
 
+        return success([
+            'result' => true,
+            'users' => Follow::where('follows.target_id', $user_id)
+                ->join('users', 'users.id', 'follows.user_id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image'])
+                ->get(),
+        ]);
     }
 
-    public function my_following(Request $request): array
+    // 내가 팔로우
+    public function following(Request $request): array
     {
+        $user_id = token()->uid;
 
+        return success([
+            'result' => true,
+            'users' => Follow::where('follows.user_id', $user_id)
+                ->join('users', 'users.id', 'follows.target_id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image'])
+                ->get(),
+        ]);
     }
 }

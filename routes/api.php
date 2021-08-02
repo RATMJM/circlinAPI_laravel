@@ -47,6 +47,8 @@ Route::group(['prefix' => 'user'], function () {
     Route::delete('/favorite_category', 'UserController@remove_favorite_category');
     Route::post('/follow', 'UserController@follow');
     Route::delete('/follow', 'UserController@unfollow');
+    Route::get('/follower', 'UserController@follower');
+    Route::get('/following', 'UserController@following');
 });
 
 Route::get('/area', 'BaseController@area');
