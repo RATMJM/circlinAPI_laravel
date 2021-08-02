@@ -224,7 +224,7 @@ class AuthController extends Controller
                 $target_id = $data->follows->pluck('target_id')->toArray();
                 $users = User::whereIn('id', $target_id)->select(['id', 'nickname', 'profile_image'])->get();
 
-                $need[] = ['follow' => $users];
+                $need['follow'] = $users;
             }
             return success([
                 'result' => true,
