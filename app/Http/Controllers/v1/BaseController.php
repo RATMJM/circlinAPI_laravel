@@ -40,6 +40,10 @@ class BaseController extends Controller
                 ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
                 ->leftJoin('follows', 'follows.target_id', 'users.id')
+                ->where('users.id', '!=', $user_id)
+                ->whereDoesntHave('followers', function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                })
                 ->groupBy(['users.id', 'user_stats.id', 'areas.id'])
                 ->inRandomOrder()->take($limit)->get(),
         ]);
