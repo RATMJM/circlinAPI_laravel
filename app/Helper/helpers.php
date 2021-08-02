@@ -34,5 +34,11 @@ function failed(Exception $e): array
 
 function token(): object
 {
+    $token = request()->header('token') ?? null;
+
+    if (is_null($token)) {
+        abort(403);
+    }
+
     return JWT::decode(request()->header('token'), env('JWT_SECRET'), ['HS256']);
 }
