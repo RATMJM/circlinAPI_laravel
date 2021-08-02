@@ -52,8 +52,11 @@ Route::group(['prefix' => 'user'], function () {
 Route::get('/change_profile_image', 'UserController@change_profile_image');
 
 Route::get('/area', 'BaseController@area');
-Route::get('/category', 'BaseController@category');
 Route::get('/suggest_user', 'BaseController@suggest_user');
+
+Route::group(['prefix' => 'mission'], function () {
+    Route::get('/category', 'MissionController@category');
+});
 
 Route::group(['prefix' => 'feed'], function () {
     //

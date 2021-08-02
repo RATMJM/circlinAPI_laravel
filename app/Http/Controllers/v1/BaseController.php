@@ -20,11 +20,6 @@ class BaseController extends Controller
             ->take(10)->get()->toArray();
     }
 
-    public function category(Request $request): array
-    {
-        return MissionCategory::all()->toArray();
-    }
-
     public function suggest_user(Request $request): array
     {
         $user_id = token()->uid;
