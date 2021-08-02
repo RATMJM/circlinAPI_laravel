@@ -1,7 +1,5 @@
 <?php
 
-use Firebase\JWT\JWT;
-
 const ALLOW_IP = [
     // 테스트
     '::1', '127.0.0.1',
@@ -30,9 +28,4 @@ function failed(Exception $e): array
         'reason' => 'error',
         'message' => $e->getMessage(),
     ];
-}
-
-function token(): object
-{
-    return JWT::decode(request()->header('token'), env('JWT_SECRET'), ['HS256']);
 }

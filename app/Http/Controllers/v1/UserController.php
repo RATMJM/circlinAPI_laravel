@@ -88,21 +88,20 @@ class UserController extends Controller
 
     public function change_profile_image(Request $request): array
     {
-        //커밋테스트
-        try {
+        
+        try { 
             DB::beginTransaction();
-            $user_id = token()->uid;
-            $id = $request->get('id');
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;           
             $profile_image_dir = $request->get('imgUrl');
             $profile_image_dir = base64_decode($profile_image_dir);
-            echo $profile_image_dir;
+          //  echo $profile_image_dir;
             $data = User::where('id', $user_id)->first();
-
+            
             if (isset($data)) {
-                $user_data = [];
-
-                $changeProfileImage = DB::update('update users set profile_image=? where id=? ', array($profile_image_dir, $id));
-
+                $user_data = []; 
+              
+                $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($profile_image_dir,$user_id)); 
+                
                 DB::commit();
                 return success([
                     'result' => true,
@@ -118,6 +117,7 @@ class UserController extends Controller
             DB::rollBack();
             return failed($e);
         }
+       
     }
 
     public function add_favorite_category(Request $request)

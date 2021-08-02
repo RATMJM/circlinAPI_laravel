@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\MissionCategory;
 use App\Models\User;
-use App\Models\UserStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

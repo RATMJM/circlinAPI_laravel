@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    /* 중복 확인 */
     public function exists_email($email): array
     {
         try {
@@ -40,7 +39,6 @@ class AuthController extends Controller
         }
     }
 
-    /* 회원 가입 */
     public function signup(Request $request, $sns = false): array
     {
         try {
@@ -202,7 +200,7 @@ class AuthController extends Controller
     public function check_init(Request $request): array
     {
         try {
-            $user_id = token()->uid;
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
             $data = User::where('users.id', $user_id)->first();
 
             if (is_null($data)) {
