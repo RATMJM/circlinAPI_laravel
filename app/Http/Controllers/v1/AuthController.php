@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    /* 중복 확인 */
     public function exists_email($email): array
     {
         try {
@@ -39,6 +40,7 @@ class AuthController extends Controller
         }
     }
 
+    /* 회원 가입 */
     public function signup(Request $request, $sns = false): array
     {
         try {
