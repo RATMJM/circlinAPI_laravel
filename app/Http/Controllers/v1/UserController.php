@@ -235,11 +235,13 @@ class UserController extends Controller
             'result' => true,
             'users' => Follow::where('follows.target_id', $user_id)
                 ->join('users', 'users.id', 'follows.user_id')
+                ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->leftJoin('follows', 'follows.target_id', 'users.id')
+                ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
                 ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                     DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
-                    DB::raw("COUNT(distinct follows.id) as follower")])
+                    DB::raw("COUNT(distinct f2.id) as follower")])
+                ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
                 ->get(),
         ]);
     }
@@ -253,7 +255,13 @@ class UserController extends Controller
             'result' => true,
             'users' => Follow::where('follows.user_id', $user_id)
                 ->join('users', 'users.id', 'follows.target_id')
-                ->select(['users.id', 'users.nickname', 'users.profile_image'])
+                ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+                ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
+                ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                    DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
+                    DB::raw("COUNT(distinct f2.id) as follower")])
+                ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
                 ->get(),
         ]);
     }
