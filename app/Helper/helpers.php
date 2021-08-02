@@ -1,5 +1,7 @@
 <?php
 
+use Firebase\JWT\JWT;
+
 const ALLOW_IP = [
     // 테스트
     '::1', '127.0.0.1',
