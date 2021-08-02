@@ -16,8 +16,10 @@ class CreateMissionCategoriesTable extends Migration
         Schema::create('mission_categories', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('title');
             $table->foreignId('mission_category_id')->nullable()->constrained();
+            $table->string('title');
+            $table->string('emoji')->comment('타이틀 앞의 이모지');
+            $table->text('description')->comment('카테고리 설명');
         });
     }
 
