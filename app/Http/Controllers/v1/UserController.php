@@ -67,7 +67,35 @@ class UserController extends Controller
 
     public function change_profile_image(): array
     {
-
+        try {
+            DB::beginTransaction();
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $id = $request->get('id');
+            $profile_image_dir = $request->get('imgUrl');
+            $profile_image_dir = base64_decode([$profile_image_dir]);
+            echo $profile_image_dir;
+            $data = User::where('id', $user_id)->first();
+            
+            if (isset($data)) {
+                $user_data = []; 
+              
+                $changeProfileImage = DB::update('update users set profile_image =110 where id = ? ',array($profile_image_dir,$id)); 
+                
+                DB::commit();
+                return success([
+                    'result' => true,
+                ]);
+            } else {
+                DB::rollBack();
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return failed($e);
+        }
     }
 
     public function add_favorite_category(Request $request)
