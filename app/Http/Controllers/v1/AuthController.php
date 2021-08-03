@@ -202,39 +202,28 @@ class AuthController extends Controller
             DB::enableQueryLog();
             $user_id = token()->uid;
             $data = User::where('users.id', $user_id)
-                ->leftJoin('user_favorite_categories', 'user_favorite_categories.user_id', 'users.id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('follows', 'follows.user_id', 'users.id')
-                ->select(['users.*', DB::raw('COUNT(distinct user_favorite_categories.id) as favorite_categories'),
-                    DB::raw('COUNT(distinct follows.id) as follows')])
-                ->groupBy('users.id')
+                ->select(['users.*', 'user_stats.gender', 'user_stats.birth'])
+                ->groupBy('users.id', 'user_stats.id')
                 ->first();
 
             if (is_null($data)) {
                 return success([
                     'result' => false,
-                    'reason' => 'not enough data'
+                    'reason' => 'not enough data',
                 ]);
             }
 
-            $need = [];
-            $need['nickname'] = is_null($data->nickname) || trim($data->nickname) === '';
-            $need['area'] = is_null($data->area_code) || trim($data->area_code) === '';
-            $need['category'] = $data->favorite_categories === 0;
-            if ($data->follows < 3) {
-
-                $need['follow'] = Follow::where('follows.user_id', $user_id)
-                    ->join('users', 'users.id', 'follows.target_id')
-                    ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
-                    ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                    ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
-                    ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                        DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
-                        DB::raw("COUNT(distinct f2.id) as follower")])
-                    ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
-                    ->get();
-            } else {
-                $need['follow'] = false;
-            }
+            $need = [
+                'nickname' => $data->nickname,
+                'gender' => $data->gender,
+                'birth' => $data->birth,
+                'area' => $data->area_code,
+                'profile_image' => $data->profile_image,
+                'category' => $data->favorite_categories,
+                'follow' => $data->followings,
+            ];
             return success([
                 'result' => true,
                 'need' => $need,
