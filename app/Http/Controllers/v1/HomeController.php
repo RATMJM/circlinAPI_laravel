@@ -40,7 +40,7 @@ class HomeController extends Controller
                 'link_url' => 'https://via.placeholder.com/1500x750',
             ],
         ]; // 더미데이터
-        $mission = $mc->get_mission($request, 3);
+        $mission = $mc->missions($request, 3);
 
         return success([
             'success' => true,
