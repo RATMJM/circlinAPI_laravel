@@ -60,8 +60,9 @@ Route::get('/town', 'HomeController@town');
 
 /* 미션 관련 */
 Route::group(['prefix' => 'mission'], function () {
-    Route::get('/', 'MissionController@get_mission');
-    Route::get('/category', 'MissionController@category');
+    Route::get('/', 'MissionController@missions');
+    Route::get('/{mission_id}', 'MissionController@mission')->where(['mission_id' => '\d+']);
+    Route::get('/category', 'MissionController@categories');
     Route::get('/bookmark', 'MissionController@get_bookmark');
     Route::post('/bookmark', 'MissionController@add_bookmark');
     Route::delete('/bookmark', 'MissionController@remove_bookmark');

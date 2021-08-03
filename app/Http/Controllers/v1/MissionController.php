@@ -11,6 +11,48 @@ use Illuminate\Support\Facades\DB;
 
 class MissionController extends Controller
 {
+    // 카테고리 별 미션 목록
+    public function missions(Request $request, $limit = 20, $page = 0): array
+    {
+        $category_id = $request->get('category_id');
+        $limit = $request->get('limit', $limit);
+        $page = $request->get('page', $page);
+
+        if ($category_id) {
+            $data = Mission::where('mission_category_id', $category_id)
+                ->leftJoin('user_missions', 'user_missions.mission_id', 'missions.id')
+                ->leftJoin('mission_comments', 'mission_comments.mission_id', 'missions.id')
+                ->select(['missions.title', 'missions.description',
+                    DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
+                    DB::raw('COUNT(distinct mission_comments.id) as comments')])
+                ->groupBy('missions.id')
+                ->skip($page)->take($limit)->get();
+
+            return success([
+                'result' => true,
+                'missions' => $data,
+            ]);
+        } else {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+    }
+
+    // 미션 상세
+    public function mission(Request $request, $mission_id): array
+    {
+        return success([
+            'result' => true,
+            'mission' => Mission::where('missions.id', $mission_id)
+                ->join('users', 'users.id', 'missions.user_id')
+                ->select(['users.nickname', 'users.profile_image', 'missions.title', 'missions.description',
+                    'missions.image_url'])
+                ->first(),
+        ]);
+    }
+
     public function category(Request $request): array
     {
         return success([
@@ -86,34 +128,6 @@ class MissionController extends Controller
             return success([
                 'result' => false,
                 'reason' => 'not bookmark',
-            ]);
-        }
-    }
-
-    public function get_mission(Request $request, $limit = 20, $page = 0): array
-    {
-        $category_id = $request->get('category_id');
-        $limit = $request->get('limit', $limit);
-        $page = $request->get('page', $page);
-
-        if ($category_id) {
-            $data = Mission::where('mission_category_id', $category_id)
-                ->leftJoin('user_missions', 'user_missions.mission_id', 'missions.id')
-                ->leftJoin('mission_comments', 'mission_comments.mission_id', 'missions.id')
-                ->select(['missions.title', 'missions.description',
-                    DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
-                    DB::raw('COUNT(distinct mission_comments.id) as comments')])
-                ->groupBy('missions.id')
-                ->skip($page)->take($limit)->get();
-
-            return success([
-                'result' => true,
-                'missions' => $data,
-            ]);
-        } else {
-            return success([
-                'result' => false,
-                'reason' => 'not enough data',
             ]);
         }
     }
