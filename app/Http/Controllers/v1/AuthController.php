@@ -118,9 +118,7 @@ class AuthController extends Controller
                 $user_stat = UserStat::create(['user_id' => $user->id]);
 
                 DB::commit();
-                return success([
-                    'result' => true,
-                ]);
+                return $this->login_user($user);
             }
         } catch (Exception $e) {
             DB::rollBack();
