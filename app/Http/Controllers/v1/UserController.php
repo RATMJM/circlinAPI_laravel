@@ -69,7 +69,7 @@ class UserController extends Controller
                 $user = User::where('id', $user_id)->update($user_data);
 
                 if ($gender) {
-                    $user_stat_date['gender'] = $gender;
+                    $user_stat_data['gender'] = $gender;
                     $result[] = 'gender';
                 }
                 $user_stat = UserStat::where('user_id', $user_id)->update($user_stat_data);
