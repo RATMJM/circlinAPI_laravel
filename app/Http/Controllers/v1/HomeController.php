@@ -14,11 +14,31 @@ class HomeController extends Controller
 
         $bookmark = $mc->get_bookmark($request)['data']['missions'];
         $banner = [
-            'https://via.placeholder.com/1500x750',
-            'https://via.placeholder.com/1500x750',
-            'https://via.placeholder.com/1500x750',
-            'https://via.placeholder.com/1500x750',
-            'https://via.placeholder.com/1500x750',
+            [
+                'banner_image' => 'https://via.placeholder.com/1500x750',
+                'link_type' => 'url',
+                'link_url' => 'https://via.placeholder.com/1500x750',
+            ],
+            [
+                'banner_image' => 'https://via.placeholder.com/1500x750',
+                'link_type' => 'url',
+                'link_url' => 'https://via.placeholder.com/1500x750',
+            ],
+            [
+                'banner_image' => 'https://via.placeholder.com/1500x750',
+                'link_type' => 'url',
+                'link_url' => 'https://via.placeholder.com/1500x750',
+            ],
+            [
+                'banner_image' => 'https://via.placeholder.com/1500x750',
+                'link_type' => 'url',
+                'link_url' => 'https://via.placeholder.com/1500x750',
+            ],
+            [
+                'banner_image' => 'https://via.placeholder.com/1500x750',
+                'link_type' => 'url',
+                'link_url' => 'https://via.placeholder.com/1500x750',
+            ],
         ]; // 더미데이터
         $mission = $mc->get_mission($request, 3);
 
