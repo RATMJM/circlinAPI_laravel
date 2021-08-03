@@ -73,3 +73,7 @@ Route::group(['prefix' => 'mission'], function () {
 Route::group(['prefix' => 'feed'], function () {
     //
 });
+
+Route::group(['prefix' => 'mypage'], function () {
+    //
+});
