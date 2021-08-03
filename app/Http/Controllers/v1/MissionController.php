@@ -14,15 +14,11 @@ class MissionController extends Controller
     {
         return success([
             'result' => true,
-            'categories' => MissionCategory::leftJoin('missions', 'missions.mission_category_id', 'mission_categories.id')
-                ->select([
+            'categories' => MissionCategory::select([
                     'mission_categories.id',
                     'mission_categories.emoji',
                     'mission_categories.title',
-                    'mission_categories.description',
-                    DB::raw('COUNT(distinct missions.id) as mission_count'),
                 ])
-                ->groupBy('mission_categories.id')
                 ->get(),
         ]);
     }
