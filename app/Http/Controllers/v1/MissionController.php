@@ -53,7 +53,7 @@ class MissionController extends Controller
         ]);
     }
 
-    public function category(Request $request): array
+    public function categories(Request $request): array
     {
         return success([
             'result' => true,
