@@ -204,7 +204,8 @@ class AuthController extends Controller
             $data = User::where('users.id', $user_id)
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->select(['users.*', 'user_stats.gender', 'user_stats.birth', 'areas.'])
+                ->select(['users.id', 'users.nickname', 'user_stats.gender', 'user_stats.birth',
+                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area")])
                 ->first();
 
             if (is_null($data)) {
@@ -218,7 +219,7 @@ class AuthController extends Controller
                 'nickname' => $data->nickname,
                 'gender' => $data->gender,
                 'birth' => date('Ymd', strtotime($data->birth)),
-                'area' => $data->area_code,
+                'area' => $data->area,
                 'profile_image' => $data->profile_image,
                 'category' => $data->favorite_categories,
                 'follow' => $data->followings,
