@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Follow;
+use App\Models\MissionCategory;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserStat;
@@ -128,10 +129,21 @@ class UserController extends Controller
             DB::rollBack();
             return failed($e);
         }
-
     }
 
-    public function add_favorite_category(Request $request)
+    public function get_favorite_category(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        return success([
+            'result' => true,
+            'categories' => MissionCategory::whereHas('favorite_category', function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            })->pluck('id'),
+        ]);
+    }
+
+    public function add_favorite_category(Request $request): array
     {
         try {
             $user_id = token()->uid;
@@ -159,7 +171,7 @@ class UserController extends Controller
         }
     }
 
-    public function remove_favorite_category(Request $request)
+    public function remove_favorite_category(Request $request): array
     {
         try {
             $user_id = token()->uid;
@@ -184,7 +196,7 @@ class UserController extends Controller
         }
     }
 
-    public function follow(Request $request)
+    public function follow(Request $request): array
     {
         try {
             $user_id = token()->uid;
@@ -212,7 +224,7 @@ class UserController extends Controller
         }
     }
 
-    public function unfollow(Request $request)
+    public function unfollow(Request $request): array
     {
         try {
             $user_id = token()->uid;

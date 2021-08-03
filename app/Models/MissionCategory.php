@@ -10,4 +10,9 @@ class MissionCategory extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function favorite_category()
+    {
+        return $this->hasOne('App\Models\UserFavoriteCategory');
+    }
 }
