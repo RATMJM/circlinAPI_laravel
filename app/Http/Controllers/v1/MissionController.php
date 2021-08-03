@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
@@ -20,6 +21,20 @@ class MissionController extends Controller
                     'mission_categories.title',
                 ])
                 ->get(),
+        ]);
+    }
+
+    public function get_bookmark(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        $data = Mission::whereHas('user_mission', function ($query) use ($user_id) {
+            $query->where('user_id', $user_id);
+        })->take(3)->get();
+
+        return success([
+            'result' => true,
+            'missions' => $data,
         ]);
     }
 
@@ -71,5 +86,19 @@ class MissionController extends Controller
                 'reason' => 'not enough data',
             ]);
         }
+    }
+
+    public function get_mission(Request $request, $limit = 20, $page = 0): array
+    {
+        $category_id = $request->get('category_id');
+        $limit = $request->get('limit', $limit);
+        $page = $request->get('page', $page);
+
+        $data = Mission::where('mission_category_id', $category_id)->skip($page)->take($limit)->get();
+
+        return success([
+            'result' => true,
+            'missions' => $data,
+        ]);
     }
 }

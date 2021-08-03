@@ -39,6 +39,7 @@ Route::group(['prefix' => 'auth'], function () {
     Route::get('/check/init', 'AuthController@check_init');
 });
 
+/* 유저 관련 */
 Route::group(['prefix' => 'user'], function () {
     Route::get('/', 'UserController@user');
     Route::patch('/profile', 'UserController@update_profile');
@@ -50,12 +51,17 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('/following', 'UserController@following');
 });
 Route::get('/change_profile_image', 'UserController@change_profile_image');
-
 Route::get('/area', 'BaseController@area');
 Route::get('/suggest_user', 'BaseController@suggest_user');
 
+/* Home */
+Route::get('/town', 'HomeController@town');
+
+/* 미션 관련 */
 Route::group(['prefix' => 'mission'], function () {
+    Route::get('/', 'MissionController@get_mission');
     Route::get('/category', 'MissionController@category');
+    Route::get('/bookmark', 'MissionController@get_bookmark');
     Route::post('/bookmark', 'MissionController@add_bookmark');
     Route::delete('/bookmark', 'MissionController@remove_bookmark');
 });

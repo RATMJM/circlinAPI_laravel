@@ -10,4 +10,9 @@ class Mission extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function user_mission()
+    {
+        return $this->hasOne('App\Models\UserMission');
+    }
 }
