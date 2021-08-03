@@ -24,7 +24,7 @@ class UserStatFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'birth' => date('Ymd', time()),
+            'birthday' => date('Ymd', time()),
             'gender' => ['W', 'M'][random_int(0, 1)],
             'height' => random_int(150, 190),
             'weight' => random_int(40, 100),

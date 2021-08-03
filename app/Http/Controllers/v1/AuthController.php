@@ -151,7 +151,7 @@ class AuthController extends Controller
                     'nickname' => $user->nickname,
                     'phone' => $user->phone,
                     'point' => $user->point,
-                    'birth' => $user_stat?->birth,
+                    'birthday' => $user_stat?->birth,
                     'gender' => $user_stat?->gender,
                     'height' => $user_stat?->height,
                     'weight' => $user_stat?->weight,
@@ -218,7 +218,7 @@ class AuthController extends Controller
             $need = [
                 'nickname' => $data->nickname,
                 'gender' => $data->gender,
-                'birth' => date('Ymd', strtotime($data->birth)),
+                'birthday' => date('Ymd', strtotime($data->birth)),
                 'area' => $data->area,
                 'profile_image' => $data->profile_image,
                 'category' => $data->favorite_categories,
