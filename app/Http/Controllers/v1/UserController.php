@@ -79,7 +79,7 @@ class UserController extends Controller
                     $result[] = 'gender';
                 }
                 if ($birthday && preg_match('/\d{8}/', $birthday)) {
-                    $user_stat_data['birth'] = date('Y-m-d', strtotime('20210202'));
+                    $user_stat_data['birth'] = date('Y-m-d', strtotime($birthday));
                     $result[] = 'birthday';
                 }
                 $user_stat = UserStat::where('user_id', $user_id)->update($user_stat_data);
