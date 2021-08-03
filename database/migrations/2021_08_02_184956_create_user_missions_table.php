@@ -20,6 +20,9 @@ class CreateUserMissionsTable extends Migration
             $table->foreignId('mission_id')->constrained();
             $table->softDeletes();
         });
+
+        $comment = "북마크한 미션";
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE user_missions comment '$comment'");
     }
 
     /**

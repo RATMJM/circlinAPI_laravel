@@ -46,6 +46,7 @@ class UserController extends Controller
             $area_code = $request->get('area_code');
             $phone = preg_replace('/[^\d]/', '', $request->get('phone'));
             $gender = $request->get('gender');
+            $birthday = $request->get('birthday');
 
             $data = User::where('id', $user_id)->first();
             if (isset($data)) {
@@ -71,6 +72,10 @@ class UserController extends Controller
                 if ($gender) {
                     $user_stat_data['gender'] = $gender;
                     $result[] = 'gender';
+                }
+                if ($birthday && preg_match('/\d{8}/', $birthday)) {
+                    $user_stat_data['birth'] = date('Y-m-d', strtotime('20210202'));
+                    $result[] = 'birthday';
                 }
                 $user_stat = UserStat::where('user_id', $user_id)->update($user_stat_data);
 
