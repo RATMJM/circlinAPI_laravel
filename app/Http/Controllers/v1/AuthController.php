@@ -204,7 +204,7 @@ class AuthController extends Controller
             $data = User::where('users.id', $user_id)
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->select(['users.id', 'users.nickname', 'user_stats.gender', 'user_stats.birth',
+                ->select(['users.id', 'users.nickname', 'user_stats.gender', 'user_stats.birthday',
                     DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area")])
                 ->first();
 
