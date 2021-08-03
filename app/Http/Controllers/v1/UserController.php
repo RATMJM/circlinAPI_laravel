@@ -23,7 +23,11 @@ class UserController extends Controller
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->join('areas', 'areas.ctg_sm', 'users.area_code')
-            ->select('users.*', DB::raw("CONCAT_WS(' ', name_lg, name_md, name_sm) as area"), 'user_stats.gender')->first();
+            ->select([
+                'users.*',
+                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
+                'user_stats.gender',
+            ])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
             ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
@@ -125,6 +129,22 @@ class UserController extends Controller
                     'reason' => 'not enough data',
                 ]);
             }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return failed($e);
+        }
+    }
+
+    public function remove_profile_image(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+            $result = User::where('id', $user_id)->update(['profile_image' => null]);
+
+            DB::commit();
+            return success(['result' => $result > 0]);
         } catch (Exception $e) {
             DB::rollBack();
             return failed($e);
@@ -262,7 +282,7 @@ class UserController extends Controller
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
                 ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
                 ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                    DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
+                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                     DB::raw("COUNT(distinct f2.id) as follower")])
                 ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
                 ->get(),
@@ -282,7 +302,7 @@ class UserController extends Controller
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
                 ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
                 ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                    DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
+                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                     DB::raw("COUNT(distinct f2.id) as follower")])
                 ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
                 ->get(),

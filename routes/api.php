@@ -43,6 +43,8 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'user'], function () {
     Route::get('/', 'UserController@user');
     Route::patch('/profile', 'UserController@update_profile');
+    Route::patch('/profile/image', 'UserController@change_profile_image');
+    Route::delete('/profile/image', 'UserController@remove_profile_image');
     Route::get('/favorite_category', 'UserController@get_favorite_category');
     Route::post('/favorite_category', 'UserController@add_favorite_category');
     Route::delete('/favorite_category', 'UserController@remove_favorite_category');

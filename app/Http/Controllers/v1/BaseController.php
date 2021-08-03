@@ -17,7 +17,7 @@ class BaseController extends Controller
         $text = mb_ereg_replace('/\s/', '', $text);
 
         $areas = Area::select(['ctg_sm as ctg',
-            DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ',name_lg, name_md, name_sm)) as name")])
+            DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as name")])
             ->where(DB::raw('CONCAT(name_lg, name_md, name_sm)'), 'like', "%$text%")
             ->take(10)->get();
 
@@ -36,7 +36,7 @@ class BaseController extends Controller
         return success([
             'result' => true,
             'users' => User::select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                DB::raw("CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm) as area"),
+                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                 DB::raw("COUNT(distinct follows.id) as follower")])
                 ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')

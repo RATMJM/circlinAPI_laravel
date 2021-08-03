@@ -203,9 +203,8 @@ class AuthController extends Controller
             $user_id = token()->uid;
             $data = User::where('users.id', $user_id)
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
-                ->leftJoin('follows', 'follows.user_id', 'users.id')
-                ->select(['users.*', 'user_stats.gender', 'user_stats.birth'])
-                ->groupBy('users.id', 'user_stats.id')
+                ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
+                ->select(['users.*', 'user_stats.gender', 'user_stats.birth', 'areas.'])
                 ->first();
 
             if (is_null($data)) {
