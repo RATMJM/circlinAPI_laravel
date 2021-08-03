@@ -17,7 +17,7 @@ class CreateUserStatsTable extends Migration
             $table->id();
             $table->timestamps();
             $table->foreignId('user_id')->constrained();
-            $table->timestamp('birth')->nullable()->comment('생년월일');
+            $table->dateTime('birthday')->nullable()->comment('생년월일');
             $table->string('gender')->nullable()->comment('성별');
             $table->unsignedFloat('height')->nullable();
             $table->unsignedFloat('weight')->nullable();
