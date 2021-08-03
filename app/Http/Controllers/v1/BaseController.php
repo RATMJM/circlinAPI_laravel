@@ -16,8 +16,15 @@ class BaseController extends Controller
         $text = $request->get('searchText');
         $text = mb_ereg_replace('/\s/', '', $text);
 
-        return Area::select()->where(DB::raw('CONCAT(name_lg, name_md, name_sm)'), 'like', "%$text%")
-            ->take(10)->get()->toArray();
+        $areas = Area::select(['ctg_sm as ctg',
+            DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ',name_lg, name_md, name_sm)) as name")])
+            ->where(DB::raw('CONCAT(name_lg, name_md, name_sm)'), 'like', "%$text%")
+            ->take(10)->get();
+
+        return success([
+            'result' => true,
+            'areas' => $areas,
+        ]);
     }
 
     public function suggest_user(Request $request): array
