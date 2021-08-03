@@ -28,9 +28,11 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
-        $data = Mission::whereHas('user_mission', function ($query) use ($user_id) {
-            $query->where('user_id', $user_id);
-        })->take(3)->get();
+        $data = Mission::select(['id', 'title', 'description'])
+            ->whereHas('user_mission', function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            })
+            ->take(3)->get();
 
         return success([
             'result' => true,
@@ -43,21 +45,21 @@ class MissionController extends Controller
         $user_id = token()->uid;
         $mission_id = $request->get('mission_id');
 
-        if ($mission_id) {
-            DB::beginTransaction();
-
-            $data = UserMission::create([
-                'user_id' => $user_id,
-                'mission_id' => $mission_id,
-            ]);
-
-            DB::commit();
-            return success(['result' => true]);
-        } else {
+        if (is_null($mission_id)) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
             ]);
+        }
+
+        if (UserMission::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
+            return success(['result' => false, 'reason' => 'already bookmark']);
+        } else {
+            $data = UserMission::create([
+                'user_id' => $user_id,
+                'mission_id' => $mission_id,
+            ]);
+            return success(['result' => true]);
         }
     }
 
@@ -66,24 +68,24 @@ class MissionController extends Controller
         $user_id = token()->uid;
         $mission_id = $request->get('mission_id');
 
-        if ($mission_id) {
-            if ($mission = UserMission::where(['user_id' => $user_id, 'mission_id' => $mission_id])) {
-                DB::beginTransaction();
-
-                $data = $mission->delete();
-
-                DB::commit();
-                return success(['result' => true]);
-            } else {
-                return success([
-                    'result' => false,
-                    'reason' => 'not bookmark',
-                ]);
-            }
-        } else {
+        if (is_null($mission_id)) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
+            ]);
+        }
+
+        if ($mission = UserMission::where(['user_id' => $user_id, 'mission_id' => $mission_id])) {
+            DB::beginTransaction();
+
+            $data = $mission->delete();
+
+            DB::commit();
+            return success(['result' => true]);
+        } else {
+            return success([
+                'result' => false,
+                'reason' => 'not bookmark',
             ]);
         }
     }
@@ -94,11 +96,25 @@ class MissionController extends Controller
         $limit = $request->get('limit', $limit);
         $page = $request->get('page', $page);
 
-        $data = Mission::where('mission_category_id', $category_id)->skip($page)->take($limit)->get();
+        if ($category_id) {
+            $data = Mission::where('mission_category_id', $category_id)
+                ->leftJoin('user_missions', 'user_missions.mission_id', 'missions.id')
+                ->leftJoin('mission_comments', 'mission_comments.mission_id', 'missions.id')
+                ->select(['missions.title', 'missions.description',
+                    DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
+                    DB::raw('COUNT(distinct mission_comments.id) as comments')])
+                ->groupBy('missions.id')
+                ->skip($page)->take($limit)->get();
 
-        return success([
-            'result' => true,
-            'missions' => $data,
-        ]);
+            return success([
+                'result' => true,
+                'missions' => $data,
+            ]);
+        } else {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
     }
 }
