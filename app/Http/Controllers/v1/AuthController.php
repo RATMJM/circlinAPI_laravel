@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Follow;
 use App\Models\User;
 use App\Models\UserStat;
 use Exception;
@@ -71,7 +70,7 @@ class AuthController extends Controller
             }
 
             // 이메일 validation (SNS 계정 형태도 인증에서 넘어갈 수 있도록
-            if (!preg_match('/^[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3})$/', $email)) {
+            if (!preg_match('/^[0-9a-zA-Z_.-]+@([KFAN]|[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3})$/', $email)) {
                 return success([
                     'result' => false,
                     'reason' => 'email validation failed',
@@ -115,7 +114,7 @@ class AuthController extends Controller
                     'refresh_token_expire_in' => $refresh_token_expire_in,
                 ]);
 
-                $user_stat = UserStat::create(['user_id' => $user->id]);
+                UserStat::create(['user_id' => $user->id]);
 
                 DB::commit();
                 return $this->login_user($user);
@@ -201,7 +200,7 @@ class AuthController extends Controller
         }
     }
 
-    public function check_init(Request $request): array
+    public function check_init(): array
     {
         try {
             DB::enableQueryLog();
