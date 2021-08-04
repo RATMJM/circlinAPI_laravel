@@ -12,7 +12,7 @@ class HomeController extends Controller
     {
         $mc = new MissionController();
 
-        $bookmark = $mc->get_bookmark($request)['data']['missions'];
+        $bookmark = (new BookmarkController())->index($request)['data']['missions'];
         $banner = [
             [
                 'banner_image' => 'https://via.placeholder.com/1500x750',
