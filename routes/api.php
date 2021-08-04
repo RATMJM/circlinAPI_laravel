@@ -66,8 +66,8 @@ Route::group(['prefix' => 'mission'], function () {
     Route::get('/', [v1\MissionController::class, 'missions']);
     Route::get('/{mission_id}', [v1\MissionController::class, 'mission'])->where(['mission_id' => '\d+']);
     Route::get('/category', [v1\MissionController::class, 'categories']);
-    Route::resource('bookmark', v1\BookmarkController::class);
 });
+Route::resource('bookmark', v1\BookmarkController::class);
 
 Route::group(['prefix' => 'feed'], function () {
     //
