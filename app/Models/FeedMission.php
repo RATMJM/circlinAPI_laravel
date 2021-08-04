@@ -10,4 +10,14 @@ class FeedMission extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function feed()
+    {
+        return $this->belongsTo('App\Models\Feed');
+    }
+
+    public function mission()
+    {
+        return $this->belongsTo('App\Models\Mission');
+    }
 }

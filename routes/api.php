@@ -56,9 +56,6 @@ Route::get('/change_profile_image', [v1\UserController::class, 'change_profile_i
 Route::get('/area', [v1\BaseController::class, 'area']);
 Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user']);
 
-/* Home */
-Route::get('/town', [v1\HomeController::class, 'town']);
-
 /* 미션 관련 */
 Route::resources([
     'category' => v1\MissionCategoryController::class,
@@ -66,10 +63,17 @@ Route::resources([
     'bookmark' => v1\BookmarkController::class,
 ]);
 
+/* Home */
+Route::get('/town', [v1\HomeController::class, 'town']);
+
 Route::group(['prefix' => 'feed'], function () {
     //
 });
 
+/* 마이페이지 */
 Route::group(['prefix' => 'mypage'], function () {
-    Route::get('/', [v1\MypageController::class, 'mypage']);
+    Route::get('/', [v1\MypageController::class, 'index']);
+    Route::get('/feed/{feed_id?}', [v1\MypageController::class, 'feed']);
+    Route::get('/check', [v1\MypageController::class, 'check']);
+    Route::get('/mission', [v1\MypageController::class, 'mission']);
 });

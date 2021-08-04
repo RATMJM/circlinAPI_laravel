@@ -15,4 +15,9 @@ class MissionCategory extends Model
     {
         return $this->hasOne('App\Models\UserFavoriteCategory');
     }
+
+    public function missions()
+    {
+        return $this->hasMany('App\Models\Mission');
+    }
 }

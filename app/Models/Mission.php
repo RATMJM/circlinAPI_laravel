@@ -15,4 +15,9 @@ class Mission extends Model
     {
         return $this->hasOne('App\Models\UserMission');
     }
+
+    public function feed_mission()
+    {
+        return $this->hasOne('App\Models\FeedMission');
+    }
 }
