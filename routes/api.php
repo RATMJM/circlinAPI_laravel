@@ -42,7 +42,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 /* 유저 관련 */
 Route::group(['prefix' => 'user'], function () {
-    Route::get('/', [v1\UserController::class, 'user']);
+    Route::get('/', [v1\UserController::class, 'index']);
     Route::patch('/profile', [v1\UserController::class, 'update']);
     Route::patch('/profile/image', [v1\UserController::class, 'change_profile_image']);
     Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image']);
