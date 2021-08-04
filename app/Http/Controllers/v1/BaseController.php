@@ -42,6 +42,7 @@ class BaseController extends Controller
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
                 ->leftJoin('follows', 'follows.target_id', 'users.id')
                 ->where('users.id', '!=', $user_id)
+                ->whereNotNull('users.nickname')
                 ->whereDoesntHave('followers', function ($query) use ($user_id) {
                     $query->where('user_id', $user_id);
                 })
