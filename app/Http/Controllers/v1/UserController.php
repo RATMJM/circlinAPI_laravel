@@ -207,7 +207,7 @@ class UserController extends Controller
             $data = UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $category_id])->first();
             if ($data) {
                 $result = $data->delete();
-                return success(['result' => $result]);
+                return success(['result' => $result > 0]);
             } else {
                 return success(['result' => false, 'reason' => 'not favorite']);
             }
