@@ -92,7 +92,7 @@ class BookmarkController extends Controller
             ]);
         }
 
-        if ($bookmark = UserMission::where(['user_id' => $user_id, 'mission_id' => $id])) {
+        if ($bookmark = UserMission::where(['user_id' => $user_id, 'mission_id' => $id])->first()) {
             DB::beginTransaction();
 
             $data = $bookmark->delete();
