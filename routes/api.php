@@ -52,7 +52,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::post('/follow', [v1\UserController::class, 'follow']);
     Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow']);
 });
-Route::get('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
+Route::post('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
 Route::get('/area', [v1\BaseController::class, 'area']);
 Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user']);
 
