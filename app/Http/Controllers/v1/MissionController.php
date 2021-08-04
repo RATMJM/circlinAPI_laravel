@@ -29,16 +29,12 @@ class MissionController extends Controller
                 ->groupBy('missions.id');
 
             if ($sort === 'popular') {
-                $data->orderBy('bookmarks', 'desc');
+                $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
             } elseif ($sort === 'new') {
-                $data->orderBy('id', 'desc');
+                $data->orderBy('missions.id', 'desc');
             } else {
-                $data->orderBy('bookmarks', 'desc');
+                $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
             }
-
-            $data->orderBy(match($sort) {
-                'popular' => '',
-            });
 
             $data = $data->skip($page)->take($limit)->get();
 
