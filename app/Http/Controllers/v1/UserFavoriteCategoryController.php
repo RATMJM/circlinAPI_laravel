@@ -1,0 +1,96 @@
+<?php
+
+namespace App\Http\Controllers\v1;
+
+use App\Http\Controllers\Controller;
+use App\Models\MissionCategory;
+use App\Models\UserFavoriteCategory;
+use Exception;
+use Illuminate\Http\Request;
+
+class UserFavoriteCategoryController extends Controller
+{
+    public function index(): array
+    {
+        $user_id = token()->uid;
+
+        return success([
+            'result' => true,
+            'categories' => MissionCategory::whereHas('favorite_category', function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            })->pluck('id'),
+        ]);
+    }
+
+    public function create(): array
+    {
+        //
+    }
+
+    public function store(Request $request): array
+    {
+        try {
+            $user_id = token()->uid;
+            $category_id = $request->get('category_id');
+
+            if (is_null($category_id)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            if (UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $category_id])->exists()) {
+                return success(['result' => false, 'reason' => 'already following']);
+            } else {
+                $data = UserFavoriteCategory::create(['user_id' => $user_id, 'mission_category_id' => $category_id]);
+                if ($data) {
+                    return success(['result' => true]);
+                } else {
+                    return success(['result' => false]);
+                }
+            }
+        } catch (Exception $e) {
+            return failed($e);
+        }
+    }
+
+    public function show($id): array
+    {
+        //
+    }
+
+    public function edit($id): array
+    {
+        //
+    }
+
+    public function update(Request $request, $id): array
+    {
+        //
+    }
+
+    public function destroy($id): array
+    {
+        try {
+            $user_id = token()->uid;
+
+            if (is_null($id)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            $data = UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $id])->first();
+            if ($data) {
+                $result = $data->delete();
+                return success(['result' => $result > 0]);
+            } else {
+                return success(['result' => false, 'reason' => 'not favorite']);
+            }
+        } catch (Exception $e) {
+            return failed($e);
+        }
+    }
+}

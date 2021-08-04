@@ -10,9 +10,14 @@ class HomeController extends Controller
 {
     public function town(Request $request):array
     {
-        $mc = new MissionController();
+        if (!$request->has('category_id')) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
 
-        $bookmark = (new BookmarkController())->index($request)['data']['missions'];
+        $bookmark = (new BookmarkController())->index($request, 3)['data']['missions'];
         $banner = [
             [
                 'banner_image' => 'https://via.placeholder.com/1500x750',
@@ -40,7 +45,7 @@ class HomeController extends Controller
                 'link_url' => 'https://via.placeholder.com/1500x750',
             ],
         ]; // 더미데이터
-        $mission = $mc->missions($request, 3);
+        $mission = (new MissionCategoryController())->show($request, $request->get('category_id'), 3);
 
         return success([
             'success' => true,

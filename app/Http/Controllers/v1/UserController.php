@@ -5,7 +5,6 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Follow;
-use App\Models\MissionCategory;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserStat;
@@ -16,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    public function user(Request $request): array
+    public function index(): array
     {
         $user_id = token()->uid;
 
@@ -41,7 +40,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function update_profile(Request $request): array
+    public function update(Request $request): array
     {
         try {
             DB::beginTransaction();
@@ -151,71 +150,6 @@ class UserController extends Controller
         }
     }
 
-    public function get_favorite_category(Request $request): array
-    {
-        $user_id = token()->uid;
-
-        return success([
-            'result' => true,
-            'categories' => MissionCategory::whereHas('favorite_category', function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            })->pluck('id'),
-        ]);
-    }
-
-    public function add_favorite_category(Request $request): array
-    {
-        try {
-            $user_id = token()->uid;
-            $category_id = $request->get('category_id');
-
-            if (is_null($category_id)) {
-                return success([
-                    'result' => false,
-                    'reason' => 'not enough data',
-                ]);
-            }
-
-            if (UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $category_id])->exists()) {
-                return success(['result' => false, 'reason' => 'already following']);
-            } else {
-                $data = UserFavoriteCategory::create(['user_id' => $user_id, 'mission_category_id' => $category_id]);
-                if ($data) {
-                    return success(['result' => true]);
-                } else {
-                    return success(['result' => false]);
-                }
-            }
-        } catch (Exception $e) {
-            return failed($e);
-        }
-    }
-
-    public function remove_favorite_category(Request $request): array
-    {
-        try {
-            $user_id = token()->uid;
-            $category_id = $request->get('category_id');
-
-            if (is_null($category_id)) {
-                return success([
-                    'result' => false,
-                    'reason' => 'not enough data',
-                ]);
-            }
-
-            $data = UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $category_id])->first();
-            if ($data) {
-                $result = $data->delete();
-                return success(['result' => $result > 0]);
-            } else {
-                return success(['result' => false, 'reason' => 'not favorite']);
-            }
-        } catch (Exception $e) {
-            return failed($e);
-        }
-    }
-
     public function follow(Request $request): array
     {
         try {
@@ -244,20 +178,19 @@ class UserController extends Controller
         }
     }
 
-    public function unfollow(Request $request): array
+    public function unfollow($id): array
     {
         try {
             $user_id = token()->uid;
-            $target_id = $request->get('target_id');
 
-            if (is_null($target_id)) {
+            if (is_null($id)) {
                 return success([
                     'result' => false,
                     'reason' => 'not enough data',
                 ]);
             }
 
-            $data = Follow::where(['user_id' => $user_id, 'target_id' => $target_id])->first();
+            $data = Follow::where(['user_id' => $user_id, 'target_id' => $id])->first();
             if ($data) {
                 $result = $data->delete();
                 return success(['result' => $result]);

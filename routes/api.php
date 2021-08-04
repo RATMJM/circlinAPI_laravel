@@ -43,16 +43,14 @@ Route::group(['prefix' => 'auth'], function () {
 /* 유저 관련 */
 Route::group(['prefix' => 'user'], function () {
     Route::get('/', [v1\UserController::class, 'user']);
-    Route::patch('/profile', [v1\UserController::class, 'update_profile']);
+    Route::patch('/profile', [v1\UserController::class, 'update']);
     Route::patch('/profile/image', [v1\UserController::class, 'change_profile_image']);
     Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image']);
-    Route::get('/favorite_category', [v1\UserController::class, 'get_favorite_category']);
-    Route::post('/favorite_category', [v1\UserController::class, 'add_favorite_category']);
-    Route::delete('/favorite_category', [v1\UserController::class, 'remove_favorite_category']);
+    Route::resource('favorite_category',v1\UserFavoriteCategoryController::class);
     Route::get('/follower', [v1\UserController::class, 'follower']);
     Route::get('/following', [v1\UserController::class, 'following']);
     Route::post('/follow', [v1\UserController::class, 'follow']);
-    Route::delete('/follow', [v1\UserController::class, 'unfollow']);
+    Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow']);
 });
 Route::get('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
 Route::get('/area', [v1\BaseController::class, 'area']);
@@ -62,12 +60,11 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user']);
 Route::get('/town', [v1\HomeController::class, 'town']);
 
 /* 미션 관련 */
-Route::group(['prefix' => 'mission'], function () {
-    Route::get('/', [v1\MissionController::class, 'missions']);
-    Route::get('/{mission_id}', [v1\MissionController::class, 'mission'])->where(['mission_id' => '\d+']);
-    Route::get('/category', [v1\MissionController::class, 'categories']);
-});
-Route::resource('bookmark', v1\BookmarkController::class);
+Route::resources([
+    'category' => v1\MissionCategoryController::class,
+    'mission' => v1\MissionController::class,
+    'bookmark' => v1\BookmarkController::class,
+]);
 
 Route::group(['prefix' => 'feed'], function () {
     //
