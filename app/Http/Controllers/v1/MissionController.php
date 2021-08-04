@@ -12,11 +12,12 @@ use Illuminate\Support\Facades\DB;
 class MissionController extends Controller
 {
     // 카테고리 별 미션 목록
-    public function missions(Request $request, $limit = 20, $page = 0): array
+    public function missions(Request $request, $limit = 20, $page = 0, $sort = 'popular'): array
     {
         $category_id = $request->get('category_id');
         $limit = $request->get('limit', $limit);
         $page = $request->get('page', $page);
+        $sort = $request->get('sort', $sort);
 
         if ($category_id) {
             $data = Mission::where('mission_category_id', $category_id)
@@ -25,8 +26,21 @@ class MissionController extends Controller
                 ->select(['missions.title', 'missions.description',
                     DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
                     DB::raw('COUNT(distinct mission_comments.id) as comments')])
-                ->groupBy('missions.id')
-                ->skip($page)->take($limit)->get();
+                ->groupBy('missions.id');
+
+            if ($sort === 'popular') {
+                $data->orderBy('bookmarks', 'desc');
+            } elseif ($sort === 'new') {
+                $data->orderBy('id', 'desc');
+            } else {
+                $data->orderBy('bookmarks', 'desc');
+            }
+
+            $data->orderBy(match($sort) {
+                'popular' => '',
+            });
+
+            $data = $data->skip($page)->take($limit)->get();
 
             return success([
                 'result' => true,
@@ -70,7 +84,12 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
+        $category_id = $request->get('category_id');
+
         $data = Mission::select(['id', 'title', 'description'])
+            ->when($category_id, function ($query) use ($category_id) {
+                $query->where('mission_category_id', $category_id);
+            })
             ->whereHas('user_mission', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
