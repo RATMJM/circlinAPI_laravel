@@ -72,6 +72,7 @@ class MissionController extends Controller
                     'mission_categories.emoji',
                     'mission_categories.title',
                 ])
+                ->whereNotNull('mission_category_id')
                 ->get(),
         ]);
     }
