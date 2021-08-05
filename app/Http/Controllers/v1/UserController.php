@@ -200,24 +200,36 @@ class UserController extends Controller
         if (ftp_nlist($conn_id, $uploaddirNew) == false) {
             ftp_mkdir($conn_id, $uploaddirNew);
         }
-        if (ftp_put($conn_id, $serverfile, $d, FTP_BINARY)) {
-            // $sql = "update MEMBERDATA set PROFILE_IMG='$dbProfile' where _ID = '$uid'";
-            // try{
-            //     $database = new Database();
-            //     $db = $database->getConnection();
-            //     $stmt = $db->prepare($sql);
-            //     $stmt->execute();
-            //     $json_result = [
-            //                 "status" => 200,
-            //                 "path" => $dbProfile,
-            //         ];
-            //     $db = null;
-            //     echo json_encode($json_result);
-            // }catch(PDOException $e) {
-            //     echo '{"error":{"text":'. $e->getMessage() .'}}';
-            // }
+        if (ftp_put($conn_id, $serverfile, $d, FTP_BINARY)) { //파일전송 성공
+             
+            try {
+                DB::beginTransaction();
+                 
+                $data = User::where('id', $uid)->first();
+     
+                if (isset($data)) {
+                    $user_data = [];
+    
+                    $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($dbProfile,$uid));
+    
+                    DB::commit();
+                    return success([
+                        'result' => true,
+                    ]);
+                } else {
+                    DB::rollBack();
+                    return success([
+                        'result' => false,
+                        'reason' => 'not enough data',
+                    ]);
+                }
+            } catch (Exception $e) {
+                DB::rollBack();
+                return failed($e);
+            }
+            
             // echo "파일전송";
-            return success(['result' => true]);
+            // return success(['result' => true]);
         } else {
             $json_result = [
                         "status" => 404,
@@ -230,34 +242,7 @@ class UserController extends Controller
             //             'result' => true,
             //     ]);
 
-        // try {
-        //     DB::beginTransaction();
-        //     $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
-        //     $profile_image_dir = $request->get('imgUrl');
-        //     $profile_image_dir = base64_decode($profile_image_dir);
-        //   //  echo $profile_image_dir;
-        //     $data = User::where('id', $user_id)->first();
- 
-        //     if (isset($data)) {
-        //         $user_data = [];
-
-        //         $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($profile_image_dir,$user_id));
-
-        //         DB::commit();
-        //         return success([
-        //             'result' => true,
-        //         ]);
-        //     } else {
-        //         DB::rollBack();
-        //         return success([
-        //             'result' => false,
-        //             'reason' => 'not enough data',
-        //         ]);
-        //     }
-        // } catch (Exception $e) {
-        //     DB::rollBack();
-        //     return failed($e);
-        // }
+        
     }
     
     public function remove_profile_image(Request $request): array
