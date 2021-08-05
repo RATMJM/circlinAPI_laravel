@@ -137,27 +137,17 @@ class UserController extends Controller
     public function change_profile_image(Request $request): array
     {
 
-            $ftp_server = 'cyld20182.speedgabia.com'; //호스팅 서버 주소
-            $ftp_user_name = 'cyld20182';     //아이디
-            $ftp_user_pass = 'teamcyld2018!';     //암호
-            $port='21';
-            // $user_id = token()->uid;
-            // $request->get('email');
-        // $uid = $request->get('uid');
-        //;token()->uid; //$_POST['uid']; 
+        $ftp_server = 'cyld20182.speedgabia.com'; //호스팅 서버 주소
+        $ftp_user_name = 'cyld20182';     //이미지서버 아이디
+        $ftp_user_pass = 'teamcyld2018!';     //암호
+        $port='21';
+
         $uid = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
-        // $file_name = '';//$_FILES[1]['VideoCapture_20210620-231319.jpg'];//$_FILES['0']['0']; //업로드한 파일명
-        $file_name=$_FILES['file']['name']; //업로드한 파일명
-        // $file_tmp_name = '';//;$_FILES[1]['VideoCapture_20210620-231319.jpg'];//$_FILES['0']['0']; // 임시디렉토리에 저장된 파일
+        $file_name=$_FILES['file']['name']; //업로드한 파일명  
         $file_tmp_name = $_FILES['file']['tmp_name']; // 임시디렉토리에 저장된 파일
         $ftp_path = "/Image/profile/".$uid."/".$file_name; // 접속한 서버에 업로드되어 새로 생길 파일
-         $local_file = $file_tmp_name; // 접속한 서버로 업로드 할 파일
-        //$local_file = 'C:\Users\snipe\Downloads\VideoCapture_20210620-231319.jpg';
-
-        $allowed_ext = array('jpg','jpeg','png','gif');
-       
-        // $d = compress($local_file,$local_file,100);
-                        // $source, $destination, $quality
+        $local_file = $file_tmp_name; // 접속한 서버로 업로드 할 파일
+                     
         $info = getimagesize($local_file);
         if ($info['mime'] == 'image/jpeg')
                 $image = imagecreatefromjpeg($local_file);
@@ -185,8 +175,6 @@ class UserController extends Controller
         //sq($d,$d);
         $d = $local_file;
         $ext='jpg'; 
-        // $ext =   (explode('.', $file_name);// array_pop($file_name); // (explode('.', $file_name));
-        // $ext[1] = array_pop(explode('.', $file_name));
        
         //호스트 접속
         $conn_id = ftp_connect($ftp_server,$port);  //Returns a FTP stream on success or FALSE on error.
@@ -209,7 +197,7 @@ class UserController extends Controller
      
                 if (isset($data)) {
                     $user_data = [];
-    
+                    // 이미지경로 유저테이블에 업데이트
                     $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($dbProfile,$uid));
     
                     DB::commit();
@@ -227,21 +215,14 @@ class UserController extends Controller
                 DB::rollBack();
                 return failed($e);
             }
-            
-            // echo "파일전송";
-            // return success(['result' => true]);
+
         } else {
             $json_result = [
                         "status" => 404,
                 ];
             echo json_encode($json_result);
         }
-        ftp_close($conn_id);
-        
-            // return success([
-            //             'result' => true,
-            //     ]);
-
+        ftp_close($conn_id);        
         
     }
     
