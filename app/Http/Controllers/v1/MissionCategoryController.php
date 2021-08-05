@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionCategory;
+use App\Models\UserMission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,18 +37,46 @@ class MissionCategoryController extends Controller
 
     public function show(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
+        $user_id = token()->uid;
+
         $limit = $limit ?? $request->get('limit', 20);
         $page = $page ?? $request->get('page', 0);
         $sort = $sort ?? $request->get('sort', 'popular');
 
         if ($id) {
             $data = Mission::where('mission_category_id', $id)
-                ->leftJoin('user_missions', 'user_missions.mission_id', 'missions.id')
-                ->leftJoin('mission_comments', 'mission_comments.mission_id', 'missions.id')
-                ->select(['missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
-                    DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
-                    DB::raw('COUNT(distinct mission_comments.id) as comments')])
-                ->groupBy('missions.id');
+                ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
+                ->leftJoin('user_missions as um', function ($query) {
+                    $query->on('um.mission_id', 'missions.id')->whereNull('um.deleted_at');
+                })
+                ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
+                ->select([
+                    'missions.id', 'missions.title', 'missions.description',
+                    'o.id as owner_id', 'o.profile_image as owner_profile',
+                    'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
+                        ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
+                    'user1_id' => UserMission::select('user_missions.user_id')
+                        ->whereColumn('user_missions.mission_id', 'missions.id')
+                        ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                        ->groupBy('user_id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
+                    'user1_profile_image' => UserMission::select('u.profile_image')
+                        ->whereColumn('user_missions.mission_id', 'missions.id')
+                        ->join('users as u', 'u.id', 'user_missions.user_id')
+                        ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                        ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
+                    'user2_id' => UserMission::select('user_missions.user_id')
+                        ->whereColumn('user_missions.mission_id', 'missions.id')
+                        ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                        ->groupBy('user_id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
+                    'user2_profile_image' => UserMission::select('u.profile_image')
+                        ->whereColumn('user_missions.mission_id', 'missions.id')
+                        ->join('users as u', 'u.id', 'user_missions.user_id')
+                        ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                        ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
+                    DB::raw('COUNT(distinct um.id) as bookmarks'),
+                    DB::raw('COUNT(distinct mc.id) as comments'),
+                ])
+                ->groupBy('missions.id', 'o.id');
 
             if ($sort === 'popular') {
                 $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
