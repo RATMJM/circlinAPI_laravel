@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +11,9 @@ class HomeController extends Controller
 {
     public function town(Request $request):array
     {
-        if (!$request->has('category_id')) {
+        $id = $request->get('category_id');
+
+        if (!$id) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
@@ -45,13 +48,14 @@ class HomeController extends Controller
                 'link_url' => 'https://via.placeholder.com/1500x750',
             ],
         ]; // 더미데이터
-        $mission = (new MissionCategoryController())->show($request, $request->get('category_id'), 3);
+        $mission_total = Mission::where('mission_category_id', $id)->count();
+        $mission = (new MissionCategoryController())->show($request, $id, 3)['data']['missions'];
 
         return success([
             'success' => true,
             'bookmarks' => $bookmark,
             'banners' => $banner,
-            'missions' => $mission,
+            'missions' => ['total' => $mission_total, 'missions' => $mission],
         ]);
     }
 }
