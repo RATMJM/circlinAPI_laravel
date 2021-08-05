@@ -34,11 +34,11 @@ class MissionCategoryController extends Controller
         abort(404);
     }
 
-    public function show(Request $request, $id, $limit = 20, $page = 0, $sort = 'popular'): array
+    public function show(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
-        $limit = $request->get('limit', $limit);
-        $page = $request->get('page', $page);
-        $sort = $request->get('sort', $sort);
+        $limit = $limit ?? $request->get('limit', 20);
+        $page = $page ?? $request->get('page', 0);
+        $sort = $sort ?? $request->get('sort', 'popular');
 
         if ($id) {
             $data = Mission::where('mission_category_id', $id)
