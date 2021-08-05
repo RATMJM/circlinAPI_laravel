@@ -34,17 +34,17 @@ class MissionCategoryController extends Controller
         abort(404);
     }
 
-    public function show(Request $request, $id, $limit = 20, $page = 0, $sort = 'popular'): array
+    public function show(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
-        $limit = $request->get('limit', $limit);
-        $page = $request->get('page', $page);
-        $sort = $request->get('sort', $sort);
+        $limit = $limit ?? $request->get('limit', 20);
+        $page = $page ?? $request->get('page', 0);
+        $sort = $sort ?? $request->get('sort', 'popular');
 
         if ($id) {
             $data = Mission::where('mission_category_id', $id)
                 ->leftJoin('user_missions', 'user_missions.mission_id', 'missions.id')
                 ->leftJoin('mission_comments', 'mission_comments.mission_id', 'missions.id')
-                ->select(['missions.title', 'missions.description',
+                ->select(['missions.title', DB::raw("COALESCE(missions.description, '') as description"),
                     DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
                     DB::raw('COUNT(distinct mission_comments.id) as comments')])
                 ->groupBy('missions.id');
@@ -57,7 +57,7 @@ class MissionCategoryController extends Controller
                 $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
             }
 
-            $data = $data->skip($page)->take($limit)->get();
+            $data = $data->skip($page * $limit)->take($limit)->get();
 
             return success([
                 'result' => true,

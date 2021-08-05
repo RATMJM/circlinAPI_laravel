@@ -17,11 +17,11 @@ class BookmarkController extends Controller
         $category_id = $request->get('category_id');
         $limit = $request->get('limit', $limit);
 
-        $data = Mission::select(['id', 'title', 'description'])
-            ->when($category_id, function ($query) use ($category_id) {
+        $data = Mission::select(['id', 'title', DB::raw("COALESCE(description, '') as description")])
+            ->when($category_id, function ($query, $category_id) {
                 $query->where('mission_category_id', $category_id);
             })
-            ->whereHas('user_mission', function ($query) use ($user_id) {
+            ->whereHas('user_missions', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
             ->orderBy('id');
