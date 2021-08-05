@@ -201,23 +201,23 @@ class UserController extends Controller
             ftp_mkdir($conn_id, $uploaddirNew);
         }
         if (ftp_put($conn_id, $serverfile, $d, FTP_BINARY)) {
-            // $sql = "update MEMBERDATA set PROFILE_IMG='$dbProfile' where _ID = '$uid'";
-            // try{
-            //     $database = new Database();
-            //     $db = $database->getConnection();
-            //     $stmt = $db->prepare($sql);
-            //     $stmt->execute();
-            //     $json_result = [
-            //                 "status" => 200,
-            //                 "path" => $dbProfile,
-            //         ];
-            //     $db = null;
-            //     echo json_encode($json_result);
-            // }catch(PDOException $e) {
-            //     echo '{"error":{"text":'. $e->getMessage() .'}}';
-            // }
+            $sql = "update MEMBERDATA set PROFILE_IMG='$dbProfile' where _ID = '$uid'";
+            try{
+                $database = new Database();
+                $db = $database->getConnection();
+                $stmt = $db->prepare($sql);
+                $stmt->execute();
+                $json_result = [
+                            "status" => 200,
+                            "path" => $dbProfile,
+                    ];
+                $db = null;
+                echo json_encode($json_result);
+            }catch(PDOException $e) {
+                echo '{"error":{"text":'. $e->getMessage() .'}}';
+            }
             // echo "파일전송";
-            return success(['result' => true]);
+            // return success(['result' => true]);
         } else {
             $json_result = [
                         "status" => 404,
