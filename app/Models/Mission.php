@@ -11,13 +11,13 @@ class Mission extends Model
 
     protected $guarded = [];
 
-    public function user_mission()
+    public function user_missions()
     {
-        return $this->hasOne('App\Models\UserMission');
+        return $this->hasMany('App\Models\UserMission');
     }
 
-    public function feed_mission()
+    public function feed_missions()
     {
-        return $this->hasOne('App\Models\FeedMission');
+        return $this->hasMany('App\Models\FeedMission');
     }
 }
