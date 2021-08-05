@@ -86,7 +86,7 @@ class MissionCategoryController extends Controller
                 $tmp1 = explode('|', $item['user1'] ?? '|');
                 $tmp2 = explode('|', $item['user2'] ?? '|');
                 $data[$i]['user'] = [
-                    ['user_id' => $tmp[0], 'profile_image' => $tmp[1]],['user_id' => $tmp[0], 'profile_image' => $tmp[1]]
+                    ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]],['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
                 ];
                 unset($data[$i]['user1'], $data[$i]['user2']);
             }

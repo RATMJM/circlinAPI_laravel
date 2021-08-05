@@ -177,23 +177,15 @@ class MypageController extends Controller
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                'o.id as owner_id', 'o.profile_image as owner_profile',
+                DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
                 'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
                     ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
-                'user1_id' => UserMission::select('user_missions.user_id')
-                    ->whereColumn('user_missions.mission_id', 'missions.id')
-                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
-                    ->groupBy('user_id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user1_profile_image' => UserMission::select('u.profile_image')
+                'user1' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
                     ->whereColumn('user_missions.mission_id', 'missions.id')
                     ->join('users as u', 'u.id', 'user_missions.user_id')
                     ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
                     ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2_id' => UserMission::select('user_missions.user_id')
-                    ->whereColumn('user_missions.mission_id', 'missions.id')
-                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
-                    ->groupBy('user_id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                'user2_profile_image' => UserMission::select('u.profile_image')
+                'user2' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
                     ->whereColumn('user_missions.mission_id', 'missions.id')
                     ->join('users as u', 'u.id', 'user_missions.user_id')
                     ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
@@ -203,6 +195,17 @@ class MypageController extends Controller
             ])
             ->groupBy('missions.id', 'o.id')
             ->get();
+
+        foreach($missions as $i => $mission) {
+            $tmp = explode('|', $mission['owner'] ?? '|');
+            $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
+            $tmp1 = explode('|', $mission['user1'] ?? '|');
+            $tmp2 = explode('|', $mission['user2'] ?? '|');
+            $missions[$i]['user'] = [
+                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]],['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
+            ];
+            unset($missions[$i]['user1'], $missions[$i]['user2']);
+        }
 
         return success([
             'result' => true,
