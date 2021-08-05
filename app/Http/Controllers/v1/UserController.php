@@ -212,7 +212,8 @@ class UserController extends Controller
                             "path" => $dbProfile,
                     ];
                 $db = null;
-                echo json_encode($json_result);
+                return success(['result' => true]);
+                // echo json_encode($json_result);
             }catch(PDOException $e) {
                 echo '{"error":{"text":'. $e->getMessage() .'}}';
             }
