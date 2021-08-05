@@ -184,7 +184,7 @@ class UserController extends Controller
  
         //sq($d,$d);
         $d = $local_file;
-        $ext='jpg';
+        $ext='jpg'; 
         // $ext =   (explode('.', $file_name);// array_pop($file_name); // (explode('.', $file_name));
         // $ext[1] = array_pop(explode('.', $file_name));
        
