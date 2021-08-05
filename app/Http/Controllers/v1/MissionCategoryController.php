@@ -44,7 +44,7 @@ class MissionCategoryController extends Controller
             $data = Mission::where('mission_category_id', $id)
                 ->leftJoin('user_missions', 'user_missions.mission_id', 'missions.id')
                 ->leftJoin('mission_comments', 'mission_comments.mission_id', 'missions.id')
-                ->select(['missions.title', 'missions.description',
+                ->select(['missions.title', DB::raw("COALESCE(missions.description, '') as description"),
                     DB::raw('COUNT(distinct user_missions.id) as bookmarks'),
                     DB::raw('COUNT(distinct mission_comments.id) as comments')])
                 ->groupBy('missions.id');
