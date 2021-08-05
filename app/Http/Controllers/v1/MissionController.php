@@ -12,14 +12,9 @@ class MissionController extends Controller
     /**
      * 카테고리 별 미션 목록
      */
-    public function index(Request $request, $limit = 20, $page = 0, $sort = 'popular'): array
+    public function index(): array
     {
-        $id = $request->get('category_id');
-        $limit = $request->get('limit', $limit);
-        $page = $request->get('page', $page);
-        $sort = $request->get('sort', $sort);
-
-        return (new MissionCategoryController())->show($request, $id, $limit, $page, $sort);
+        //
     }
 
     public function create(): array
