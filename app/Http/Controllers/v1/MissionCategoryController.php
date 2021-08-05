@@ -57,7 +57,7 @@ class MissionCategoryController extends Controller
                 $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
             }
 
-            $data = $data->skip($page)->take($limit)->get();
+            $data = $data->skip($page * $limit)->take($limit)->get();
 
             return success([
                 'result' => true,
