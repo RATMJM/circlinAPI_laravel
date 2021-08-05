@@ -9,6 +9,7 @@ use App\Models\FeedMission;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\User;
+use App\Models\UserMission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -76,12 +77,12 @@ class MypageController extends Controller
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
                     ->orderBy('id')->limit(1),
                 'mission' => Mission::select('title')
-                    ->whereHas('feed_mission', function ($query) {
+                    ->whereHas('feed_missions', function ($query) {
                         $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
                     })->orderBy('id')->limit(1),
                 'emoji' => MissionCategory::select('emoji')
                     ->whereHas('missions', function ($query) {
-                        $query->whereHas('feed_mission', function ($query) {
+                        $query->whereHas('feed_missions', function ($query) {
                             $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
                         });
                     })->limit(1),
@@ -109,8 +110,8 @@ class MypageController extends Controller
         $page = $request->get('page', 0);
 
         $feeds = Feed::rightJoin('feed_likes as fl', function ($query) use ($user_id) {
-                $query->on('fl.feed_id', 'feeds.id')->where('fl.user_id', $user_id); // 내가 체크한
-            })
+            $query->on('fl.feed_id', 'feeds.id')->where('fl.user_id', $user_id); // 내가 체크한
+        })
             ->leftJoin('feed_missions as fm', 'fm.feed_id', 'feeds.id')
             ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'feeds.id') // 체크 수
             ->leftJoin('feed_comments as fc', 'fc.feed_id', 'feeds.id') // 댓글 수
@@ -121,12 +122,12 @@ class MypageController extends Controller
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
                     ->orderBy('id')->limit(1),
                 'mission' => Mission::select('title')
-                    ->whereHas('feed_mission', function ($query) {
+                    ->whereHas('feed_missions', function ($query) {
                         $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
                     })->orderBy('id')->limit(1),
                 'emoji' => MissionCategory::select('emoji')
                     ->whereHas('missions', function ($query) {
-                        $query->whereHas('feed_mission', function ($query) {
+                        $query->whereHas('feed_missions', function ($query) {
                             $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
                         });
                     })->limit(1),
@@ -152,8 +153,6 @@ class MypageController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        DB::enableQueryLog();
-
         $categories = MissionCategory::whereNotNull('m.mission_category_id')
             ->where('f.user_id', $user_id)
             ->join('missions as m', 'm.mission_category_id', 'mission_categories.id')
@@ -166,8 +165,49 @@ class MypageController extends Controller
             ->groupBy('mission_categories.id')
             ->get();
 
-        // $missions = Mission::whereHas('')
+        $missions = Mission::whereHas('feed_missions', function ($query) use ($user_id) {
+            $query->whereHas('feed', function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            });
+        })
+            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
+            ->leftJoin('user_missions as um', function ($query) {
+                $query->on('um.mission_id', 'missions.id')->whereNull('um.deleted_at');
+            })
+            ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
+            ->select([
+                'missions.id', 'missions.title', 'missions.description',
+                'o.id as owner_id', 'o.profile_image as owner_profile',
+                'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
+                    ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
+                'user1_id' => UserMission::select('user_missions.user_id')
+                    ->whereColumn('user_missions.mission_id', 'missions.id')
+                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                    ->groupBy('user_id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
+                'user1_profile_image' => UserMission::select('u.profile_image')
+                    ->whereColumn('user_missions.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'user_missions.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
+                'user2_id' => UserMission::select('user_missions.user_id')
+                    ->whereColumn('user_missions.mission_id', 'missions.id')
+                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                    ->groupBy('user_id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
+                'user2_profile_image' => UserMission::select('u.profile_image')
+                    ->whereColumn('user_missions.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'user_missions.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
+                DB::raw('COUNT(distinct um.id) as bookmarks'),
+                DB::raw('COUNT(distinct mc.id) as comments'),
+            ])
+            ->groupBy('missions.id', 'o.id')
+            ->get();
 
-        dd(DB::getQueryLog());
+        return success([
+            'result' => true,
+            'categories' => $categories,
+            'missions' => $missions,
+        ]);
     }
 }
