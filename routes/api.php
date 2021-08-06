@@ -67,9 +67,12 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 /* 미션 관련 */
 Route::resources([
     'category' => v1\MissionCategoryController::class,
-    'mission' => v1\MissionController::class,
     'bookmark' => v1\BookmarkController::class,
 ]);
+Route::group(['prefix' => 'mission'], function () {
+    Route::get('/{mission_id}', [v1\MissionController::class, 'show']);
+    Route::get('/{mission_id}/user', [v1\MissionController::class, 'user']);
+});
 
 /* Home */
 Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
