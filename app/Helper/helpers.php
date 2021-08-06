@@ -34,11 +34,15 @@ function failed(Exception $e): array
 
 function token(): object
 {
-    $token = request()->header('token') ?? null;
+    try {
+        $token = request()->header('token');
 
-    if (is_null($token)) {
+        if (is_null($token)) {
+            abort(403);
+        }
+
+        return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+    } catch (Exception $e) {
         abort(403);
     }
-
-    return JWT::decode(request()->header('token'), env('JWT_SECRET'), ['HS256']);
 }
