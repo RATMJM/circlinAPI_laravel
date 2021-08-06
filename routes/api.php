@@ -77,3 +77,6 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/check', [v1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1\MypageController::class, 'mission'])->name('mission');
 });
+
+/* 탐색 페이지 */
+Route::get('explore', [v1\SearchController::class, 'index']);
