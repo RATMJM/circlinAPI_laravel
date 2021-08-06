@@ -51,6 +51,14 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::get('/following', [v1\UserController::class, 'following'])->name('following');
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');
     Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.delete');
+
+    /* 유저 상세 페이지 */
+    Route::group(['prefix' => '{user_id}'], function () {
+        Route::get('/', [v1\UserController::class, 'show'])->name('show');
+        Route::get('/feed/{feed_id?}', [v1\UserController::class, 'feed'])->name('feed');
+        Route::get('/check', [v1\UserController::class, 'check'])->name('check');
+        Route::get('/mission', [v1\UserController::class, 'mission'])->name('mission');
+    });
 });
 Route::post('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
 Route::get('/area', [v1\BaseController::class, 'area'])->name('area');
@@ -70,7 +78,7 @@ Route::group(['prefix' => 'feed'], function () {
     //
 });
 
-/* 마이페이지 */
+/* 마이페이지 (UserController 로 넘김) */
 Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/', [v1\MypageController::class, 'index'])->name('index');
     Route::get('/feed/{feed_id?}', [v1\MypageController::class, 'feed'])->name('feed');
