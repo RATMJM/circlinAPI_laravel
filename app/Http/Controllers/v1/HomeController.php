@@ -49,13 +49,13 @@ class HomeController extends Controller
             ],
         ]; // 더미데이터
         $mission_total = Mission::where('mission_category_id', $id)->count();
-        $mission = (new MissionCategoryController())->show($request, $id, 3)['data']['missions'];
+        $missions = (new MissionCategoryController())->show($request, $id, 3)['data']['missions'];
 
         return success([
             'success' => true,
             'bookmarks' => $bookmark,
             'banners' => $banner,
-            'missions' => ['total' => $mission_total, 'missions' => $mission],
+            'missions' => ['total' => $mission_total, 'missions' => $missions],
         ]);
     }
 }
