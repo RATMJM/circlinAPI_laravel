@@ -18,7 +18,7 @@ use App\Http\Controllers\v1;
 
 Route::get('/', function () {
     return ['success' => true];
-});
+})->name('index');
 
 /* 인증 */
 Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
@@ -68,14 +68,14 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 Route::resources([
     'bookmark' => v1\BookmarkController::class,
 ]);
-Route::group(['prefix' => 'category'], function () {
-    Route::get('/', [v1\MissionCategoryController::class, 'index']);
-    Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show']);
-    Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission']);
+Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
+    Route::get('/', [v1\MissionCategoryController::class, 'index'])->name('index');
+    Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
+    Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission'])->name('mission');
 });
-Route::group(['prefix' => 'mission'], function () {
-    Route::get('/{mission_id}', [v1\MissionController::class, 'show']);
-    Route::get('/{mission_id}/user', [v1\MissionController::class, 'user']);
+Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
+    Route::get('/{mission_id}', [v1\MissionController::class, 'show'])->name('show');
+    Route::get('/{mission_id}/user', [v1\MissionController::class, 'user'])->name('user');
 });
 
 /* Home */
@@ -94,4 +94,4 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 });
 
 /* 탐색 페이지 */
-Route::get('explore', [v1\SearchController::class, 'index']);
+Route::get('explore', [v1\SearchController::class, 'index'])->name('explore');
