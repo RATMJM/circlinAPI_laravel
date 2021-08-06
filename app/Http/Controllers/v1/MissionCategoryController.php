@@ -17,7 +17,7 @@ class MissionCategoryController extends Controller
             'result' => true,
             'categories' => MissionCategory::select([
                 'mission_categories.id',
-                'mission_categories.emoji',
+                DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
                 'mission_categories.title',
             ])
                 ->whereNotNull('mission_category_id')
