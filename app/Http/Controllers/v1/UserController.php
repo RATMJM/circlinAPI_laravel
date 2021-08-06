@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Feed;
 use App\Models\FeedImage;
+use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
@@ -461,32 +462,32 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $feeds = Feed::rightJoin('feed_likes as fl', function ($query) use ($user_id) {
-            $query->on('fl.feed_id', 'feeds.id')->where('fl.user_id', $user_id); // 내가 체크한
-        })
-            ->leftJoin('feed_missions as fm', 'fm.feed_id', 'feeds.id')
-            ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'feeds.id') // 체크 수
-            ->leftJoin('feed_comments as fc', 'fc.feed_id', 'feeds.id') // 댓글 수
+        $feeds = FeedLike::where('feed_likes.user_id', $user_id) // 내가 체크한
+            ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
+            ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
+            ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'f.id') // 체크 수
+            ->leftJoin('feed_comments as fc', 'fc.feed_id', 'f.id') // 댓글 수
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content',
-                'image' => FeedImage::select('image_url')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'f.id', 'f.created_at', 'f.content',
+                'image' => FeedImage::select('image_url')->whereColumn('feed_images.feed_id', 'f.id')
+                    ->orderBy('id')->limit(1),
                 DB::raw('COUNT(distinct fm.id) as missions'),
-                'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
+                'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'f.id')
                     ->orderBy('id')->limit(1),
                 'mission' => Mission::select('title')
                     ->whereHas('feed_missions', function ($query) {
-                        $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
+                        $query->whereColumn('feed_missions.feed_id', 'f.id')->orderBy('id');
                     })->orderBy('id')->limit(1),
                 'emoji' => MissionCategory::select('emoji')
                     ->whereHas('missions', function ($query) {
                         $query->whereHas('feed_missions', function ($query) {
-                            $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
+                            $query->whereColumn('feed_missions.feed_id', 'f.id')->orderBy('id');
                         });
                     })->limit(1),
                 DB::raw('COUNT(distinct fl2.id) as checks'),
                 DB::raw('COUNT(distinct fc.id) as comments'),
             ])
-            ->groupBy('feeds.id')
+            ->groupBy('f.id')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
