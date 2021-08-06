@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\MissionCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SearchController extends Controller
 {
@@ -13,7 +15,9 @@ class SearchController extends Controller
 
         $users = (new BaseController())->suggest_user($request)['data']['users'];
 
-        $categories = (new MissionCategoryController())->index()['data']['categories'];
+        $categories = MissionCategory::whereNotNull('mission_category_id')
+            ->select(['id', DB::raw("COALESCE(emoji, '') as emoji"), 'title', DB::raw("COALESCE(description, '') as description")])
+            ->orderBy('id')->get();
 
         return success([
             'result' => true,
