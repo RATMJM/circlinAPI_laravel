@@ -66,9 +66,13 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 
 /* 미션 관련 */
 Route::resources([
-    'category' => v1\MissionCategoryController::class,
     'bookmark' => v1\BookmarkController::class,
 ]);
+Route::group(['prefix' => 'category'], function () {
+    Route::get('/', [v1\MissionCategoryController::class, 'index']);
+    Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show']);
+    Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission']);
+});
 Route::group(['prefix' => 'mission'], function () {
     Route::get('/{mission_id}', [v1\MissionController::class, 'show']);
     Route::get('/{mission_id}/user', [v1\MissionController::class, 'user']);

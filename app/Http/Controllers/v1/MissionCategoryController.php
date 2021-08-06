@@ -5,8 +5,10 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionCategory;
+use App\Models\User;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class MissionCategoryController extends Controller
@@ -25,17 +27,54 @@ class MissionCategoryController extends Controller
         ]);
     }
 
-    public function create(): array
+    public function show(Request $request, $category_id): array
     {
-        abort(404);
+        if (!$category_id) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+
+        $category = MissionCategory::where('id', $category_id)
+            ->select([
+                'mission_categories.id',
+                DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
+                'mission_categories.title',
+                DB::raw("COALESCE(mission_categories.description, '') as description"),
+            ])
+            ->first();
+
+        $users = User::whereHas('user_missions', function ($query) use ($category_id) {
+            $query->whereNull('deleted_at')
+                ->whereHas('mission', function ($query) use ($category_id) {
+                $query->whereHas('category', function ($query) use ($category_id) {
+                    $query->where('id', $category_id);
+                });
+            });
+        })
+            ->join('follows as f', 'f.target_id', 'users.id')
+            ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
+            ->groupBy('users.id');
+        $user_total = $users->count();
+        $users = $users->orderBy('followers', 'desc')->take(3)->get();
+
+        $banners = (new BannerController())->category_banner($category_id);
+        $mission_total = Mission::where('mission_category_id', $category_id)->count();
+        $missions = $this->mission($request, $category_id, 3)['data']['missions'];
+
+        return success([
+            'result' => true,
+            'category' => $category,
+            'user_total' => $user_total,
+            'users' => $users,
+            'banners' => $banners,
+            'mission_total' => $mission_total,
+            'missions' => $missions,
+        ]);
     }
 
-    public function store(Request $request): array
-    {
-        abort(404);
-    }
-
-    public function show(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
+    public function mission(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
         $user_id = token()->uid;
 
@@ -72,7 +111,7 @@ class MissionCategoryController extends Controller
 
             if ($sort === 'popular') {
                 $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
-            } elseif ($sort === 'new') {
+            } elseif ($sort === 'recent') {
                 $data->orderBy('missions.id', 'desc');
             } else {
                 $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
@@ -101,20 +140,5 @@ class MissionCategoryController extends Controller
                 'reason' => 'not enough data',
             ]);
         }
-    }
-
-    public function edit($id): array
-    {
-        abort(404);
-    }
-
-    public function update(Request $request, $id): array
-    {
-        abort(404);
-    }
-
-    public function destroy($id): array
-    {
-        abort(404);
     }
 }

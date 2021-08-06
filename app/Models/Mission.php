@@ -20,4 +20,9 @@ class Mission extends Model
     {
         return $this->hasMany('App\Models\FeedMission');
     }
+
+    public function category()
+    {
+        return $this->belongsTo('App\Models\MissionCategory', 'mission_category_id');
+    }
 }

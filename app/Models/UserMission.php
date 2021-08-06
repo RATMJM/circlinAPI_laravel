@@ -12,4 +12,9 @@ class UserMission extends Model
     use SoftDeletes;
 
     protected $guarded = [];
+
+    public function mission()
+    {
+        return $this->belongsTo('App\Models\Mission');
+    }
 }
