@@ -11,9 +11,9 @@ class SearchController extends Controller
     {
         $user_id = token()->uid;
 
-        $users = (new BaseController())->suggest_user($request);
+        $users = (new BaseController())->suggest_user($request)['data']['users'];
 
-        $categories = (new MissionCategoryController())->index();
+        $categories = (new MissionCategoryController())->index()['data']['categories'];
 
         return success([
             'result' => true,
