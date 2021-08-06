@@ -389,7 +389,7 @@ class UserController extends Controller
             ->select(['users.nickname', 'users.point', 'users.profile_image',
                 DB::raw("IF(a.name_lg=a.name_md, CONCAT_WS(' ', a.name_md, a.name_sm), CONCAT_WS(' ', a.name_lg, a.name_md, a.name_sm)) as area"),
                 DB::raw('COUNT(distinct f1.id) as followers'), DB::raw('COUNT(distinct f2.id) as followings'),
-                DB::raw('COUNT(distinct m.id) as make_missions'),
+                DB::raw('COUNT(distinct m.id) as created_missions'),
                 DB::raw('COUNT(distinct f.id) as feeds'), DB::raw('COUNT(distinct fl.id) as checks'),
                 DB::raw('COUNT(distinct fm.id) as missions')])
             ->groupBy('users.id', 'a.id', 'us.id')
@@ -561,6 +561,54 @@ class UserController extends Controller
         return success([
             'result' => true,
             'categories' => $categories,
+            'missions' => $missions,
+        ]);
+    }
+
+    public function created_mission(Request $request, $user_id, $limit = null): array
+    {
+        $limit = $limit ?? $request->get('limit', 20);
+
+        $missions = Mission::where('missions.user_id', $user_id)
+            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
+            ->leftJoin('user_missions as um', function ($query) {
+                $query->on('um.mission_id', 'missions.id')->whereNull('um.deleted_at');
+            })
+            ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
+            ->select([
+                'missions.id', 'missions.title', 'missions.description',
+                DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
+                'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
+                    ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
+                'user1' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
+                    ->whereColumn('user_missions.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'user_missions.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
+                'user2' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
+                    ->whereColumn('user_missions.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'user_missions.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
+                DB::raw('COUNT(distinct um.id) as bookmarks'),
+                DB::raw('COUNT(distinct mc.id) as comments'),
+            ])
+            ->groupBy('missions.id', 'o.id')
+            ->orderBy('id', 'desc')->take($limit)->get();
+
+        foreach($missions as $i => $item) {
+            $tmp = explode('|', $item['owner'] ?? '|');
+            $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
+            $tmp1 = explode('|', $item['user1'] ?? '|');
+            $tmp2 = explode('|', $item['user2'] ?? '|');
+            $missions[$i]['users'] = [
+                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]],['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
+            ];
+            unset($missions[$i]['user1'], $missions[$i]['user2']);
+        }
+
+        return success([
+            'result' => true,
             'missions' => $missions,
         ]);
     }

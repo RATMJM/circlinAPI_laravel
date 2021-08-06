@@ -58,6 +58,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/feed/{feed_id?}', [v1\UserController::class, 'feed'])->name('feed');
         Route::get('/check', [v1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1\UserController::class, 'mission'])->name('mission');
+        Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
     });
 });
 Route::post('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
@@ -91,6 +92,7 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/feed/{feed_id?}', [v1\MypageController::class, 'feed'])->name('feed');
     Route::get('/check', [v1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1\MypageController::class, 'mission'])->name('mission');
+    Route::get('/mission/created', [v1\MypageController::class, 'created_mission'])->name('mission.created');
 });
 
 /* 탐색 페이지 */

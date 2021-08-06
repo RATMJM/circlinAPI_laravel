@@ -38,4 +38,12 @@ class MypageController extends Controller
     {
         return (new UserController())->mission($request, token()->uid);
     }
+
+    /**
+     * 내가 제작한 미션
+     */
+    public function created_mission(Request $request): array
+    {
+        return (new UserController())->created_mission($request, token()->uid);
+    }
 }
