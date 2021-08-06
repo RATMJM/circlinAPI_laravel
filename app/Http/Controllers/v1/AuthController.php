@@ -22,7 +22,7 @@ class AuthController extends Controller
                 'exists' => $exists,
             ]);
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -35,7 +35,7 @@ class AuthController extends Controller
                 'exists' => $exists,
             ]);
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -121,7 +121,7 @@ class AuthController extends Controller
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -163,7 +163,7 @@ class AuthController extends Controller
                 ],
             ]);
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -180,7 +180,7 @@ class AuthController extends Controller
                 return success(['result' => false, 'token' => null, 'user' => null]);
             }
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -196,7 +196,7 @@ class AuthController extends Controller
                 return success(['result' => false, 'token' => null, 'user' => null]);
             }
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -233,7 +233,7 @@ class AuthController extends Controller
                 'need' => $need,
             ]);
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 }

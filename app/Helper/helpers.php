@@ -23,7 +23,7 @@ function success($data): array
 }
 
 /* 도중 오류 발생 */
-function failed(Exception $e): array
+function exceped(Exception $e): array
 {
     return [
         'success' => false,

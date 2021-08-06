@@ -104,7 +104,7 @@ class UserController extends Controller
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -137,7 +137,7 @@ class UserController extends Controller
     //         }
     //     } catch (Exception $e) {
     //         DB::rollBack();
-    //         return failed($e);
+    //         return exceped($e);
     //     }
     // }
 
@@ -232,7 +232,7 @@ class UserController extends Controller
                 }
             } catch (Exception $e) {
                 DB::rollBack();
-                return failed($e);
+                return exceped($e);
             }
 
             // echo "파일전송";
@@ -264,7 +264,7 @@ class UserController extends Controller
             return success(['result' => $result > 0]);
         } catch (Exception $e) {
             DB::rollBack();
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -296,7 +296,7 @@ class UserController extends Controller
                 }
             }
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -323,7 +323,7 @@ class UserController extends Controller
                 return success(['result' => false, 'not following']);
             }
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
