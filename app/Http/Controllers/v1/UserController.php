@@ -552,7 +552,7 @@ class UserController extends Controller
             $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
             $tmp1 = explode('|', $mission['user1'] ?? '|');
             $tmp2 = explode('|', $mission['user2'] ?? '|');
-            $missions[$i]['user'] = [
+            $missions[$i]['users'] = [
                 ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]],['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
             ];
             unset($missions[$i]['user1'], $missions[$i]['user2']);
