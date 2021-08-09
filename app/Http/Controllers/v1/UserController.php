@@ -165,25 +165,18 @@ class UserController extends Controller
         // $d = compress($local_file,$local_file,100);
         // $source, $destination, $quality
         $info = getimagesize($local_file);
-        if ($info['mime'] == 'image/jpeg')
-            $image = imagecreatefromjpeg($local_file);
-        elseif ($info['mime'] == 'image/gif')
-            $image = imagecreatefromgif($local_file);
-        elseif ($info['mime'] == 'image/png')
-            $image = imagecreatefrompng($local_file);
+        $image = match($info['mime']) {
+            'image/jpeg' => imagecreatefromjpeg($local_file),
+            'image/gif' => imagecreatefromgif($local_file),
+            'image/png' => imagecreatefrompng($local_file),
+        };
         $exif = exif_read_data($local_file);
         if (!empty($exif['Orientation'])) {
-            switch ($exif['Orientation']) {
-                case 8:
-                    $image = imagerotate($image, 90, 0);
-                    break;
-                case 3:
-                    $image = imagerotate($image, 180, 0);
-                    break;
-                case 6:
-                    $image = imagerotate($image, -90, 0);
-                    break;
-            }
+            $image = match($exif['Orientation']) {
+                8 => imagerotate($image, 90, 0),
+                3 => imagerotate($image, 180, 0),
+                6 => imagerotate($image, -90, 0),
+            };
         }
 
         imagejpeg($image, $local_file, 100);
