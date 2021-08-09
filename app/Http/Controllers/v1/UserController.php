@@ -143,72 +143,71 @@ class UserController extends Controller
 
     public function change_profile_image(Request $request): array
     {
-
-            $ftp_server = 'cyld20182.speedgabia.com'; //호스팅 서버 주소
-            $ftp_user_name = 'cyld20182';     //아이디
-            $ftp_user_pass = 'teamcyld2018!';     //암호
-            $port='21';
-            // $user_id = token()->uid;
-            // $request->get('email');
+        $ftp_server = 'cyld20182.speedgabia.com'; //호스팅 서버 주소
+        $ftp_user_name = 'cyld20182';     //아이디
+        $ftp_user_pass = 'teamcyld2018!';     //암호
+        $port = '21';
+        // $user_id = token()->uid;
+        // $request->get('email');
         // $uid = $request->get('uid');
         //;token()->uid; //$_POST['uid'];
-        $uid = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
+        $uid = token()->uid;
         // $file_name = '';//$_FILES[1]['VideoCapture_20210620-231319.jpg'];//$_FILES['0']['0']; //업로드한 파일명
-        $file_name=$_FILES['file']['name']; //업로드한 파일명
+        $file_name = $_FILES['file']['name']; //업로드한 파일명
         // $file_tmp_name = '';//;$_FILES[1]['VideoCapture_20210620-231319.jpg'];//$_FILES['0']['0']; // 임시디렉토리에 저장된 파일
         $file_tmp_name = $_FILES['file']['tmp_name']; // 임시디렉토리에 저장된 파일
-        $ftp_path = "/Image/profile/".$uid."/".$file_name; // 접속한 서버에 업로드되어 새로 생길 파일
-         $local_file = $file_tmp_name; // 접속한 서버로 업로드 할 파일
+        $ftp_path = "/Image/profile/" . $uid . "/" . $file_name; // 접속한 서버에 업로드되어 새로 생길 파일
+        $local_file = $file_tmp_name; // 접속한 서버로 업로드 할 파일
         //$local_file = 'C:\Users\snipe\Downloads\VideoCapture_20210620-231319.jpg';
 
-        $allowed_ext = array('jpg','jpeg','png','gif');
+        $allowed_ext = array('jpg', 'jpeg', 'png', 'gif');
 
         // $d = compress($local_file,$local_file,100);
-                        // $source, $destination, $quality
+        // $source, $destination, $quality
         $info = getimagesize($local_file);
         if ($info['mime'] == 'image/jpeg')
-                $image = imagecreatefromjpeg($local_file);
-            elseif ($info['mime'] == 'image/gif')
-                $image = imagecreatefromgif($local_file);
-            elseif ($info['mime'] == 'image/png')
-                $image = imagecreatefrompng($local_file);
-                    $exif = exif_read_data($local_file);
-            if(!empty($exif['Orientation'])){
-            switch($exif['Orientation']) {
-            case 8:
-                $image = imagerotate($image,90,0);
-                break;
-            case 3:
-                $image = imagerotate($image,180,0);
-                break;
-            case 6:
-                $image = imagerotate($image,-90,0);
-                break;
-          }
+            $image = imagecreatefromjpeg($local_file);
+        elseif ($info['mime'] == 'image/gif')
+            $image = imagecreatefromgif($local_file);
+        elseif ($info['mime'] == 'image/png')
+            $image = imagecreatefrompng($local_file);
+        $exif = exif_read_data($local_file);
+        if (!empty($exif['Orientation'])) {
+            switch ($exif['Orientation']) {
+                case 8:
+                    $image = imagerotate($image, 90, 0);
+                    break;
+                case 3:
+                    $image = imagerotate($image, 180, 0);
+                    break;
+                case 6:
+                    $image = imagerotate($image, -90, 0);
+                    break;
+            }
         }
 
         imagejpeg($image, $local_file, 100);
 
         //sq($d,$d);
         $d = $local_file;
-        $ext='jpg';
+        $ext = 'jpg';
         // $ext =   (explode('.', $file_name);// array_pop($file_name); // (explode('.', $file_name));
         // $ext[1] = array_pop(explode('.', $file_name));
 
         //호스트 접속
-        $conn_id = ftp_connect($ftp_server,$port);  //Returns a FTP stream on success or FALSE on error.
+        $conn_id = ftp_connect($ftp_server, $port);  //Returns a FTP stream on success or FALSE on error.
         //호스트 로그인
         $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass); //성공 시 TRUE를, 실패 시 FALSE를 반환합니다. If login fails, PHP will also throw a warning.
         $uploaddir = '/Image/profile/';
-        $uploaddirNew = "/Image/profile/".$uid."/";
-        $serverfile = $uploaddirNew .$uid."_".strtotime(date('Y-m-d H:i:s')).".".$ext; //업로드 될 폴더 와 파일명
-        $dbProfile = "https://cyld20182.speedgabia.com/".$serverfile;
+        $uploaddirNew = "/Image/profile/" . $uid . "/";
+        $serverfile = $uploaddirNew . $uid . "_" . strtotime(date('Y-m-d H:i:s')) . "." . $ext; //업로드 될 폴더 와 파일명
+        $dbProfile = "https://cyld20182.speedgabia.com/" . $serverfile;
         ftp_pasv($conn_id, true);
         if (ftp_nlist($conn_id, $uploaddirNew) == false) {
             ftp_mkdir($conn_id, $uploaddirNew);
         }
         if (ftp_put($conn_id, $serverfile, $d, FTP_BINARY)) { //파일전송 성공
-
+            ftp_close($conn_id);
             try {
                 DB::beginTransaction();
 
@@ -217,7 +216,7 @@ class UserController extends Controller
                 if (isset($data)) {
                     $user_data = [];
 
-                    $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($dbProfile,$uid));
+                    $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ', array($dbProfile, $uid));
 
                     DB::commit();
                     return success([
@@ -238,18 +237,9 @@ class UserController extends Controller
             // echo "파일전송";
             // return success(['result' => true]);
         } else {
-            $json_result = [
-                        "status" => 404,
-                ];
-            echo json_encode($json_result);
+            ftp_close($conn_id);
+            return success(['result' => false, 'reason' => 'failed upload']);
         }
-        ftp_close($conn_id);
-
-            // return success([
-            //             'result' => true,
-            //     ]);
-
-
     }
 
     public function remove_profile_image(Request $request): array
@@ -465,7 +455,7 @@ class UserController extends Controller
         $page = $request->get('page', 0);
 
         $feeds = FeedLike::where('feed_likes.user_id', $user_id) // 내가 체크한
-            ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
+        ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
             ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
             ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'f.id') // 체크 수
             ->leftJoin('feed_comments as fc', 'fc.feed_id', 'f.id') // 댓글 수
@@ -549,13 +539,13 @@ class UserController extends Controller
             ->groupBy('missions.id', 'o.id')
             ->skip($page * $limit)->take($limit)->get();
 
-        foreach($missions as $i => $mission) {
+        foreach ($missions as $i => $mission) {
             $tmp = explode('|', $mission['owner'] ?? '|');
             $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
             $tmp1 = explode('|', $mission['user1'] ?? '|');
             $tmp2 = explode('|', $mission['user2'] ?? '|');
             $missions[$i]['users'] = [
-                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]],['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
+                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
             ];
             unset($missions[$i]['user1'], $missions[$i]['user2']);
         }
@@ -598,13 +588,13 @@ class UserController extends Controller
             ->groupBy('missions.id', 'o.id')
             ->orderBy('id', 'desc')->take($limit)->get();
 
-        foreach($missions as $i => $item) {
+        foreach ($missions as $i => $item) {
             $tmp = explode('|', $item['owner'] ?? '|');
             $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
             $tmp1 = explode('|', $item['user1'] ?? '|');
             $tmp2 = explode('|', $item['user2'] ?? '|');
             $missions[$i]['users'] = [
-                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]],['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
+                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
             ];
             unset($missions[$i]['user1'], $missions[$i]['user2']);
         }
