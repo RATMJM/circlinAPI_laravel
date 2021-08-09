@@ -45,6 +45,7 @@ class MissionCategoryController extends Controller
             ])
             ->first();
 
+        DB::enableQueryLog();
         $users = User::whereHas('user_missions', function ($query) use ($category_id) {
             $query->whereNull('deleted_at')
                 ->whereHas('mission', function ($query) use ($category_id) {
@@ -55,9 +56,8 @@ class MissionCategoryController extends Controller
         })
             ->join('follows as f', 'f.target_id', 'users.id')
             ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
-            ->groupBy('users.id');
-        $user_total = $users->count();
-        $users = $users->orderBy('followers', 'desc')->take(3)->get();
+            ->groupBy('users.id')
+            ->orderBy('followers', 'desc')->paginate(3);
 
         $banners = (new BannerController())->category_banner($category_id);
         $mission_total = Mission::where('mission_category_id', $category_id)->count();
@@ -66,8 +66,8 @@ class MissionCategoryController extends Controller
         return success([
             'result' => true,
             'category' => $category,
-            'user_total' => $user_total,
-            'users' => $users,
+            'user_total' => $users->total(),
+            'users' => $users->items(),
             'banners' => $banners,
             'mission_total' => $mission_total,
             'missions' => $missions,
