@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Feed;
+use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
@@ -407,11 +408,17 @@ class UserController extends Controller
             ->get();
 
         $feeds = Feed::where('feeds.user_id', $user_id)
+            ->leftJoin('feed_images as fi', 'fi.feed_id', 'feeds.id')
+            ->leftJoin('feed_products as fpr', 'fpr.feed_id', 'feeds.id')
+            ->leftJoin('feed_places as fpl', 'fpl.feed_id', 'feeds.id')
             ->leftJoin('feed_missions as fm', 'fm.feed_id', 'feeds.id')
             ->leftJoin('feed_likes as fl', 'fl.feed_id', 'feeds.id')
             ->leftJoin('feed_comments as fc', 'fc.feed_id', 'feeds.id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content',
+                DB::raw("COUNT(distinct fi.id) > 1 as has_image"), // 이미지 여러장인지
+                DB::raw("COUNT(distinct fpr.id) > 0 as has_product"), // 상품 있는지
+                DB::raw("COUNT(distinct fpl.id) > 0 as has_place"), // 위치 있는지
                 'image' => FeedImage::select('image_url')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 DB::raw('COUNT(distinct fm.id) as missions'),
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
@@ -428,6 +435,10 @@ class UserController extends Controller
                     })->limit(1),
                 DB::raw('COUNT(distinct fl.id) as checks'),
                 DB::raw('COUNT(distinct fc.id) as comments'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'feeds.id')
+                    ->where('feed_likes.user_id', token()->uid)->limit(1),
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
+                    ->where('feed_comments.user_id', token()->uid)->limit(1),
             ])
             ->groupBy('feeds.id')
             ->skip($page * $limit)->take($limit)->get();
