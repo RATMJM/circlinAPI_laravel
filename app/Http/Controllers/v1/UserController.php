@@ -416,7 +416,7 @@ class UserController extends Controller
             ->leftJoin('feed_comments as fc', 'fc.feed_id', 'feeds.id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content',
-                DB::raw("COUNT(distinct fi.id) > 1 as has_image"), // 이미지 여러장인지
+                DB::raw("COUNT(distinct fi.id) > 1 as has_images"), // 이미지 여러장인지
                 DB::raw("COUNT(distinct fpr.id) > 0 as has_product"), // 상품 있는지
                 DB::raw("COUNT(distinct fpl.id) > 0 as has_place"), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
