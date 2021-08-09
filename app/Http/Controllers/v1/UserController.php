@@ -194,7 +194,7 @@ class UserController extends Controller
         $uploaddir = '/Image/profile/';
         $uploaddirNew = "/Image/profile/" . $uid . "/";
         $serverfile = $uploaddirNew . $uid . "_" . strtotime(date('Y-m-d H:i:s')) . "." . $ext; //업로드 될 폴더 와 파일명
-        $dbProfile = "https://cyld20182.speedgabia.com/" . $serverfile;
+        $dbProfile = "https://cyld20182.speedgabia.com" . $serverfile;
         ftp_pasv($conn_id, true);
         if (ftp_nlist($conn_id, $uploaddirNew) == false) {
             ftp_mkdir($conn_id, $uploaddirNew);
