@@ -17,7 +17,12 @@ class CreateFeedProductsTable extends Migration
             $table->id();
             $table->timestamps();
             $table->foreignId('feed_id')->constrained();
+            $table->string('type')->comment('내부상품인지 외부상품인지 (inside / outside)');
             $table->foreignId('product_id')->nullable()->constrained();
+            $table->string('image_url')->nullable();
+            $table->string('brand_title')->nullable();
+            $table->string('product_title')->nullable();
+            $table->integer('price')->nullable();
             $table->string('product_url')->nullable();
         });
     }
