@@ -460,12 +460,20 @@ class UserController extends Controller
         $page = $request->get('page', 0);
 
         $feeds = FeedLike::where('feed_likes.user_id', $user_id) // 내가 체크한
-        ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
+            ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
+            ->join('users as u', 'u.id', 'f.user_id')
+            ->leftJoin('feed_images as fi', 'fi.feed_id', 'f.id')
+            ->leftJoin('feed_products as fpr', 'fpr.feed_id', 'f.id')
+            ->leftJoin('feed_places as fpl', 'fpl.feed_id', 'f.id')
             ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
             ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'f.id') // 체크 수
             ->leftJoin('feed_comments as fc', 'fc.feed_id', 'f.id') // 댓글 수
             ->select([
                 'f.id', 'f.created_at', 'f.content',
+                DB::raw("COUNT(distinct fi.id) > 1 as has_images"), // 이미지 여러장인지
+                DB::raw("COUNT(distinct fpr.id) > 0 as has_product"), // 상품 있는지
+                DB::raw("COUNT(distinct fpl.id) > 0 as has_place"), // 위치 있는지
+                'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'f.id')->orderBy('id')->limit(1),
                 'image' => FeedImage::select('image_url')->whereColumn('feed_images.feed_id', 'f.id')
                     ->orderBy('id')->limit(1),
                 DB::raw('COUNT(distinct fm.id) as missions'),
@@ -483,6 +491,10 @@ class UserController extends Controller
                     })->limit(1),
                 DB::raw('COUNT(distinct fl2.id) as checks'),
                 DB::raw('COUNT(distinct fc.id) as comments'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'f.id')
+                    ->where('feed_likes.user_id', token()->uid)->limit(1),
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'f.id')
+                    ->where('feed_comments.user_id', token()->uid)->limit(1),
             ])
             ->groupBy('f.id')
             ->skip($page * $limit)->take($limit)->get();
