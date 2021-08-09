@@ -46,3 +46,18 @@ function token(): object
         abort(403);
     }
 }
+
+function token_option(): object | null
+{
+    try {
+        $token = request()->header('token');
+
+        if (is_null($token)) {
+            abort(403);
+        }
+
+        return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+    } catch (Exception $e) {
+        return null;
+    }
+}
