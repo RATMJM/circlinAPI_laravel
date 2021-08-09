@@ -16,6 +16,7 @@ class CreateFeedPlacesTable extends Migration
         Schema::create('feed_places', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->foreignId('feed_id')->constrained();
             $table->string('image_url');
             $table->string('address');
             $table->string('title');
