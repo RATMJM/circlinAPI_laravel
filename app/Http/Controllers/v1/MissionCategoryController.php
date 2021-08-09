@@ -45,7 +45,6 @@ class MissionCategoryController extends Controller
             ])
             ->first();
 
-        DB::enableQueryLog();
         $users = User::whereHas('user_missions', function ($query) use ($category_id) {
             $query->whereNull('deleted_at')
                 ->whereHas('mission', function ($query) use ($category_id) {
