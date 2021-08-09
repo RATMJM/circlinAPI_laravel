@@ -19,7 +19,9 @@
     "laravel/telescope": "^4.6",
     "laravel/tinker": "^2.5",
     "maatwebsite/excel": "^3.1",
-    "ext-gd": "*"
+    "ext-gd": "*",
+    "ext-exif": "*",
+    "ext-ftp": "*"
   },
   "require-dev": {
     "facade/ignition": "^2.5",
