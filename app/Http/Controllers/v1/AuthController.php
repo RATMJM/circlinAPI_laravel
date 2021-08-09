@@ -208,8 +208,11 @@ class AuthController extends Controller
             $data = User::where('users.id', $user_id)
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->select(['users.id', 'users.nickname', 'user_stats.gender', 'user_stats.birthday',
-                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area")])
+                // ->leftJoin('follows', 'follows.user_id', 'users.id')
+                ->select([
+                    'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'user_stats.birthday',
+                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area")
+                ])
                 ->first();
 
             if (is_null($data)) {
@@ -226,7 +229,7 @@ class AuthController extends Controller
                 'area' => $data->area,
                 'profile_image' => $data->profile_image,
                 'category' => $data->favorite_categories,
-                'follow' => $data->followings,
+                'follow' => $data->followings->take(3),
             ];
             return success([
                 'result' => true,
