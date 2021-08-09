@@ -386,12 +386,14 @@ class UserController extends Controller
             ->leftJoin('feeds as f', 'f.user_id', 'users.id')
             ->leftJoin('feed_likes as fl', 'fl.user_id', 'users.id')
             ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
-            ->select(['users.nickname', 'users.point', 'users.profile_image',
+            ->select([
+                'users.nickname', 'users.point', 'users.profile_image', 'users.greeting',
                 DB::raw("IF(a.name_lg=a.name_md, CONCAT_WS(' ', a.name_md, a.name_sm), CONCAT_WS(' ', a.name_lg, a.name_md, a.name_sm)) as area"),
                 DB::raw('COUNT(distinct f1.id) as followers'), DB::raw('COUNT(distinct f2.id) as followings'),
                 DB::raw('COUNT(distinct m.id) as created_missions'),
                 DB::raw('COUNT(distinct f.id) as feeds'), DB::raw('COUNT(distinct fl.id) as checks'),
-                DB::raw('COUNT(distinct fm.id) as missions')])
+                DB::raw('COUNT(distinct fm.id) as missions'),
+            ])
             ->groupBy('users.id', 'a.id', 'us.id')
             ->first();
 
