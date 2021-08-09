@@ -101,15 +101,13 @@ class MissionCategoryController extends Controller
                         ->where('follows.user_id', $user_id)->limit(1),
                     'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
                         ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
-                    'user1' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''),
-                        COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
+                    'user1' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
                         ->whereColumn('user_missions.mission_id', 'missions.id')
                         ->join('users as u', 'u.id', 'user_missions.user_id')
                         ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
                         ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
                         ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                    'user2' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''),
-                        COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
+                    'user2' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
                         ->whereColumn('user_missions.mission_id', 'missions.id')
                         ->join('users as u', 'u.id', 'user_missions.user_id')
                         ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
