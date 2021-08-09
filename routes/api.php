@@ -18,7 +18,7 @@ use App\Http\Controllers\v1;
 
 Route::get('/', function () {
     return ['success' => true];
-});
+})->name('index');
 
 /* 인증 */
 Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
@@ -58,6 +58,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/feed/{feed_id?}', [v1\UserController::class, 'feed'])->name('feed');
         Route::get('/check', [v1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1\UserController::class, 'mission'])->name('mission');
+        Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
     });
 });
 Route::post('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
@@ -66,12 +67,16 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 
 /* 미션 관련 */
 Route::resources([
-    'category' => v1\MissionCategoryController::class,
     'bookmark' => v1\BookmarkController::class,
 ]);
-Route::group(['prefix' => 'mission'], function () {
-    Route::get('/{mission_id}', [v1\MissionController::class, 'show']);
-    Route::get('/{mission_id}/user', [v1\MissionController::class, 'user']);
+Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
+    Route::get('/', [v1\MissionCategoryController::class, 'index'])->name('index');
+    Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
+    Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission'])->name('mission');
+});
+Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
+    Route::get('/{mission_id}', [v1\MissionController::class, 'show'])->name('show');
+    Route::get('/{mission_id}/user', [v1\MissionController::class, 'user'])->name('user');
 });
 
 /* Home */
@@ -87,7 +92,8 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/feed/{feed_id?}', [v1\MypageController::class, 'feed'])->name('feed');
     Route::get('/check', [v1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1\MypageController::class, 'mission'])->name('mission');
+    Route::get('/mission/created', [v1\MypageController::class, 'created_mission'])->name('mission.created');
 });
 
 /* 탐색 페이지 */
-Route::get('explore', [v1\SearchController::class, 'index']);
+Route::get('explore', [v1\SearchController::class, 'index'])->name('explore');

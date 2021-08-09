@@ -23,7 +23,7 @@ function success($data): array
 }
 
 /* 도중 오류 발생 */
-function failed(Exception $e): array
+function exceped(Exception $e): array
 {
     return [
         'success' => false,
@@ -34,11 +34,30 @@ function failed(Exception $e): array
 
 function token(): object
 {
-    $token = request()->header('token') ?? null;
+    try {
+        $token = request()->header('token');
 
-    if (is_null($token)) {
+        if (is_null($token)) {
+            abort(403);
+        }
+
+        return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+    } catch (Exception $e) {
         abort(403);
     }
+}
 
-    return JWT::decode(request()->header('token'), env('JWT_SECRET'), ['HS256']);
+function token_option(): object | null
+{
+    try {
+        $token = request()->header('token');
+
+        if (is_null($token)) {
+            abort(403);
+        }
+
+        return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+    } catch (Exception $e) {
+        return null;
+    }
 }

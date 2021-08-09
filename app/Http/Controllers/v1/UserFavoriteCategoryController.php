@@ -51,7 +51,7 @@ class UserFavoriteCategoryController extends Controller
                 }
             }
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 
@@ -90,7 +90,7 @@ class UserFavoriteCategoryController extends Controller
                 return success(['result' => false, 'reason' => 'not favorite']);
             }
         } catch (Exception $e) {
-            return failed($e);
+            return exceped($e);
         }
     }
 }

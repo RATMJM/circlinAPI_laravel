@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    public function town(Request $request):array
+    public function town(Request $request, $category_id = null): array
     {
-        $id = $request->get('category_id');
+        $category_id = $category_id ?? $request->get('category_id');
 
-        if (!$id) {
+        if (!$category_id) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
@@ -21,40 +21,14 @@ class HomeController extends Controller
         }
 
         $bookmark = (new BookmarkController())->index($request, 3)['data']['missions'];
-        $banner = [
-            [
-                'banner_image' => 'https://via.placeholder.com/1500x750',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://via.placeholder.com/1500x750',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://via.placeholder.com/1500x750',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://via.placeholder.com/1500x750',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://via.placeholder.com/1500x750',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-        ]; // 더미데이터
-        $mission_total = Mission::where('mission_category_id', $id)->count();
-        $missions = (new MissionCategoryController())->show($request, $id, 3)['data']['missions'];
+        $banners = (new BannerController())->category_banner($category_id);
+        $mission_total = Mission::where('mission_category_id', $category_id)->count();
+        $missions = (new MissionCategoryController())->mission($request, $category_id, 3)['data']['missions'];
 
         return success([
-            'success' => true,
+            'result' => true,
             'bookmarks' => $bookmark,
-            'banners' => $banner,
+            'banners' => $banners,
             'missions' => ['total' => $mission_total, 'missions' => $missions],
         ]);
     }

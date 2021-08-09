@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Follow', 'target_id');
     }
+
+    public function user_missions()
+    {
+        return $this->hasMany('App\Models\UserMission');
+    }
 }
