@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrderProductDeliveriesTable extends Migration
+class CreateOrderCancelProductsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateOrderProductDeliveriesTable extends Migration
      */
     public function up()
     {
-        Schema::create('order_product_deliveries', function (Blueprint $table) {
+        Schema::create('order_cancel_products', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->foreignId('order_product_id')->constrained();
             $table->integer('qty');
-            $table->string('tracking_no')->comment('송장번호');
-            $table->string('status')->default('delivery')->comment('배송현황(delivery|complete)');
-            $table->timestamp('completed_at')->nullable();
+            $table->string('reason')->comment('취소 사유');
+            $table->string('status')->default('request')->comment('상태 (request|complete)');
+            $table->timestamp('completed_at')->nullable()->comment('취소 완료 일시');
         });
     }
 
@@ -31,6 +31,6 @@ class CreateOrderProductDeliveriesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('order_product_deliveries');
+        Schema::dropIfExists('order_cancel_products');
     }
 }
