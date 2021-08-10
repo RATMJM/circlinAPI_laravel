@@ -57,9 +57,9 @@ return [
             'driver' => 'ftp',
             'host' => 'cyld20182.speedgabia.com',
             'username' => 'cyld20182',  //아이디
-            'password' => 'teamcyld2018', //암호
+            'password' => 'teamcyld2018!', //암호
 
-        
+
             // Optional FTP Settings...
             'port' => 21,
             // 'root' => '',
