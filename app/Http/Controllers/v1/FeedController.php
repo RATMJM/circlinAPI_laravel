@@ -50,7 +50,7 @@ class FeedController extends Controller
 
  // 34_1628474131.jpg uny715.mp4
 
-        $max_id = Feed::where('user_id', 4) 
+        $max_id = Feed::where('user_id', $uid) 
         ->select([ DB::raw('max(feeds.id) as maxid ') ])              
         ->get('maxid ' );
         $feed_id = $max_id[0]->maxid;
