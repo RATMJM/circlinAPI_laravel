@@ -12,7 +12,54 @@ use Illuminate\Support\Facades\DB;
 
 class FeedController extends Controller
 {
-    //
+    public function index(): array
+    {
+        //
+    }
+
+    public function create()
+    {
+        abort(404);
+    }
+
+    public function store(Request $request): array
+    {
+        /*$user_id = token()->uid;
+
+        $content = $request->get('content');
+        $files = $request->file('files');
+
+        foreach ($files as $file) {
+            if (str_starts_with($file->getMimeType(), 'image/')) {
+                upload_image($file, "Image/SNS/");
+            } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                continue;
+            } else {
+                continue;
+            }
+        }*/
+    }
+
+    public function show($id): array
+    {
+        //
+    }
+
+    public function edit($id): array
+    {
+        //
+    }
+
+    public function update(Request $request, $id): array
+    {
+        //
+    }
+
+    public function destroy($id): array
+    {
+        //
+
+    }
 
     public function upload_files(Request $request): array
     {

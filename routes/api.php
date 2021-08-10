@@ -82,9 +82,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 /* Home */
 Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
 
-Route::group(['prefix' => 'feed'], function () {
-    //
-});
+Route::resource('/feed', v1\FeedController::class);
 
 /* 마이페이지 (UserController 로 넘김) */
 Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
@@ -97,7 +95,6 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 
 /* 탐색 페이지 */
 Route::get('explore', [v1\SearchController::class, 'index'])->name('explore');
-
 
 /* 피드 이미지, 동영상 업로드 관련*/
 Route::post('/upload_files', [v1\FeedController::class, 'upload_files']);
