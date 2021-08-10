@@ -144,23 +144,17 @@ class UserController extends Controller
 
     public function change_profile_image(Request $request): array
     {
-        $ftp_server = 'cyld20182.speedgabia.com'; //호스팅 서버 주소
-        $ftp_user_name = 'cyld20182';     //아이디
-        $ftp_user_pass = 'teamcyld2018!';     //암호
-        $port = '21';
-        // $user_id = token()->uid;
-        // $request->get('email');
-        // $uid = $request->get('uid');
-        //;token()->uid; //$_POST['uid'];
-        $uid = token()->uid;
-        // $file_name = '';//$_FILES[1]['VideoCapture_20210620-231319.jpg'];//$_FILES['0']['0']; //업로드한 파일명
-        $file_name = $_FILES['file']['name']; //업로드한 파일명
-        // $file_tmp_name = '';//;$_FILES[1]['VideoCapture_20210620-231319.jpg'];//$_FILES['0']['0']; // 임시디렉토리에 저장된 파일
-        $file_tmp_name = $_FILES['file']['tmp_name']; // 임시디렉토리에 저장된 파일
-        $ftp_path = "/Image/profile/" . $uid . "/" . $file_name; // 접속한 서버에 업로드되어 새로 생길 파일
-        $local_file = $file_tmp_name; // 접속한 서버로 업로드 할 파일
-        //$local_file = 'C:\Users\snipe\Downloads\VideoCapture_20210620-231319.jpg';
+        $user_id = token()->uid;
 
+        $data = User::where('id', $user_id)->first();
+        if (is_null($data)) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+
+        /*
         $allowed_ext = array('jpg', 'jpeg', 'png', 'gif');
 
         // $d = compress($local_file,$local_file,100);
@@ -181,40 +175,20 @@ class UserController extends Controller
         }
 
         imagejpeg($image, $local_file, 100);
+        */
 
-        //sq($d,$d);
-        $d = $local_file;
-        $ext = 'jpg';
-        // $ext =   (explode('.', $file_name);// array_pop($file_name); // (explode('.', $file_name));
-        // $ext[1] = array_pop(explode('.', $file_name));
-
-        //호스트 접속
-        $conn_id = ftp_connect($ftp_server, $port);  //Returns a FTP stream on success or FALSE on error.
-        //호스트 로그인
-        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass); //성공 시 TRUE를, 실패 시 FALSE를 반환합니다. If login fails, PHP will also throw a warning.
-        $uploaddir = '/Image/profile/';
-        $uploaddirNew = "/Image/profile/" . $uid . "/";
-        $serverfile = $uploaddirNew . $uid . "_" . strtotime(date('Y-m-d H:i:s')) . "." . $ext; //업로드 될 폴더 와 파일명
-        $dbProfile = "https://cyld20182.speedgabia.com" . $serverfile;
-        ftp_pasv($conn_id, true);
-        if (ftp_nlist($conn_id, $uploaddirNew) == false) {
-            ftp_mkdir($conn_id, $uploaddirNew);
-        }
-        if (ftp_put($conn_id, $serverfile, $d, FTP_BINARY)) { //파일전송 성공
-            ftp_close($conn_id);
+        if ($filename = upload_image($request->file('file'), "/Image/profile/$user_id")) { //파일전송 성공
             try {
                 DB::beginTransaction();
 
-                $data = User::where('id', $uid)->first();
+                $data = User::where('id', $user_id)->first();
 
                 if (isset($data)) {
-                    $user_data = [];
-
-                    $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ', array($dbProfile, $uid));
+                    $result = User::where('id', $user_id)->update(['profile_image' => "https://cyld20182.speedgabia.com/$filename"]);
 
                     DB::commit();
                     return success([
-                        'result' => true,
+                        'result' => $result > 0,
                     ]);
                 } else {
                     DB::rollBack();
@@ -227,11 +201,7 @@ class UserController extends Controller
                 DB::rollBack();
                 return exceped($e);
             }
-
-            // echo "파일전송";
-            // return success(['result' => true]);
         } else {
-            ftp_close($conn_id);
             return success(['result' => false, 'reason' => 'failed upload']);
         }
     }
