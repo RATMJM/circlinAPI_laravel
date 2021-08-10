@@ -39,7 +39,9 @@ class BookmarkController extends Controller
                 $query->take($limit);
             })->get();
 
-        $data = $data->groupBy('category_title');
+        if (!$category_id) {
+            $data = $data->groupBy('category_title');
+        }
 
         return success([
             'result' => true,
