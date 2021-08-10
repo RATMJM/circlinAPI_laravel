@@ -97,3 +97,8 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 
 /* 탐색 페이지 */
 Route::get('explore', [v1\SearchController::class, 'index'])->name('explore');
+
+
+/* 피드 이미지, 동영상 업로드 관련*/
+Route::post('/upload_files', [v1\FeedController::class, 'upload_files']);
+Route::get('/compress', [v1\UserController::class, 'compress'])->name('compress');
