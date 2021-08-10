@@ -53,15 +53,37 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
         ],
 
-        'ftp' => [
+        'ftp2' => [ // 프로필 (일부 상품 및 챌린지)
             'driver' => 'ftp',
             'host' => 'cyld20182.speedgabia.com',
             'username' => 'cyld20182',  //아이디
             'password' => 'teamcyld2018!', //암호
-
-
             // Optional FTP Settings...
-            'port' => 21,
+            // 'port' => 21,
+            // 'root' => '',
+            // 'passive' => true,
+            // 'ssl' => true,
+            // 'timeout' => 30,
+        ],
+        'ftp3' => [ // 피드, 챌린지, 배너, 상품
+            'driver' => 'ftp',
+            'host' => 'cyld20183.speedgabia.com',
+            'username' => 'cyld20182',  //아이디
+            'password' => 'teamcyld2018!', //암호
+            // Optional FTP Settings...
+            // 'port' => 21,
+            // 'root' => '',
+            // 'passive' => true,
+            // 'ssl' => true,
+            // 'timeout' => 30,
+        ],
+        'ftp4' => [ // 눈바디 분석
+            'driver' => 'ftp',
+            'host' => 'cyld20184.speedgabia.com',
+            'username' => 'cyld20182',  //아이디
+            'password' => 'teamcyld2018!', //암호
+            // Optional FTP Settings...
+            // 'port' => 21,
             // 'root' => '',
             // 'passive' => true,
             // 'ssl' => true,
