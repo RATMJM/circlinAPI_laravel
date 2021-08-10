@@ -16,7 +16,10 @@ class SearchController extends Controller
         $users = (new BaseController())->suggest_user($request)['data']['users'];
 
         $categories = MissionCategory::whereNotNull('mission_category_id')
-            ->select(['id', DB::raw("COALESCE(emoji, '') as emoji"), 'title', DB::raw("COALESCE(description, '') as description")])
+            ->select([
+                'id', DB::raw("COALESCE(emoji, '') as emoji"), 'title',
+                DB::raw("COALESCE(description, '') as description")
+            ])
             ->orderBy('id')->get();
 
         return success([

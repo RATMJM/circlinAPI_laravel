@@ -29,7 +29,8 @@ class HomeController extends Controller
             'result' => true,
             'bookmarks' => $bookmark,
             'banners' => $banners,
-            'missions' => ['total' => $mission_total, 'missions' => $missions],
+            'mission_total' => $mission_total,
+            'missions' => $missions,
         ]);
     }
 }

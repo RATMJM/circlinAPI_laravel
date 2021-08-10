@@ -70,7 +70,7 @@ Route::resources([
     'bookmark' => v1\BookmarkController::class,
 ]);
 Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
-    Route::get('/', [v1\MissionCategoryController::class, 'index'])->name('index');
+    Route::get('/{town?}', [v1\MissionCategoryController::class, 'index'])->where(['town' => 'town'])->name('index');
     Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
     Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission'])->name('mission');
 });

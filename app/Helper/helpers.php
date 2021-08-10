@@ -1,6 +1,8 @@
 <?php
 
 use Firebase\JWT\JWT;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 const ALLOW_IP = [
     // 테스트
@@ -60,4 +62,12 @@ function token_option(): object | null
     } catch (Exception $e) {
         return null;
     }
+}
+
+/**
+ * 사진 업로드
+ */
+function upload_image(UploadedFile $file, $upload_dir): string
+{
+    return Storage::disk('ftp')->put($upload_dir, $file);
 }

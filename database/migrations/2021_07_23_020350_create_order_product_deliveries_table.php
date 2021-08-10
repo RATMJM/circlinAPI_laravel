@@ -19,7 +19,7 @@ class CreateOrderProductDeliveriesTable extends Migration
             $table->foreignId('order_product_id')->constrained();
             $table->integer('qty');
             $table->string('tracking_no')->comment('송장번호');
-            $table->string('status')->comment('배송현황');
+            $table->string('status')->default('delivery')->comment('배송현황(delivery|complete)');
             $table->timestamp('completed_at')->nullable();
         });
     }
