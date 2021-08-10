@@ -15,12 +15,10 @@ use Illuminate\Support\Facades\DB;
 
 class MissionCategoryController extends Controller
 {
-    public function index(Request $request, $town = null): array
+    public function index($town = null): array
     {
-        $town = (bool)($town ?? $request->get('town', 0));
-
         $data = MissionCategory::whereNotNull('mission_category_id');
-        if ($town) {
+        if ($town === 'town') {
             $user_id = token()->uid;
 
             $data = $data->where(function ($query) use ($user_id) {
