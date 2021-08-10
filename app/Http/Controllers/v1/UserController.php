@@ -20,6 +20,7 @@ use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -177,32 +178,38 @@ class UserController extends Controller
         imagejpeg($image, $local_file, 100);
         */
 
-        if ($filename = upload_image($request->file('file'), "/Image/profile/$user_id")) { //파일전송 성공
-            try {
-                DB::beginTransaction();
+        $file = $request->file('file');
 
-                $data = User::where('id', $user_id)->first();
+        if (str_starts_with($file->getMimeType(), 'image/')) {
+            if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", $file)) { //파일전송 성공
+                try {
+                    DB::beginTransaction();
 
-                if (isset($data)) {
-                    $result = User::where('id', $user_id)->update(['profile_image' => "https://cyld20182.speedgabia.com/$filename"]);
+                    $data = User::where('id', $user_id)->first();
 
-                    DB::commit();
-                    return success([
-                        'result' => $result > 0,
-                    ]);
-                } else {
+                    if (isset($data)) {
+                        $result = User::where('id', $user_id)->update(['profile_image' => "https://cyld20182.speedgabia.com/$filename"]);
+
+                        DB::commit();
+                        return success([
+                            'result' => $result > 0,
+                        ]);
+                    } else {
+                        DB::rollBack();
+                        return success([
+                            'result' => false,
+                            'reason' => 'not enough data',
+                        ]);
+                    }
+                } catch (Exception $e) {
                     DB::rollBack();
-                    return success([
-                        'result' => false,
-                        'reason' => 'not enough data',
-                    ]);
+                    return exceped($e);
                 }
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
+            } else {
+                return success(['result' => false, 'reason' => 'upload failed']);
             }
         } else {
-            return success(['result' => false, 'reason' => 'failed upload']);
+            return success(['result' => false, 'reason' => 'not image']);
         }
     }
 
