@@ -18,9 +18,12 @@ use App\Models\UserMission;
 use App\Models\UserStat;
 use Exception;
 use Firebase\JWT\JWT;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 class UserController extends Controller
 {
@@ -179,10 +182,25 @@ class UserController extends Controller
         */
 
         $file = $request->file('file');
-
         if (str_starts_with($file->getMimeType(), 'image/')) {
-            if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", $file)) { //파일전송 성공
+            // 정사각형으로 자르기
+            $image = Image::make($file->getPathname());
+            if ($image->width() > $image->height()) {
+                $x = ($image->width() - $image->height()) / 2;
+                $y = 0;
+                $src = $image->height();
+            } else {
+                $x = 0;
+                $y = ($image->height() - $image->width()) / 2;
+                $src = $image->width();
+            }
+            $image->crop($src, $src, $x, round($y));
+            $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
+            $image->save($tmp_path);
+
+            if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
                 try {
+                    @unlink($tmp_path);
                     DB::beginTransaction();
 
                     $data = User::where('id', $user_id)->first();
