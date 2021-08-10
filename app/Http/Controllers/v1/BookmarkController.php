@@ -7,6 +7,7 @@ use App\Models\FeedMission;
 use App\Models\Mission;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class BookmarkController extends Controller
@@ -40,7 +41,11 @@ class BookmarkController extends Controller
             })->get();
 
         if (!$category_id) {
-            $data = $data->groupBy('category_title');
+            $tmp = [];
+            foreach ($data->groupBy('category_title') as $i => $item) {
+                $tmp[] = ['id' => $item[0]->category_id, 'title' => $i, 'missions' => $item->toArray()];
+            }
+            $data = $tmp;
         }
 
         return success([
