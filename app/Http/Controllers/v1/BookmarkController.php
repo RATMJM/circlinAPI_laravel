@@ -19,13 +19,15 @@ class BookmarkController extends Controller
         $limit = $limit ?? $request->get('limit', 0);
 
         $data = Mission::when($category_id, function ($query, $category_id) {
-            $query->where('mission_category_id', $category_id);
+            $query->where('missions.mission_category_id', $category_id);
         })
             ->whereHas('user_missions', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
+            ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
-                'id', 'title', DB::raw("COALESCE(description, '') as description"),
+                'mission_categories.id as category_id', 'mission_categories.title as category_title',
+                'missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d', time()))
@@ -36,6 +38,8 @@ class BookmarkController extends Controller
             ->when($limit, function ($query, $limit) {
                 $query->take($limit);
             })->get();
+
+        $data = $data->groupBy('category_title');
 
         return success([
             'result' => true,
