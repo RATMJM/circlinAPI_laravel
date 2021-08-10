@@ -538,8 +538,8 @@ class UserController extends Controller
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
-                'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
-                    ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
+                'is_bookmark' => UserMission::selectRaw('COUNT(1) > 0')->where('user_missions.user_id', $user_id)
+                    ->whereColumn('user_missions.mission_id', 'missions.id'),
                 'user1' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
                     ->whereColumn('user_missions.mission_id', 'missions.id')
                     ->join('users as u', 'u.id', 'user_missions.user_id')
@@ -587,8 +587,8 @@ class UserController extends Controller
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
-                'is_bookmark' => UserMission::selectRaw('COUNT(1)>0')->where('user_missions.user_id', $user_id)
-                    ->whereColumn('user_missions.mission_id', 'missions.id')->limit(1),
+                'is_bookmark' => UserMission::selectRaw('COUNT(1) > 0')->where('user_missions.user_id', $user_id)
+                    ->whereColumn('user_missions.mission_id', 'missions.id'),
                 'user1' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
                     ->whereColumn('user_missions.mission_id', 'missions.id')
                     ->join('users as u', 'u.id', 'user_missions.user_id')
