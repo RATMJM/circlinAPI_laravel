@@ -33,8 +33,8 @@ class MissionController extends Controller
                 'o.id as user_id', 'o.nickname', 'o.profile_image', 'os.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                 DB::raw("COUNT(distinct of.user_id) as followers"),
-                'is_following' => Follow::selectRaw(1)->whereColumn('follows.target_id', 'o.id')
-                    ->where('follows.user_id', $user_id)->limit(1),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'o.id')
+                    ->where('follows.user_id', $user_id),
                 'is_bookmark' => UserMission::selectRaw('COUNT(1) > 0')->where('user_missions.user_id', $user_id)
                     ->whereColumn('user_missions.mission_id', 'missions.id'),
                 'user1' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
