@@ -20,6 +20,7 @@ class CreateOrderReturnProductsTable extends Migration
             $table->integer('qty');
             $table->string('reason')->comment('반품 사유');
             $table->string('status')->default('request')->comment('상태 (request|receive|complete)');
+            $table->timestamp('canceled_at')->nullable()->comment('취소 접수 거절 일시');
             $table->timestamp('requested_at')->nullable()->comment('반품 접수 일시');
             $table->timestamp('received_at')->nullable()->comment('반품 회수 일시');
             $table->timestamp('completed_at')->nullable()->comment('반품 완료 일시');
