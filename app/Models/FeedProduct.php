@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class FeedProduct extends Model
 {
     use HasFactory;
+
+    protected $guarded = [];
 }
