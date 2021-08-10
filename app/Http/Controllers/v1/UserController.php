@@ -437,9 +437,9 @@ class UserController extends Controller
                 DB::raw('COUNT(distinct fl.id) as checks'),
                 DB::raw('COUNT(distinct fc.id) as comments'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'feeds.id')
-                    ->where('feed_likes.user_id', token()->uid)->limit(1),
+                    ->where('feed_likes.user_id', token()->uid),
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
-                    ->where('feed_comments.user_id', token()->uid)->limit(1),
+                    ->where('feed_comments.user_id', token()->uid),
             ])
             ->groupBy('feeds.id')
             ->skip($page * $limit)->take($limit)->get();
@@ -492,9 +492,9 @@ class UserController extends Controller
                 DB::raw('COUNT(distinct fl2.id) as checks'),
                 DB::raw('COUNT(distinct fc.id) as comments'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'f.id')
-                    ->where('feed_likes.user_id', token()->uid)->limit(1),
+                    ->where('feed_likes.user_id', token()->uid),
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'f.id')
-                    ->where('feed_comments.user_id', token()->uid)->limit(1),
+                    ->where('feed_comments.user_id', token()->uid),
             ])
             ->groupBy('f.id')
             ->skip($page * $limit)->take($limit)->get();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\FeedMission;
 use App\Models\Mission;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
@@ -10,27 +11,31 @@ use Illuminate\Support\Facades\DB;
 
 class BookmarkController extends Controller
 {
-    public function index(Request $request, $limit = 0): array
+    public function index(Request $request, $limit = null): array
     {
         $user_id = token()->uid;
 
         $category_id = $request->get('category_id');
-        $limit = $request->get('limit', $limit);
+        $limit = $limit ?? $request->get('limit', 0);
 
-        $data = Mission::select(['id', 'title', DB::raw("COALESCE(description, '') as description")])
-            ->when($category_id, function ($query, $category_id) {
-                $query->where('mission_category_id', $category_id);
-            })
+        $data = Mission::when($category_id, function ($query, $category_id) {
+            $query->where('mission_category_id', $category_id);
+        })
             ->whereHas('user_missions', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
-            ->orderBy('id');
-
-        if ($limit > 0) {
-            $data->take($limit);
-        }
-
-        $data = $data->get();
+            ->select([
+                'id', 'title', DB::raw("COALESCE(description, '') as description"),
+                'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
+            ])
+            ->orderBy('has_check')
+            ->orderBy('id')
+            ->when($limit, function ($query, $limit) {
+                $query->take($limit);
+            })->get();
 
         return success([
             'result' => true,
