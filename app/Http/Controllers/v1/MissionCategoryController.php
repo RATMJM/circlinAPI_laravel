@@ -7,6 +7,7 @@ use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\User;
+use App\Models\UserFavoriteCategory;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -14,17 +15,50 @@ use Illuminate\Support\Facades\DB;
 
 class MissionCategoryController extends Controller
 {
-    public function index(): array
+    public function index(Request $request, $town = null): array
     {
-        return success([
-            'result' => true,
-            'categories' => MissionCategory::select([
+        $town = (bool)($town ?? $request->get('town', 0));
+
+        $data = MissionCategory::whereNotNull('mission_category_id');
+        if ($town) {
+            $user_id = token()->uid;
+
+            $data = $data->where(function ($query) use ($user_id) {
+                // 관심카테고리
+                $query->whereHas('favorite_category', function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                });
+                // 북마크한 미션이 있는 카테고리
+                $query->orWhereHas('missions', function ($query) use ($user_id) {
+                    $query->whereHas('user_missions', function ($query) use ($user_id) {
+                        $query->where('user_id', $user_id);
+                    });
+                });
+            })
+                ->select([
+                    'mission_categories.id',
+                    DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
+                    'mission_categories.title',
+                    'bookmark_total' => UserMission::selectRaw("COUNT(1)")->where('user_missions.user_id', $user_id)
+                        ->whereHas('mission', function ($query) use ($user_id) {
+                            $query->whereColumn('missions.mission_category_id', 'mission_categories.id');
+                        }),
+                    'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
+                        ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
+                ])
+                ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('id')
+                ->get();
+        } else {
+            $data = $data->select([
                 'mission_categories.id',
                 DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
                 'mission_categories.title',
-            ])
-                ->whereNotNull('mission_category_id')
-                ->get(),
+            ])->get();
+        }
+
+        return success([
+            'result' => true,
+            'categories' => $data,
         ]);
     }
 
@@ -49,10 +83,10 @@ class MissionCategoryController extends Controller
         $users = User::whereHas('user_missions', function ($query) use ($category_id) {
             $query->whereNull('deleted_at')
                 ->whereHas('mission', function ($query) use ($category_id) {
-                $query->whereHas('category', function ($query) use ($category_id) {
-                    $query->where('id', $category_id);
+                    $query->whereHas('category', function ($query) use ($category_id) {
+                        $query->where('id', $category_id);
+                    });
                 });
-            });
         })
             ->join('follows as f', 'f.target_id', 'users.id')
             ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
@@ -128,7 +162,7 @@ class MissionCategoryController extends Controller
 
             $data = $data->skip($page * $limit)->take($limit)->get();
 
-            foreach($data as $i => $item) {
+            foreach ($data as $i => $item) {
                 $data[$i]['is_bookmark'] = (bool)$item->is_bookmark;
                 $data[$i]['owner'] = [
                     'user_id' => $item->user_id,
