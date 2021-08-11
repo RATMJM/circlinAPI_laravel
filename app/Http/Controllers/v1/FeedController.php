@@ -215,12 +215,12 @@ class FeedController extends Controller
 
                     $data = User::where('id', $uid)->first();
                     if (isset($data)) {
-                        $user_data = [];
+                        $image_files = [];
                         $image_files = DB::insert('insert into feed_images(  feed_id, type, image, created_at, updated_at) values(?, ? , ?, ?, ? );'
                             , array($feed_id, $fileType[0], $dbProfile, $today, $today));
 
                         DB::commit();
-
+                 
                     } else {
                         DB::rollBack();
                         return success([
