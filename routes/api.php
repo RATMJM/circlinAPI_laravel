@@ -100,3 +100,6 @@ Route::get('explore', [v1\SearchController::class, 'index'])->name('explore');
 /* 피드 이미지, 동영상 업로드 관련*/
 Route::post('/feed_upload', [v1\FeedController::class, 'feed_upload']);
 Route::get('/compress', [v1\UserController::class, 'compress'])->name('compress');
+
+/* 샵 관련 */
+Route::get('/item_list', [v1\ShopController::class, 'item_list']);
