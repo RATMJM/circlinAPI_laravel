@@ -34,7 +34,7 @@ class UserController extends Controller
 
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->join('areas', 'areas.ctg_sm', 'users.area_code')
+            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
             ->select([
                 'users.*',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
