@@ -35,8 +35,6 @@ class BaseController extends Controller
 
         $limit = max(min($request->get('limit', 50), 50), 1);
 
-        DB::enableQueryLog();
-
         $users = User::where('users.id', '!=', $user_id)
             ->whereNotNull('users.nickname')
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
@@ -53,8 +51,6 @@ class BaseController extends Controller
             ])
             ->orderBy('id')
             ->take($limit)->get();
-
-        dd(DB::getQueryLog());
 
         return success([
             'result' => true,
