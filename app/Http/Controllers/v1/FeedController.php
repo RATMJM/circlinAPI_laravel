@@ -4,6 +4,8 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
+use App\Models\FeedComment;
+use App\Models\FeedProduct;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -42,7 +44,44 @@ class FeedController extends Controller
 
     public function show($id): array
     {
-        //
+        $feed = Feed::where('feeds.id', $id)
+            ->join('users', 'users.id', 'feeds.user_id')
+            ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
+            ->leftJoin('feed_likes', 'feed_likes.feed_id', 'feeds.id')
+            ->leftJoin('feed_comments', 'feed_comments.feed_id', 'feeds.id')
+            ->select([
+                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
+                DB::raw("COUNT(distinct feed_likes.id) as like_total"),
+                DB::raw("COUNT(distinct feed_comments.id) as comment_total"),
+            ])
+            ->groupBy('feeds.id', 'users.id', 'user_stats.id', 'areas.id')
+            ->first();
+
+        if (is_null($feed)) {
+            return success([
+                'result' => false,
+                'reason' => 'not found feed',
+            ]);
+        }
+
+        $comments = FeedComment::where('feed_comments.feed_id', $feed->id)
+            ->whereNull('feed_comments.feed_comment_id')
+            ->join('users', 'users.id', 'feed_comments.user_id')
+            ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->select([
+                'feed_comments.id', 'feed_comments.comment',
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+            ])
+            ->get();
+
+        return success([
+            'result' => true,
+            'feed' => $feed,
+            'comments' => $comments,
+        ]);
     }
 
     public function edit($id): array
