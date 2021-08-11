@@ -81,6 +81,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 
 /* Home */
 Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
+Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::resource('/feed', v1\FeedController::class);
 

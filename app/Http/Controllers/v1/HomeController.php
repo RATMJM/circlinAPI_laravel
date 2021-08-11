@@ -5,7 +5,6 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -31,6 +30,19 @@ class HomeController extends Controller
             'banners' => $banners,
             'mission_total' => $mission_total,
             'missions' => $missions,
+        ]);
+    }
+
+    public function badge(): array
+    {
+         $user_id = token()->uid;
+
+        return success([
+            'result' => true,
+            'feeds' => random_int(0,50),
+            'missions' => random_int(0,5),
+            'notifies' => random_int(0,50),
+            'messages' => random_int(0,200),
         ]);
     }
 }
