@@ -20,6 +20,7 @@ use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -45,10 +46,13 @@ class UserController extends Controller
             ->select(['mission_categories.title'])
             ->get();
 
+        $badge = Arr::except((new HomeController())->badge()['data'], 'result');
+
         return success([
             'result' => true,
             'user' => $user,
             'category' => $category,
+            'badge' => $badge,
         ]);
     }
 
