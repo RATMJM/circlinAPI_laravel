@@ -27,7 +27,7 @@ class BookmarkController extends Controller
             })
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
-                'mission_categories.id as category_id', 'mission_categories.title as category_title',
+                'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
@@ -43,7 +43,10 @@ class BookmarkController extends Controller
         if (!$category_id) {
             $tmp = [];
             foreach ($data->groupBy('category_title') as $i => $item) {
-                $tmp[] = ['id' => $item[0]->category_id, 'title' => $i, 'missions' => $item->toArray()];
+                $tmp[] = [
+                    'id' => $item[0]->category_id, 'title' => $i, 'emoji' => $item[0]->emoji,
+                    'missions' => $item->toArray()
+                ];
             }
             $data = $tmp;
         }
