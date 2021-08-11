@@ -5,10 +5,12 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Models\FeedComment;
+use App\Models\FeedImage;
 use App\Models\FeedProduct;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 
@@ -54,6 +56,8 @@ class FeedController extends Controller
                 'feeds.id', 'feeds.created_at', 'feeds.content',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
+                'images' => FeedImage::selectRaw("GROUP_CONCAT(image separator '|')")
+                    ->whereColumn('feed_id', 'feeds.id')->orderBy('order'),
                 DB::raw("COUNT(distinct feed_likes.id) as like_total"),
                 DB::raw("COUNT(distinct feed_comments.id) as comment_total"),
             ])
@@ -67,14 +71,18 @@ class FeedController extends Controller
             ]);
         }
 
-        $comments = FeedComment::where('feed_comments.feed_id', $feed->id)
-            ->whereNull('feed_comments.feed_comment_id')
+        $images = explode('|', $feed->images);
+        [$feed->image1, $feed->image2, $feed->image3] = [$images[0], $images[1] ?? null, $images[2] ?? null];
+        Arr::except($feed, 'images');
+
+        $comments = FeedComment::where('feed_comments.feed_id', $id)
             ->join('users', 'users.id', 'feed_comments.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
-                'feed_comments.id', 'feed_comments.comment',
+                'feed_comments.group', 'feed_comments.id', 'feed_comments.comment',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
             ])
+            ->orderBy('group')->orderBy('depth')->orderBy('id')
             ->get();
 
         return success([
