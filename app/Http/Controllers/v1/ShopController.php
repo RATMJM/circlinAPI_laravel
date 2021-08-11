@@ -147,9 +147,15 @@ class ShopController extends Controller
                 order by status;'   , array('1', $category)) ;
             } 
         }
-            
-            return  ($itemList);
-            
+             
+            return success([
+                'result' => true,
+                'itemList' => $itemList,
+                'user_id' => $user_id,
+                'category' => $category,
+                'type' => $type,
+            ]);
+ 
             // else {
             //     DB::rollBack();
             //     return success([
