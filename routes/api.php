@@ -102,4 +102,4 @@ Route::post('/feed_upload', [v1\FeedController::class, 'feed_upload']);
 Route::get('/compress', [v1\UserController::class, 'compress'])->name('compress');
 
 /* 샵 관련 */
-Route::get('/item_list', [v1\ShopController::class, 'item_list']);
+Route::post('/item_list', [v1\ShopController::class, 'item_list']);

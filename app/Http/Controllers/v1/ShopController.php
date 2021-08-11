@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\DB;
 class ShopController extends Controller
 {
     public function item_list(Request $request): array
-      {    $user_id = '4';//token()->uid;  
-         $category = '2';//$request->get('category'); // 카테고리 
-         $type = 'high';//$request->get('type'); // 필터값
+      {   
+        //  $user_id = '4';//token()->uid;  
+        //  $category = '2';//$request->get('category'); // 카테고리 
+        //  $type = 'high';//$request->get('type'); // 필터값
+        $user_id = token()->uid;  
+         $category = $request->get('category'); // 카테고리 
+         $type = $request->get('type'); // 필터값
          try {
             DB::beginTransaction();
         if($category=='전체'){
