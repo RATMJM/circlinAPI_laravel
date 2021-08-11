@@ -61,7 +61,7 @@ class FeedController extends Controller
 
     }
 
-    public function upload_files(Request $request): array
+    public function feed_upload(Request $request): array
     {
         $ftp_server = 'cyld20183.speedgabia.com'; //호스팅 서버 주소
         $ftp_user_name = 'cyld20183';     //아이디
