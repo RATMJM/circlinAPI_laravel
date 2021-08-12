@@ -278,10 +278,8 @@ class UserController extends Controller
     /**
      * 나를 팔로우
      */
-    public function follower(Request $request): array
+    public function follower($user_id): array
     {
-        $user_id = token()->uid;
-
         return success([
             'result' => true,
             'users' => Follow::where('follows.target_id', $user_id)
@@ -300,10 +298,8 @@ class UserController extends Controller
     /**
      * 내가 팔로우
      */
-    public function following(Request $request): array
+    public function following($user_id): array
     {
-        $user_id = token()->uid;
-
         return success([
             'result' => true,
             'users' => Follow::where('follows.user_id', $user_id)

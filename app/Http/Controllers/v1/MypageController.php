@@ -46,4 +46,20 @@ class MypageController extends Controller
     {
         return (new UserController())->created_mission($request, token()->uid);
     }
+
+    /**
+     * 나를 팔로우
+     */
+    public function follower($user_id): array
+    {
+        return (new UserController())->follower($user_id);
+    }
+
+    /**
+     * 내가 팔로우
+     */
+    public function following($user_id): array
+    {
+        return (new UserController())->following($user_id);
+    }
 }

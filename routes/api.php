@@ -47,8 +47,6 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::post('/profile/image', [v1\UserController::class, 'change_profile_image'])->name('profile.image.update');
     Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image'])->name('profile.image.delete');
     Route::resource('favorite_category',v1\UserFavoriteCategoryController::class);
-    Route::get('/follower', [v1\UserController::class, 'follower'])->name('follower');
-    Route::get('/following', [v1\UserController::class, 'following'])->name('following');
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');
     Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.delete');
 
@@ -59,6 +57,8 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/check', [v1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1\UserController::class, 'mission'])->name('mission');
         Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
+        Route::get('/follower', [v1\UserController::class, 'follower'])->name('follower');
+        Route::get('/following', [v1\UserController::class, 'following'])->name('following');
     });
 });
 Route::get('/area', [v1\BaseController::class, 'area'])->name('area');
@@ -94,6 +94,8 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/check', [v1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1\MypageController::class, 'mission'])->name('mission');
     Route::get('/mission/created', [v1\MypageController::class, 'created_mission'])->name('mission.created');
+    Route::get('/follower', [v1\MypageController::class, 'follower'])->name('follower');
+    Route::get('/following', [v1\MypageController::class, 'following'])->name('following');
 });
 
 /* 탐색 페이지 */
