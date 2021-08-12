@@ -5,7 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\FeedMission;
 use App\Models\Mission;
-use App\Models\UserMission;
+use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class BookmarkController extends Controller
         $data = Mission::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
-            ->whereHas('user_missions', function ($query) use ($user_id) {
+            ->whereHas('mission_stats', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
@@ -74,10 +74,10 @@ class BookmarkController extends Controller
             ]);
         }
 
-        if (UserMission::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
+        if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
         } else {
-            $data = UserMission::create([
+            $data = MissionStat::create([
                 'user_id' => $user_id,
                 'mission_id' => $mission_id,
             ]);
@@ -111,7 +111,7 @@ class BookmarkController extends Controller
             ]);
         }
 
-        if ($bookmark = UserMission::where(['user_id' => $user_id, 'mission_id' => $id])->first()) {
+        if ($bookmark = MissionStat::where(['user_id' => $user_id, 'mission_id' => $id])->first()) {
             DB::beginTransaction();
 
             $data = $bookmark->delete();

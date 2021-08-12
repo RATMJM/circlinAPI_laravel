@@ -11,9 +11,9 @@ class Mission extends Model
 
     protected $guarded = [];
 
-    public function user_missions()
+    public function mission_stats()
     {
-        return $this->hasMany('App\Models\UserMission');
+        return $this->hasMany('App\Models\MissionStat');
     }
 
     public function feed_missions()

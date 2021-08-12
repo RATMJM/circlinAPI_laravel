@@ -8,7 +8,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
-use App\Models\UserMission;
+use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +27,7 @@ class MissionCategoryController extends Controller
                 });
                 // 북마크한 미션이 있는 카테고리
                 $query->orWhereHas('missions', function ($query) use ($user_id) {
-                    $query->whereHas('user_missions', function ($query) use ($user_id) {
+                    $query->whereHas('mission_stats', function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
                     });
                 });
@@ -36,7 +36,7 @@ class MissionCategoryController extends Controller
                     'mission_categories.id',
                     DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
-                    'bookmark_total' => UserMission::selectRaw("COUNT(1)")->where('user_missions.user_id', $user_id)
+                    'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->where('mission_stats.user_id', $user_id)
                         ->whereHas('mission', function ($query) use ($user_id) {
                             $query->whereColumn('missions.mission_category_id', 'mission_categories.id');
                         }),
@@ -77,7 +77,7 @@ class MissionCategoryController extends Controller
             ])
             ->first();
 
-        $users = User::whereHas('user_missions', function ($query) use ($category_id) {
+        $users = User::whereHas('mission_stats', function ($query) use ($category_id) {
             $query->whereHas('mission', function ($query) use ($category_id) {
                 $query->whereHas('category', function ($query) use ($category_id) {
                     $query->where('id', $category_id);
@@ -118,8 +118,8 @@ class MissionCategoryController extends Controller
                 ->join('user_stats as os', 'os.user_id', 'o.id') // 미션 제작자
                 ->leftJoin('follows as of', 'of.target_id', 'o.id') // 미션 제작자 팔로워
                 ->leftJoin('areas as oa', 'oa.ctg_sm', 'o.area_code')
-                ->leftJoin('user_missions as um', function ($query) {
-                    $query->on('um.mission_id', 'missions.id')->whereNull('um.deleted_at');
+                ->leftJoin('mission_stats as ms', function ($query) {
+                    $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
                 })
                 ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
                 ->select([
@@ -129,21 +129,21 @@ class MissionCategoryController extends Controller
                     DB::raw("COUNT(distinct of.user_id) as followers"),
                     'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'o.id')
                         ->where('follows.user_id', $user_id),
-                    'is_bookmark' => UserMission::selectRaw('COUNT(1) > 0')->where('user_missions.user_id', $user_id)
-                        ->whereColumn('user_missions.mission_id', 'missions.id'),
-                    'user1' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
-                        ->whereColumn('user_missions.mission_id', 'missions.id')
-                        ->join('users as u', 'u.id', 'user_missions.user_id')
+                    'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                        ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                    'user1' => MissionStat::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
+                        ->whereColumn('mission_stats.mission_id', 'missions.id')
+                        ->join('users as u', 'u.id', 'mission_stats.user_id')
                         ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
-                        ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                        ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
                         ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                    'user2' => UserMission::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
-                        ->whereColumn('user_missions.mission_id', 'missions.id')
-                        ->join('users as u', 'u.id', 'user_missions.user_id')
+                    'user2' => MissionStat::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
+                        ->whereColumn('mission_stats.mission_id', 'missions.id')
+                        ->join('users as u', 'u.id', 'mission_stats.user_id')
                         ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
-                        ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                        ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
                         ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                    DB::raw('COUNT(distinct um.id) as bookmarks'),
+                    DB::raw('COUNT(distinct ms.id) as bookmarks'),
                     DB::raw('COUNT(distinct mc.id) as comments'),
                 ])
                 ->groupBy('missions.id', 'o.id', 'os.id', 'oa.id');

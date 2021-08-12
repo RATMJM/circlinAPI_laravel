@@ -12,9 +12,9 @@ use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
+use App\Models\MissionStat;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
-use App\Models\UserMission;
 use App\Models\UserStat;
 use Exception;
 use Firebase\JWT\JWT;
@@ -164,7 +164,7 @@ class UserController extends Controller
                 $src = $image->width();
             }
             $image->crop($src, $src, round($x), round($y));
-            $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
+            $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
             $image->save($tmp_path);
 
             if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
@@ -426,7 +426,7 @@ class UserController extends Controller
         $page = $request->get('page', 0);
 
         $feeds = FeedLike::where('feed_likes.user_id', $user_id) // 내가 체크한
-            ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
+        ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
             ->join('users as u', 'u.id', 'f.user_id')
             ->leftJoin('feed_images as fi', 'fi.feed_id', 'f.id')
             ->leftJoin('feed_products as fpr', 'fpr.feed_id', 'f.id')
@@ -497,26 +497,27 @@ class UserController extends Controller
             });
         })
             ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('user_missions as um', function ($query) {
-                $query->on('um.mission_id', 'missions.id')->whereNull('um.deleted_at');
+            ->leftJoin('mission_stats as ms', function ($query) {
+                $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
             })
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
-                'is_bookmark' => UserMission::selectRaw('COUNT(1) > 0')->where('user_missions.user_id', $user_id)
-                    ->whereColumn('user_missions.mission_id', 'missions.id'),
-                'user1' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('user_missions.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'user_missions.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                'user1' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
+                    ->whereColumn('mission_stats.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'mission_stats.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
                     ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('user_missions.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'user_missions.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                'user2' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
+                    ->whereColumn('mission_stats.mission_id', 'missions.id')
+                    ->whereNull('mission_stats.ended_at')
+                    ->join('users as u', 'u.id', 'mission_stats.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
                     ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                DB::raw('COUNT(distinct um.id) as bookmarks'),
+                DB::raw('COUNT(distinct ms.id) as bookmarks'),
                 DB::raw('COUNT(distinct mc.id) as comments'),
             ])
             ->groupBy('missions.id', 'o.id')
@@ -546,26 +547,26 @@ class UserController extends Controller
 
         $missions = Mission::where('missions.user_id', $user_id)
             ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('user_missions as um', function ($query) {
-                $query->on('um.mission_id', 'missions.id')->whereNull('um.deleted_at');
+            ->leftJoin('mission_stats as ms', function ($query) {
+                $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
             })
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
-                'is_bookmark' => UserMission::selectRaw('COUNT(1) > 0')->where('user_missions.user_id', $user_id)
-                    ->whereColumn('user_missions.mission_id', 'missions.id'),
-                'user1' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('user_missions.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'user_missions.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                'user1' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
+                    ->whereColumn('mission_stats.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'mission_stats.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
                     ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2' => UserMission::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('user_missions.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'user_missions.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'user_missions.user_id')
+                'user2' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
+                    ->whereColumn('mission_stats.mission_id', 'missions.id')
+                    ->join('users as u', 'u.id', 'mission_stats.user_id')
+                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
                     ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                DB::raw('COUNT(distinct um.id) as bookmarks'),
+                DB::raw('COUNT(distinct ms.id) as bookmarks'),
                 DB::raw('COUNT(distinct mc.id) as comments'),
             ])
             ->groupBy('missions.id', 'o.id')
