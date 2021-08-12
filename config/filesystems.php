@@ -68,7 +68,7 @@ return [
         'ftp3' => [ // 피드, 챌린지, 배너, 상품
             'driver' => 'ftp',
             'host' => 'cyld20183.speedgabia.com',
-            'username' => 'cyld20182',  //아이디
+            'username' => 'cyld20183',  //아이디
             'password' => 'teamcyld2018!', //암호
             // Optional FTP Settings...
             // 'port' => 21,
@@ -80,7 +80,7 @@ return [
         'ftp4' => [ // 눈바디 분석
             'driver' => 'ftp',
             'host' => 'cyld20184.speedgabia.com',
-            'username' => 'cyld20182',  //아이디
+            'username' => 'cyld20184',  //아이디
             'password' => 'teamcyld2018!', //암호
             // Optional FTP Settings...
             // 'port' => 21,

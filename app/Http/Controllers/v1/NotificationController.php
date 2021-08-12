@@ -23,10 +23,11 @@ class NotificationController extends Controller
 
         $data = Notification::where('target_id', $user_id)
             ->select([
-                DB::raw("IF( type in ('".implode("','", $nogroup)."'), CONCAT(type,'|',id),
-                    CONCAT(type,COALESCE(feed_id,''),COALESCE(mission_id,'')) ) as group_type"),
+                // 'type as group_type',
+                DB::raw("MAX(id) as id"),
                 DB::raw("MAX(created_at) as created_at"),
-                DB::raw("COUNT(id) as count"),
+                // DB::raw("COUNT(id) as count"),
+                DB::raw("COUNT(distinct user_id) as count"),
                 'user_id' => DB::table('notifications as n')->select('user_id')
                     ->where('id', DB::raw("MAX(notifications.id)")),
                 DB::raw("MAX(feed_id) as feed_id"),
@@ -34,7 +35,8 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
-            ->groupBy('group_type', DB::raw("CONCAT(YEAR(created_at),'|',WEEK(created_at))"))
+            ->groupBy(DB::raw("IF(type in ('".implode("','", $nogroup)."'), CONCAT(type,'|',id), type)"),
+                DB::raw("CONCAT(YEAR(created_at),'|',WEEK(created_at))"), 'feed_id', 'mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
             ->take(50);
 
@@ -47,7 +49,8 @@ class NotificationController extends Controller
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
-                'n.*', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                'n.*', 'type' => Notification::select('type')->whereColumn('id', 'n.id'),
+                'users.nickname', 'users.profile_image', 'user_stats.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
                 'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')
@@ -68,26 +71,25 @@ class NotificationController extends Controller
 
         $res = $data->toArray();
         foreach ($data as $i => $item) {
-            // common_codes 에 매칭되도록 group_type 치환
-            if (preg_match('/^((feed|mission)_.*?)([\d]+)/', $item->group_type, $match)) {
-                $item->group_type = $match[1];
-            }
-            if ($item->count > 1) {
-                $res[$i]['group_type'] = match ($item->group_type) {
-                    'follow', 'feed_like', 'feed_comment', 'mission_like', 'mission_comment' => $item->group_type.'s',
+            // common_codes 에 매칭되도록 type 치환
+            /*if (preg_match('/^('.implode('|',$nogroup).')\|.+/', $item->group_type, $match)) {
+                // dump($match);
+                $res[$i]['group_type'] = $match[1];
+            } else*/
+            if ($item->count > 1 && !in_array($item->type, $nogroup)) {
+                $res[$i]['type'] = match ($item->type) {
+                    'follow', 'feed_like', 'feed_comment', 'mission_like', 'mission_comment' => $item->type.'s',
                     'feed_reply' => 'feed_replies',
                     'mission_reply' => 'mission_replies',
                 };
-            } elseif (preg_match('/^('.implode('|',$nogroup).')|.+/', $item->group_type, $match)) {
-                $res[$i]['group_type'] = $match[0];
             }
 
             $replaces = [
-                '{count}' => $item->count,
+                '{count}' => $item->count - 1,
                 '{nickname}' => $item->nickname,
                 '{mission}' => $item->mission_title,
             ];
-            $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['group_type']] ?? '');
+            $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']] ?? '');
         }
 
         return success([

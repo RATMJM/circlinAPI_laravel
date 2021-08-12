@@ -117,39 +117,6 @@ class UserController extends Controller
         }
     }
 
-    // public function change_profile_image1(Request $request): array
-    // {
-
-    //     try {
-    //         DB::beginTransaction();
-    //         $user_id = JWT::decode($request->header('token'), env('JWT_SECRET'), ['HS256'])->uid;
-    //         $profile_image_dir = $request->get('imgUrl');
-    //         $profile_image_dir = base64_decode($profile_image_dir);
-    //       //  echo $profile_image_dir;
-    //         $data = User::where('id', $user_id)->first();
-
-    //         if (isset($data)) {
-    //             $user_data = [];
-
-    //             $changeProfileImage = DB::update('update users set profile_image = ? where id = ? ',array($profile_image_dir,$user_id));
-
-    //             DB::commit();
-    //             return success([
-    //                 'result' => true,
-    //             ]);
-    //         } else {
-    //             DB::rollBack();
-    //             return success([
-    //                 'result' => false,
-    //                 'reason' => 'not enough data',
-    //             ]);
-    //         }
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         return exceped($e);
-    //     }
-    // }
-
     public function change_profile_image(Request $request): array
     {
         $user_id = token()->uid;
@@ -163,8 +130,6 @@ class UserController extends Controller
         }
 
         /*
-        $allowed_ext = array('jpg', 'jpeg', 'png', 'gif');
-
         // $d = compress($local_file,$local_file,100);
         // $source, $destination, $quality
         $info = getimagesize($local_file);
@@ -210,7 +175,7 @@ class UserController extends Controller
                     $data = User::where('id', $user_id)->first();
 
                     if (isset($data)) {
-                        $result = User::where('id', $user_id)->update(['profile_image' => "https://cyld20182.speedgabia.com/$filename"]);
+                        $result = User::where('id', $user_id)->update(['profile_image' => image_url(2, $filename)]);
 
                         DB::commit();
                         return success([
@@ -363,8 +328,6 @@ class UserController extends Controller
         $data = User::where('users.id', $user_id)
             ->leftJoin('areas as a', 'a.ctg_sm', 'users.area_code')
             ->leftJoin('user_stats as us', 'us.user_id', 'users.id')
-            ->leftJoin('follows as f1', 'f1.target_id', 'users.id') // 팔로워
-            ->leftJoin('follows as f2', 'f2.user_id', 'users.id') // 팔로잉
             ->leftJoin('missions as m', 'm.user_id', 'users.id') // 미션 제작
             ->leftJoin('feeds as f', 'f.user_id', 'users.id')
             ->leftJoin('feed_likes as fl', 'fl.user_id', 'users.id')
@@ -372,10 +335,13 @@ class UserController extends Controller
             ->select([
                 'users.nickname', 'users.point', 'users.profile_image', 'users.greeting',
                 DB::raw("IF(a.name_lg=a.name_md, CONCAT_WS(' ', a.name_md, a.name_sm), CONCAT_WS(' ', a.name_lg, a.name_md, a.name_sm)) as area"),
-                DB::raw('COUNT(distinct f1.id) as followers'), DB::raw('COUNT(distinct f2.id) as followings'),
+                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
+                'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 DB::raw('COUNT(distinct m.id) as created_missions'),
                 DB::raw('COUNT(distinct f.id) as feeds'), DB::raw('COUNT(distinct fl.id) as checks'),
                 DB::raw('COUNT(distinct fm.id) as missions'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', token()->uid),
             ])
             ->groupBy('users.id', 'a.id', 'us.id')
             ->first();
@@ -441,6 +407,7 @@ class UserController extends Controller
                     ->where('feed_comments.user_id', token()->uid),
             ])
             ->groupBy('feeds.id')
+            ->orderBy('feeds.id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
