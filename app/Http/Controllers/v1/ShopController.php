@@ -30,7 +30,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -45,7 +46,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -60,7 +62,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -74,7 +77,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -90,7 +94,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b 
                 WHERE  
                 is_show= ?
@@ -107,7 +112,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -123,7 +129,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -138,7 +145,8 @@ class ShopController extends Controller
                 b.name_ko,
                 a.name_ko as prod_name,
                 price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
                 FROM products a, brands b  
                 WHERE  
                 is_show= ?
@@ -175,6 +183,56 @@ class ShopController extends Controller
             'result' => true,
             'areas' => $areas,
         ]);
+    }
+
+
+    public function get_item_category(Request $request): array
+      {   
+ 
+         try {
+            DB::beginTransaction();
+            
+                $categoryList = DB::select('select id as product_category_id, title   
+                                            from  product_categories b
+                                            where deleted_at is null;'  ) ;
+   
+             
+            return success([
+                'result' => true,
+                'categoryList' => $categoryList, 
+            ]);
+ 
+           
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+ 
+    }
+
+    public function get_shop_banner(): array
+      {   
+ 
+         try {
+            DB::beginTransaction();
+            
+                $categoryList = DB::select('select b.image, b.product_id, b.link_url  From products a , banners b
+                where   date_add(sysdate(), interval 9 hour) between  b.started_at and b.ended_at
+                and b.product_id=a.id and b.deleted_at is null
+                order by sort_num;;'  ) ;
+   
+             
+            return success([
+                'result' => true,
+                'categoryList' => $categoryList, 
+            ]);
+ 
+           
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+ 
     }
  
 }
