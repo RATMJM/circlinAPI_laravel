@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class MissionCategoryController extends Controller
@@ -79,15 +78,14 @@ class MissionCategoryController extends Controller
             ->first();
 
         $users = User::whereHas('user_missions', function ($query) use ($category_id) {
-            $query->whereNull('deleted_at')
-                ->whereHas('mission', function ($query) use ($category_id) {
-                    $query->whereHas('category', function ($query) use ($category_id) {
-                        $query->where('id', $category_id);
-                    });
+            $query->whereHas('mission', function ($query) use ($category_id) {
+                $query->whereHas('category', function ($query) use ($category_id) {
+                    $query->where('id', $category_id);
                 });
+            });
         })
-            ->join('follows as f', 'f.target_id', 'users.id')
-            ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
+            ->leftJoin('follows as f', 'f.target_id', 'users.id')
+            ->select(['users.id', 'nickname', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
             ->groupBy('users.id')
             ->orderBy('followers', 'desc')->paginate(3);
 
