@@ -71,7 +71,8 @@ class FeedController extends Controller
                 FeedImage::create([
                     'feed_id' => $feed->id,
                     'type' => $type,
-                    'image' => "https://cyld20183.speedgabia.com/$uploaded_file",
+                    'image' => image_url(3, "$uploaded_file"),
+                    'thumbnail' => $url2 ?? '',
                 ]);
             }
 

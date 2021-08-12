@@ -175,7 +175,7 @@ class UserController extends Controller
                     $data = User::where('id', $user_id)->first();
 
                     if (isset($data)) {
-                        $result = User::where('id', $user_id)->update(['profile_image' => "https://cyld20182.speedgabia.com/$filename"]);
+                        $result = User::where('id', $user_id)->update(['profile_image' => image_url(2, $filename)]);
 
                         DB::commit();
                         return success([
