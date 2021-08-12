@@ -441,6 +441,7 @@ class UserController extends Controller
                     ->where('feed_comments.user_id', token()->uid),
             ])
             ->groupBy('feeds.id')
+            ->orderBy('feeds.id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
