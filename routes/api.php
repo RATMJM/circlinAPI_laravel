@@ -65,6 +65,9 @@ Route::post('/change_profile_image', [v1\UserController::class, 'change_profile_
 Route::get('/area', [v1\BaseController::class, 'area'])->name('area');
 Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('suggest.user');
 
+/* 알림 관련 */
+Route::get('/notification', [v1\NotificationController::class, 'index'])->name('notification.index');
+
 /* 미션 관련 */
 Route::resources([
     'bookmark' => v1\BookmarkController::class,
