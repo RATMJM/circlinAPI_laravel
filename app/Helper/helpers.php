@@ -65,25 +65,39 @@ function token_option(): object | null
 }
 
 /**
+ * ftp url 자동완성
+ */
+function image_url($server, $image_url): string
+{
+    $list = [
+        2 => 'cyld20182.speedgabia.com/',
+        3 => 'cyld20183.speedgabia.com/',
+        4 => 'cyld20184.speedgabia.com/',
+    ];
+
+    return $list[$server].$image_url;
+}
+
+/**
  * 사진 업로드
  */
 function upload_image(UploadedFile $file, $upload_dir): string
 {
     return Storage::disk('ftp')->put($upload_dir, $file);
 }
- 
+
  // 이미지 압축 210810 JM 추가
  function compress($source, $destination, $quality): string
  {
- 
+
      $info = getimagesize($source);
- 
+
      if ($info['mime'] == 'image/jpeg') $image = imagecreatefromjpeg($source);
- 
+
      elseif ($info['mime'] == 'image/gif') $image = imagecreatefromgif($source);
- 
+
      elseif ($info['mime'] == 'image/png') $image = imagecreatefrompng($source);
- 
+
      $exif = exif_read_data($source);
      if (!empty($exif['Orientation']))
      {
@@ -100,12 +114,12 @@ function upload_image(UploadedFile $file, $upload_dir): string
              break;
          }
      }
- 
+
      imagejpeg($image, $destination, $quality);
- 
+
      return $destination;
  }
- 
+
   // 정방형 컷팅 210810 JM 추가
  function image_to_square($imgSrc, $imgDes, $thumbSize = 640){
      list($width, $height) = getimagesize($imgSrc);
@@ -128,10 +142,10 @@ function upload_image(UploadedFile $file, $upload_dir): string
      @imagedestroy($myImage);
      @imagedestroy($thumb);
    }
- 
+
     // 동영상압축서버로 영상파일 보내기 210810 JM 추가
    function uploadVideoResizing($uid,$ftp_server,$ftp_user_name,$ftp_user_pass,$dbProfile,$dbProfile2,$feedPk){
- 
+
      $url = "https://www.circlinad.co.kr/videoResizing"; // 여기로 영상던져서 압축을 하고, 압축된 결과는 저쪽 서버에서 같은이름으로 FTP에 덮어 씌움
      $arr = array('url'=>$dbProfile,'url_thumb'=>$dbProfile2, 'ftp_server'=>$ftp_server,'ftp_user_name'=>$ftp_user_name,'ftp_user_pass'=>$ftp_user_pass,'feedPk'=>$feedPk,'uid'=>$uid);
      $post_field_string = http_build_query($arr, '', '&');
