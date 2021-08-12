@@ -44,7 +44,7 @@ Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
 Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::get('/', [v1\UserController::class, 'index'])->name('index');
     Route::patch('/profile', [v1\UserController::class, 'update'])->name('profile.update');
-    Route::patch('/profile/image', [v1\UserController::class, 'change_profile_image'])->name('profile.image.update');
+    Route::post('/profile/image', [v1\UserController::class, 'change_profile_image'])->name('profile.image.update');
     Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image'])->name('profile.image.delete');
     Route::resource('favorite_category',v1\UserFavoriteCategoryController::class);
     Route::get('/follower', [v1\UserController::class, 'follower'])->name('follower');
