@@ -21,7 +21,7 @@ class NotificationController extends Controller
 
         $nogroup = ["follow_feed", "follow_bookmark", "mission_invite", "bookmark_warning"];
 
-        $data = Notification::where('target_id', 3)
+        $data = Notification::where('target_id', $user_id)
             ->select([
                 DB::raw("IF( type in ('".implode("','", $nogroup)."'), CONCAT(type,'|',id),
                     CONCAT(type,COALESCE(feed_id,''),COALESCE(mission_id,'')) ) as group_type"),
