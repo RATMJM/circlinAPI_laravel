@@ -186,7 +186,7 @@ class ShopController extends Controller
     }
 
 
-    public function get_item_category(Request $request): array
+    public function shop_category(Request $request): array
       {   
  
          try {
@@ -209,8 +209,8 @@ class ShopController extends Controller
         }
  
     }
-
-    public function get_shop_banner(): array
+ 
+    public function shop_banner(): array
       {   
  
          try {
