@@ -340,7 +340,7 @@ class UserController extends Controller
                 DB::raw('COUNT(distinct m.id) as created_missions'),
                 DB::raw('COUNT(distinct f.id) as feeds'), DB::raw('COUNT(distinct fl.id) as checks'),
                 DB::raw('COUNT(distinct fm.id) as missions'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', token()->uid),
             ])
             ->groupBy('users.id', 'a.id', 'us.id')
