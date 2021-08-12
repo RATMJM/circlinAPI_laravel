@@ -9,9 +9,13 @@ use App\Models\FeedImage;
 use App\Models\FeedProduct;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 
 class FeedController extends Controller
@@ -28,20 +32,60 @@ class FeedController extends Controller
 
     public function store(Request $request): array
     {
-        /*$user_id = token()->uid;
+        $user_id = token()->uid;
 
         $content = $request->get('content');
         $files = $request->file('files');
 
-        foreach ($files as $file) {
-            if (str_starts_with($file->getMimeType(), 'image/')) {
-                upload_image($file, "Image/SNS/");
-            } elseif (str_starts_with($file->getMimeType(), 'video/')) {
-                continue;
-            } else {
-                continue;
+        try {
+            DB::beginTransaction();
+
+            $feed = Feed::create([
+                'user_id' => $user_id,
+                'content' => $content,
+            ]);
+
+            foreach ($files as $file) {
+                if (str_starts_with($file->getMimeType(), 'image/')) {
+                    $type = 'image';
+                    $image = Image::make($file->getPathname());
+                    if ($image->width() > $image->height()) {
+                        $x = ($image->width() - $image->height()) / 2;
+                        $y = 0;
+                        $src = $image->height();
+                    } else {
+                        $x = 0;
+                        $y = ($image->height() - $image->width()) / 2;
+                        $src = $image->width();
+                    }
+                    $image->crop($src, $src, round($x), round($y));
+                    $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
+                    $image->save($tmp_path);
+                    $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", new File($tmp_path));
+                } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                    $type = 'video';
+                    $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", $file);
+                } else {
+                    continue;
+                }
+                FeedImage::create([
+                    'feed_id' => $feed->id,
+                    'type' => $type,
+                    'image' => "https://cyld20183.speedgabia.com/$uploaded_file",
+                ]);
             }
-        }*/
+
+            DB::commit();
+
+            return success([
+                'result' => true,
+                'feed' => $feed,
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return exceped($e);
+        }
     }
 
     public function show($id): array
@@ -220,7 +264,7 @@ class FeedController extends Controller
                             , array($feed_id, $fileType[0], $dbProfile, $today, $today));
 
                         DB::commit();
-                 
+
                     } else {
                         DB::rollBack();
                         return success([
