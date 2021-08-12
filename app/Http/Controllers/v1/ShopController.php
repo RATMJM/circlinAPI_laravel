@@ -285,32 +285,58 @@ class ShopController extends Controller
        try {
           DB::beginTransaction();
           
-                $pointInfo = DB::select('SELECT
-                (
-                select ifnull(sum(POINT),0)
-                from  point_histories
-                where user_id=? and point>0
-                and substr(created_at,1,10) BETWEEN  substr(date_add(sysdate(), interval -365 day ),1,10)  and  substr(date_add(sysdate(), interval 9 hour),1,10)
-                )  as YEAR_POINT
-                ,
-                (
-                SELECT ifnull(sum(POINT),0) as Y_POINT
-                from point_histories
-                where user_id=? and point>0
-                and substr(created_at,1,10) BETWEEN  substr(date_add(sysdate(), interval -7 day ),1,10)  and  substr(date_add(sysdate(), interval 9 hour),1,10)
-                )  as WEEK_POINT
-                FROM
-                DUAL;', array($user_id, $user_id)  ) ;
+                $orderList = DB::select('select
+                ORDER_NO, a.total_price, f.name_ko as product_name, g.name_ko as brand_name, f.thumbnail_image, f.code, a.created_at as order_time,
+                h.id as feed_product_id,  "" SELECT_YN, b.qty, e.status,
+                concat(
+                (opt1.name_ko  ) , " / ",
+                (opt2.name_ko  ) , " / ",
+                (opt3.name_ko  ) , " / ",
+                (opt4.name_ko  ) , " / ",
+                (opt5.name_ko  ) , " / ",
+                (opt6.name_ko  ) , " / "
+                 )  as option_name 
+                 from
+                orders a,
+                order_products b
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 0,1 ) opt1 ON opt1.order_product_id=b.id
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 1,1 ) opt2 ON opt2.order_product_id=b.id
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 2,1 ) opt3 ON opt3.order_product_id=b.id
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 3,1 ) opt4 ON opt4.order_product_id=b.id
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 4,1 ) opt5 ON opt5.order_product_id=b.id
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 5,1 ) opt6 ON opt6.order_product_id=b.id,
+                
+                order_destinations d,
+                order_product_deliveries e,
+                products f LEFT JOIN feed_products h ON f.id=h.product_id ,
+                brands g
+                where
+                a.id=b.order_id
+                and a.id=d.order_id
+                and b.id=e.order_product_id
+                and f.id=b.product_id
+                and f.brand_id = g.id
+                and a.user_id=?
+                ;', array($user_id)  ) ;
               
 
-                $shopPointList = DB::select('SELECT created_at, point, user_id, reason from point_histories
-                where user_id= ?
-                order by created_at desc;', array($user_id)  ) ;
+        //         $buyPointInfo = DB::select('SELECT  ifnull((SELECT sum(POINT) FROM CAREPOINT where user_pk='$uid'
+        //         and SERVICE_CODE='BUYINFO' and CP_STATE='1'),'0') as TOT_POINT,
+        //         (SELECT COUNT(PRODCODE) *10
+        //         FROM  ORDER_DET b LEFT JOIN ITEM_REVIEW a on b.ORD_DET_NO=a.ORD_DET_NO and a.USER_PK=b.USER_PK
+        //          , PRODUCT_MASTER c, MEMBERDATA d
+        //          WHERE b.USER_PK='$uid'
+        //          and b.ITEM_CODE=c.PRODCODE
+        //          and b.USER_PK=d._ID
+        //          and a.ORD_DET_NO is null
+        //          ORDER BY ORD_TIME DESC) as NO_REV_POINT
+        //    FROM DUAL ;', array($user_id)  ) ;
+                    $buyPointInfo='';
   
                 return success([
                 'result' => true,
-                'pointInfo' => $pointInfo, 
-                'shopPointList' => $shopPointList, 
+                'orderList' => $orderList, 
+                'buyPointInfo' => $buyPointInfo, 
               
           ]);
 
