@@ -85,7 +85,7 @@ class MissionCategoryController extends Controller
             });
         })
             ->leftJoin('follows as f', 'f.target_id', 'users.id')
-            ->select(['users.id', 'nickname', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
+            ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
             ->groupBy('users.id')
             ->orderBy('followers', 'desc')->paginate(3);
 
