@@ -61,7 +61,6 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
     });
 });
-Route::post('/change_profile_image', [v1\UserController::class, 'change_profile_image']);
 Route::get('/area', [v1\BaseController::class, 'area'])->name('area');
 Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('suggest.user');
 
@@ -109,4 +108,4 @@ Route::get('/shop_banner', [v1\ShopController::class, 'shop_banner']);
 Route::get('/shop_category', [v1\ShopController::class, 'shop_category']);
 Route::post('/item_list', [v1\ShopController::class, 'item_list']);
 Route::get('/shop/point', [v1\ShopController::class, 'shop_point_list']);
- 
+
