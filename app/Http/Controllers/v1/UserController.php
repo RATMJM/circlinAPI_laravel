@@ -155,7 +155,7 @@ class UserController extends Controller
         $user_id = token()->uid;
 
         $data = User::where('id', $user_id)->first();
-        if (is_null($data)) {
+        if (is_null($data) || $request->file('file')) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
