@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
+use App\Models\FeedMission;
 use App\Models\FeedProduct;
+use App\Models\Mission;
+use App\Models\MissionStat;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\File;
@@ -41,8 +44,9 @@ class FeedController extends Controller
             ]);
         }
 
-        $content = $request->get('content');
         $files = $request->file('files');
+        $content = $request->get('content');
+        $missions = $request->get('missions');
 
         try {
             DB::beginTransaction();
@@ -52,49 +56,76 @@ class FeedController extends Controller
                 'content' => $content,
             ]);
 
-            foreach ($files as $i => $file) {
-                $uploaded_thumbnail = '';
-                if (str_starts_with($file->getMimeType(), 'image/')) {
-                    $type = 'image';
-                    $image = Image::make($file->getPathname());
-                    if ($image->width() > $image->height()) {
-                        $x = ($image->width() - $image->height()) / 2;
-                        $y = 0;
-                        $src = $image->height();
+            // 이미지 및 동영상 업로드
+            if ($files) {
+                foreach ($files as $i => $file) {
+                    $uploaded_thumbnail = '';
+                    if (str_starts_with($file->getMimeType(), 'image/')) {
+                        $type = 'image';
+                        $image = Image::make($file->getPathname());
+                        if ($image->width() > $image->height()) {
+                            $x = ($image->width() - $image->height()) / 2;
+                            $y = 0;
+                            $src = $image->height();
+                        } else {
+                            $x = 0;
+                            $y = ($image->height() - $image->width()) / 2;
+                            $src = $image->width();
+                        }
+                        $image->crop($src, $src, round($x), round($y));
+                        $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
+                        $image->save($tmp_path);
+                        $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", new File($tmp_path));
+                    } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                        $type = 'video';
+                        $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", $file);
+
+                        $thumbnail = "Image/SNS/$user_id/thumb_".$file->hashName();
+
+                        $host = config('filesystems.disks.ftp3.host');
+                        $username = config('filesystems.disks.ftp3.username');
+                        $password = config('filesystems.disks.ftp3.password');
+                        $url = image_url(3, $uploaded_file);
+                        $url2 = image_url(3, $thumbnail);
+                        if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $feed->id)) {
+                            $uploaded_thumbnail = $thumbnail;
+                        }
                     } else {
-                        $x = 0;
-                        $y = ($image->height() - $image->width()) / 2;
-                        $src = $image->width();
+                        continue;
                     }
-                    $image->crop($src, $src, round($x), round($y));
-                    $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
-                    $image->save($tmp_path);
-                    $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", new File($tmp_path));
-                } elseif (str_starts_with($file->getMimeType(), 'video/')) {
-                    $type = 'video';
-                    $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", $file);
 
-                    $thumbnail = "Image/SNS/$user_id/thumb_".$file->hashName();
+                    FeedImage::create([
+                        'feed_id' => $feed->id,
+                        'order' => $i,
+                        'type' => $type,
+                        'image' => image_url(3, $uploaded_file),
+                        'thumbnail_image' => image_url(3, $uploaded_thumbnail ?: $uploaded_file),
+                    ]);
+                }
+            }
 
-                    $host = config('filesystems.disks.ftp3.host');
-                    $username = config('filesystems.disks.ftp3.username');
-                    $password = config('filesystems.disks.ftp3.password');
-                    $url = image_url(3, $uploaded_file);
-                    $url2 = image_url(3, $thumbnail);
-                    if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $feed->id)) {
-                        $uploaded_thumbnail = $thumbnail;
-                    }
-                } else {
-                    continue;
+            // 미션 적용
+            if ($missions) {
+                foreach ($missions as $mission) {
+                    $stat = MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission])
+                        ->whereNull('ended_at')
+                        /*->whereHas('feed_missions', function ($query) {
+                            $query->where('created_at', '>=', date('Y-m-d H:i:s', time()-(86400*7))); // 7일 이내 인증
+                        })*/
+                        ->orderBy('id', 'desc')
+                        ->firstOr(function () use ($user_id, $mission) {
+                            return MissionStat::create([
+                                'user_id' => $user_id,
+                                'mission_id' => $mission,
+                            ]);
+                        });
+                    FeedMission::create([
+                        'feed_id' => $feed->id,
+                        'mission_stat_id' => $stat->id,
+                        'mission_id' => $mission,
+                    ]);
                 }
 
-                FeedImage::create([
-                    'feed_id' => $feed->id,
-                    'order' => $i,
-                    'type' => $type,
-                    'image' => image_url(3, $uploaded_file),
-                    'thumbnail_image' => image_url(3, $uploaded_thumbnail ?: $uploaded_file),
-                ]);
             }
 
             DB::commit();
