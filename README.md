@@ -2,7 +2,7 @@
 <p>copy .env.example && composer update</p>
 <p>php artisan key:generate</p>
 <h1>윈도우 Imagick 설치</h1>
-<p>[Imagick](https://mlocati.github.io/articles/php-windows-imagick.html)</p>
+<p>https://mlocati.github.io/articles/php-windows-imagick.html</p>
 <ol>
     <li>버전에 맞는 **zip** 다운로드</li>
     <li>php_imagick.dll - php/ext 폴더로</li>
