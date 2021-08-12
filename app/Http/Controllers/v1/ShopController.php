@@ -216,7 +216,7 @@ class ShopController extends Controller
          try {
             DB::beginTransaction();
             
-                $categoryList = DB::select('select b.image, b.product_id, b.link_url  From products a , banners b
+                $shopBannerList = DB::select('select b.image, b.product_id, b.link_url  From products a , banners b
                 where   date_add(sysdate(), interval 9 hour) between  b.started_at and b.ended_at
                 and b.product_id=a.id and b.deleted_at is null
                 order by sort_num;;'  ) ;
@@ -224,7 +224,7 @@ class ShopController extends Controller
              
             return success([
                 'result' => true,
-                'categoryList' => $categoryList, 
+                'shopBannerList' => $shopBannerList, 
             ]);
  
            
