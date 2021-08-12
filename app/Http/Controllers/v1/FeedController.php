@@ -49,8 +49,9 @@ class FeedController extends Controller
         $product_id = $request->get('product_id');
         $product_brand = $request->get('product_brand');
         $product_title = $request->get('product_title');
+        $product_image = $request->get('product_image');
+        $product_url = $request->get('product_url');
         $product_price = $request->get('product_price');
-        $product_link = $request->get('product_link');
 
         $place_address = $request->get('place_address');
         $place_title = $request->get('place_title');
@@ -141,14 +142,15 @@ class FeedController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_link) {
+            } elseif ($product_brand && $product_title && $product_price && $product_url) {
                 FeedProduct::create([
                     'feed_id' => $feed->id,
                     'type' => 'outside',
-                    'product_brand' => $product_brand,
+                    'image_url' => $product_image,
+                    'brand_title' => $product_brand,
                     'product_title' => $product_title,
-                    'product_price' => $product_price,
-                    'product_link' => $product_link,
+                    'price' => $product_price,
+                    'product_url' => $product_url,
                 ]);
             }
 
