@@ -108,7 +108,6 @@ class FeedController extends Controller
             if ($missions) {
                 foreach ($missions as $mission) {
                     $stat = MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission])
-                        ->whereNull('ended_at')
                         /*->whereHas('feed_missions', function ($query) {
                             $query->where('created_at', '>=', date('Y-m-d H:i:s', time()-(86400*7))); // 7일 이내 인증
                         })*/

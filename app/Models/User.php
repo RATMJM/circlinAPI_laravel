@@ -58,8 +58,8 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Follow', 'target_id');
     }
 
-    public function user_missions()
+    public function mission_stats()
     {
-        return $this->hasMany('App\Models\UserMission');
+        return $this->hasMany('App\Models\MissionStat');
     }
 }
