@@ -34,6 +34,13 @@ class FeedController extends Controller
     {
         $user_id = token()->uid;
 
+        if (!$request->has('content') || !$request->hasFile('files')) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+
         $content = $request->get('content');
         $files = $request->file('files');
 
@@ -45,7 +52,8 @@ class FeedController extends Controller
                 'content' => $content,
             ]);
 
-            foreach ($files as $file) {
+            foreach ($files as $i => $file) {
+                $uploaded_thumbnail = '';
                 if (str_starts_with($file->getMimeType(), 'image/')) {
                     $type = 'image';
                     $image = Image::make($file->getPathname());
@@ -65,14 +73,27 @@ class FeedController extends Controller
                 } elseif (str_starts_with($file->getMimeType(), 'video/')) {
                     $type = 'video';
                     $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", $file);
+
+                    $thumbnail = "Image/SNS/$user_id/thumb_".$file->hashName();
+
+                    $host = config('filesystems.disks.ftp3.host');
+                    $username = config('filesystems.disks.ftp3.username');
+                    $password = config('filesystems.disks.ftp3.password');
+                    $url = image_url(3, $uploaded_file);
+                    $url2 = image_url(3, $thumbnail);
+                    if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $feed->id)) {
+                        $uploaded_thumbnail = $thumbnail;
+                    }
                 } else {
                     continue;
                 }
+
                 FeedImage::create([
                     'feed_id' => $feed->id,
+                    'order' => $i,
                     'type' => $type,
-                    'image' => image_url(3, "$uploaded_file"),
-                    'thumbnail' => $url2 ?? '',
+                    'image' => image_url(3, $uploaded_file),
+                    'thumbnail_image' => image_url(3, $uploaded_thumbnail ?: $uploaded_file),
                 ]);
             }
 
@@ -101,8 +122,6 @@ class FeedController extends Controller
                 'feeds.id', 'feeds.created_at', 'feeds.content',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                'images' => FeedImage::selectRaw("GROUP_CONCAT(image separator '|')")
-                    ->whereColumn('feed_id', 'feeds.id')->orderBy('order'),
                 DB::raw("COUNT(distinct feed_likes.id) as like_total"),
                 DB::raw("COUNT(distinct feed_comments.id) as comment_total"),
             ])
@@ -116,9 +135,7 @@ class FeedController extends Controller
             ]);
         }
 
-        $images = explode('|', $feed->images);
-        [$feed->image1, $feed->image2, $feed->image3] = [$images[0], $images[1] ?? null, $images[2] ?? null];
-        Arr::except($feed, 'images');
+        $feed->images = FeedImage::where('feed_id', $id)->pluck('image');
 
         $comments = FeedComment::where('feed_comments.feed_id', $id)
             ->join('users', 'users.id', 'feed_comments.user_id')
