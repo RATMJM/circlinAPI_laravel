@@ -41,12 +41,13 @@ class NotificationController extends Controller
         $data = User::rightJoinSub($data, 'n', function ($query) {
             $query->on('users.id', 'n.user_id');
         })
+            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
-                'n.*', 'users.nickname', 'users.profile_image',
+                'n.*', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
                 'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')

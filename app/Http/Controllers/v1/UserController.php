@@ -155,7 +155,7 @@ class UserController extends Controller
         $user_id = token()->uid;
 
         $data = User::where('id', $user_id)->first();
-        if (is_null($data) || $request->file('file')) {
+        if (is_null($data) || !$request->file('file')) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
@@ -186,7 +186,7 @@ class UserController extends Controller
         */
 
         $file = $request->file('file');
-        if (str_starts_with($file->getMimeType(), 'image/')) {
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
             if ($image->width() > $image->height()) {
@@ -198,7 +198,7 @@ class UserController extends Controller
                 $y = ($image->height() - $image->width()) / 2;
                 $src = $image->width();
             }
-            $image->crop($src, $src, $x, round($y));
+            $image->crop($src, $src, round($x), round($y));
             $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
             $image->save($tmp_path);
 
