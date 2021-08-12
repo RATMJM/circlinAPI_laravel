@@ -235,7 +235,52 @@ class ShopController extends Controller
 
     public function shop_point_list(Request $request): array
     {   
-        $user_id =1;// token()->uid;
+        $user_id = token()->uid;
+        
+       try {
+          DB::beginTransaction();
+          
+                $pointInfo = DB::select('SELECT
+                (
+                select ifnull(sum(POINT),0)
+                from  point_histories
+                where user_id=? and point>0
+                and substr(created_at,1,10) BETWEEN  substr(date_add(sysdate(), interval -365 day ),1,10)  and  substr(date_add(sysdate(), interval 9 hour),1,10)
+                )  as YEAR_POINT
+                ,
+                (
+                SELECT ifnull(sum(POINT),0) as Y_POINT
+                from point_histories
+                where user_id=? and point>0
+                and substr(created_at,1,10) BETWEEN  substr(date_add(sysdate(), interval -7 day ),1,10)  and  substr(date_add(sysdate(), interval 9 hour),1,10)
+                )  as WEEK_POINT
+                FROM
+                DUAL;', array($user_id, $user_id)  ) ;
+              
+
+                $shopPointList = DB::select('SELECT created_at, point, user_id, reason from point_histories
+                where user_id= ?
+                order by created_at desc;', array($user_id)  ) ;
+  
+                return success([
+                'result' => true,
+                'pointInfo' => $pointInfo, 
+                'shopPointList' => $shopPointList, 
+              
+          ]);
+
+         
+      } catch (Exception $e) {
+          DB::rollBack();
+          return exceped($e);
+      }
+
+   }
+ 
+
+   public function bought_product_list(Request $request): array
+    {   
+        $user_id = token()->uid;
         
        try {
           DB::beginTransaction();
@@ -276,5 +321,7 @@ class ShopController extends Controller
       }
 
   }
- 
+
+
+  
 }

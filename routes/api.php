@@ -109,4 +109,5 @@ Route::get('/shop_banner', [v1\ShopController::class, 'shop_banner']);
 Route::get('/shop_category', [v1\ShopController::class, 'shop_category']);
 Route::post('/item_list', [v1\ShopController::class, 'item_list']);
 Route::get('/shop/point', [v1\ShopController::class, 'shop_point_list']);
+Route::get('/shop/bought', [v1\ShopController::class, 'bought_product_list']);
  
