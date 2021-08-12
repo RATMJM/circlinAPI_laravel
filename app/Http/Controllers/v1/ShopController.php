@@ -209,7 +209,7 @@ class ShopController extends Controller
         }
  
     }
-
+ 
     public function shop_banner(): array
       {   
  
