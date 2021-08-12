@@ -198,7 +198,7 @@ class UserController extends Controller
                 $y = ($image->height() - $image->width()) / 2;
                 $src = $image->width();
             }
-            $image->crop($src, $src, $x, round($y));
+            $image->crop($src, $src, round($x), round($y));
             $tmp_path = "{$file->getPath()}/{$user_id}_".Str::uuid().".{$file->extension()}";
             $image->save($tmp_path);
 
