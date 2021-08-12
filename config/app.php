@@ -177,7 +177,7 @@ return [
         App\Providers\TelescopeServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
     ],
-
+ 
     /*
     |--------------------------------------------------------------------------
     | Class Aliases
