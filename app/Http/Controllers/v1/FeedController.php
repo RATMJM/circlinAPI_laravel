@@ -46,6 +46,7 @@ class FeedController extends Controller
         $files = $request->file('files');
         $content = $request->get('content');
         $missions = $request->get('missions');
+        $is_hidden = $request->get('is_hidden', 0);
 
         $product_id = $request->get('product_id');
         $product_brand = $request->get('product_brand');
@@ -67,6 +68,7 @@ class FeedController extends Controller
             $feed = Feed::create([
                 'user_id' => $user_id,
                 'content' => $content,
+                'is_hidden' => $is_hidden === 1,
             ]);
 
             // 이미지 및 동영상 업로드
