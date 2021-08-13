@@ -33,9 +33,9 @@ class HomeController extends Controller
         }
 
         if (count($category_id) > 1) {
-            return success(['result' => true, 'categories' => $categories ?? [], 'tab' => $tabs]);
+            return success(['result' => true, 'categories' => $categories ?? [], 'tabs' => $tabs]);
         } else {
-            return success(['result' => true, 'tab' => $tabs[$category_id[0]]]);
+            return success(['result' => true, 'tabs' => $tabs[$category_id[0]]]);
         }
     }
 
