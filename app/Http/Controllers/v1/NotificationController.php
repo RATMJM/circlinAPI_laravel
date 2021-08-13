@@ -35,8 +35,9 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
-            ->groupBy(DB::raw("IF(type in ('".implode("','", $nogroup)."'), CONCAT(type,'|',id), type)"),
-                DB::raw("CONCAT(YEAR(created_at),'|',WEEK(created_at))"), 'feed_id', 'mission_id')
+            ->groupBy(DB::raw("IF(type in ('".implode("','", $nogroup)."'), id, type)"),
+                DB::raw("CONCAT(YEAR(notifications.created_at),'|',WEEK(notifications.created_at))"),
+                'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
             ->take(50);
 
@@ -72,10 +73,6 @@ class NotificationController extends Controller
         $res = $data->toArray();
         foreach ($data as $i => $item) {
             // common_codes 에 매칭되도록 type 치환
-            /*if (preg_match('/^('.implode('|',$nogroup).')\|.+/', $item->group_type, $match)) {
-                // dump($match);
-                $res[$i]['group_type'] = $match[1];
-            } else*/
             if ($item->count > 1 && !in_array($item->type, $nogroup)) {
                 $res[$i]['type'] = match ($item->type) {
                     'follow', 'feed_like', 'feed_comment', 'mission_like', 'mission_comment' => $item->type.'s',
@@ -85,9 +82,9 @@ class NotificationController extends Controller
             }
 
             $replaces = [
-                '{count}' => $item->count - 1,
-                '{nickname}' => $item->nickname,
-                '{mission}' => $item->mission_title,
+                '{%count}' => $item->count - 1,
+                '{%nickname}' => $item->nickname,
+                '{%mission}' => $item->mission_title,
             ];
             $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']] ?? '');
         }
