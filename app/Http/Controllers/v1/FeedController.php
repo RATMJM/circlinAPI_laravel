@@ -161,7 +161,7 @@ class FeedController extends Controller
                     'title' => $place_title,
                     'description' => $place_description,
                     'image' => $place_image,
-                    'url' => $place_url ?? "https://google.com/search?q=$place_title",
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
                 ]);
             }
 
