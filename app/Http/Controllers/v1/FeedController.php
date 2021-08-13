@@ -71,8 +71,6 @@ class FeedController extends Controller
                 'is_hidden' => $is_hidden == 1,
             ]);
 
-            dd($feed, $is_hidden);
-
             // 이미지 및 동영상 업로드
             if ($files) {
                 foreach ($files as $i => $file) {
