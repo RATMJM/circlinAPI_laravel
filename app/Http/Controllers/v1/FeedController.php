@@ -211,8 +211,8 @@ class FeedController extends Controller
                 'brands.id', 'feed_places.id')
             ->first();
 
-        $feed->product = arr_group($feed, 'product_', ['id', 'brand', 'title', 'image', 'url', 'price']);
-        $feed->place = arr_group($feed, 'place_', ['address', 'title', 'description', 'image', 'url']);
+        $feed->product = arr_group($feed, ['id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+        $feed->place = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
 
         if (is_null($feed)) {
             return success([

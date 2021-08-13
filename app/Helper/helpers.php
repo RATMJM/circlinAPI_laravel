@@ -77,11 +77,11 @@ function image_url($server, $image_url): string
 /**
  * 배열 그룹화
  */
-function arr_group(&$arr, string $cut = '', $list = []): array
+function arr_group(&$arr, $list, string $prefix = ''): array
 {
     $res = [];
     foreach ($list as $item) {
-        $res[$item] = Arr::pull($arr, $cut . $item);
+        $res[$item] = Arr::pull($arr, $prefix . $item);
     }
     return $res;
 }

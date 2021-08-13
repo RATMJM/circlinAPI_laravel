@@ -5,7 +5,6 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Follow;
 use App\Models\Mission;
-use App\Models\User;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,50 +29,27 @@ class MissionController extends Controller
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                'o.id as user_id', 'o.nickname', 'o.profile_image', 'os.gender',
+                'o.id as owner_id', 'o.nickname', 'o.profile_image', 'os.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                 DB::raw("COUNT(distinct of.user_id) as followers"),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'o.id')
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'user1' => MissionStat::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2' => MissionStat::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
                 DB::raw('COUNT(distinct ms.id) as bookmarks'),
                 DB::raw('COUNT(distinct mc.id) as comments'),
             ])
             ->groupBy('missions.id', 'o.id', 'os.id', 'oa.id')
             ->first();
 
-            $data->is_bookmark = (bool)$data->is_bookmark;
-            $data->owner = [
-                'user_id' => $data->user_id,
-                'nickname' => $data->nickname,
-                'profile_image' => $data->profile_image ?? '',
-                'gender' => $data->gender,
-                'area' => $data->area,
-                'followers' => $data->followers,
-                'is_following' => (bool)$data->is_following,
-            ];
-            unset($data->user_id, $data->nickname, $data->profile_image, $data->gender,
-                $data->area, $data->followers, $data->is_following);
-            $tmp1 = explode('|', $data->user1 ?? '|||');
-            $tmp2 = explode('|', $data->user2 ?? '|||');
-            $data->users = [
-                ['user_id' => $tmp1[0], 'nickname' => $tmp1[1], 'profile_image' => $tmp1[2], 'gender' => $tmp1[3]],
-                ['user_id' => $tmp2[0], 'nickname' => $tmp2[1], 'profile_image' => $tmp2[2], 'gender' => $tmp2[3]],
-            ];
-            unset($data->user1, $data->user2);
+        $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
+
+        $data->users = $data->mission_stats()
+            ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender'])
+            ->join('users', 'users.id', 'mission_stats.user_id')
+            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+            ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
+            ->groupBy('users.id', 'user_stats.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
 
         return success([
             'result' => true,
