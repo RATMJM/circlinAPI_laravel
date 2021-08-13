@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
+use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedPlace;
 use App\Models\FeedProduct;
@@ -183,16 +184,27 @@ class FeedController extends Controller
             ->join('users', 'users.id', 'feeds.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-            ->leftJoin('feed_likes', 'feed_likes.feed_id', 'feeds.id')
-            ->leftJoin('feed_comments', 'feed_comments.feed_id', 'feeds.id')
+            ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
+            ->leftJoin('products', 'products.id', 'feed_products.product_id')
+            ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                DB::raw("COUNT(distinct feed_likes.id) as like_total"),
-                DB::raw("COUNT(distinct feed_comments.id) as comment_total"),
+                'feed_products.type', 'feed_products.product_id',
+                DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand_title) as brand_title"),
+                DB::raw("IF(feed_products.type='inside', products.name_ko, feed_products.product_title) as product_title"),
+                DB::raw("IF(feed_products.type='inside', products.thumbnail_image, feed_products.image_url) as product_image"),
+                'feed_products.product_url',
+                DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
+                'feed_places.address', 'feed_places.title', 'feed_places.description',
+                'feed_places.image as place_image', 'feed_places.url',
+                'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
             ])
-            ->groupBy('feeds.id', 'users.id', 'user_stats.id', 'areas.id')
+            ->groupBy('feeds.id', 'users.id', 'user_stats.id', 'areas.id', 'feed_products.id', 'products.id',
+                'brands.id', 'feed_places.id')
             ->first();
 
         if (is_null($feed)) {
@@ -202,9 +214,9 @@ class FeedController extends Controller
             ]);
         }
 
-        $feed->images = FeedImage::where('feed_id', $id)->pluck('image');
+        $feed->images = $feed->images()->pluck('image');
 
-        $comments = FeedComment::where('feed_comments.feed_id', $id)
+        $comments = $feed->comments()
             ->join('users', 'users.id', 'feed_comments.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
@@ -213,6 +225,8 @@ class FeedController extends Controller
             ])
             ->orderBy('group')->orderBy('depth')->orderBy('id')
             ->get();
+
+        // dd(DB::getQueryLog());
 
         return success([
             'result' => true,
