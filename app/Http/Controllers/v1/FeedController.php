@@ -68,8 +68,10 @@ class FeedController extends Controller
             $feed = Feed::create([
                 'user_id' => $user_id,
                 'content' => $content,
-                'is_hidden' => $is_hidden === 1,
+                'is_hidden' => $is_hidden == 1,
             ]);
+
+            dd($feed, $is_hidden);
 
             // 이미지 및 동영상 업로드
             if ($files) {
