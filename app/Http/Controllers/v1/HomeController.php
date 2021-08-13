@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class HomeController extends Controller
 {
@@ -13,25 +14,29 @@ class HomeController extends Controller
     {
         $category_id = $category_id ?? $request->get('category_id');
 
-        if (!$category_id) {
-            return success([
-                'result' => false,
-                'reason' => 'not enough data',
-            ]);
+        $category_id = Arr::wrap($category_id ??
+            Arr::pluck(($categories = (new MissionCategoryController())->index('town')['data']['categories']), 'id'));
+
+        $tabs = [];
+        foreach ($category_id as $id) {
+            $tmp = $id === 0 ? $category_id : $id;
+            $tabs[$id] = [
+                'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
+                'banners' => (new BannerController())->category_banner($id),
+                'mission_total' => Mission::whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'))
+                ->when($tmp, function ($query, $id) {
+                    $query->whereIn('mission_category_id', Arr::wrap($id));
+                })->count(),
+                'missions' => (new MissionCategoryController())->mission($request, $tmp, 3)['data']['missions'],
+            ];
+            break;
         }
 
-        $bookmark = (new BookmarkController())->index($request, 3)['data']['missions'];
-        $banners = (new BannerController())->category_banner($category_id);
-        $mission_total = Mission::where('mission_category_id', $category_id)->count();
-        $missions = (new MissionCategoryController())->mission($request, $category_id, 3)['data']['missions'];
-
-        return success([
-            'result' => true,
-            'bookmarks' => $bookmark,
-            'banners' => $banners,
-            'mission_total' => $mission_total,
-            'missions' => $missions,
-        ]);
+        if (count($category_id) > 1) {
+            return success(['result' => true, 'categories' => $categories, 'tab' => $tabs]);
+        } else {
+            return success(['result' => true, 'tab' => $tabs[$category_id[0]]]);
+        }
     }
 
     public function newsfeed(): array
@@ -41,17 +46,17 @@ class HomeController extends Controller
 
     public function badge(): array
     {
-         $user_id = token()->uid;
+        $user_id = token()->uid;
 
         return success([
             'result' => true,
-            'feeds' => random_int(0,50),
+            'feeds' => random_int(0, 50),
             'missions' => MissionStat::where('user_id', $user_id)
                 ->whereDoesntHave('feed_missions', function ($query) {
                     $query->where('created_at', '>=', date('Y-m-d', time()));
                 })->count(),
-            'notifies' => random_int(0,50),
-            'messages' => random_int(0,200),
+            'notifies' => random_int(0, 50),
+            'messages' => random_int(0, 200),
         ]);
     }
 }

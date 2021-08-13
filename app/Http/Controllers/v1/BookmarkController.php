@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class BookmarkController extends Controller
 {
-    public function index(Request $request, $limit = null): array
+    public function index(Request $request, $category_id = [], $limit = null): array
     {
         $user_id = token()->uid;
 
-        $category_id = $request->get('category_id');
+        $category_id = $category_id ?? $request->get('category_id');
         $limit = $limit ?? $request->get('limit', 0);
 
         $data = Mission::when($category_id, function ($query, $category_id) {

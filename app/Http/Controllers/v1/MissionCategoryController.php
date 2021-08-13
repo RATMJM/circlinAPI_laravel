@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
+use App\Models\MissionComment;
+use App\Models\MissionStat;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
-use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -17,27 +19,26 @@ class MissionCategoryController extends Controller
 {
     public function index($town = null): array
     {
-        $data = MissionCategory::whereNotNull('mission_category_id');
         if ($town === 'town') {
             $user_id = token()->uid;
 
-            $data = $data->where(function ($query) use ($user_id) {
-                // 관심카테고리
-                $query->whereHas('favorite_category', function ($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
-                });
-                // 북마크한 미션이 있는 카테고리
-                $query->orWhereHas('missions', function ($query) use ($user_id) {
-                    $query->whereHas('mission_stats', function ($query) use ($user_id) {
+            $data = MissionCategory::whereNotNull('mission_category_id')
+                ->where(function ($query) use ($user_id) {
+                    // 관심카테고리
+                    $query->whereHas('favorite_category', function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
                     });
-                });
-            })
+                    // 북마크한 미션이 있는 카테고리
+                    $query->orWhereHas('missions', function ($query) use ($user_id) {
+                        $query->whereHas('mission_stats', function ($query) use ($user_id) {
+                            $query->where('user_id', $user_id);
+                        });
+                    });
+                })
+                ->orWhere('id', 0)
                 ->select([
-                    'mission_categories.id',
-                    DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
-                    DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
-                    'mission_categories.title',
+                    'id', DB::raw("CAST(id as CHAR(20)) as `key`"), DB::raw("COALESCE(emoji, '') as emoji"),
+                    'title',
                     'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->where('mission_stats.user_id', $user_id)
                         ->whereHas('mission', function ($query) use ($user_id) {
                             $query->whereColumn('missions.mission_category_id', 'mission_categories.id');
@@ -45,18 +46,17 @@ class MissionCategoryController extends Controller
                     'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
                         ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])
+                ->orderBy(DB::raw("id=0"), 'desc')
                 ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('id')
                 ->get();
-
-            $data = Arr::prepend($data->toArray(),
-                ['id' => 0, 'key' => 0, 'emoji' => '', 'title' => '전체', 'bookmark_total' => 0, 'is_favorite' => 0]);
         } else {
-            $data = $data->select([
-                'mission_categories.id',
-                DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
-                DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
-                'mission_categories.title',
-            ])->get();
+            $data = MissionCategory::whereNotNull('mission_category_id')
+                ->select([
+                    'mission_categories.id',
+                    DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
+                    DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
+                    'mission_categories.title',
+                ])->get();
         }
 
         return success([
@@ -112,89 +112,58 @@ class MissionCategoryController extends Controller
 
     public function mission(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
+        DB::enableQueryLog();
         $user_id = token()->uid;
 
         $limit = $limit ?? $request->get('limit', 20);
         $page = $page ?? $request->get('page', 0);
         $sort = $sort ?? $request->get('sort', 'popular');
 
-        if ($id) {
-            $data = Mission::where('mission_category_id', $id)
-                ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-                ->join('user_stats as os', 'os.user_id', 'o.id') // 미션 제작자
-                ->leftJoin('follows as of', 'of.target_id', 'o.id') // 미션 제작자 팔로워
-                ->leftJoin('areas as oa', 'oa.ctg_sm', 'o.area_code')
-                ->leftJoin('mission_stats as ms', function ($query) {
-                    $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
-                })
-                ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
-                ->select([
-                    'missions.id', 'missions.title', 'missions.description',
-                    'o.id as user_id', 'o.nickname', 'o.profile_image', 'os.gender',
-                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                    DB::raw("COUNT(distinct of.user_id) as followers"),
-                    'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'o.id')
-                        ->where('follows.user_id', $user_id),
-                    'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-                        ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                    'user1' => MissionStat::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
-                        ->whereColumn('mission_stats.mission_id', 'missions.id')
-                        ->join('users as u', 'u.id', 'mission_stats.user_id')
-                        ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
-                        ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                        ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                    'user2' => MissionStat::selectRaw("CONCAT_WS('|', COALESCE(u.id, ''), COALESCE(u.nickname, ''), COALESCE(u.profile_image, ''), COALESCE(us.gender, ''))")
-                        ->whereColumn('mission_stats.mission_id', 'missions.id')
-                        ->join('users as u', 'u.id', 'mission_stats.user_id')
-                        ->leftJoin('user_stats as us', 'us.user_id', 'u.id')
-                        ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                        ->groupBy('u.id', 'us.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                    DB::raw('COUNT(distinct ms.id) as bookmarks'),
-                    DB::raw('COUNT(distinct mc.id) as comments'),
-                ])
-                ->groupBy('missions.id', 'o.id', 'os.id', 'oa.id');
+        $data = Mission::when($id, function ($query, $id) {
+            $query->whereIn('missions.mission_category_id', Arr::wrap($id));
+        })
+            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
+            ->join('user_stats as os', 'os.user_id', 'o.id') // 미션 제작자
+            ->select([
+                'missions.id', 'missions.title', 'missions.description',
+                'o.id as user_id', 'o.nickname', 'o.profile_image', 'os.gender',
+                'area' => Area::selectRaw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area")
+                    ->whereColumn('ctg_sm', 'o.area_code')->limit(1),
+                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'o.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'o.id')
+                    ->where('follows.user_id', $user_id),
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
+                'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
+            ])
+            ->groupBy('missions.id', 'o.id', 'os.id');
 
-            if ($sort === 'popular') {
-                $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
-            } elseif ($sort === 'recent') {
-                $data->orderBy('missions.id', 'desc');
-            } else {
-                $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
-            }
-
-            $data = $data->skip($page * $limit)->take($limit)->get();
-
-            foreach ($data as $i => $item) {
-                $data[$i]['is_bookmark'] = (bool)$item->is_bookmark;
-                $data[$i]['owner'] = [
-                    'user_id' => $item->user_id,
-                    'nickname' => $item->nickname,
-                    'profile_image' => $item->profile_image ?? '',
-                    'gender' => $item->gender,
-                    'area' => $item->area,
-                    'followers' => $item->followers,
-                    'is_following' => (bool)$item->is_following,
-                ];
-                unset($data[$i]->user_id, $data[$i]->nickname, $data[$i]->profile_image, $data[$i]->gender,
-                    $data[$i]->area, $data[$i]->followers, $data[$i]->is_following);
-                $tmp1 = explode('|', $item['user1'] ?? '|||');
-                $tmp2 = explode('|', $item['user2'] ?? '|||');
-                $data[$i]['users'] = [
-                    ['user_id' => $tmp1[0], 'nickname' => $tmp1[1], 'profile_image' => $tmp1[2], 'gender' => $tmp1[3]],
-                    ['user_id' => $tmp2[0], 'nickname' => $tmp2[1], 'profile_image' => $tmp2[2], 'gender' => $tmp2[3]],
-                ];
-                unset($data[$i]->user1, $data[$i]->user2);
-            }
-
-            return success([
-                'result' => true,
-                'missions' => $data,
-            ]);
+        if ($sort === 'popular') {
+            $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+        } elseif ($sort === 'recent') {
+            $data->orderBy('missions.id', 'desc');
         } else {
-            return success([
-                'result' => false,
-                'reason' => 'not enough data',
-            ]);
+            $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         }
+
+        $data = $data->skip($page * $limit)->take($limit)->get();
+
+        foreach ($data as $i => $item) {
+            $data[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                'area', 'followers', 'is_following']);
+
+            $data[$i]->users = $item->mission_stats()
+                ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender'])
+                ->join('users', 'users.id', 'mission_stats.user_id')
+                ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+                ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
+                ->groupBy('users.id', 'user_stats.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
+        }
+
+        return success([
+            'result' => true,
+            'missions' => $data,
+        ]);
     }
 }
