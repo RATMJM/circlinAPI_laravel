@@ -2,6 +2,7 @@
 
 use Firebase\JWT\JWT;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 
 const ALLOW_IP = [
@@ -71,6 +72,18 @@ function image_url($server, $image_url): string
 {
 
     return "https://" . config("filesystems.disks.ftp$server.host") . "/$image_url";
+}
+
+/**
+ * 배열 그룹화
+ */
+function arr_group(&$arr, string $cut = '', $list = []): array
+{
+    $res = [];
+    foreach ($list as $item) {
+        $res[$item] = Arr::pull($arr, $cut . $item);
+    }
+    return $res;
 }
 
 /**

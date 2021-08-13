@@ -197,7 +197,7 @@ class FeedController extends Controller
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                 'feed_products.type', 'feed_products.product_id',
-                DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand_title) as brand_title"),
+                DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand_title) as product_brand"),
                 DB::raw("IF(feed_products.type='inside', products.name_ko, feed_products.product_title) as product_title"),
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, feed_products.image_url) as product_image"),
                 'feed_products.product_url',
@@ -210,6 +210,9 @@ class FeedController extends Controller
             ->groupBy('feeds.id', 'users.id', 'user_stats.id', 'areas.id', 'feed_products.id', 'products.id',
                 'brands.id', 'feed_places.id')
             ->first();
+
+        $feed->product = arr_group($feed, 'product_', ['id', 'brand', 'title', 'image', 'url', 'price']);
+        $feed->place = arr_group($feed, 'place_', ['address', 'title', 'description', 'image', 'url']);
 
         if (is_null($feed)) {
             return success([
