@@ -157,11 +157,11 @@ class FeedController extends Controller
             if ($place_address && $place_title && $place_image) {
                 FeedPlace::create([
                     'feed_id' => $feed->id,
-                    'place_address' => $place_address,
-                    'place_title' => $place_title,
-                    'place_description' => $place_description,
-                    'place_image' => $place_image,
-                    'place_url' => $place_url ?? "https://google.com/search?q=$place_title",
+                    'address' => $place_address,
+                    'title' => $place_title,
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? "https://google.com/search?q=$place_title",
                 ]);
             }
 
