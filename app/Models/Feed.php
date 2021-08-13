@@ -12,8 +12,33 @@ class Feed extends Model
 
     protected $guarded = [];
 
+    public function user()
+    {
+        return $this->hasOne(User::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(FeedImage::class);
+    }
+
     public function likes()
     {
-        $this->hasMany('App\Models\FeedLike');
+        return $this->hasMany(FeedLike::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(FeedComment::class);
+    }
+
+    public function product()
+    {
+        return $this->hasOne(FeedProduct::class);
+    }
+
+    public function place()
+    {
+        return $this->hasOne(FeedPlace::class);
     }
 }

@@ -10,4 +10,14 @@ class FeedComment extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function feed()
+    {
+        return $this->belongsTo(Feed::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
