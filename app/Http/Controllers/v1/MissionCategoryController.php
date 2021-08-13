@@ -34,7 +34,7 @@ class MissionCategoryController extends Controller
             })
                 ->select([
                     'mission_categories.id',
-                    'mission_categories.id as key',
+                    DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
                     DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
                     'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->where('mission_stats.user_id', $user_id)
@@ -49,6 +49,7 @@ class MissionCategoryController extends Controller
         } else {
             $data = $data->select([
                 'mission_categories.id',
+                DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
                 DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
                 'mission_categories.title',
             ])->get();
