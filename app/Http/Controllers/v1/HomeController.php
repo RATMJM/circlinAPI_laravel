@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
+use App\Models\MissionStat;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -33,6 +34,11 @@ class HomeController extends Controller
         ]);
     }
 
+    public function newsfeed(): array
+    {
+
+    }
+
     public function badge(): array
     {
          $user_id = token()->uid;
@@ -40,7 +46,10 @@ class HomeController extends Controller
         return success([
             'result' => true,
             'feeds' => random_int(0,50),
-            'missions' => random_int(0,5),
+            'missions' => MissionStat::where('user_id', $user_id)
+                ->whereDoesntHave('feed_missions', function ($query) {
+                    $query->where('created_at', '>=', date('Y-m-d', time()));
+                })->count(),
             'notifies' => random_int(0,50),
             'messages' => random_int(0,200),
         ]);
