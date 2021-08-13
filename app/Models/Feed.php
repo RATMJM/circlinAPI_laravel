@@ -22,6 +22,11 @@ class Feed extends Model
         return $this->hasMany(FeedImage::class);
     }
 
+    public function missions()
+    {
+        return $this->hasMany(FeedMission::class);
+    }
+
     public function likes()
     {
         return $this->hasMany(FeedLike::class);
