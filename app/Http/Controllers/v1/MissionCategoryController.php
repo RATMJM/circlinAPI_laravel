@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class MissionCategoryController extends Controller
@@ -46,6 +47,9 @@ class MissionCategoryController extends Controller
                 ])
                 ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('id')
                 ->get();
+
+            $data = Arr::prepend($data->toArray(),
+                ['id' => 0, 'key' => 0, 'emoji' => '', 'title' => '전체', 'bookmark_total' => 0, 'is_favorite' => 0]);
         } else {
             $data = $data->select([
                 'mission_categories.id',
