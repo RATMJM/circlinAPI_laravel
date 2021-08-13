@@ -182,6 +182,8 @@ class FeedController extends Controller
 
     public function show($id): array
     {
+        $user_id = token()->uid;
+
         $feed = Feed::where('feeds.id', $id)
             ->join('users', 'users.id', 'feeds.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
@@ -218,6 +220,16 @@ class FeedController extends Controller
 
         $feed->images = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
+        $feed->missions = $feed->missions()
+            ->join('missions', 'missions.id', 'feed_missions.mission_id')
+            ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
+            ->select([
+                'missions.id', 'mission_categories.emoji', 'missions.title',
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
+            ])
+            ->get();
+
         $comments = $feed->comments()
             ->join('users', 'users.id', 'feed_comments.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
@@ -227,8 +239,6 @@ class FeedController extends Controller
             ])
             ->orderBy('group')->orderBy('depth')->orderBy('id')
             ->get();
-
-        // dd(DB::getQueryLog());
 
         return success([
             'result' => true,
