@@ -216,7 +216,7 @@ class FeedController extends Controller
             ]);
         }
 
-        $feed->images = $feed->images()->pluck('image');
+        $feed->images = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
         $comments = $feed->comments()
             ->join('users', 'users.id', 'feed_comments.user_id')
