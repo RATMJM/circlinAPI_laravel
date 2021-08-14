@@ -234,6 +234,6 @@ class FeedController extends Controller
 
     public function destroy($id): array
     {
-        $user_id =
+        // $user_id =
     }
 }
