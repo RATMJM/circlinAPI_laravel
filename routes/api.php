@@ -68,9 +68,7 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 Route::get('/notification', [v1\NotificationController::class, 'index'])->name('notification.index');
 
 /* 미션 관련 */
-Route::resources([
-    'bookmark' => v1\BookmarkController::class,
-]);
+Route::resource('bookmark', v1\BookmarkController::class);
 Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
     Route::get('/{town?}', [v1\MissionCategoryController::class, 'index'])->where(['town' => 'town'])->name('index');
     Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
@@ -83,10 +81,18 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 
 /* Home */
 Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
+Route::get('/newsfeed', [v1\HomeController::class, 'newsfeed'])->name('home.newsfeed');
 Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
-Route::resource('/feed', v1\FeedController::class);
-Route::resource('/feed/{feed_id}/comment', v1\FeedCommentController::class);
+Route::group(['prefix' => 'feed', 'feed.'], function () {
+    Route::resource('/', v1\FeedController::class);
+    Route::group(['prefix' => '{feed_id}'], function () {
+        Route::get('/like', [v1\FeedLikeController::class, 'index']);
+        Route::post('/like', [v1\FeedLikeController::class, 'store']);
+        Route::delete('/like', [v1\FeedLikeController::class, 'destroy']);
+        Route::resource('/comment', v1\FeedCommentController::class);
+    });
+});
 
 /* 마이페이지 (UserController 로 넘김) */
 Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
