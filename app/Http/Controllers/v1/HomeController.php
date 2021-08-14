@@ -3,7 +3,16 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Feed;
+use App\Models\FeedComment;
+use App\Models\FeedImage;
+use App\Models\FeedLike;
+use App\Models\FeedMission;
+use App\Models\FeedPlace;
+use App\Models\FeedProduct;
+use App\Models\Follow;
 use App\Models\Mission;
+use App\Models\MissionCategory;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -41,9 +50,61 @@ class HomeController extends Controller
         }
     }
 
-    public function newsfeed(): array
+    public function newsfeed(Request $request): array
     {
+        $user_id = token()->uid;
 
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 5);
+
+        $data = Feed::where('is_hidden', false)
+            ->whereHas('user', function ($query) use ($user_id) {
+                $query->whereHas('followers', function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                });
+            })
+            ->join('users', 'users.id', 'feeds.user_id')
+            ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->select([
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'area' => area(),
+                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'feeds.id as feed_id', 'feeds.created_at', 'feeds.content',
+                'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
+                'has_product' => FeedProduct::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
+                'has_place' => FeedPlace::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+                'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->where('user_id', token()->uid),
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->where('user_id', token()->uid),
+            ])
+            ->groupBy('feeds.id')
+            ->orderBy('feeds.id', 'desc')
+            ->skip($page * $limit)->take($limit)->get();
+
+        $feed_id = $data->pluck('feed_id');
+
+        $missions = Mission::whereIn('feed_missions.feed_id', $feed_id)
+            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
+            ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
+            ->select([
+                'feed_missions.feed_id', 'missions.title', 'mission_categories.emoji',
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
+                    ->whereColumn('mission_id', 'missions.id'),
+            ])
+            ->get();
+
+        foreach ($missions->groupBy('feed_id') as $i => $mission) {
+            $data[array_search($i, $feed_id->toArray())]->missions = $mission;
+        }
+
+        return success([
+            'result' => true,
+            'feeds' => $data,
+        ]);
     }
 
     public function badge(): array

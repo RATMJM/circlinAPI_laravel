@@ -70,8 +70,16 @@ function token_option(): object|null
  */
 function image_url($server, $image_url): string
 {
-
     return "https://" . config("filesystems.disks.ftp$server.host") . "/$image_url";
+}
+
+/**
+ * area 변환
+ */
+function area()
+{
+    return \App\Models\Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
+        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', 'users.area_code');
 }
 
 /**
