@@ -234,6 +234,19 @@ class FeedController extends Controller
 
     public function destroy($id): array
     {
-        // $user_id =
+        $user_id = token()->uid;
+
+        $feed = Feed::where('id', $id)->first();
+
+        if ($feed->user_id === $user_id) {
+            $data = $feed->delete();
+
+            return success(['result' => true]);
+        } else {
+            return success([
+                'result' => false,
+                'reason' => 'not access feed',
+            ]);
+        }
     }
 }
