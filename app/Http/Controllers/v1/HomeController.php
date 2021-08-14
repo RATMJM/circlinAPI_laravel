@@ -91,7 +91,7 @@ class HomeController extends Controller
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
-                'feed_missions.feed_id', 'missions.title', 'mission_categories.emoji',
+                'feed_missions.feed_id', 'missions.id', 'missions.title', 'mission_categories.emoji',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
                     ->whereColumn('mission_id', 'missions.id'),
             ])
