@@ -88,7 +88,7 @@ class CommentController extends Controller
             if (token()->uid !== $data->user_id) {
                 return success([
                     'result' => false,
-                    'reason' => 'not your comment',
+                    'reason' => 'not access comment',
                 ]);
             }
 
