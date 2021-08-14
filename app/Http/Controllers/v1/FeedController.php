@@ -22,16 +22,6 @@ use Intervention\Image\Facades\Image;
 
 class FeedController extends Controller
 {
-    public function index(): array
-    {
-        //
-    }
-
-    public function create()
-    {
-        abort(404);
-    }
-
     public function store(Request $request): array
     {
         $user_id = token()->uid;
@@ -242,19 +232,8 @@ class FeedController extends Controller
         ]);
     }
 
-    public function edit($id): array
-    {
-        //
-    }
-
-    public function update(Request $request, $id): array
-    {
-        //
-    }
-
     public function destroy($id): array
     {
-        //
-
+        $user_id =
     }
 }
