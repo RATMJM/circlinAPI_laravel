@@ -23,8 +23,10 @@ class HomeController extends Controller
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($id),
-                'mission_total' => Mission::whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'))
-                ->when($tmp, function ($query, $id) {
+                'mission_total' => Mission::where(function ($query) {
+                    $query->whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'));
+                })
+                ->when($id, function ($query, $id) {
                     $query->whereIn('mission_category_id', Arr::wrap($id));
                 })->count(),
                 'missions' => (new MissionCategoryController())->mission($request, $tmp, 3)['data']['missions'],
