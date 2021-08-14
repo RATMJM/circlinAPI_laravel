@@ -85,11 +85,13 @@ Route::get('/newsfeed', [v1\HomeController::class, 'newsfeed'])->name('home.news
 Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::group(['prefix' => 'feed', 'feed.'], function () {
-    Route::resource('/', v1\FeedController::class);
     Route::group(['prefix' => '{feed_id}'], function () {
-        Route::get('/like', [v1\FeedLikeController::class, 'index']);
-        Route::post('/like', [v1\FeedLikeController::class, 'store']);
-        Route::delete('/like', [v1\FeedLikeController::class, 'destroy']);
+        Route::get('/', [v1\FeedController::class, 'show'])->name('show');
+        Route::post('/', [v1\FeedController::class, 'store'])->name('store');
+        Route::delete('/', [v1\FeedController::class, 'destroy'])->name('destroy');
+        Route::get('/like', [v1\FeedLikeController::class, 'index'])->name('like.index');
+        Route::post('/like', [v1\FeedLikeController::class, 'store'])->name('like.store');
+        Route::delete('/like', [v1\FeedLikeController::class, 'destroy'])->name('like.destroy');
         Route::resource('/comment', v1\FeedCommentController::class);
     });
 });
