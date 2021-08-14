@@ -86,6 +86,7 @@ Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
 Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::resource('/feed', v1\FeedController::class);
+Route::resource('/feed/{feed_id}/comment', v1\FeedCommentController::class);
 
 /* 마이페이지 (UserController 로 넘김) */
 Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {

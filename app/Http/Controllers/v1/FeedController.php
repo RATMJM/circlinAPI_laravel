@@ -233,15 +233,7 @@ class FeedController extends Controller
             ])
             ->get();
 
-        $comments = $feed->comments()
-            ->join('users', 'users.id', 'feed_comments.user_id')
-            ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->select([
-                'feed_comments.group', 'feed_comments.id', 'feed_comments.comment',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-            ])
-            ->orderBy('group')->orderBy('depth')->orderBy('id')
-            ->get();
+        $comments = (new CommentController())->index('feed', $feed->id)['data']['comments'];
 
         return success([
             'result' => true,
