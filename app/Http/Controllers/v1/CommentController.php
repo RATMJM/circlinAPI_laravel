@@ -20,7 +20,7 @@ class CommentController extends Controller
             };
 
             $comments = $query->where("{$table}_id", $id)
-                ->join('users', 'users.id', 'feed_comments.user_id')
+                ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.id", "{$table}_comments.comment",
@@ -45,6 +45,13 @@ class CommentController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            if (!$comment) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
 
             $query = match ($table) {
                 'feed' => new FeedComment,

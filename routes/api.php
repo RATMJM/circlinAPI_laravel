@@ -75,9 +75,15 @@ Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
     Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission'])->name('mission');
 });
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
-    Route::get('/{mission_id}', [v1\MissionController::class, 'show'])->name('show');
-    Route::get('/{mission_id}/user', [v1\MissionController::class, 'user'])->name('user');
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
+    Route::group(['prefix' => '{mission_id}'], function () {
+        Route::get('/', [v1\MissionController::class, 'show'])->name('show');
+        Route::get('/user', [v1\MissionController::class, 'user'])->name('user');
+        Route::get('/like', [v1\MissionLikeController::class, 'index'])->name('like.index');
+        Route::post('/like', [v1\MissionLikeController::class, 'store'])->name('like.store');
+        Route::delete('/like', [v1\MissionLikeController::class, 'destroy'])->name('like.destroy');
+        Route::resource('/comment', v1\MissionCommentController::class);
+    });
 });
 
 /* Home */

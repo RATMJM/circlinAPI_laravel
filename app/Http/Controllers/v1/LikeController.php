@@ -21,7 +21,7 @@ class LikeController extends Controller
             };
 
             $likes = $query->where("{$table}_id", $id)
-                ->join('users', 'users.id', 'feed_likes.user_id')
+                ->join('users', 'users.id', "{$table}_likes.user_id")
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->select(['users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender'])
                 ->get();
@@ -51,7 +51,7 @@ class LikeController extends Controller
             if ($query[0]->where('id', $id)->value('user_id') === token()->uid) {
                 return success([
                     'result' => false,
-                    'reason' => 'my feed',
+                    'reason' => "my $table",
                 ]);
             }
 
@@ -74,7 +74,7 @@ class LikeController extends Controller
             $data = (match ($table) {
                 'feed' => new FeedLike(),
                 'mission' => new MissionLike(),
-            })->where(['feed_id' => $id, 'user_id' => token()->uid])->first();
+            })->where(["{$table}_id" => $id, 'user_id' => token()->uid])->first();
 
             if (is_null($data)) {
                 return success([
