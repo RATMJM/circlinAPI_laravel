@@ -81,6 +81,7 @@ class FeedController extends Controller
                         $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
                         $image->save($tmp_path);
                         $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", new File($tmp_path));
+                        @unlink($tmp_path);
                     } elseif (str_starts_with($file->getMimeType(), 'video/')) {
                         $type = 'video';
                         $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", $file);
