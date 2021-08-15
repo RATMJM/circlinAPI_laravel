@@ -16,6 +16,7 @@ use App\Models\MissionCategory;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -65,6 +66,10 @@ class HomeController extends Controller
             })
             ->join('users', 'users.id', 'feeds.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
+            ->leftJoin('products', 'products.id', 'feed_products.product_id')
+            ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
@@ -72,10 +77,16 @@ class HomeController extends Controller
                     ->where('user_id', $user_id),
                 'feeds.id as feed_id', 'feeds.created_at', 'feeds.content',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
-                'has_product' => FeedProduct::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => FeedPlace::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'feed_products.type as product_type', 'feed_products.product_id',
+                DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand) as product_brand"),
+                DB::raw("IF(feed_products.type='inside', products.name_ko, feed_products.title) as product_title"),
+                DB::raw("IF(feed_products.type='inside', products.thumbnail_image, feed_products.image) as product_image"),
+                'feed_products.url as product_url',
+                DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
+                'feed_places.address as place_address', 'feed_places.title as place_title', 'feed_places.description as place_description',
+                'feed_places.image as place_image', 'feed_places.url as place_url',
                 'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
@@ -83,9 +94,13 @@ class HomeController extends Controller
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('user_id', token()->uid),
             ])
-            ->groupBy('feeds.id')
             ->orderBy('feeds.id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
+
+        foreach ($data as $i => $item) {
+            $data[$i]->product = arr_group($data[$i], ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+            $data[$i]->place = arr_group($data[$i], ['address', 'title', 'description', 'image', 'url'], 'place_');
+        }
 
         $feed_id = $data->pluck('feed_id');
 
