@@ -184,13 +184,12 @@ class FeedController extends Controller
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                'feed_products.type', 'feed_products.product_id',
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'feed_products.type as product_type', 'feed_products.product_id',
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand) as product_brand"),
                 DB::raw("IF(feed_products.type='inside', products.name_ko, feed_products.title) as product_title"),
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, feed_products.image) as product_image"),
-                'feed_products.url',
+                'feed_products.url as product_url',
                 DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
                 'feed_places.address as place_address', 'feed_places.title as place_title', 'feed_places.description as place_description',
                 'feed_places.image as place_image', 'feed_places.url as place_url',
@@ -201,7 +200,7 @@ class FeedController extends Controller
                 'brands.id', 'feed_places.id')
             ->first();
 
-        $feed->product = arr_group($feed, ['id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+        $feed->product = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
         $feed->place = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
 
         if (is_null($feed)) {
