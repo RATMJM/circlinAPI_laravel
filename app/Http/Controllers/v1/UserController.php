@@ -289,18 +289,24 @@ class UserController extends Controller
      */
     public function follower($user_id): array
     {
+        $users = User::where('follows.target_id', $user_id)
+            ->join('follows', 'follows.user_id', 'users.id')
+            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
+            ])
+            ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
+            ->orderBy('follows.id', 'desc')
+            ->get();
+
         return success([
             'result' => true,
-            'users' => Follow::where('follows.target_id', $user_id)
-                ->join('users', 'users.id', 'follows.user_id')
-                ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
-                ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
-                ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                    DB::raw("COUNT(distinct f2.id) as follower")])
-                ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
-                ->get(),
+            'users' => $users,
         ]);
     }
 
@@ -309,18 +315,24 @@ class UserController extends Controller
      */
     public function following($user_id): array
     {
+        $users = User::where('follows.user_id', $user_id)
+            ->join('follows', 'follows.target_id', 'users.id')
+            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
+            ])
+            ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
+            ->orderBy('follows.id', 'desc')
+            ->get();
+
         return success([
             'result' => true,
-            'users' => Follow::where('follows.user_id', $user_id)
-                ->join('users', 'users.id', 'follows.target_id')
-                ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
-                ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->leftJoin('follows as f2', 'f2.target_id', 'users.id')
-                ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
-                    DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                    DB::raw("COUNT(distinct f2.id) as follower")])
-                ->groupBy(['follows.id', 'users.id', 'user_stats.id', 'areas.id'])
-                ->get(),
+            'users' => $users,
         ]);
     }
 
