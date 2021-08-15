@@ -50,16 +50,16 @@ class MypageController extends Controller
     /**
      * 나를 팔로우
      */
-    public function follower($user_id): array
+    public function follower(): array
     {
-        return (new UserController())->follower($user_id);
+        return (new UserController())->follower(token()->uid);
     }
 
     /**
      * 내가 팔로우
      */
-    public function following($user_id): array
+    public function following(): array
     {
-        return (new UserController())->following($user_id);
+        return (new UserController())->following(token()->uid);
     }
 }
