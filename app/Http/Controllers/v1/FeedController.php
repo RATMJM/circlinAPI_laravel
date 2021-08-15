@@ -177,7 +177,6 @@ class FeedController extends Controller
         $feed = Feed::where('feeds.id', $id)
             ->join('users', 'users.id', 'feeds.user_id')
             ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
             ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
@@ -196,8 +195,6 @@ class FeedController extends Controller
                 'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
             ])
-            ->groupBy('feeds.id', 'users.id', 'user_stats.id', 'areas.id', 'feed_products.id', 'products.id',
-                'brands.id', 'feed_places.id')
             ->first();
 
         $feed->product = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
