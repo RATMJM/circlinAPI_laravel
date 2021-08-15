@@ -5,12 +5,169 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Follow;
 use App\Models\Mission;
+use App\Models\MissionImage;
+use App\Models\MissionPlace;
+use App\Models\MissionProduct;
 use App\Models\MissionStat;
+use Exception;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 class MissionController extends Controller
 {
+    public function store(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            $mission_category_id = $request->get('mission_category_id');
+            $title = $request->get('title');
+            $description = $request->get('description');
+            $thumbnail = $request->file('thumbnail');
+            $files = $request->file('files');
+
+            $product_id = $request->get('product_id');
+            $product_brand = $request->get('product_brand');
+            $product_title = $request->get('product_title');
+            $product_image = $request->get('product_image');
+            $product_url = $request->get('product_url');
+            $product_price = $request->get('product_price');
+
+            $place_address = $request->get('place_address');
+            $place_title = $request->get('place_title');
+            $place_description = $request->get('place_description');
+            $place_image = $request->get('place_image');
+            $place_url = $request->get('place_url');
+
+            if (!$title && !$files) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            $uploaded_thumbnail = null;
+            if ($thumbnail) {
+                if (str_starts_with($thumbnail->getMimeType(), 'image/')) {
+                    $type = 'image';
+                    $image = Image::make($thumbnail->getPathname());
+                    if ($image->width() > $image->height()) {
+                        $x = ($image->width() - $image->height()) / 2;
+                        $y = 0;
+                        $src = $image->height();
+                    } else {
+                        $x = 0;
+                        $y = ($image->height() - $image->width()) / 2;
+                        $src = $image->width();
+                    }
+                    $image->crop($src, $src, round($x), round($y));
+                    $tmp_path = "{$thumbnail->getPath()}/{$user_id}_" . Str::uuid() . ".{$thumbnail->extension()}";
+                    $image->save($tmp_path);
+                    $uploaded_thumbnail = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", new File($tmp_path));
+                    @unlink($tmp_path);
+                }
+            }
+
+            $data = Mission::create([
+                'user_id' => $user_id,
+                'mission_category_id' => $mission_category_id,
+                'title' => $title,
+                'description' => $description,
+                'thumbnail_image' => image_url(3, $uploaded_thumbnail),
+            ]);
+
+            if ($files) {
+                foreach ($files as $i => $file) {
+                    $uploaded_thumbnail = '';
+                    if (str_starts_with($file->getMimeType(), 'image/')) {
+                        $type = 'image';
+                        $image = Image::make($file->getPathname());
+                        if ($image->width() > $image->height()) {
+                            $x = ($image->width() - $image->height()) / 2;
+                            $y = 0;
+                            $src = $image->height();
+                        } else {
+                            $x = 0;
+                            $y = ($image->height() - $image->width()) / 2;
+                            $src = $image->width();
+                        }
+                        $image->crop($src, $src, round($x), round($y));
+                        $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
+                        $image->save($tmp_path);
+                        $uploaded_file = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", new File($tmp_path));
+                        @unlink($tmp_path);
+                    } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                        $type = 'video';
+                        $uploaded_file = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", $file);
+
+                        $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
+
+                        $host = config('filesystems.disks.ftp3.host');
+                        $username = config('filesystems.disks.ftp3.username');
+                        $password = config('filesystems.disks.ftp3.password');
+                        $url = image_url(3, $uploaded_file);
+                        $url2 = image_url(3, $thumbnail);
+                        if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $data->id)) {
+                            $uploaded_thumbnail = $thumbnail;
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    MissionImage::create([
+                        'mission_id' => $data->id,
+                        'order' => $i,
+                        'type' => $type,
+                        'image' => image_url(3, $uploaded_file),
+                        'thumbnail_image' => image_url(3, $uploaded_thumbnail ?: $uploaded_file),
+                    ]);
+                }
+            }
+
+            if ($product_id) {
+                MissionProduct::create([
+                    'mission_id' => $data->id,
+                    'type' => 'inside',
+                    'product_id' => $product_id
+                ]);
+            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                MissionProduct::create([
+                    'mission_id' => $data->id,
+                    'type' => 'outside',
+                    'image' => $product_image,
+                    'brand' => $product_brand,
+                    'title' => $product_title,
+                    'price' => $product_price,
+                    'url' => $product_url,
+                ]);
+            }
+
+            if ($place_address && $place_title && $place_image) {
+                MissionPlace::create([
+                    'mission_id' => $data->id,
+                    'address' => $place_address,
+                    'title' => $place_title,
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                ]);
+            }
+
+            DB::commit();
+
+            return success(['result' => true, 'mission' => $data]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     /**
      * 미션 상세
      */

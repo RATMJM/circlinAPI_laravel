@@ -77,6 +77,7 @@ Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::get('/{mission_id}', [v1\MissionController::class, 'show'])->name('show');
     Route::get('/{mission_id}/user', [v1\MissionController::class, 'user'])->name('user');
+    Route::post('/', [v1\MissionController::class, 'store'])->name('store');
 });
 
 /* Home */
