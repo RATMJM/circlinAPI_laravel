@@ -26,13 +26,6 @@ class FeedController extends Controller
     {
         $user_id = token()->uid;
 
-        if (!$request->has('content') || !$request->hasFile('files')) {
-            return success([
-                'result' => false,
-                'reason' => 'not enough data',
-            ]);
-        }
-
         $files = $request->file('files');
         $content = $request->get('content');
         $missions = $request->get('missions');
@@ -51,6 +44,12 @@ class FeedController extends Controller
         $place_image = $request->get('place_image');
         $place_url = $request->get('place_url');
 
+        if (!$content || !$files) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
 
         try {
             DB::beginTransaction();
@@ -140,11 +139,11 @@ class FeedController extends Controller
                 FeedProduct::create([
                     'feed_id' => $feed->id,
                     'type' => 'outside',
-                    'image_url' => $product_image,
-                    'brand_title' => $product_brand,
-                    'product_title' => $product_title,
+                    'image' => $product_image,
+                    'brand' => $product_brand,
+                    'title' => $product_title,
                     'price' => $product_price,
-                    'product_url' => $product_url,
+                    'url' => $product_url,
                 ]);
             }
 
