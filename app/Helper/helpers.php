@@ -76,10 +76,10 @@ function image_url($server, $image_url): string
 /**
  * area 변환
  */
-function area()
+function area($table = 'users')
 {
     return \App\Models\Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
-        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', 'users.area_code');
+        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', "$table.area_code");
 }
 
 /**
