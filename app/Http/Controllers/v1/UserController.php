@@ -372,7 +372,7 @@ class UserController extends Controller
     /**
      * 피드 데이터
      */
-    public function feed(Request $request, $user_id, $feed_id = null): array
+    public function feed(Request $request, $user_id): array
     {
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
@@ -390,8 +390,11 @@ class UserController extends Controller
             ->get();
 
         $feeds = Feed::where('feeds.user_id', $user_id)
+            ->when(token()->uid != $user_id, function ($query) {
+                $query->where('is_hidden', false);
+            })
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
                 'has_place' => FeedPlace::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
