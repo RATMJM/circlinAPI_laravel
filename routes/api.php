@@ -108,7 +108,10 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 });
 
 /* 탐색 페이지 */
-Route::get('explore', [v1\SearchController::class, 'index'])->name('explore');
+Route::get('/explore', [v1\SearchController::class, 'index'])->name('explore');
+Route::get('/explore/search', [v1\SearchController::class, 'search'])->name('explore.search');
+Route::get('/explore/search/user', [v1\SearchController::class, 'user'])->name('explore.search.user');
+Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->name('explore.search.mission');
 
 /* 샵 관련 */
 Route::get('/shop_banner', [v1\ShopController::class, 'shop_banner']);
@@ -116,5 +119,3 @@ Route::get('/shop_category', [v1\ShopController::class, 'shop_category']);
 Route::post('/item_list', [v1\ShopController::class, 'item_list']);
 Route::get('/shop/point', [v1\ShopController::class, 'shop_point_list']);
 Route::get('/shop/bought', [v1\ShopController::class, 'bought_product_list']);
-
-
