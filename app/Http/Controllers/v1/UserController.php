@@ -235,6 +235,13 @@ class UserController extends Controller
                 ]);
             }
 
+            if ($user_id == $target_id) {
+                return success([
+                    'result' => false,
+                    'reason' => 'follow self',
+                ]);
+            }
+
             if (Follow::where(['user_id' => $user_id, 'target_id' => $target_id])->exists()) {
                 return success(['result' => false, 'reason' => 'already following']);
             } else {
