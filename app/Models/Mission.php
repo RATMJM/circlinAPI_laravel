@@ -11,18 +11,23 @@ class Mission extends Model
 
     protected $guarded = [];
 
+    public function images()
+    {
+        return $this->hasMany(MissionImage::class);
+    }
+
     public function mission_stats()
     {
-        return $this->hasMany('App\Models\MissionStat');
+        return $this->hasMany(MissionStat::class);
     }
 
     public function feed_missions()
     {
-        return $this->hasMany('App\Models\FeedMission');
+        return $this->hasMany(FeedMission::class);
     }
 
     public function category()
     {
-        return $this->belongsTo('App\Models\MissionCategory', 'mission_category_id');
+        return $this->belongsTo(MissionCategory::class, 'mission_category_id');
     }
 }

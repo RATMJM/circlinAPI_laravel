@@ -10,4 +10,9 @@ class FeedPlace extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function feed()
+    {
+        return $this->belongsTo(Feed::class);
+    }
 }
