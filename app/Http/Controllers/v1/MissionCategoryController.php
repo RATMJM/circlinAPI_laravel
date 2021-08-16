@@ -68,6 +68,8 @@ class MissionCategoryController extends Controller
 
     public function show(Request $request, $category_id): array
     {
+        $user_id = token()->uid;
+
         if (!$category_id) {
             return success([
                 'result' => false,
@@ -84,7 +86,7 @@ class MissionCategoryController extends Controller
             ])
             ->first();
 
-        $users = User::whereHas('mission_stats', function ($query) use ($category_id) {
+        /*$users = User::whereHas('mission_stats', function ($query) use ($category_id) {
             $query->whereHas('mission', function ($query) use ($category_id) {
                 $query->whereHas('category', function ($query) use ($category_id) {
                     $query->where('id', $category_id);
@@ -94,7 +96,18 @@ class MissionCategoryController extends Controller
             ->leftJoin('follows as f', 'f.target_id', 'users.id')
             ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
             ->groupBy('users.id')
-            ->orderBy('followers', 'desc')->paginate(3);
+            ->orderBy('followers', 'desc')->paginate(3);*/
+        $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
+            ->join('users', 'users.id', 'user_favorite_categories.user_id')
+            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
+            ])
+            ->orderBy('follower', 'desc')->orderBy('id', 'desc')
+            ->take(2)->get();
 
         $banners = (new BannerController())->category_banner($category_id);
         $mission_total = Mission::where('mission_category_id', $category_id)->count();
