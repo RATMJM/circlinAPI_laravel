@@ -56,6 +56,7 @@ class MissionCategoryController extends Controller
                     DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
                     DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
+                    'mission_categories.description',
                 ])->get();
         }
 
