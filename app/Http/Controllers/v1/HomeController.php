@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChatMessage;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
@@ -90,9 +91,15 @@ class HomeController extends Controller
                 'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
-                    ->where('user_id', token()->uid),
+                    ->where('user_id', token()->uid), // 해당 피드에 체크를 남겼는가
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
-                    ->where('user_id', token()->uid),
+                    ->where('user_id', token()->uid), // 해당 피드에 댓글을 남겼는가
+                'has_emoji' => ChatMessage::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->where('user_id', $user_id)->whereHas('room', function ($query) {
+                        $query->where('is_group', false)->whereHas('users', function ($query) {
+                            $query->whereColumn('user_id', 'feeds.user_id');
+                        });
+                    }), // 해당 피드로 이모지를 보낸 적이 있는가
             ])
             ->orderBy('feeds.id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
