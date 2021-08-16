@@ -385,21 +385,23 @@ class MissionController extends Controller
 
     public function user(Request $request, $mission_id): array
     {
+        $user_id = token()->uid;
+
         $limit = $request->get('limit', 20);
 
         $users = MissionStat::where('mission_stats.mission_id', $mission_id)
             ->join('users', 'users.id', 'mission_stats.user_id')
             ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-            ->leftJoin('follows', 'follows.target_id', 'users.id')
-            ->leftJoin('feed_missions', 'feed_missions.mission_id', 'mission_stats.mission_id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                DB::raw("COUNT(distinct follows.id) as follower"),
-                DB::raw("COUNT(distinct feed_missions.feed_id) as mission_feeds"),
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'mission_feeds' => FeedMission::selectRaw("COUNT(1)")
+                    ->whereColumn('feed_missions.mission_id', 'mission_stats.mission_id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
             ])
-            ->groupBy(['users.id', 'user_stats.id', 'areas.id'])
             ->orderBy('mission_feeds')->orderBy('follower', 'desc')->orderBy('id', 'desc')
             ->take($limit)->get();
 
