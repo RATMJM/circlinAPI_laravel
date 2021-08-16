@@ -167,4 +167,28 @@ class MissionCategoryController extends Controller
             'missions' => $data,
         ]);
     }
+
+    public function user(Request $request, $category_id): array
+    {
+        $user_id = token()->uid;
+
+        $limit = $request->get('limit', 20);
+
+        $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
+            ->join('users', 'users.id', 'user_favorite_categories.user_id')
+            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
+            ])
+            ->orderBy('follower', 'desc')->orderBy('id', 'desc')
+            ->take($limit)->get();
+
+        return success([
+            'success' => true,
+            'users' => $users,
+        ]);
+    }
 }
