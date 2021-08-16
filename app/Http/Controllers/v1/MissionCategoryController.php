@@ -106,8 +106,10 @@ class MissionCategoryController extends Controller
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
             ])
-            ->orderBy('follower', 'desc')->orderBy('id', 'desc')
-            ->take(2)->get();
+            ->orderBy('follower', 'desc')->orderBy('id', 'desc');
+
+        $user_total = $users->count();
+        $users = $users->take(2)->get();
 
         $banners = (new BannerController())->category_banner($category_id);
         $mission_total = Mission::where('mission_category_id', $category_id)->count();
@@ -116,8 +118,8 @@ class MissionCategoryController extends Controller
         return success([
             'result' => true,
             'category' => $category,
-            'user_total' => $users->total(),
-            'users' => $users->items(),
+            'user_total' => $user_total,
+            'users' => $users,
             'banners' => $banners,
             'mission_total' => $mission_total,
             'missions' => $missions,
