@@ -219,12 +219,9 @@ class FeedController extends Controller
             ])
             ->get();
 
-        $comments = (new CommentController())->index('feed', $feed->id)['data']['comments'];
-
         return success([
             'result' => true,
             'feed' => $feed,
-            'comments' => $comments,
         ]);
     }
 
