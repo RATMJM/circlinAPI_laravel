@@ -24,6 +24,7 @@ class CommentController extends Controller
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.id", "{$table}_comments.comment",
+                    "{$table}_comments.created_at",
                     'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 ])
                 ->orderBy('group')->orderBy('depth')->orderBy('id')
