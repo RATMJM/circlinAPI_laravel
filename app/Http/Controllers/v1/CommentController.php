@@ -33,7 +33,7 @@ class CommentController extends Controller
                     DB::raw("IF({$table}_comments.deleted_at is null, users.profile_image, null) as profile_image"),
                     DB::raw("IF({$table}_comments.deleted_at is null, user_stats.gender, null) as gender"),
                 ])
-                ->orderBy('group')->orderBy('depth')->orderBy('id');
+                ->orderBy('group', 'desc')->orderBy('depth')->orderBy('id');
 
             $total = $query->count();
 
