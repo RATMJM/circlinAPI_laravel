@@ -73,6 +73,7 @@ Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
     Route::get('/{town?}', [v1\MissionCategoryController::class, 'index'])->where(['town' => 'town'])->name('index');
     Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
     Route::get('/{category_id}/mission', [v1\MissionCategoryController::class, 'mission'])->name('mission');
+    Route::get('/{category_id}/user', [v1\MissionCategoryController::class, 'user'])->name('user');
 });
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
