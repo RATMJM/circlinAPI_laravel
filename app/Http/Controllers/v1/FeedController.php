@@ -197,15 +197,15 @@ class FeedController extends Controller
             ])
             ->first();
 
-        $feed->product = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
-        $feed->place = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
-
         if (is_null($feed)) {
             return success([
                 'result' => false,
-                'reason' => 'not found feed',
+                'reason' => 'not found',
             ]);
         }
+
+        $feed->product = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+        $feed->place = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
 
         $feed->images = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
