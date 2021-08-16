@@ -23,15 +23,21 @@ class CommentController extends Controller
                 ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->select([
-                    "{$table}_comments.group", "{$table}_comments.id", "{$table}_comments.comment",
-                    "{$table}_comments.created_at",
-                    'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                    "{$table}_comments.group", "{$table}_comments.depth",
+                    DB::raw("{$table}_comments.deleted_at is not null as is_delete"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.created_at, null) as created_at"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.id, null) as id"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, users.id, null) as user_id"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, users.nickname, null) as nickname"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, users.profile_image, null) as profile_image"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, user_stats.gender, null) as gender"),
                 ])
                 ->orderBy('group')->orderBy('depth')->orderBy('id');
 
             $total = $query->count();
 
-            $comments = $query->get();
+            $comments = $query->withTrashed()->get();
 
             return success([
                 'result' => true,
