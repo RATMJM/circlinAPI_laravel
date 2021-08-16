@@ -121,6 +121,14 @@ Route::get('/explore/search', [v1\SearchController::class, 'search'])->name('exp
 Route::get('/explore/search/user', [v1\SearchController::class, 'user'])->name('explore.search.user');
 Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->name('explore.search.mission');
 
+/* 채팅 관련 */
+Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
+    Route::get('/', [v1\ChatController::class, 'index'])->name('index');
+    Route::get('/{room_id}', [v1\ChatController::class, 'show'])->name('show');
+    // Route::post('/direct/room/{target_id}', [v1\ChatController::class, 'create_or_enter_room'])->name('direct.enter');
+    Route::post('/direct/send/{target_id}', [v1\ChatController::class, 'send_direct'])->name('direct.send');
+});
+
 /* 샵 관련 */
 Route::get('/shop_banner', [v1\ShopController::class, 'shop_banner']);
 Route::get('/shop_category', [v1\ShopController::class, 'shop_category']);
