@@ -261,6 +261,7 @@ class MissionController extends Controller
                     ->select([
                         'users.id as user_id', 'users.nickname', 'users.profile_image',
                         'feeds.id', 'feeds.created_at', 'feeds.content',
+                        'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                         'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                         'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                         'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
@@ -321,6 +322,7 @@ class MissionController extends Controller
                     ->select([
                         'users.id as user_id', 'users.nickname', 'users.profile_image',
                         'feeds.id', 'feeds.created_at', 'feeds.content',
+                        'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                         'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                         'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                         'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
@@ -361,6 +363,7 @@ class MissionController extends Controller
             ->select([
                 'users.id as user_id', 'users.nickname', 'users.profile_image',
                 'feeds.id', 'feeds.created_at', 'feeds.content',
+                'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
