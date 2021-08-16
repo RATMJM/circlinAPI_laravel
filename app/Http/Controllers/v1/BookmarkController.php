@@ -33,6 +33,10 @@ class BookmarkController extends Controller
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d', time()))
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
+                'feed_id' => FeedMission::select('feed_id')
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
             ])
             ->orderBy('has_check')
             ->orderBy('id')
