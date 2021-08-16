@@ -19,7 +19,7 @@ class CommentController extends Controller
                 'mission' => new MissionComment,
             };
 
-            $comments = $query->where("{$table}_id", $id)
+            $query = $query->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->select([
@@ -27,11 +27,15 @@ class CommentController extends Controller
                     "{$table}_comments.created_at",
                     'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
                 ])
-                ->orderBy('group')->orderBy('depth')->orderBy('id')
-                ->get();
+                ->orderBy('group')->orderBy('depth')->orderBy('id');
+
+            $total = $query->count();
+
+            $comments = $query->get();
 
             return success([
                 'result' => true,
+                'total' => $total,
                 'comments' => $comments,
             ]);
         } catch (Exception $e) {
