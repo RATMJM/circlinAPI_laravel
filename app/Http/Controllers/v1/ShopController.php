@@ -349,5 +349,63 @@ class ShopController extends Controller
   }
 
 
-  
+ 
+  public function cart_list(Request $request): array
+  {   
+      $user_id = token()->uid;
+      
+     try {
+        DB::beginTransaction();
+        
+        $cartList = DB::select(' 
+        select 
+          
+                c.thumbnail_image    , e.nickname, e.id, a.qty , c.name_ko as product_name, sale_price,  
+                    c.id , c.status, c.shipping_fee,
+                
+                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as opt1,
+                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as opt2,
+                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as opt3,
+                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1) as opt4,
+                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as opt5,
+                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as opt6,
+                
+                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as price1,
+                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as price2,
+                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as price3,
+                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1) as price4,
+                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as price5,
+                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as price6
+                       
+                         
+            
+               from carts a, 
+               products c, 
+               brands d, 
+               users e  
+
+               where a.user_id="1"    
+               and a.product_id=c.id
+               and d.user_id=e.id
+               and c.brand_id=d.id;
+                
+                SELECT name_ko, product_id, price FROM cart_options a, product_options b where b.id=a.product_option_id limit 0,1
+                        ;
+            select * from cart_options
+            ; 
+              ;', array($user_id)  ) ;
+            
+ 
+              return success([
+              'result' => true,
+              'cartList' => $cartList,                 
+        ]);
+
+       
+    } catch (Exception $e) {
+        DB::rollBack();
+        return exceped($e);
+    }
+
+    }
 }
