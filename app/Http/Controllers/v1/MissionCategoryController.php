@@ -99,9 +99,8 @@ class MissionCategoryController extends Controller
             ->orderBy('followers', 'desc')->paginate(3);*/
         $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
             ->join('users', 'users.id', 'user_favorite_categories.user_id')
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
@@ -138,22 +137,18 @@ class MissionCategoryController extends Controller
         $data = Mission::when($id, function ($query, $id) {
             $query->whereIn('missions.mission_category_id', Arr::wrap($id));
         })
-            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-            ->join('user_stats as os', 'os.user_id', 'o.id') // 미션 제작자
+            ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                'o.id as user_id', 'o.nickname', 'o.profile_image', 'os.gender',
-                'area' => Area::selectRaw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area")
-                    ->whereColumn('ctg_sm', 'o.area_code')->limit(1),
-                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'o.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'o.id')
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
-            ])
-            ->groupBy('missions.id', 'o.id', 'os.id');
+            ]);
 
         if ($sort === 'popular') {
             $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
@@ -170,11 +165,10 @@ class MissionCategoryController extends Controller
                 'area', 'followers', 'is_following']);
 
             $data[$i]->users = $item->mission_stats()
-                ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender'])
                 ->join('users', 'users.id', 'mission_stats.user_id')
-                ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
                 ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
-                ->groupBy('users.id', 'user_stats.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
+                ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                ->groupBy('users.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
         }
 
         return success([
@@ -191,14 +185,13 @@ class MissionCategoryController extends Controller
 
         $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
             ->join('users', 'users.id', 'user_favorite_categories.user_id')
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
             ])
-            ->orderBy('follower', 'desc')->orderBy('id', 'desc')
+            ->orderBy('follower', 'desc')->orderBy('user_favorite_categories.id')
             ->take($limit)->get();
 
         return success([

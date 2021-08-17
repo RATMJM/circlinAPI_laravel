@@ -76,7 +76,7 @@ class ChatController extends Controller
                 $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu1.user_id', $user_id);
             })
                 ->join('chat_users as cu2', function ($query) use ($target_id) {
-                    $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
+                    $query->on('cu2.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
                 })
                 ->select('chat_rooms.*')
                 ->first();
@@ -86,14 +86,10 @@ class ChatController extends Controller
                 ChatUser::create(['chat_room_id' => $room->id, 'user_id' => $target_id]);
             }
 
-            $users = ChatUser::where('chat_room_id', $room->id)
-                ->whereIn('user_id', [$user_id])
-                ->pluck('user_id');
-
-            foreach (array_diff([$user_id], $users->toArray()) as $user) {
+            if(ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $user_id])->doesntExist()) {
                 ChatUser::create([
                     'chat_room_id' => $room->id,
-                    'user_id' => $user,
+                    'user_id' => $user_id,
                 ]);
             }
 
@@ -113,6 +109,8 @@ class ChatController extends Controller
     public function send_direct(Request $request, $target_id): array
     {
         try {
+            DB::beginTransaction();
+
             $user_id = token()->uid;
 
             if ($user_id == $target_id) {
@@ -136,21 +134,24 @@ class ChatController extends Controller
 
             $room = $this->create_or_enter_room($request, $target_id)['data']['room'];
 
-            $users = ChatUser::where('chat_room_id', $room->id)
-                ->whereIn('user_id', [$user_id, $target_id])
-                ->pluck('user_id');
-
-            foreach (array_diff([$user_id, $target_id], $users->toArray()) as $user) {
+            if(ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $target_id])->doesntExist()) {
                 ChatUser::create([
                     'chat_room_id' => $room->id,
-                    'user_id' => $user,
+                    'user_id' => $target_id,
                 ]);
             }
 
-            $this->send_message($request, $room->id);
+            $result = $this->send_message($request, $room->id);
 
-            return success(['result' => true]);
+            if ($result['data']['result']) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
+            return $result;
         } catch (Exception $e) {
+            DB::rollBack();
             return exceped($e);
         }
     }
@@ -170,11 +171,18 @@ class ChatController extends Controller
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
                     ->join('users', 'users.id', 'user_id')->limit(1),
+                'gender' => DB::table('chat_users as cu')->select('gender')
+                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
+                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
+                    ->join('users', 'users.id', 'user_id')->limit(1),
                 'latest_message' => ChatMessage::select('message')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
                 'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
+                'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
+                    ->whereColumn('chat_messages.id', '>=', DB::raw("COALESCE(read_message_id, 0)")),
             ])
+            ->orderBy('latest_at', 'desc')
             ->get();
 
         return success([
@@ -196,9 +204,14 @@ class ChatController extends Controller
             ]);
         }
 
-        $messages = ChatMessage::where('chat_room_id', $room_id)
+        $messages = ChatMessage::where('chat_messages.chat_room_id', $room_id)
             ->when($loaded_id, function ($query, $loaded_id) {
                 $query->where('chat_messages.id', '<', $loaded_id);
+            })
+            ->where('chat_messages.created_at', '>=', function ($query) use ($room_id, $user_id) {
+                $query->select('created_at')->from('chat_users')
+                    ->where('chat_users.chat_room_id', $room_id)->where('chat_users.user_id', $user_id)
+                    ->limit(1);
             })
             ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
             ->select([

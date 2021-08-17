@@ -37,11 +37,7 @@ class UserController extends Controller
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-            ->select([
-                'users.*',
-                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
-                'user_stats.gender',
-            ])->first();
+            ->select(['users.*', 'area' => area()])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
             ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
@@ -89,12 +85,12 @@ class UserController extends Controller
                     $user_data['phone_verified_at'] = date('Y-m-d H:i:s', time());
                     $result[] = 'phone';
                 }
-                $user = User::where('id', $user_id)->update($user_data);
-
                 if ($gender) {
-                    $user_stat_data['gender'] = $gender;
+                    $user_data['gender'] = $gender;
                     $result[] = 'gender';
                 }
+                $user = User::where('id', $user_id)->update($user_data);
+
                 if ($birthday && preg_match('/\d{8}/', $birthday)) {
                     $user_stat_data['birthday'] = date('Y-m-d', strtotime($birthday));
                     $result[] = 'birthday';
@@ -291,9 +287,8 @@ class UserController extends Controller
     {
         $users = Follow::where('follows.target_id', $user_id)
             ->join('users', 'users.id', 'follows.user_id')
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
@@ -313,10 +308,9 @@ class UserController extends Controller
     public function following($user_id): array
     {
         $users = Follow::where('follows.user_id', $user_id)
-            ->join('users', 'users.id', 'follows.user_id')
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
+            ->join('users', 'users.id', 'follows.target_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('user_id', 'users.id')
                     ->where('user_id', $user_id),

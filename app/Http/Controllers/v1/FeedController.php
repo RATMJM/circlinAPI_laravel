@@ -176,14 +176,13 @@ class FeedController extends Controller
 
         $feed = Feed::where('feeds.id', $id)
             ->join('users', 'users.id', 'feeds.user_id')
-            ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'feed_products.type as product_type', 'feed_products.product_id',
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand) as product_brand"),
                 DB::raw("IF(feed_products.type='inside', products.name_ko, feed_products.title) as product_title"),

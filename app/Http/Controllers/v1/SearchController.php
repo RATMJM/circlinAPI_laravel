@@ -64,9 +64,8 @@ class SearchController extends Controller
         $keyword = $request->get('keyword');
 
         $data = User::where('users.nickname', 'like', "%$keyword%")
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
@@ -94,11 +93,10 @@ class SearchController extends Controller
 
         $data = Mission::where('missions.title', 'like', "%$keyword%")
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->join('user_stats', 'user_stats.user_id', 'users.id') // 미션 제작자
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 'users.id as owner_id', 'users.nickname as owner_nickname',
-                'users.profile_image as owner_profile_image', 'user_stats.gender as owner_gender',
+                'users.profile_image as owner_profile_image', 'users.gender as owner_gender',
                 'owner_area' => area(),
                 'owner_followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'owner_is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
