@@ -41,10 +41,7 @@ class BaseController extends Controller
                 $query->where('user_id', $user_id);
             })
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image',
-                'gender' => UserStat::select('gender')->whereColumn('user_stats.user_id', 'users.id')->limit(1),
-                'area' => Area::selectRaw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm))")
-                    ->whereColumn('areas.ctg_sm', 'users.area_code')->limit(1),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),

@@ -51,7 +51,7 @@ class NotificationController extends Controller
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
                 'n.*', 'type' => Notification::select('type')->whereColumn('id', 'n.id'),
-                'users.nickname', 'users.profile_image', 'user_stats.gender',
+                'users.nickname', 'users.profile_image', 'users.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
                 'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')

@@ -21,7 +21,6 @@ class CommentController extends Controller
 
             $query = $query->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_comments.user_id")
-                ->join('user_stats', 'user_stats.user_id', 'users.id')
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.depth",
                     DB::raw("{$table}_comments.deleted_at is not null as is_delete"),
@@ -31,7 +30,7 @@ class CommentController extends Controller
                     DB::raw("IF({$table}_comments.deleted_at is null, users.id, null) as user_id"),
                     DB::raw("IF({$table}_comments.deleted_at is null, users.nickname, null) as nickname"),
                     DB::raw("IF({$table}_comments.deleted_at is null, users.profile_image, null) as profile_image"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, user_stats.gender, null) as gender"),
+                    DB::raw("IF({$table}_comments.deleted_at is null, users.gender, null) as gender"),
                 ])
                 ->orderBy('group', 'desc')->orderBy('depth')->orderBy('id');
 

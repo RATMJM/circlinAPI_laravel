@@ -186,14 +186,13 @@ class MissionController extends Controller
 
         $data = Mission::where('missions.id', $mission_id)
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->join('user_stats', 'user_stats.user_id', 'users.id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
+                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
@@ -219,11 +218,10 @@ class MissionController extends Controller
         $data->images = $data->images()->orderBy('order')->pluck('image');
 
         $data->users = $data->mission_stats()
-            ->select(['users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender'])
             ->join('users', 'users.id', 'mission_stats.user_id')
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
-            ->groupBy('users.id', 'user_stats.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
+            ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+            ->groupBy('users.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
 
         $places = FeedPlace::whereExists(function ($query) use ($mission_id) {
             $query->selectRaw(1)->from('feed_missions')->whereColumn('feed_id', 'feeds.id')
@@ -402,10 +400,9 @@ class MissionController extends Controller
 
         $users = MissionStat::where('mission_stats.mission_id', $mission_id)
             ->join('users', 'users.id', 'mission_stats.user_id')
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender',
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender',
                 DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'mission_feeds' => FeedMission::selectRaw("COUNT(1)")

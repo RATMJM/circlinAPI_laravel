@@ -174,7 +174,7 @@ class ChatController extends Controller
                 'gender' => DB::table('chat_users as cu')->select('gender')
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
-                    ->join('user_stats', 'user_stats.user_id', 'cu.user_id')->limit(1),
+                    ->join('users', 'users.id', 'user_id')->limit(1),
                 'latest_message' => ChatMessage::select('message')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
                 'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
