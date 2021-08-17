@@ -7,14 +7,17 @@ use App\Models\PointHistory;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class PointController extends Controller
 {
     /**
      * 포인트 지급 / 차감 ($point 양수, 음수에 따라)
+     * @param string|null $type feed|order|mission|product_review
+     * @param integer|null $id type에 해당하는 id
      */
-    public static function change_point($user_id, $point, $reason): array
+    public static function change_point($user_id, $point, $reason, $type = null, $id = null): array
     {
         try {
             DB::beginTransaction();
@@ -28,11 +31,15 @@ class PointController extends Controller
                 ]);
             }
 
-            PointHistory::create([
+            $data = [
                 'user_id' => $user_id,
                 'point' => $point,
                 'reason' => $reason,
-            ]);
+            ];
+
+            $data = Arr::collapse([$data, ["{$type}_id" => $id]]);
+
+            PointHistory::create($data);
 
             $user->increment('point', $point);
 
