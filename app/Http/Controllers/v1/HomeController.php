@@ -94,6 +94,7 @@ class HomeController extends Controller
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('user_id', token()->uid), // 해당 피드에 댓글을 남겼는가
                 'has_emoji' => ChatMessage::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->whereNotNull('message') // 피드 공유와 반응 남김을 구분을 위해
                     ->where('user_id', $user_id)->whereHas('room', function ($query) {
                         $query->where('is_group', false)->whereHas('users', function ($query) {
                             $query->whereColumn('user_id', 'feeds.user_id');
