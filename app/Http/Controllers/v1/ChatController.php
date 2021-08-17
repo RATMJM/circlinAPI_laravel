@@ -257,6 +257,12 @@ class ChatController extends Controller
                 ]);
             }
 
+            $users = ChatUser::where('chat_room_id', $room_id)
+                ->where('user_id', '!=', token()->uid)
+                ->join('users', 'users.id', 'user_id')
+                ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area()])
+                ->get();
+
             $messages = ChatMessage::where('chat_messages.chat_room_id', $room_id)
                 ->when($loaded_id, function ($query, $loaded_id) {
                     $query->where('chat_messages.id', '<', $loaded_id);
@@ -297,6 +303,7 @@ class ChatController extends Controller
 
             return success([
                 'result' => true,
+                'users' => $users,
                 'messages' => $messages,
             ]);
         } catch (Exception $e) {
