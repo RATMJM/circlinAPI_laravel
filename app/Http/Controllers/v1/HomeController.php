@@ -66,13 +66,12 @@ class HomeController extends Controller
                 });
             })
             ->join('users', 'users.id', 'feeds.user_id')
-            ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'area' => area(),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
