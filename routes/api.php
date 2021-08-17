@@ -125,7 +125,8 @@ Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->
 Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
     Route::get('/', [v1\ChatController::class, 'index'])->name('index');
     Route::get('/{room_id}', [v1\ChatController::class, 'show'])->name('show');
-    Route::post('/{room_id}/send', [v1\ChatController::class, 'send_message']);
+    Route::post('/{room_id}/send', [v1\ChatController::class, 'send_message'])->name('send');
+    Route::get('/{room_id}/user', [v1\ChatController::class, 'user'])->name('user');
     // Route::post('/direct/room/{target_id}', [v1\ChatController::class, 'create_or_enter_room'])->name('direct.enter');
     Route::post('/direct/send/{target_id}', [v1\ChatController::class, 'send_direct'])->name('direct.send');
 });

@@ -257,11 +257,7 @@ class ChatController extends Controller
                 ]);
             }
 
-            $users = ChatUser::where('chat_room_id', $room_id)
-                ->where('user_id', '!=', token()->uid)
-                ->join('users', 'users.id', 'user_id')
-                ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area()])
-                ->get();
+            $users = $this->user($request, $room_id)['data']['users'];
 
             $messages = ChatMessage::where('chat_messages.chat_room_id', $room_id)
                 ->when($loaded_id, function ($query, $loaded_id) {
@@ -310,5 +306,19 @@ class ChatController extends Controller
             DB::rollBack();
             return exceped($e);
         }
+    }
+
+    public function user(Request $request, $room_id): array
+    {
+        $users = ChatUser::where('chat_room_id', $room_id)
+            ->where('user_id', '!=', token()->uid)
+            ->join('users', 'users.id', 'user_id')
+            ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area()])
+            ->get();
+
+        return success([
+            'result' => true,
+            'users' => $users,
+        ]);
     }
 }
