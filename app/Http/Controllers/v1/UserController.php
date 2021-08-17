@@ -313,7 +313,7 @@ class UserController extends Controller
     public function following($user_id): array
     {
         $users = Follow::where('follows.user_id', $user_id)
-            ->join('users', 'users.id', 'follows.user_id')
+            ->join('users', 'users.id', 'follows.target_id')
             ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'user_stats.gender', 'area' => area(),
