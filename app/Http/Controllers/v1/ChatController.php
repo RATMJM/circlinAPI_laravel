@@ -9,9 +9,13 @@ use App\Models\ChatUser;
 use App\Models\FeedImage;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 class ChatController extends Controller
 {
@@ -48,11 +52,54 @@ class ChatController extends Controller
 
     public function send_message(Request $request, $room_id): array
     {
+        $user_id = token()->uid;
+
+        $message = $request->get('message');
+        $file = $request->file('file');
+        $mission_id = $request->get('mission_id');
+        $feed_id = $request->get('feed_id');
+
+        if (!$message && !$file && !$mission_id && !$feed_id) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
         if (ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->exists()) {
+            $uploaded_file = null;
+            if (!$feed_id && !$mission_id && $file) {
+                if (str_starts_with($file->getMimeType(), 'image/')) {
+                    $type = 'image';
+                    $image = Image::make($file->getPathname());
+                    if ($image->width() > $image->height()) {
+                        $x = ($image->width() - $image->height()) / 2;
+                        $y = 0;
+                        $src = $image->height();
+                    } else {
+                        $x = 0;
+                        $y = ($image->height() - $image->width()) / 2;
+                        $src = $image->width();
+                    }
+                    $image->crop($src, $src, round($x), round($y));
+                    $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
+                    $image->save($tmp_path);
+                    $uploaded_file = Storage::disk('ftp3')->put("/Image/CHAT/$room_id", new File($tmp_path));
+                    @unlink($tmp_path);
+                } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                    $type = 'video';
+                    $uploaded_file = Storage::disk('ftp3')->put("/Image/CHAT/$room_id", $file);
+
+                    $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
+                }
+            }
+
             $data = ChatMessage::create([
                 'chat_room_id' => $room_id,
                 'user_id' => token()->uid,
                 'message' => $request->get('message'),
+                'image' => $uploaded_file ? image_url(3, $uploaded_file) : null,
+                'feed_id' => $feed_id,
+                'mission_id' => $mission_id,
             ]);
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
@@ -61,6 +108,7 @@ class ChatController extends Controller
             return success([
                 'result' => true,
                 'sockets' => $sockets,
+                'message' => $data,
             ]);
         } else {
             return success([
@@ -123,18 +171,6 @@ class ChatController extends Controller
                 return success([
                     'result' => false,
                     'reason' => 'myself',
-                ]);
-            }
-
-            $message = $request->get('message');
-            $file = $request->file('file');
-            $mission_id = $request->get('mission_id');
-            $feed_id = $request->get('feed_id');
-
-            if (!$target_id || (!$message && !$file && !$mission_id && !$feed_id)) {
-                return success([
-                    'result' => false,
-                    'reason' => 'not enough data',
                 ]);
             }
 
@@ -225,18 +261,26 @@ class ChatController extends Controller
                 ->join('users', 'users.id', 'chat_messages.user_id')
                 ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
                 ->select([
-                    'chat_messages.id as message_id',
+                    'chat_messages.id',
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
-                    'chat_messages.message', 'chat_messages.image', 'chat_messages.created_at',
+                    DB::raw("IF(chat_messages.feed_id is null, IF(mission_id is null, 'chat', 'mission'), 'feed') as type"),
+                    'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
                     'missions.title as mission_title', 'missions.description as mission_description',
                     'missions.thumbnail_image as mission_thumbnail_image',
-                    'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')->limit(1),
+                    'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
+                        ->orderBy('order')->limit(1),
                 ])
                 ->orderBy('chat_messages.id', 'desc')
                 ->take(20)->get();
 
             foreach ($messages as $i => $message) {
                 $messages[$i]->mission = arr_group($messages[$i], ['title', 'description', 'thumbnail_image'], 'mission_');
+                $messages[$i]->image = match ($message->type) {
+                    'feed' => $message->feed_image,
+                    'mission' => $message->mission_image,
+                    default => $message->image,
+                };
+                Arr::except($messages[$i], ['feed_image', 'mission_image']);
             }
 
             $user->update(['read_message_id' => max($user->read_message_id, $messages->max('message_id'))]);
