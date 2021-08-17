@@ -68,9 +68,13 @@ function token_option(): object|null
 /**
  * ftp url 자동완성 $server: (2, 3, 4)
  */
-function image_url($server, $image_url): string
+function image_url($server, $image_url): string|null
 {
-    return "https://" . config("filesystems.disks.ftp$server.host") . "/$image_url";
+    if ($image_url) {
+        return "https://" . config("filesystems.disks.ftp$server.host") . "/$image_url";
+    } else {
+        return null;
+    }
 }
 
 /**
