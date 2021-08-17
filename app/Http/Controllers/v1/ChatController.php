@@ -76,7 +76,7 @@ class ChatController extends Controller
                 $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu1.user_id', $user_id);
             })
                 ->join('chat_users as cu2', function ($query) use ($target_id) {
-                    $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
+                    $query->on('cu2.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
                 })
                 ->select('chat_rooms.*')
                 ->first();
@@ -86,14 +86,10 @@ class ChatController extends Controller
                 ChatUser::create(['chat_room_id' => $room->id, 'user_id' => $target_id]);
             }
 
-            $users = ChatUser::where('chat_room_id', $room->id)
-                ->whereIn('user_id', [$user_id])
-                ->pluck('user_id');
-
-            foreach (array_diff([$user_id], $users->toArray()) as $user) {
+            if(ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $user_id])->doesntExist()) {
                 ChatUser::create([
                     'chat_room_id' => $room->id,
-                    'user_id' => $user,
+                    'user_id' => $user_id,
                 ]);
             }
 
@@ -113,6 +109,8 @@ class ChatController extends Controller
     public function send_direct(Request $request, $target_id): array
     {
         try {
+            DB::beginTransaction();
+
             $user_id = token()->uid;
 
             if ($user_id == $target_id) {
@@ -136,21 +134,20 @@ class ChatController extends Controller
 
             $room = $this->create_or_enter_room($request, $target_id)['data']['room'];
 
-            $users = ChatUser::where('chat_room_id', $room->id)
-                ->whereIn('user_id', [$user_id, $target_id])
-                ->pluck('user_id');
-
-            foreach (array_diff([$user_id, $target_id], $users->toArray()) as $user) {
+            if(ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $target_id])->doesntExist()) {
                 ChatUser::create([
                     'chat_room_id' => $room->id,
-                    'user_id' => $user,
+                    'user_id' => $target_id,
                 ]);
             }
 
-            $this->send_message($request, $room->id);
+            $result = $this->send_message($request, $room->id);
 
-            return success(['result' => true]);
+            DB::commit();
+
+            return $result;
         } catch (Exception $e) {
+            DB::rollBack();
             return exceped($e);
         }
     }
