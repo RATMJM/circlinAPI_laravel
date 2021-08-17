@@ -50,11 +50,11 @@ class ChatController extends Controller
         return success(['result' => $data > 0]);
     }
 
-    public function send_message(Request $request, $room_id, $type = null, $id = null): array
+    public function send_message(Request $request, $room_id, $type = null, $id = null, $message = null): array
     {
         $user_id = token()->uid;
 
-        $message = $request->get('message');
+        $message = $message ?? $request->get('message');
         $file = $request->file('file');
         $mission_id = $type==='mission' && $id ? $id : $request->get('mission_id');
         $feed_id = $type==='feed' && $id ? $id : $request->get('feed_id');
@@ -74,10 +74,11 @@ class ChatController extends Controller
         }
 
         if (ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->exists()) {
+            $image_type = null;
             $uploaded_file = null;
             if (!$feed_id && !$mission_id && $file) {
                 if (str_starts_with($file->getMimeType(), 'image/')) {
-                    $type = 'image';
+                    $image_type = 'image';
                     $image = Image::make($file->getPathname());
                     if ($image->width() > $image->height()) {
                         $x = ($image->width() - $image->height()) / 2;
@@ -94,7 +95,7 @@ class ChatController extends Controller
                     $uploaded_file = Storage::disk('ftp3')->put("/Image/CHAT/$room_id", new File($tmp_path));
                     @unlink($tmp_path);
                 } elseif (str_starts_with($file->getMimeType(), 'video/')) {
-                    $type = 'video';
+                    $image_type = 'video';
                     $uploaded_file = Storage::disk('ftp3')->put("/Image/CHAT/$room_id", $file);
 
                     $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
@@ -104,14 +105,16 @@ class ChatController extends Controller
             $data = ChatMessage::create([
                 'chat_room_id' => $room_id,
                 'user_id' => token()->uid,
-                'message' => $request->get('message'),
+                'type' => $feed_id ? 'feed' : ($mission_id ? 'mission' : 'chat'),
+                'message' => $message,
+                'image_type' => $image_type,
                 'image' => image_url(3, $uploaded_file),
                 'feed_id' => $feed_id,
                 'mission_id' => $mission_id,
             ]);
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
-                ->join('users', 'users.id', 'user_id')->pluck('socket_id');
+                ->whereNotNull('socket_id')->join('users', 'users.id', 'user_id')->pluck('socket_id');
 
             return success([
                 'result' => true,
@@ -168,7 +171,7 @@ class ChatController extends Controller
     }
 
     /* 1대1 메시지 전송 */
-    public function send_direct(Request $request, $target_id, $type = null, $id = null): array
+    public function send_direct(Request $request, $target_id, $type = null, $id = null, $message = null): array
     {
         try {
             DB::beginTransaction();
@@ -191,7 +194,7 @@ class ChatController extends Controller
                 ]);
             }
 
-            $result = $this->send_message($request, $room->id, $type, $id);
+            $result = $this->send_message($request, $room->id, $type, $id, $message);
 
             if ($result['data']['result']) {
                 DB::commit();

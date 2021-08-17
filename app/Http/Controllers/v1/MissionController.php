@@ -19,6 +19,7 @@ use App\Models\MissionStat;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -400,13 +401,11 @@ class MissionController extends Controller
 
         $users = MissionStat::where('mission_stats.mission_id', $mission_id)
             ->join('users', 'users.id', 'mission_stats.user_id')
-            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender',
-                DB::raw("IF(name_lg=name_md, CONCAT_WS(' ', name_md, name_sm), CONCAT_WS(' ', name_lg, name_md, name_sm)) as area"),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'mission_feeds' => FeedMission::selectRaw("COUNT(1)")
-                    ->whereColumn('feed_missions.mission_id', 'mission_stats.mission_id'),
+                    ->whereColumn('mission_id', 'mission_stats.mission_id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
             ])
@@ -417,5 +416,32 @@ class MissionController extends Controller
             'success' => true,
             'users' => $users,
         ]);
+    }
+
+    public function invite(Request $request, $mission_id): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $users = Arr::wrap($request->get('user_id'));
+            $users = array_unique($users);
+            $success = [];
+            $sockets = [];
+            foreach ($users as $user) {
+                $res = (new ChatController())->send_direct($request, $user, 'mission', $mission_id,
+                    '미션에 초대합니다!');
+                if ($res['success'] && $res['data']['result']) {
+                    $success[] = $user;
+                    $sockets = Arr::collapse([$sockets, $res['data']['sockets']]);
+                }
+            }
+
+            DB::commit();
+
+            return success(['result' => true, 'users' => $success, 'sockets' => $sockets]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
     }
 }

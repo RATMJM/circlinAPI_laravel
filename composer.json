@@ -9,10 +9,12 @@
   "license": "MIT",
   "require": {
     "php": "^8.0",
+    "ext-curl": "*",
     "ext-exif": "*",
     "ext-ftp": "*",
     "ext-gd": "*",
     "ext-mbstring": "*",
+    "darkaonline/l5-swagger": "^8.0",
     "fideloper/proxy": "^4.4",
     "firebase/php-jwt": "^5.4",
     "fruitcake/laravel-cors": "^2.0",
@@ -22,8 +24,7 @@
     "laravel/socialite": "^5.2",
     "laravel/telescope": "^4.6",
     "laravel/tinker": "^2.5",
-    "maatwebsite/excel": "^3.1",
-    "ext-curl": "*"
+    "maatwebsite/excel": "^3.1"
   },
   "require-dev": {
     "facade/ignition": "^2.5",
