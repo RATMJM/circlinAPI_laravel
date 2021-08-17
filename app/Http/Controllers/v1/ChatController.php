@@ -55,7 +55,13 @@ class ChatController extends Controller
                 'message' => $request->get('message'),
             ]);
 
-            return success(['result' => true]);
+            $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
+                ->join('users', 'users.id', 'user_id')->pluck('socket_id');
+
+            return success([
+                'result' => true,
+                'sockets' => $sockets,
+            ]);
         } else {
             return success([
                 'result' => false,
@@ -180,7 +186,7 @@ class ChatController extends Controller
                 'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
                 'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
-                    ->whereColumn('chat_messages.id', '>=', DB::raw("COALESCE(read_message_id, 0)")),
+                    ->whereColumn('chat_messages.id', '>', DB::raw("COALESCE(read_message_id, 0)")),
             ])
             ->orderBy('latest_at', 'desc')
             ->get();
@@ -193,43 +199,57 @@ class ChatController extends Controller
 
     public function show(Request $request, $room_id): array
     {
-        $user_id = token()->uid;
+        try {
+            DB::beginTransaction();
 
-        $loaded_id = $request->get('loaded_id');
+            $user_id = token()->uid;
 
-        if (ChatUser::where(['chat_room_id' => $room_id, 'user_id' => $user_id])->doesntExist()) {
+            $loaded_id = $request->get('loaded_id');
+
+            if (!$user = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => $user_id])->first()) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enter room',
+                ]);
+            }
+
+            $messages = ChatMessage::where('chat_messages.chat_room_id', $room_id)
+                ->when($loaded_id, function ($query, $loaded_id) {
+                    $query->where('chat_messages.id', '<', $loaded_id);
+                })
+                ->where('chat_messages.created_at', '>=', function ($query) use ($room_id, $user_id) {
+                    $query->select('created_at')->from('chat_users')
+                        ->where('chat_users.chat_room_id', $room_id)->where('chat_users.user_id', $user_id)
+                        ->limit(1);
+                })
+                ->join('users', 'users.id', 'chat_messages.user_id')
+                ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
+                ->select([
+                    'chat_messages.id as message_id',
+                    'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
+                    'chat_messages.message', 'chat_messages.image', 'chat_messages.created_at',
+                    'missions.title as mission_title', 'missions.description as mission_description',
+                    'missions.thumbnail_image as mission_thumbnail_image',
+                    'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')->limit(1),
+                ])
+                ->orderBy('chat_messages.id', 'desc')
+                ->take(20)->get();
+
+            foreach ($messages as $i => $message) {
+                $messages[$i]->mission = arr_group($messages[$i], ['title', 'description', 'thumbnail_image'], 'mission_');
+            }
+
+            $user->update(['read_message_id' => max($user->read_message_id, $messages->max('message_id'))]);
+
+            DB::commit();
+
             return success([
-                'result' => false,
-                'reason' => 'not enter room',
+                'result' => true,
+                'messages' => $messages,
             ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
         }
-
-        $messages = ChatMessage::where('chat_messages.chat_room_id', $room_id)
-            ->when($loaded_id, function ($query, $loaded_id) {
-                $query->where('chat_messages.id', '<', $loaded_id);
-            })
-            ->where('chat_messages.created_at', '>=', function ($query) use ($room_id, $user_id) {
-                $query->select('created_at')->from('chat_users')
-                    ->where('chat_users.chat_room_id', $room_id)->where('chat_users.user_id', $user_id)
-                    ->limit(1);
-            })
-            ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
-            ->select([
-                'chat_messages.user_id', 'chat_messages.message', 'chat_messages.image', 'chat_messages.created_at',
-                'missions.title as mission_title', 'missions.description as mission_description',
-                'missions.thumbnail_image as mission_thumbnail_image',
-                'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')->limit(1),
-            ])
-            ->orderBy('chat_messages.id', 'desc')
-            ->take(20)->get();
-
-        foreach ($messages as $i => $message) {
-            $messages[$i]->mission = arr_group($messages[$i], ['title', 'description', 'thumbnail_image'], 'mission_');
-        }
-
-        return success([
-            'result' => true,
-            'messages' => $messages,
-        ]);
     }
 }

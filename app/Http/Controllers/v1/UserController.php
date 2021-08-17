@@ -64,6 +64,8 @@ class UserController extends Controller
             $area_code = $request->get('area_code');
             $phone = preg_replace('/[^\d]/', '', $request->get('phone'));
             $gender = $request->get('gender');
+            $socket_id = $request->get('socket_id');
+
             $birthday = $request->get('birthday');
 
             $data = User::where('id', $user_id)->first();
@@ -88,6 +90,10 @@ class UserController extends Controller
                 if ($gender) {
                     $user_data['gender'] = $gender;
                     $result[] = 'gender';
+                }
+                if ($socket_id) {
+                    $user_data['socket_id'] = $socket_id;
+                    $result[] = 'socket_id';
                 }
                 $user = User::where('id', $user_id)->update($user_data);
 
