@@ -176,8 +176,11 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\TelescopeServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
+
+        L5Swagger\L5SwaggerServiceProvider::class,
+
     ],
- 
+
     /*
     |--------------------------------------------------------------------------
     | Class Aliases

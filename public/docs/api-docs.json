@@ -1,0 +1,1716 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"title": "circlinAPI",
+		"version": "5.5"
+	},
+	"paths": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1/v1/auth/login/sns?email=1779180336@K",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"login",
+								"sns"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "1779180336@K"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check_init",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1/v1/auth/check/init",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"check",
+								"init"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.10.1/v1/auth/signup?email=451575@naver.com&password=password!1&agree1=1&agree2=1&agree3=1&agree4=0&agree5=0",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"signup"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "451575@naver.com"
+								},
+								{
+									"key": "password",
+									"value": "password!1"
+								},
+								{
+									"key": "agree1",
+									"value": "1"
+								},
+								{
+									"key": "agree2",
+									"value": "1"
+								},
+								{
+									"key": "agree3",
+									"value": "1"
+								},
+								{
+									"key": "agree4",
+									"value": "0"
+								},
+								{
+									"key": "agree5",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "exists_nickname",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/auth/exists/nickname/tarcle",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"exists",
+								"nickname",
+								"tarcle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "exists_email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/auth/exists/email/451575@naver.com",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"exists",
+								"email",
+								"451575@naver.com"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Detail",
+					"item": [
+						{
+							"name": "index",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "127.0.0.1/v1/user/64173",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"v1",
+										"user",
+										"64173"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "feed",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "127.0.0.1/v1/user/64175/feed",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"v1",
+										"user",
+										"64175",
+										"feed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "check",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "127.0.0.1/v1/user/34/check",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"v1",
+										"user",
+										"34",
+										"check"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "mission",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "127.0.0.1/v1/user/8/mission",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"v1",
+										"user",
+										"8",
+										"mission"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "mission created",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "127.0.0.1/v1/user/5/mission/created",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"v1",
+										"user",
+										"5",
+										"mission",
+										"created"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/user",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1/v1/user/follow?target_id=64747",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"follow"
+							],
+							"query": [
+								{
+									"key": "target_id",
+									"value": "64747"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follow",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.10.1/v1/user/follow/5",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"follow",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "favorite_category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.10.1/v1/user/favorite_category",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"favorite_category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "favorite_category",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.10.1/v1/user/favorite_category?category_id=10",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"favorite_category"
+							],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "favorite_category",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.10.1/v1/user/favorite_category/5",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"favorite_category",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update profile",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/user/profile?phone=010-5439-5457&birthday=19960629",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"profile"
+							],
+							"query": [
+								{
+									"key": "nickname",
+									"value": "수육",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "010-5439-5457"
+								},
+								{
+									"key": "birthday",
+									"value": "19960629"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile image",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/user/profile/image",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"profile",
+								"image"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile image",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/user/profile/image",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"profile",
+								"image"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follower",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/user/64976/follower",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"64976",
+								"follower"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "following",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/user/64976/following",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"user",
+								"64976",
+								"following"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notification",
+			"item": [
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/notification",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"notification"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mission",
+			"item": [
+				{
+					"name": "category list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/category",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "category list (town)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/category/town",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"category",
+								"town"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "category detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/category/2",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"category",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "category user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/category/2/user",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"category",
+								"2",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mission list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/category/3/mission?limit=2&page=0",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"category",
+								"3",
+								"mission"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "2"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mission detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/40",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"40"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mission user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/10/user",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"10",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "bookmark",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/bookmark",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"bookmark"
+							],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "3",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "bookmark",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "127.0.10.1/v1/bookmark?mission_id=104",
+							"host": [
+								"127",
+								"0",
+								"10",
+								"1"
+							],
+							"path": [
+								"v1",
+								"bookmark"
+							],
+							"query": [
+								{
+									"key": "mission_id",
+									"value": "104"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "bookmark",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/bookmark/6",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"bookmark",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/40/comment",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"40",
+								"comment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/40/comment?comment=저는 그렇게 생각하지 않아요.&group=0",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"40",
+								"comment"
+							],
+							"query": [
+								{
+									"key": "comment",
+									"value": "저는 그렇게 생각하지 않아요."
+								},
+								{
+									"key": "group",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/40/comment/2",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"40",
+								"comment",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/20/like",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"20",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/20/like",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"20",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mission/20/like",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mission",
+								"20",
+								"like"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Home",
+			"item": [
+				{
+					"name": "town",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/town?category_id=10",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"town"
+							],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "newsfeed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/newsfeed",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"newsfeed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "badge",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/badge",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"badge"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mypage",
+			"item": [
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mypage",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mypage"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "feed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mypage/feed",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mypage",
+								"feed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mypage/check",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mypage",
+								"check"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mission",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mypage/mission",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mypage",
+								"mission"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mission created",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mypage/mission/created",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mypage",
+								"mission",
+								"created"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follower",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/mypage/follower",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"mypage",
+								"follower"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Explore",
+			"item": [
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/explore?limit=3",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"explore"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/explore/search?keyword=다",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"explore",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "다"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Feed",
+			"item": [
+				{
+					"name": "show",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423300",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423300"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423296",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423296"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423257/comment",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423257",
+								"comment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423257/comment?comment=이것 역시 새로운 댓",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423257",
+								"comment"
+							],
+							"query": [
+								{
+									"key": "comment",
+									"value": "이것 역시 새로운 댓"
+								},
+								{
+									"key": "group",
+									"value": "0",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423257/comment/93015",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423257",
+								"comment",
+								"93015"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/407464/like",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"407464",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423295/like",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423295",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/feed/423295/like",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"feed",
+								"423295",
+								"like"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"item": [
+				{
+					"name": "index",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/chat",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "show",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/chat/1",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"chat",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "room enter",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1/v1/chat/direct/room/3",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"chat",
+								"direct",
+								"room",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send message",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "message",
+									"value": "다시 왔어요",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/circl/OneDrive/바탕 화면/smile.jpg",
+									"disabled": true
+								},
+								{
+									"key": "feed_id",
+									"value": "423300",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "127.0.0.1/v1/chat/direct/send/64976",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"path": [
+								"v1",
+								"chat",
+								"direct",
+								"send",
+								"64976"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "area",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1/v1/area?searchText=답십",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"v1",
+						"area"
+					],
+					"query": [
+						{
+							"key": "searchText",
+							"value": "답십"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "suggest_user",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvd3d3LmNpcmNsaW4uY28ua3IiLCJhdWQiOiJodHRwczpcL1wvd3d3LmNpcmNsaW4uY28ua3IiLCJpYXQiOjEzNTY5OTk1MjQsIm5iZiI6MTM1NzAwMDAwMCwidWlkIjo4fQ.FoHvv8qgnDRjizFMKr883E5zdC05uwLmd_uj8fQWVQ0",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "127.0.0.1/v1/suggest_user",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"path": [
+						"v1",
+						"suggest_user"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "50",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "127.0.10.1/v1",
+					"host": [
+						"127",
+						"0",
+						"10",
+						"1"
+					],
+					"path": [
+						"v1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvd3d3LmNpcmNsaW4uY28ua3IiLCJhdWQiOiJodHRwczpcL1wvd3d3LmNpcmNsaW4uY28ua3IiLCJpYXQiOjEzNTY5OTk1MjQsIm5iZiI6MTM1NzAwMDAwMCwidWlkIjo2NDE3NX0.lVwIA7RBr3j013qGUd30RpR3PJJ7O0glKnDr2SMiNqg",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "token",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
