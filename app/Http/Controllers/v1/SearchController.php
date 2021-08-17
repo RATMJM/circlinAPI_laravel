@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\SearchHistory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,11 @@ class SearchController extends Controller
         if ($keyword) {
             $users = $this->user($request)['data']['users'];
             $missions = $this->mission($request)['data']['missions'];
+
+            SearchHistory::create([
+                'user_id' => $user_id,
+                'keyword' => $keyword,
+            ]);
 
             return success([
                 'result' => true,
