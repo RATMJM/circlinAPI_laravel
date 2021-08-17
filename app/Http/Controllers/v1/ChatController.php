@@ -50,14 +50,14 @@ class ChatController extends Controller
         return success(['result' => $data > 0]);
     }
 
-    public function send_message(Request $request, $room_id): array
+    public function send_message(Request $request, $room_id, $type = null, $id = null): array
     {
         $user_id = token()->uid;
 
         $message = $request->get('message');
         $file = $request->file('file');
-        $mission_id = $request->get('mission_id');
-        $feed_id = $request->get('feed_id');
+        $mission_id = $type==='mission' && $id ? $id : $request->get('mission_id');
+        $feed_id = $type==='feed' && $id ? $id : $request->get('feed_id');
 
         if (!$message && !$file && !$mission_id && !$feed_id) {
             return success([
@@ -168,7 +168,7 @@ class ChatController extends Controller
     }
 
     /* 1대1 메시지 전송 */
-    public function send_direct(Request $request, $target_id): array
+    public function send_direct(Request $request, $target_id, $type = null, $id = null): array
     {
         try {
             DB::beginTransaction();
@@ -191,7 +191,7 @@ class ChatController extends Controller
                 ]);
             }
 
-            $result = $this->send_message($request, $room->id);
+            $result = $this->send_message($request, $room->id, $type, $id);
 
             if ($result['data']['result']) {
                 DB::commit();
@@ -273,7 +273,7 @@ class ChatController extends Controller
                 ->select([
                     'chat_messages.id',
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
-                    DB::raw("IF(chat_messages.feed_id is null, IF(mission_id is null, 'chat', 'mission'), 'feed') as type"),
+                    DB::raw("IF(feed_id is null, IF(mission_id is null, 'chat', 'mission'), 'feed') as type"),
                     'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
                     'missions.title as mission_title', 'missions.description as mission_description',
                     'missions.thumbnail_image as mission_thumbnail_image',
