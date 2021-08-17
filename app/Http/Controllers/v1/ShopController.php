@@ -384,7 +384,7 @@ class ShopController extends Controller
                brands d, 
                users e  
 
-               where a.user_id="1"    
+               where a.user_id=?    
                and a.product_id=c.id
                and d.user_id=e.id
                and c.brand_id=d.id; ', array($user_id)  ) ;
