@@ -85,12 +85,12 @@ class UserController extends Controller
                     $user_data['phone_verified_at'] = date('Y-m-d H:i:s', time());
                     $result[] = 'phone';
                 }
-                $user = User::where('id', $user_id)->update($user_data);
-
                 if ($gender) {
-                    $user_stat_data['gender'] = $gender;
+                    $user_data['gender'] = $gender;
                     $result[] = 'gender';
                 }
+                $user = User::where('id', $user_id)->update($user_data);
+
                 if ($birthday && preg_match('/\d{8}/', $birthday)) {
                     $user_stat_data['birthday'] = date('Y-m-d', strtotime($birthday));
                     $result[] = 'birthday';
