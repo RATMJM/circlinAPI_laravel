@@ -97,7 +97,7 @@ class ChatController extends Controller
                 'chat_room_id' => $room_id,
                 'user_id' => token()->uid,
                 'message' => $request->get('message'),
-                'image' => $uploaded_file ? image_url(3, $uploaded_file) : null,
+                'image' => image_url(3, $uploaded_file),
                 'feed_id' => $feed_id,
                 'mission_id' => $mission_id,
             ]);
