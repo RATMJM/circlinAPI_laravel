@@ -387,13 +387,7 @@ class ShopController extends Controller
                where a.user_id="1"    
                and a.product_id=c.id
                and d.user_id=e.id
-               and c.brand_id=d.id;
-                
-                SELECT name_ko, product_id, price FROM cart_options a, product_options b where b.id=a.product_option_id limit 0,1
-                        ;
-            select * from cart_options
-            ; 
-              ;', array($user_id)  ) ;
+               and c.brand_id=d.id; ', array($user_id)  ) ;
             
  
               return success([
