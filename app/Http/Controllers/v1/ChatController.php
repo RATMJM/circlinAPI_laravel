@@ -65,6 +65,14 @@ class ChatController extends Controller
                 'reason' => 'not enough data',
             ]);
         }
+
+        if ($mission_id && $feed_id) {
+            return success([
+                'result' => false,
+                'reason' => 'duplicated share',
+            ]);
+        }
+
         if (ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->exists()) {
             $uploaded_file = null;
             if (!$feed_id && !$mission_id && $file) {
