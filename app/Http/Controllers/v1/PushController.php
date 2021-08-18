@@ -11,7 +11,7 @@ class PushController extends Controller
     /**
      * gcm push notice
      */
-    public static function send_gcm_notify($uid, $title, $message, $url, $type = null): array
+    public static function send_gcm_notify($uid, $title, $message, $url, $type = null): array|null
     {
         try {
             $user = User::where('id', $uid)->select(['device_type', 'device_token', 'agree_push'])->first();
@@ -22,19 +22,16 @@ class PushController extends Controller
                 } else {
                     $res = self::send_gcm_notify_android($user->device_token, $title, $message, $url, $type);
                 }
-                return success(['result' => $res]);
+                return $res;
             } else {
-                return success([
-                    'result' => false,
-                    'reason' => 'not available push',
-                ]);
+                return null;
             }
         } catch (Exception $e) {
             return exceped($e);
         }
     }
 
-    public static function send_gcm_notify_android($reg_id, $title, $message, $url, $tag)
+    public static function send_gcm_notify_android($reg_id, $title, $message, $url, $tag): array
     {
         //Creating the notification array.
         $notification = [
@@ -65,12 +62,12 @@ class PushController extends Controller
         if ($result === false) {
             die('Problem occurred: ' . curl_error($ch));
         } else {
-            return json_decode($result);
+            return (array)json_decode($result);
         }
         curl_close($ch);
     }
 
-    public static function send_gcm_notify_ios($reg_id, $title, $message, $url, $tag)
+    public static function send_gcm_notify_ios($reg_id, $title, $message, $url, $tag): array
     {
         //Creating the notification array.
         $notification = [
@@ -101,7 +98,7 @@ class PushController extends Controller
         if ($result === false) {
             die('Problem occurred: ' . curl_error($ch));
         } else {
-            return json_decode($result);
+            return (array)json_decode($result);
         }
         curl_close($ch);
     }

@@ -4,20 +4,20 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
+use App\Models\FeedComment;
 use App\Models\FeedImage;
+use App\Models\MissionComment;
 use App\Models\Notification;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
-    public function index(): array
+    public function index($user_id = null): array
     {
-        $user_id = token()->uid;
-
-        DB::enableQueryLog();
+        $user_id = $user_id ?? token()->uid;
 
         $nogroup = ["follow_feed", "follow_bookmark", "mission_invite", "bookmark_warning"];
 
@@ -44,7 +44,6 @@ class NotificationController extends Controller
         $data = User::rightJoinSub($data, 'n', function ($query) {
             $query->on('users.id', 'n.user_id');
         })
-            ->leftJoin('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
@@ -83,9 +82,9 @@ class NotificationController extends Controller
             }
 
             $replaces = [
-                '{%count}' => $item->count - 1,
-                '{%nickname}' => $item->nickname,
-                '{%mission}' => $item->mission_title,
+                '{%count}' => '{' . $item->count - 1 . '}',
+                '{%nickname}' => '{' . $item->nickname . '}',
+                '{%mission}' => '{' . $item->mission_title . '}',
             ];
             $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']]);
         }
@@ -98,11 +97,96 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function send($type, $id, $push = false): array
+    /**
+     * 알림 전송
+     *
+     * @param string $target_id 알림 받을 대상
+     * @param string $type 알림 종류
+     * @param int|null $id integer 연결될 테이블 id
+     * @return array
+     */
+    public static function send(string $target_id, string $type, int $id = null): array
     {
-        /*$id_column = match($type) {
-            'follow' => null,
-            'feed'
-        };*/
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            $data = match ($type) {
+                'follow' => ['user_id' => $user_id],
+                'feed_check' => ['user_id' => $user_id, 'feed_id' => $id],
+                'feed_comment', 'feed_reply' => [
+                    'user_id' => $user_id,
+                    'feed_id' => FeedComment::where('id', $id)->value('feed_id'),
+                    'feed_comment_id' => $id,
+                ],
+                'mission_like', 'follow_bookmark' => ['user_id' => $user_id, 'mission_id' => $id],
+                'mission_comment', 'mission_reply' => [
+                    'user_id' => $user_id,
+                    'mission_id' => MissionComment::where('id', $id)->value('mission_id'),
+                    'mission_comment_id' => $id,
+                ],
+                'bookmark_warning' => ['mission_id' => $id],
+                default => null,
+            };
+
+            if (is_null($data)) {
+                return success([
+                    'success' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            $data = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id]]));
+
+            $push = match ($type) {
+                'follow', 'feed_check', 'feed_comment', 'feed_reply',
+                'mission_like', 'follow_bookmark',
+                'mission_comment', 'mission_reply', 'bookmark_warning' => true,
+                default => false,
+            };
+
+            $user = User::where('id', $user_id)->first();
+
+            if ($push && $user->agree_push) {
+                $messages = CommonCode::where('ctg_lg', 'notifications')->pluck('content_ko', 'ctg_sm');
+
+                $item = Notification::where('notifications.id', $data->id)
+                    ->leftJoin('users', 'users.id', 'notifications.user_id')
+                    ->leftJoin('feeds', 'feeds.id', 'notifications.feed_id')
+                    ->leftJoin('feed_comments', 'feed_comments.id', 'notifications.feed_comment_id')
+                    ->leftJoin('missions', 'missions.id', 'notifications.mission_id')
+                    ->leftJoin('mission_comments', 'mission_comments.id', 'notifications.mission_comment_id')
+                    ->select([
+                        'users.nickname', 'users.profile_image', 'users.gender',
+                        'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
+                            ->orderBy('order')->limit(1),
+                        'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')
+                            ->orderBy('order')->limit(1),
+                        'missions.title as mission_title',
+                        'missions.thumbnail_image as mission_image',
+                    ])
+                    ->first();
+
+                $replaces = [
+                    '{%nickname}' => $item->nickname,
+                    '{%mission}' => $item->mission_title,
+                ];
+                $message = str_replace(array_keys($replaces), array_values($replaces), $messages[$type]);
+
+                $res = PushController::send_gcm_notify($target_id, '써클인', $message, '연결될 주소', $type);
+
+                return success([
+                    'result' => true,
+                    'res' => $res,
+                ]);
+            } else {
+                return success([
+                    'result' => true,
+                ]);
+            }
+        } catch (Exception $e) {
+            exceped($e);
+        }
     }
 }

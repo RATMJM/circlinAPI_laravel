@@ -253,6 +253,8 @@ class UserController extends Controller
     public function follow(Request $request): array
     {
         try {
+            DB::beginTransaction();
+
             $user_id = token()->uid;
             $target_id = $request->get('target_id');
 
@@ -275,8 +277,12 @@ class UserController extends Controller
             } else {
                 $data = Follow::create(['user_id' => $user_id, 'target_id' => $target_id]);
                 if ($data) {
+                    NotificationController::send($target_id, 'follow');
+
+                    DB::commit();
                     return success(['result' => true]);
                 } else {
+                    DB::rollBack();
                     return success(['result' => false]);
                 }
             }
@@ -305,7 +311,7 @@ class UserController extends Controller
                 $result = $data->delete();
                 return success(['result' => $result]);
             } else {
-                return success(['result' => false, 'not following']);
+                return success(['result' => false, 'reason' => 'not following']);
             }
         } catch (Exception $e) {
             return exceped($e);
