@@ -75,7 +75,7 @@ class NotificationController extends Controller
             // common_codes 에 매칭되도록 type 치환
             if ($item->count > 1 && !in_array($item->type, $nogroup)) {
                 $res[$i]['type'] = match ($item->type) {
-                    'follow', 'feed_like', 'feed_comment', 'mission_like', 'mission_comment' => $item->type.'s',
+                    'follow', 'feed_check', 'feed_comment', 'mission_like', 'mission_comment' => $item->type.'s',
                     'feed_reply' => 'feed_replies',
                     'mission_reply' => 'mission_replies',
                 };
