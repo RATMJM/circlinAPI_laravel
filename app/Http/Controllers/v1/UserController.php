@@ -121,6 +121,32 @@ class UserController extends Controller
         }
     }
 
+    public function update_token(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            $token = $request->get('token');
+            $platform = $request->get('platform');
+
+            User::where('device_token', $token)->where('id', '!=', $user_id)->update(['device_token' => '']);
+
+            User::where('id', $user_id)->update([
+                'device_type' => $platform,
+                'device_token' => $token,
+            ]);
+
+            DB::commit();
+
+            return success(['result' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     public function change_profile_image(Request $request): array
     {
         $user_id = token()->uid;
