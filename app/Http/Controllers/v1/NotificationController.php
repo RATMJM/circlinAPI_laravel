@@ -35,7 +35,7 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
-            ->groupBy(DB::raw("IF(type in ('".implode("','", $nogroup)."'), id, type)"),
+            ->groupBy(DB::raw("IF(type in ('" . implode("','", $nogroup) . "'), id, type)"),
                 DB::raw("CONCAT(YEAR(notifications.created_at),'|',WEEK(notifications.created_at))"),
                 'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
@@ -75,7 +75,7 @@ class NotificationController extends Controller
             // common_codes 에 매칭되도록 type 치환
             if ($item->count > 1 && !in_array($item->type, $nogroup)) {
                 $res[$i]['type'] = match ($item->type) {
-                    'follow', 'feed_check', 'feed_comment', 'mission_like', 'mission_comment' => $item->type.'s',
+                    'follow', 'feed_check', 'feed_comment', 'mission_like', 'mission_comment' => $item->type . 's',
                     'feed_reply' => 'feed_replies',
                     'mission_reply' => 'mission_replies',
                     default => null,
@@ -89,6 +89,8 @@ class NotificationController extends Controller
             ];
             $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']]);
         }
+
+        Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
 
         return success([
             'result' => false,
