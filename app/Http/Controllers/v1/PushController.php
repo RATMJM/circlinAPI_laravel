@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\PushHistory;
 use App\Models\User;
 use Exception;
 
@@ -22,6 +23,15 @@ class PushController extends Controller
                 } else {
                     $res = self::send_gcm_notify_android($user->device_token, $title, $message, $url, $type);
                 }
+
+                PushHistory::create([
+                    'target_id' => $uid,
+                    'title' => $title,
+                    'message' => $message,
+                    'type' => $type,
+                    'result' => $res['success'],
+                ]);
+
                 return $res;
             } else {
                 return null;
