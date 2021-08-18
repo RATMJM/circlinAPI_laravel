@@ -276,8 +276,7 @@ class ChatController extends Controller
                 ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
                 ->select([
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
-                    DB::raw("IF(feed_id is null, IF(mission_id is null, 'chat', 'mission'), 'feed') as type"),
-                    'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
+                    'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
                     'missions.title as mission_title', 'missions.description as mission_description',
                     'missions.thumbnail_image as mission_thumbnail_image',
                     'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
