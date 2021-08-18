@@ -1,9 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use App\Http\Controllers\v1;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +45,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::post('/profile/image', [v1\UserController::class, 'change_profile_image'])->name('profile.update.image');
     Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image'])->name('profile.delete.image');
     Route::post('/profile/token', [v1\UserController::class, 'update_token'])->name('profile.update.token');
-    Route::resource('favorite_category',v1\UserFavoriteCategoryController::class);
+    Route::resource('favorite_category', v1\UserFavoriteCategoryController::class);
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');
     Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.delete');
 
