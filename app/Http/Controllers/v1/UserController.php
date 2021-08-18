@@ -277,7 +277,7 @@ class UserController extends Controller
             } else {
                 $data = Follow::create(['user_id' => $user_id, 'target_id' => $target_id]);
                 if ($data) {
-                    NotificationController::send($target_id, 'follow');
+                    $res = NotificationController::send($target_id, 'follow');
 
                     DB::commit();
                     return success(['result' => true]);

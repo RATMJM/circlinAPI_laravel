@@ -176,16 +176,20 @@ class NotificationController extends Controller
 
                 $res = PushController::send_gcm_notify($target_id, '써클인', $message, '연결될 주소', $type);
 
+                DB::commit();
+
                 return success([
-                    'result' => true,
-                    'res' => $res,
+                    'result' => isset($res),
                 ]);
             } else {
+                DB::commit();
+
                 return success([
                     'result' => true,
                 ]);
             }
         } catch (Exception $e) {
+            DB::rollBack();
             exceped($e);
         }
     }
