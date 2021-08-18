@@ -78,6 +78,7 @@ class NotificationController extends Controller
                     'follow', 'feed_check', 'feed_comment', 'mission_like', 'mission_comment' => $item->type.'s',
                     'feed_reply' => 'feed_replies',
                     'mission_reply' => 'mission_replies',
+                    default => null,
                 };
             }
 
@@ -86,7 +87,7 @@ class NotificationController extends Controller
                 '{%nickname}' => $item->nickname,
                 '{%mission}' => $item->mission_title,
             ];
-            $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']] ?? '');
+            $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']]);
         }
 
         return success([
