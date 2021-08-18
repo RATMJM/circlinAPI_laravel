@@ -38,41 +38,41 @@ class LikeController extends Controller
         }
     }
 
-    public function store($table, $id)
+    public function store($type, $id)
     {
         try {
             DB::beginTransaction();
 
             $user_id = token()->uid;
 
-            [$feed, $feed_like] = match ($table) {
+            [$table, $table_like] = match ($type) {
                 'feed' => [new Feed(), new FeedLike()],
                 'mission' => [new Mission(), new MissionLike()],
                 default => [null, null],
             };
 
-            if ($feed->where('id', $id)->value('user_id') === $user_id) {
+            if (($target_id = $table->where('id', $id)->value('user_id')) === $user_id) {
                 return success([
                     'result' => false,
-                    'reason' => "my $table",
+                    'reason' => "my $type",
                 ]);
             }
 
-            if ($feed_like->where(["{$table}_id" => $id, 'user_id' => $user_id])->exists()) {
+            if ($table_like->where(["{$type}_id" => $id, 'user_id' => $user_id])->exists()) {
                 return success([
                     'result' => false,
                     'reason' => "already like",
                 ]);
             }
 
-            if ($table === 'feed') {
-                if ($feed_like->withTrashed()->where(["{$table}_id" => $id, 'user_id' => $user_id])->doesntExist()
-                    && PointHistory::where(["{$table}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
-                    PointController::change_point($user_id, 10, 'feed_check', 'feed', $id);
+            if ($type === 'feed') {
+                if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
+                    && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
+                    PointController::change_point($target_id, 10, 'feed_check', 'feed', $id);
                 }
             }
 
-            $data = $feed_like->create(["{$table}_id" => $id, 'user_id' => $user_id]);
+            $data = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id]);
 
             DB::commit();
 
