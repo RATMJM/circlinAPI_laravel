@@ -275,7 +275,6 @@ class ChatController extends Controller
                 ->join('users', 'users.id', 'chat_messages.user_id')
                 ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
                 ->select([
-                    'chat_messages.id',
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                     DB::raw("IF(feed_id is null, IF(mission_id is null, 'chat', 'mission'), 'feed') as type"),
                     'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
@@ -285,7 +284,9 @@ class ChatController extends Controller
                         ->orderBy('order')->limit(1),
                 ])
                 ->orderBy('chat_messages.id', 'desc')
-                ->take(20)->get();
+                ->take(20);
+            $max = $messages->max('chat_messages.id');
+            $messages = $messages->get();
 
             foreach ($messages as $i => $message) {
                 $messages[$i]->mission = arr_group($messages[$i], ['title', 'description', 'thumbnail_image'], 'mission_');
@@ -297,7 +298,7 @@ class ChatController extends Controller
                 Arr::except($messages[$i], ['feed_image', 'mission_image']);
             }
 
-            $user->update(['read_message_id' => max($user->read_message_id, $messages->max('message_id'))]);
+            $user->update(['read_message_id' => max($user->read_message_id, $max)]);
 
             DB::commit();
 
