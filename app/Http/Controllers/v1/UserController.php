@@ -280,7 +280,8 @@ class UserController extends Controller
                     $res = NotificationController::send($target_id, 'follow');
 
                     DB::commit();
-                    return success(['result' => true]);
+
+                    return success(['result' => true, $res]);
                 } else {
                     DB::rollBack();
                     return success(['result' => false]);

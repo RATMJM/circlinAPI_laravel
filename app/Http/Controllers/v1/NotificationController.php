@@ -100,12 +100,12 @@ class NotificationController extends Controller
     /**
      * 알림 전송
      *
-     * @param string $target_id 알림 받을 대상
+     * @param string|array $target_ids 알림 받을 대상
      * @param string $type 알림 종류
      * @param int|null $id integer 연결될 테이블 id
      * @return array
      */
-    public static function send(string $target_id, string $type, int $id = null): array
+    public static function send(string|array $target_ids, string $type, int $id = null): array
     {
         try {
             DB::beginTransaction();
@@ -137,7 +137,9 @@ class NotificationController extends Controller
                 ]);
             }
 
-            $data = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id]]));
+            foreach (Arr::wrap($target_ids) as $target_id) {
+                $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id]]));
+            }
 
             $push = match ($type) {
                 'follow', 'feed_check', 'feed_comment', 'feed_reply',
@@ -151,7 +153,7 @@ class NotificationController extends Controller
             if ($push && $user->agree_push) {
                 $messages = CommonCode::where('ctg_lg', 'notifications')->pluck('content_ko', 'ctg_sm');
 
-                $item = Notification::where('notifications.id', $data->id)
+                $item = Notification::where('notifications.id', $res->id)
                     ->leftJoin('users', 'users.id', 'notifications.user_id')
                     ->leftJoin('feeds', 'feeds.id', 'notifications.feed_id')
                     ->leftJoin('feed_comments', 'feed_comments.id', 'notifications.feed_comment_id')
@@ -174,7 +176,7 @@ class NotificationController extends Controller
                 ];
                 $message = str_replace(array_keys($replaces), array_values($replaces), $messages[$type]);
 
-                $res = PushController::send_gcm_notify($target_id, '써클인', $message, '연결될 주소', $type);
+                $res = PushController::send_gcm_notify($target_ids, '써클인', $message, '연결될 주소', $type);
 
                 DB::commit();
 
@@ -190,7 +192,7 @@ class NotificationController extends Controller
             }
         } catch (Exception $e) {
             DB::rollBack();
-            exceped($e);
+            return exceped($e);
         }
     }
 }
