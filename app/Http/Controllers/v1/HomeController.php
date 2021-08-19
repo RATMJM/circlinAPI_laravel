@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
+use App\Models\ChatUser;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
@@ -89,6 +90,13 @@ class HomeController extends Controller
                 'feed_places.image as place_image', 'feed_places.url as place_url',
                 'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'emoji_total' => ChatUser::selectRaw("COUNT(distinct chat_messages.chat_room_id)")->withTrashed()
+                    ->whereColumn('chat_users.user_id', 'feeds.user_id')
+                    ->whereColumn('chat_messages.feed_id', 'feeds.id')
+                    ->join('chat_messages', function ($query) {
+                        $query->on('chat_messages.chat_room_id', 'chat_users.chat_room_id')
+                            ->whereColumn('chat_messages.user_id', '!=', 'chat_users.user_id');
+                    })->whereNotNull('message'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('user_id', token()->uid), // 해당 피드에 체크를 남겼는가
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
