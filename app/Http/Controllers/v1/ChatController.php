@@ -230,6 +230,10 @@ class ChatController extends Controller
         $data = ChatUser::where('chat_users.user_id', $user_id)
             ->select([
                 'chat_users.chat_room_id',
+                'user_id' => DB::table('chat_users as cu')->select('users.id')
+                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
+                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
+                    ->join('users', 'users.id', 'user_id')->limit(1),
                 'nickname' => DB::table('chat_users as cu')->select('nickname')
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
