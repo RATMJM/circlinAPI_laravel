@@ -281,7 +281,7 @@ class UserController extends Controller
 
                     DB::commit();
 
-                    return success(['result' => true, $res]);
+                    return success(['result' => true]);
                 } else {
                     DB::rollBack();
                     return success(['result' => false]);
