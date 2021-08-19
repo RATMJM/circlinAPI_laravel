@@ -444,4 +444,22 @@ class MissionController extends Controller
             return exceped($e);
         }
     }
+
+    public function destroy($id): array
+    {
+        $user_id = token()->uid;
+
+        $mission = Mission::where('id', $id)->first();
+
+        if ($mission->user_id === $user_id) {
+            $data = $mission->delete();
+
+            return success(['result' => true]);
+        } else {
+            return success([
+                'result' => false,
+                'reason' => 'not my mission',
+            ]);
+        }
+    }
 }

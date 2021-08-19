@@ -47,7 +47,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::post('/profile/token', [v1\UserController::class, 'update_token'])->name('profile.update.token');
     Route::resource('favorite_category', v1\UserFavoriteCategoryController::class);
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');
-    Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.delete');
+    Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.destroy');
 
     /* 유저 상세 페이지 */
     Route::group(['prefix' => '{user_id}'], function () {
@@ -82,6 +82,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::get('/', [v1\MissionController::class, 'show'])->name('show');
         Route::get('/user', [v1\MissionController::class, 'user'])->name('user');
         Route::post('/invite', [v1\MissionController::class, 'invite'])->name('invite');
+        Route::delete('/mission', [v1\MissionController::class, 'destroy'])->name('destroy');
         Route::get('/like', [v1\MissionLikeController::class, 'index'])->name('like.index');
         Route::post('/like', [v1\MissionLikeController::class, 'store'])->name('like.store');
         Route::delete('/like', [v1\MissionLikeController::class, 'destroy'])->name('like.destroy');
