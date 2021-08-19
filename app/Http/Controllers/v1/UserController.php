@@ -532,47 +532,47 @@ class UserController extends Controller
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions = Mission::whereHas('feed_missions', function ($query) use ($user_id) {
-            $query->whereHas('feed', function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            });
-        })
-            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_stats as ms', function ($query) {
-                $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
+        $missions = Feed::where('feeds.user_id', $user_id)
+            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+            ->join('missions', 'missions.id', 'feed_missions.mission_id')
+            ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
+            ->leftJoin('mission_stats', function ($query) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->whereNull('mission_stats.ended_at');
             })
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'user1' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->whereNull('mission_stats.ended_at')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                DB::raw('COUNT(distinct ms.id) as bookmarks'),
+                DB::raw('COUNT(distinct mission_stats.id) as bookmarks'),
                 DB::raw('COUNT(distinct mc.id) as comments'),
             ])
-            ->groupBy('missions.id', 'o.id')
+            ->groupBy('missions.id', 'users.id')
             ->skip($page * $limit)->take($limit)->get();
 
+        function mission_user($mission_id)
+        {
+            return MissionStat::where('mission_id', $mission_id)
+                ->join('users', 'users.id', 'mission_stats.user_id')
+                ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
+                ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                ->groupBy('users.id', 'mission_id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2);
+        }
+
+        $query = null;
         foreach ($missions as $i => $mission) {
-            $tmp = explode('|', $mission['owner'] ?? '|');
-            $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
-            $tmp1 = explode('|', $mission['user1'] ?? '|');
-            $tmp2 = explode('|', $mission['user2'] ?? '|');
-            $missions[$i]['users'] = [
-                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
-            ];
-            unset($missions[$i]['user1'], $missions[$i]['user2']);
+            if ($query) {
+                $query = mission_user($mission->id)->union($query);
+            } else {
+                $query = mission_user($mission->id);
+            }
+        }
+        $query = $query->get();
+        $keys = $missions->pluck('id')->toArray();
+        foreach ($query->groupBy('mission_id') as $i => $item) {
+            $missions[array_search($i, $keys)]->users = $item;
         }
 
         return success([
