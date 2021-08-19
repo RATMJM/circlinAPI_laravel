@@ -85,7 +85,9 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::get('/like', [v1\MissionLikeController::class, 'index'])->name('like.index');
         Route::post('/like', [v1\MissionLikeController::class, 'store'])->name('like.store');
         Route::delete('/like', [v1\MissionLikeController::class, 'destroy'])->name('like.destroy');
-        Route::resource('/comment', v1\MissionCommentController::class);
+        Route::get('/comment', [v1\MissionCommentController::class, 'index'])->name('comment.index');
+        Route::post('/comment', [v1\MissionCommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{mission_id}', [v1\MissionCommentController::class, 'destroy'])->name('comment.destroy');
     });
 });
 
@@ -102,7 +104,9 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
         Route::get('/like', [v1\FeedLikeController::class, 'index'])->name('like.index');
         Route::post('/like', [v1\FeedLikeController::class, 'store'])->name('like.store');
         Route::delete('/like', [v1\FeedLikeController::class, 'destroy'])->name('like.destroy');
-        Route::resource('/comment', v1\FeedCommentController::class);
+        Route::get('/comment', [v1\FeedCommentController::class, 'index'])->name('comment.index');
+        Route::post('/comment', [v1\FeedCommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{mission_id}', [v1\FeedCommentController::class, 'destroy'])->name('comment.destroy');
     });
 });
 
