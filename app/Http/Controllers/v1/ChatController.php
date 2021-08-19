@@ -255,7 +255,7 @@ class ChatController extends Controller
                     ->whereColumn('chat_messages.id', '>', DB::raw("COALESCE(read_message_id, 0)"))
                     ->where('user_id', '!=', $user_id),
             ])
-            ->orderBy('is_hidden', 'desc')->orderBy('latest_at')
+            ->orderBy('is_hidden')->orderBy('latest_at', 'desc')
             ->get();
 
         return success([
