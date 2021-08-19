@@ -263,7 +263,7 @@ class FeedController extends Controller
         } else {
             return success([
                 'result' => false,
-                'reason' => 'not access feed',
+                'reason' => 'not my feed',
             ]);
         }
     }
