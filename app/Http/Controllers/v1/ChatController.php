@@ -291,6 +291,7 @@ class ChatController extends Controller
                 ->select([
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                     'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
+                    'feed_id', 'mission_id',
                     'missions.title as mission_title', 'missions.description as mission_description',
                     'missions.thumbnail_image as mission_thumbnail_image',
                     'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
@@ -302,7 +303,7 @@ class ChatController extends Controller
             $messages = $messages->get();
 
             foreach ($messages as $i => $message) {
-                $messages[$i]->mission = arr_group($messages[$i], ['title', 'description', 'thumbnail_image'], 'mission_');
+                $messages[$i]->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
                 $messages[$i]->image = match ($message->type) {
                     'feed' => $message->feed_image,
                     'mission' => $message->mission_image,
