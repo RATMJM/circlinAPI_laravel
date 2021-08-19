@@ -189,7 +189,7 @@ class FeedController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'feed_products.type as product_type', 'feed_products.product_id',
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand) as product_brand"),
