@@ -87,7 +87,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::delete('/like', [v1\MissionLikeController::class, 'destroy'])->name('like.destroy');
         Route::get('/comment', [v1\MissionCommentController::class, 'index'])->name('comment.index');
         Route::post('/comment', [v1\MissionCommentController::class, 'store'])->name('comment.store');
-        Route::delete('/comment/{mission_id}', [v1\MissionCommentController::class, 'destroy'])->name('comment.destroy');
+        Route::delete('/comment/{comment_id}', [v1\MissionCommentController::class, 'destroy'])->name('comment.destroy');
     });
 });
 
@@ -106,7 +106,7 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
         Route::delete('/like', [v1\FeedLikeController::class, 'destroy'])->name('like.destroy');
         Route::get('/comment', [v1\FeedCommentController::class, 'index'])->name('comment.index');
         Route::post('/comment', [v1\FeedCommentController::class, 'store'])->name('comment.store');
-        Route::delete('/comment/{mission_id}', [v1\FeedCommentController::class, 'destroy'])->name('comment.destroy');
+        Route::delete('/comment/{comment_id}', [v1\FeedCommentController::class, 'destroy'])->name('comment.destroy');
     });
 });
 
