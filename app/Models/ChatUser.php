@@ -11,4 +11,9 @@ class ChatUser extends Model
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'is_hidden' => 'bool',
+        'is_block' => 'bool',
+    ];
 }
