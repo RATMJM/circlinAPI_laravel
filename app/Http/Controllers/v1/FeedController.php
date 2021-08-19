@@ -250,6 +250,20 @@ class FeedController extends Controller
         ]);
     }
 
+    public function show_feed(Request $request, $feed_id): array
+    {
+        $data = Feed::where(['id' => $feed_id, 'user_id' => token()->uid])->update(['is_hidden' => false]);
+
+        return success(['result' => $data > 0]);
+    }
+
+    public function hide_feed(Request $request, $feed_id): array
+    {
+        $data = Feed::where(['id' => $feed_id, 'user_id' => token()->uid])->update(['is_hidden' => true]);
+
+        return success(['result' => $data > 0]);
+    }
+
     public function destroy($id): array
     {
         $user_id = token()->uid;

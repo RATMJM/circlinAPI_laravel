@@ -52,7 +52,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     /* 유저 상세 페이지 */
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('/', [v1\UserController::class, 'show'])->name('show');
-        Route::get('/feed/{feed_id?}', [v1\UserController::class, 'feed'])->name('feed');
+        Route::get('/feed', [v1\UserController::class, 'feed'])->name('feed');
         Route::get('/check', [v1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1\UserController::class, 'mission'])->name('mission');
         Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
@@ -100,6 +100,8 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
     Route::post('/', [v1\FeedController::class, 'store'])->name('store');
     Route::group(['prefix' => '{feed_id}'], function () {
         Route::get('/', [v1\FeedController::class, 'show'])->name('show');
+        Route::post('/show', [v1\FeedController::class, 'show_feed'])->name('show');
+        Route::post('/hide', [v1\FeedController::class, 'hide_feed'])->name('hide');
         Route::delete('/', [v1\FeedController::class, 'destroy'])->name('destroy');
         Route::get('/like', [v1\FeedLikeController::class, 'index'])->name('like.index');
         Route::post('/like', [v1\FeedLikeController::class, 'store'])->name('like.store');
