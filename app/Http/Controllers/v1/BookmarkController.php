@@ -61,11 +61,6 @@ class BookmarkController extends Controller
         ]);
     }
 
-    public function create(): array
-    {
-        abort(404);
-    }
-
     public function store(Request $request): array
     {
         $user_id = token()->uid;
@@ -89,21 +84,6 @@ class BookmarkController extends Controller
             ]);
             return success(['result' => (bool)$data]);
         }
-    }
-
-    public function show($id): array
-    {
-        abort(404);
-    }
-
-    public function edit($id): array
-    {
-        abort(404);
-    }
-
-    public function update(Request $request, $id): array
-    {
-        abort(404);
     }
 
     public function destroy($id): array

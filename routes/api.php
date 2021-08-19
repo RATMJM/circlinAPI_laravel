@@ -67,7 +67,9 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 Route::get('/notification', [v1\NotificationController::class, 'index'])->name('notification.index');
 
 /* 미션 관련 */
-Route::resource('bookmark', v1\BookmarkController::class);
+Route::get('/bookmark', [v1\BookmarkController::class, 'index'])->name('bookmark.index');
+Route::post('/bookmark', [v1\BookmarkController::class, 'store'])->name('bookmark.store');
+Route::delete('/bookmark/{mission_id}', [v1\BookmarkController::class, 'destroy'])->name('bookmark.destroy');
 Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
     Route::get('/{town?}', [v1\MissionCategoryController::class, 'index'])->where(['town' => 'town'])->name('index');
     Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
