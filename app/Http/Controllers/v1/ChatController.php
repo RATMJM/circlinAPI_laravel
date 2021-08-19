@@ -253,6 +253,7 @@ class ChatController extends Controller
                     ->orderBy('id', 'desc')->limit(1),
                 'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('chat_messages.id', '>', DB::raw("COALESCE(read_message_id, 0)"))
+                    ->whereColumn('chat_messages.created_at', 'chat_users.created_at')
                     ->where('user_id', '!=', $user_id),
             ])
             ->orderBy('is_hidden')->orderBy('latest_at', 'desc')
