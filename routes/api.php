@@ -127,6 +127,9 @@ Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
     Route::get('/{room_id}', [v1\ChatController::class, 'show'])->name('show');
     Route::post('/{room_id}/send', [v1\ChatController::class, 'send_message'])->name('send');
     Route::get('/{room_id}/user', [v1\ChatController::class, 'user'])->name('user');
+    Route::post('/{room_id}/leave', [v1\ChatController::class, 'leave_room'])->name('leave');
+    Route::post('/{room_id}/show', [v1\ChatController::class, 'show_room'])->name('show');
+    Route::post('/{room_id}/hide', [v1\ChatController::class, 'hide_room'])->name('hide');
     // Route::post('/direct/room/{target_id}', [v1\ChatController::class, 'create_or_enter_room'])->name('direct.enter');
     Route::post('/direct/send/{target_id}', [v1\ChatController::class, 'send_direct'])->name('direct.send');
 });
