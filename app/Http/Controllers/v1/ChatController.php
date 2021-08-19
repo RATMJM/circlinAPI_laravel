@@ -255,7 +255,7 @@ class ChatController extends Controller
                     ->whereColumn('chat_messages.id', '>', DB::raw("COALESCE(read_message_id, 0)"))
                     ->where('user_id', '!=', $user_id),
             ])
-            ->orderBy('is_hidden')->orderBy('latest_at', 'desc')
+            ->orderBy('is_hidden', 'desc')->orderBy('latest_at')
             ->get();
 
         return success([
@@ -288,7 +288,8 @@ class ChatController extends Controller
                 })
                 ->where('chat_messages.created_at', '>=', function ($query) use ($room_id, $user_id) {
                     $query->select('created_at')->from('chat_users')
-                        ->where('chat_users.chat_room_id', $room_id)->where('chat_users.user_id', $user_id)
+                        ->where('chat_room_id', $room_id)->where('user_id', $user_id)
+                        ->whereNull('deleted_at')
                         ->limit(1);
                 })
                 ->join('users', 'users.id', 'chat_messages.user_id')
