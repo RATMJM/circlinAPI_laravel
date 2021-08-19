@@ -88,7 +88,7 @@ class HomeController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
                 'feed_places.address as place_address', 'feed_places.title as place_title', 'feed_places.description as place_description',
                 'feed_places.image as place_image', 'feed_places.url as place_url',
-                'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'emoji_total' => ChatUser::selectRaw("COUNT(distinct chat_messages.chat_room_id)")->withTrashed()
                     ->whereColumn('chat_users.user_id', 'feeds.user_id')
