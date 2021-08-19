@@ -212,6 +212,13 @@ class MissionController extends Controller
             ])
             ->first();
 
+        if (is_null($data)) {
+            return success([
+                'result' => false,
+                'reason' => 'not found mission',
+            ]);
+        }
+
         $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
         $data->place = arr_group($data, ['address', 'title', 'description', 'image', 'url'], 'place_');
