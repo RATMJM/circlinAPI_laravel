@@ -177,6 +177,7 @@ class ChatController extends Controller
             return success([
                 'result' => true,
                 'room' => $room,
+                'message' => $this->show($request, $room->id),
             ]);
         } catch (Exception $e) {
             DB::rollBack();
