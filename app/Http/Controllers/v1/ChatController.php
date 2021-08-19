@@ -50,6 +50,20 @@ class ChatController extends Controller
         return success(['result' => $data > 0]);
     }
 
+    public function show_room(Request $request, $room_id): array
+    {
+        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_hidden' => false]);
+
+        return success(['result' => $data > 0]);
+    }
+
+    public function hide_room(Request $request, $room_id): array
+    {
+        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_hidden' => true]);
+
+        return success(['result' => $data > 0]);
+    }
+
     public function send_message(Request $request, $room_id, $type = null, $id = null, $message = null): array
     {
         $user_id = token()->uid;
