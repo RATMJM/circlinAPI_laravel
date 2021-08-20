@@ -20,6 +20,7 @@ class CreateProductReviewCommentsTable extends Migration
             $table->foreignId('user_id')->constrained();
             $table->integer('group')->default(0);
             $table->tinyInteger('depth')->default(0);
+            $table->text('comment');
             $table->softDeletes();
         });
     }
