@@ -68,6 +68,11 @@ class UserController extends Controller
             $gender = $request->get('gender');
             $socket_id = $request->get('socket_id');
 
+            $agree4 = $request->get('agree_email');
+            $agree5 = $request->get('agree_sms');
+            $agree_push = $request->get('agree_push');
+            $agree_ad = $request->get('agree_ad');
+
             $birthday = $request->get('birthday');
 
             $data = User::where('id', $user_id)->first();
@@ -96,6 +101,18 @@ class UserController extends Controller
                 if ($socket_id) {
                     $user_data['socket_id'] = $socket_id;
                     $result[] = 'socket_id';
+                }
+                if ($agree4) {
+                    $user_data['agree4'] = $agree4;
+                    $result[] = 'agree_email';
+                }
+                if ($agree5) {
+                    $user_data['agree5'] = $agree5;
+                    $result[] = 'agree_sms';
+                }
+                if ($agree_push) {
+                    $user_data['agree_push'] = $agree_push;
+                    $result[] = 'agree_push';
                 }
                 $user = User::where('id', $user_id)->update($user_data);
 
