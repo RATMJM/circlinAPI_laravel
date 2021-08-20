@@ -5,8 +5,9 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\FeedComment;
 use App\Models\MissionComment;
+use App\Models\NoticeComment;
+use App\Models\ProductReviewComment;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
@@ -15,8 +16,10 @@ class CommentController extends Controller
     {
         try {
             $query = match ($table) {
-                'feed' => new FeedComment,
-                'mission' => new MissionComment,
+                'feed' => new FeedComment(),
+                'mission' => new MissionComment(),
+                'notice' => new NoticeComment(),
+                'product_review' => new ProductReviewComment(),
             };
 
             $query = $query->where("{$table}_id", $id)
@@ -44,10 +47,7 @@ class CommentController extends Controller
                 'comments' => $comments,
             ]);
         } catch (Exception $e) {
-            return success([
-                'result' => false,
-                'reason' => $e,
-            ]);
+            return exceped($e);
         }
     }
 
