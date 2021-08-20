@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use App\Models\ChatUser;
+use App\Models\Feed;
 use App\Models\FeedImage;
 use App\Models\User;
 use Exception;
@@ -299,10 +300,11 @@ class ChatController extends Controller
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                     'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
                     'feed_id', 'mission_id',
-                    'missions.title as mission_title', 'missions.description as mission_description',
-                    'missions.thumbnail_image as mission_thumbnail_image',
+                    'feed_content' => Feed::select('content')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
                     'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
                         ->orderBy('order')->limit(1),
+                    'missions.title as mission_title', 'missions.description as mission_description',
+                    'missions.thumbnail_image as mission_thumbnail_image',
                 ])
                 ->orderBy('chat_messages.id', 'desc')
                 ->take(20);
