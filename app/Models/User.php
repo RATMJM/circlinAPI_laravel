@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $guarded = ['point'];
+    protected $guarded = [];
 
     protected $hidden = [
         'password',
