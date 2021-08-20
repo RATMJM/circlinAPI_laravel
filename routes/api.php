@@ -116,7 +116,7 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
 /* 마이페이지 (UserController 로 넘김) */
 Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/', [v1\MypageController::class, 'index'])->name('index');
-    Route::get('/feed/{feed_id?}', [v1\MypageController::class, 'feed'])->name('feed');
+    Route::get('/feed', [v1\MypageController::class, 'feed'])->name('feed');
     Route::get('/check', [v1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1\MypageController::class, 'mission'])->name('mission');
     Route::get('/mission/created', [v1\MypageController::class, 'created_mission'])->name('mission.created');

@@ -18,9 +18,9 @@ class MypageController extends Controller
     /**
      * 내 피드 데이터
      */
-    public function feed(Request $request, $feed_id = null): array
+    public function feed(Request $request): array
     {
-        return (new UserController())->feed($request, token()->uid, $feed_id);
+        return (new UserController())->feed($request, token()->uid);
     }
 
     /**
