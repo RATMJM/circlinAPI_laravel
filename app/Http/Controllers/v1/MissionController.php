@@ -284,7 +284,7 @@ class MissionController extends Controller
 
             foreach ($places as $place) {
                 if ($query) {
-                    $query = place_feed($user_id, $place, $mission_id)->union($query);
+                    $query = $query->union(place_feed($user_id, $place, $mission_id));
                 } else {
                     $query = place_feed($user_id, $place, $mission_id);
                 }
@@ -349,7 +349,7 @@ class MissionController extends Controller
 
             foreach ($products as $product) {
                 if ($query) {
-                    $query = product_feed($user_id, $product, $mission_id)->union($query);
+                    $query = $query->union(product_feed($user_id, $product, $mission_id));
                 } else {
                     $query = product_feed($user_id, $product, $mission_id);
                 }
