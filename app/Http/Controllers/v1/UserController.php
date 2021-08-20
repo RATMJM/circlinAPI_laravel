@@ -25,6 +25,7 @@ use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -243,6 +244,39 @@ class UserController extends Controller
             return success(['result' => $result > 0]);
         } catch (Exception $e) {
             DB::rollBack();
+            return exceped($e);
+        }
+    }
+
+    public function change_password(Request $request): array
+    {
+        try {
+            $user_id = token()->uid;
+
+            $old_password = $request->get('old');
+            $password = $request->get('password');
+            $password_confirm = $request->get('password_confirm');
+
+            if ($password !== $password_confirm) {
+                return success([
+                    'result' => false,
+                    'reason' => 'password confirm validation failed',
+                ]);
+            }
+
+            $user = User::find($user_id);
+
+            if (Hash::check($old_password, $user->password)) {
+                $res = $user->update(['password' => Hash::make($password)]);
+
+                return success(['result' => $res > 0]);
+            } else {
+                return success([
+                    'result' => false,
+                    'reason' => 'not matched old password',
+                ]);
+            }
+        } catch (Exception $e) {
             return exceped($e);
         }
     }
