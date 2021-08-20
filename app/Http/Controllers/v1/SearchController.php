@@ -69,7 +69,7 @@ class SearchController extends Controller
         $limit = $request->get('limit', 20);
         $keyword = $request->get('keyword');
 
-        $data = User::where('users.nickname', 'like', "%$keyword%")
+        $data = User::where('users.nickname', 'like', "$keyword%")
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
