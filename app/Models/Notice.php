@@ -11,6 +11,10 @@ class Notice extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_new' => 'bool',
+    ];
+
     public function images()
     {
         return $this->hasMany(NoticeImage::class);

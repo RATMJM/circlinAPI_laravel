@@ -13,10 +13,8 @@ class NoticeController extends Controller
     {
         $user_id = token()->uid;
 
-        $data = Notice::select([
-                'notices.id', 'notices.created_at', 'notices.title',
-            ])
-            ->with('images')
+        $data = Notice::select(['notices.id', 'notices.created_at', 'notices.title',
+            DB::raw("created_at >= CAST(now() as date) as is_new")])
             ->withCount('comments')
             ->orderBy('notices.id', 'desc')
             ->get();
