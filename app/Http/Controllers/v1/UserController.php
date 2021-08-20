@@ -517,8 +517,6 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        DB::enableQueryLog();
-
         $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
             ->where('feeds.user_id', $id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
@@ -552,9 +550,9 @@ class UserController extends Controller
             {
                 return MissionStat::where('mission_id', $mission_id)
                     ->join('users', 'users.id', 'mission_stats.user_id')
-                    ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-                    ->groupBy('users.id', 'mission_id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2);
+                    ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
+                    ->take(2);
             }
 
             $query = null;
@@ -571,8 +569,6 @@ class UserController extends Controller
                 $missions[array_search($i, $keys)]->users = $item;
             }
         }
-
-        // dd(DB::getQueryLog());
 
         return success([
             'result' => true,
@@ -618,7 +614,7 @@ class UserController extends Controller
             $tmp1 = explode('|', $item['user1'] ?? '|');
             $tmp2 = explode('|', $item['user2'] ?? '|');
             $missions[$i]['users'] = [
-                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
+                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]],
             ];
             unset($missions[$i]['user1'], $missions[$i]['user2']);
         }

@@ -20,4 +20,9 @@ class FeedMission extends Model
     {
         return $this->belongsTo('App\Models\Mission');
     }
+
+    public function mission_stat()
+    {
+        return $this->belongsTo(MissionStat::class, 'mission_id', 'mission_id');
+    }
 }
