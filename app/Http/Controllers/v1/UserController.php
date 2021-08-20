@@ -564,7 +564,7 @@ class UserController extends Controller
         $query = null;
         foreach ($missions as $i => $mission) {
             if ($query) {
-                $query = mission_user($mission->id)->union($query);
+                $query = $query->union(mission_user($mission->id));
             } else {
                 $query = mission_user($mission->id);
             }
