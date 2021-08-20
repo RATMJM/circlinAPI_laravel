@@ -371,24 +371,18 @@ class UserController extends Controller
     public function show($user_id): array
     {
         $data = User::where('users.id', $user_id)
-            ->leftJoin('areas as a', 'a.ctg_sm', 'users.area_code')
-            ->leftJoin('user_stats as us', 'us.user_id', 'users.id')
-            ->leftJoin('missions as m', 'm.user_id', 'users.id') // 미션 제작
-            ->leftJoin('feeds as f', 'f.user_id', 'users.id')
-            ->leftJoin('feed_likes as fl', 'fl.user_id', 'users.id')
-            ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
             ->select([
-                'users.nickname', 'users.point', 'users.profile_image', 'users.greeting',
-                DB::raw("IF(a.name_lg=a.name_md, CONCAT_WS(' ', a.name_md, a.name_sm), CONCAT_WS(' ', a.name_lg, a.name_md, a.name_sm)) as area"),
+                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
-                DB::raw('COUNT(distinct m.id) as created_missions'),
-                DB::raw('COUNT(distinct f.id) as feeds'), DB::raw('COUNT(distinct fl.id) as checks'),
-                DB::raw('COUNT(distinct fm.id) as missions'),
+                'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'feeds' => Feed::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'checks' => FeedLike::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'missions' => FeedMission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id')
+                    ->join('feeds', 'feeds.id', 'feed_id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', token()->uid),
             ])
-            ->groupBy('users.id', 'a.id', 'us.id')
             ->first();
 
         return success([
