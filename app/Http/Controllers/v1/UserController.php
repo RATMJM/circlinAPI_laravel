@@ -552,27 +552,29 @@ class UserController extends Controller
             ->orderBy('feeds.id')
             ->skip($page * $limit)->take($limit)->get();
 
-        function mission_user($mission_id)
-        {
-            return MissionStat::where('mission_id', $mission_id)
-                ->join('users', 'users.id', 'mission_stats.user_id')
-                ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
-                ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-                ->groupBy('users.id', 'mission_id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2);
-        }
-
-        $query = null;
-        foreach ($missions as $i => $mission) {
-            if ($query) {
-                $query = $query->union(mission_user($mission->id));
-            } else {
-                $query = mission_user($mission->id);
+        if (count($missions)) {
+            function mission_user($mission_id)
+            {
+                return MissionStat::where('mission_id', $mission_id)
+                    ->join('users', 'users.id', 'mission_stats.user_id')
+                    ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
+                    ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                    ->groupBy('users.id', 'mission_id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2);
             }
-        }
-        $query = $query->get();
-        $keys = $missions->pluck('id')->toArray();
-        foreach ($query->groupBy('mission_id') as $i => $item) {
-            $missions[array_search($i, $keys)]->users = $item;
+
+            $query = null;
+            foreach ($missions as $i => $mission) {
+                if ($query) {
+                    $query = $query->union(mission_user($mission->id));
+                } else {
+                    $query = mission_user($mission->id);
+                }
+            }
+            $query = $query->get();
+            $keys = $missions->pluck('id')->toArray();
+            foreach ($query->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->users = $item;
+            }
         }
 
         // dd(DB::getQueryLog());
