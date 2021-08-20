@@ -86,7 +86,11 @@ class NotificationController extends Controller
                 '{%nickname}' => '{' . $item->nickname . '}',
                 '{%mission}' => '{' . $item->mission_title . '}',
             ];
-            $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']]);
+            if (array_key_exists($res[$i]['type'], $messages->toArray())) {
+                $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']]);
+            } else {
+                $res[$i]['message'] = $item->type;
+            }
         }
 
         Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
