@@ -145,6 +145,17 @@ Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
     Route::post('/direct/send/{target_id}', [v1\ChatController::class, 'send_direct'])->name('direct.send');
 });
 
+/* 공지 */
+Route::group(['prefix' => 'notice', 'as' => 'notice.'], function () {
+    Route::get('/', [v1\NoticeController::class, 'index'])->name('index');
+    Route::group(['prefix' => '{notice_id}'], function () {
+        Route::get('/', [v1\NoticeController::class, 'show'])->name('show');
+        Route::get('/comment', [v1\NoticeCommentController::class, 'index'])->name('comment.index');
+        Route::post('/comment', [v1\NoticeCommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{comment_id}', [v1\NoticeCommentController::class, 'destroy'])->name('comment.destroy');
+    });
+});
+
 /* 샵 관련 */
 Route::get('/shop_banner', [v1\ShopController::class, 'shop_banner']);
 Route::get('/shop_category', [v1\ShopController::class, 'shop_category']);
