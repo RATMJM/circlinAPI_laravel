@@ -543,7 +543,8 @@ class UserController extends Controller
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
-            ->orderBy('feeds.id')
+            ->groupBy('missions.id', 'users.id')
+            ->orderBy(DB::raw('MAx(feeds.id)'))
             ->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
