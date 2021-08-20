@@ -14,6 +14,7 @@ use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
+use App\Models\MissionComment;
 use App\Models\MissionStat;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
@@ -515,13 +516,17 @@ class UserController extends Controller
     /**
      * 진행했던 미션 전체
      */
-    public function mission(Request $request, $user_id): array
+    public function mission(Request $request, $id): array
     {
+        $user_id = token()->uid;
+
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
+        DB::enableQueryLog();
+
         $categories = MissionCategory::whereNotNull('m.mission_category_id')
-            ->where('f.user_id', $user_id)
+            ->where('f.user_id', $id)
             ->join('missions as m', 'm.mission_category_id', 'mission_categories.id')
             ->join('feed_missions as fm', 'fm.mission_id', 'm.id')
             ->join('feeds as f', 'f.id', 'fm.feed_id')
@@ -532,24 +537,19 @@ class UserController extends Controller
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions = Feed::where('feeds.user_id', $user_id)
+        $missions = Feed::where('feeds.user_id', $id)
             ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
             ->join('missions', 'missions.id', 'feed_missions.mission_id')
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_stats', function ($query) {
-                $query->on('mission_stats.mission_id', 'missions.id')
-                    ->whereNull('mission_stats.ended_at');
-            })
-            ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                DB::raw('COUNT(distinct mission_stats.id) as bookmarks'),
-                DB::raw('COUNT(distinct mc.id) as comments'),
+                    ->whereColumn('mission_id', 'missions.id'),
+                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
-            ->groupBy('missions.id', 'users.id')
+            ->orderBy('feeds.id')
             ->skip($page * $limit)->take($limit)->get();
 
         function mission_user($mission_id)
@@ -574,6 +574,8 @@ class UserController extends Controller
         foreach ($query->groupBy('mission_id') as $i => $item) {
             $missions[array_search($i, $keys)]->users = $item;
         }
+
+        // dd(DB::getQueryLog());
 
         return success([
             'result' => true,
