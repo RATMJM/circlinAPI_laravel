@@ -519,14 +519,14 @@ class UserController extends Controller
 
         DB::enableQueryLog();
 
-        $categories = MissionCategory::whereNotNull('m.mission_category_id')
-            ->where('f.user_id', $id)
-            ->join('missions as m', 'm.mission_category_id', 'mission_categories.id')
-            ->join('feed_missions as fm', 'fm.mission_id', 'm.id')
-            ->join('feeds as f', 'f.id', 'fm.feed_id')
+        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+            ->where('feeds.user_id', $id)
+            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
+            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
-                DB::raw('COUNT(distinct f.id) as feeds'),
+                DB::raw('COUNT(distinct feeds.id) as feeds'),
             ])
             ->groupBy('mission_categories.id')
             ->get();
