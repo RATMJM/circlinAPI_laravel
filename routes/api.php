@@ -46,6 +46,8 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image'])->name('profile.delete.image');
     Route::post('/profile/token', [v1\UserController::class, 'update_token'])->name('profile.update.token');
     Route::post('/profile/change_password', [v1\UserController::class, 'change_password'])->name('profile.change_password');
+    Route::post('/profile/find_password', [v1\UserController::class, 'find_password'])->name('profile.find_password');
+    Route::post('/profile/withdraw', [v1\UserController::class, 'withdraw'])->name('profile.withdraw');
 
     Route::resource('favorite_category', v1\UserFavoriteCategoryController::class);
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');

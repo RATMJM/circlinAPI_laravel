@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\FindPassword;
 use App\Models\Area;
 use App\Models\Feed;
 use App\Models\FeedComment;
@@ -26,6 +27,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -294,6 +296,63 @@ class UserController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            return exceped($e);
+        }
+    }
+
+    public function find_password(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = User::where('email', $request->get('email'))->first();
+
+            if (isset($user)) {
+                $temp_password = Str::random(8);
+
+                $user->update(['password' => Hash::make($temp_password)]);
+
+                Mail::to($user)->send(new FindPassword($temp_password));
+
+                DB::commit();
+                return success(['result' => true]);
+            } else {
+                DB::rollBack();
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
+    public function withdraw(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            $user = User::find($user_id);
+
+            if (isset($user)) {
+                $user->delete_user()->create(['reason' => $request->get('reason')]);
+                $user->delete();
+
+                DB::commit();
+                return success(['result' => true]);
+            } else {
+                DB::rollBack();
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
             return exceped($e);
         }
     }
