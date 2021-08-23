@@ -66,6 +66,7 @@ class UserController extends Controller
             $user_id = token()->uid;
             $nickname = $request->get('nickname');
             $area_code = $request->get('area_code');
+            $greeting = $request->get('greeting');
             $phone = preg_replace('/[^\d]/', '', $request->get('phone'));
             $gender = $request->get('gender');
             $socket_id = $request->get('socket_id');
@@ -91,6 +92,10 @@ class UserController extends Controller
                 if ($area_code && Area::where('ctg_sm', $area_code)->exists()) {
                     $user_data['area_code'] = $area_code;
                     $result[] = 'area_code';
+                }
+                if ($greeting) {
+                    $user_data['greeting'] = $greeting;
+                    $result[] = 'greeting';
                 }
                 if ($phone && $phone !== $data->phone) {
                     $user_data['phone'] = $phone;
