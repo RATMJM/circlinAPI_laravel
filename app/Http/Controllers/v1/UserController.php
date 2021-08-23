@@ -106,23 +106,23 @@ class UserController extends Controller
                     $result[] = 'socket_id';
                 }
                 if (isset($agree4)) {
-                    $user_data['agree4'] = $agree4 ? 1 : 0;
+                    $user_data['agree4'] = $agree4;
                     $result[] = 'agree_email';
                 }
                 if (isset($agree5)) {
-                    $user_data['agree5'] = $agree5 ? 1 : 0;
+                    $user_data['agree5'] = $agree5;
                     $result[] = 'agree_sms';
                 }
                 if (isset($agree_push)) {
-                    $user_data['agree_push'] = $agree_push ? 1 : 0;
+                    $user_data['agree_push'] = $agree_push;
                     $result[] = 'agree_push';
                 }
                 if (isset($agree_push_mission)) {
-                    $user_data['agree_push_mission'] = $agree_push_mission ? 1 : 0;
+                    $user_data['agree_push_mission'] = $agree_push_mission;
                     $result[] = 'agree_push_mission';
                 }
                 if (isset($agree_ad)) {
-                    $user_data['agree_ad'] = $agree_ad ? 1 : 0;
+                    $user_data['agree_ad'] = $agree_ad;
                     $result[] = 'agree_ad';
                 }
                 $user = $data->update($user_data);
