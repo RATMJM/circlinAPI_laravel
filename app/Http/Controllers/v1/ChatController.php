@@ -200,13 +200,15 @@ class ChatController extends Controller
             ->select('chat_rooms.*')
             ->first();
 
-        $data = $this->show($request, $room->id)['data'];
+        if (isset($room)) {
+            $data = $this->show($request, $room->id)['data'];
+        }
 
         return success([
             'result' => true,
             'room' => $room,
-            'users' => $data['users'],
-            'messages' => $data['messages'],
+            'users' => $data['users'] ?? null,
+            'messages' => $data['messages'] ?? null,
         ]);
     }
 
