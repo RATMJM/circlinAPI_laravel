@@ -202,40 +202,34 @@ class AuthController extends Controller
 
     public function check_init(): array
     {
-        try {
-            DB::enableQueryLog();
-            $user_id = token()->uid;
-            $data = User::where('users.id', $user_id)
-                ->join('user_stats', 'user_stats.user_id', 'users.id')
-                ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-                ->select([
-                    'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'user_stats.birthday',
-                    'area' => area(),
-                ])
-                ->first();
+        $user_id = token()->uid;
+        $data = User::where('users.id', $user_id)
+            ->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender',
+                'user_stats.birthday', 'area' => area(),
+            ])
+            ->first();
 
-            if (is_null($data)) {
-                return success([
-                    'result' => false,
-                    'reason' => 'not enough data',
-                ]);
-            }
-
-            $need = [
-                'nickname' => $data->nickname,
-                'gender' => $data->gender,
-                'birthday' => date('Ymd', strtotime($data->birthday)),
-                'area' => $data->area,
-                'profile_image' => $data->profile_image,
-                'category' => $data->favorite_categories,
-                'follow' => $data->followings->take(3),
-            ];
+        if (is_null($data)) {
             return success([
-                'result' => true,
-                'need' => $need,
+                'result' => false,
+                'reason' => 'not enough data',
             ]);
-        } catch (Exception $e) {
-            return exceped($e);
         }
+
+        $need = [
+            'nickname' => $data->nickname,
+            'gender' => $data->gender,
+            'birthday' => $data->toArray()['birthday'],
+            'area' => $data->area,
+            'profile_image' => $data->profile_image,
+            'category' => $data->favorite_categories,
+            'follow' => $data->followings->take(3),
+        ];
+        return success([
+            'result' => true,
+            'need' => $need,
+        ]);
     }
 }
