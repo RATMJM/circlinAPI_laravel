@@ -186,6 +186,30 @@ class ChatController extends Controller
         }
     }
 
+    public function enter_direct(Request $request, $target_id): array
+    {
+        $user_id = token()->uid;
+
+        $room = ChatRoom::join('chat_users as cu1', function ($query) use ($user_id) {
+            $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu1.user_id', $user_id);
+        })
+            ->join('chat_users as cu2', function ($query) use ($target_id) {
+                $query->on('cu2.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
+            })
+            ->where('is_group', false)
+            ->select('chat_rooms.*')
+            ->first();
+
+        $data = $this->show($request, $room->id)['data'];
+
+        return success([
+            'result' => true,
+            'room' => $room,
+            'users' => $data['users'],
+            'messages' => $data['messages'],
+        ]);
+    }
+
     /* 1대1 메시지 전송 */
     public function send_direct(Request $request, $target_id, $type = null, $id = null, $message = null): array
     {

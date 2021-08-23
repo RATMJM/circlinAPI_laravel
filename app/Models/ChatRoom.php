@@ -12,6 +12,10 @@ class ChatRoom extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_group' => 'bool',
+    ];
+
     public function users()
     {
         return $this->hasMany(ChatUser::class);
