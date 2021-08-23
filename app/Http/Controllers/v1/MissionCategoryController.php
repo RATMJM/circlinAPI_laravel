@@ -127,7 +127,6 @@ class MissionCategoryController extends Controller
 
     public function mission(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
-        DB::enableQueryLog();
         $user_id = token()->uid;
 
         $limit = $limit ?? $request->get('limit', 20);
@@ -142,9 +141,9 @@ class MissionCategoryController extends Controller
                 'missions.id', 'missions.title', 'missions.description',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
@@ -160,15 +159,30 @@ class MissionCategoryController extends Controller
 
         $data = $data->skip($page * $limit)->take($limit)->get();
 
+        function mission_user($mission_id)
+        {
+            return MissionStat::where('mission_id', $mission_id)
+                ->join('users', 'users.id', 'mission_stats.user_id')
+                ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
+                ->take(2);
+        }
+
+        $query = null;
         foreach ($data as $i => $item) {
             $data[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
                 'area', 'followers', 'is_following']);
 
-            $data[$i]->users = $item->mission_stats()
-                ->join('users', 'users.id', 'mission_stats.user_id')
-                ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
-                ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-                ->groupBy('users.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
+            if ($query) {
+                $query = $query->union(mission_user($item->id));
+            } else {
+                $query = mission_user($item->id);
+            }
+        }
+        $query = $query->get();
+        $keys = $data->pluck('id')->toArray();
+        foreach ($query->groupBy('mission_id') as $i => $item) {
+            $data[array_search($i, $keys)]->users = $item;
         }
 
         return success([
