@@ -13,8 +13,10 @@ class NoticeController extends Controller
     {
         $user_id = token()->uid;
 
+        $latest_date = date('Y-m-d', time()-(86400 * 7));
+
         $data = Notice::select(['notices.id', 'notices.created_at', 'notices.title',
-            DB::raw("created_at >= CAST(now() as date) as is_new")])
+            DB::raw("created_at >= '$latest_date' as is_new")])
             ->withCount('comments')
             ->orderBy('notices.id', 'desc')
             ->get();
@@ -29,10 +31,12 @@ class NoticeController extends Controller
     {
         $user_id = token()->uid;
 
+        $latest_date = date('Y-m-d', time()-(86400 * 7));
+
         $data = Notice::where('id', $id)
             ->select([
                 'id', 'created_at', 'title', 'content', 'link_text', 'link_url',
-                DB::raw("created_at >= CAST(now() as date) as is_new"),
+                DB::raw("created_at >= '$latest_date' as is_new"),
             ])
             ->with('images', function ($query) {
                 $query->select(['notice_id', 'type', 'image'])->orderBy('order');
