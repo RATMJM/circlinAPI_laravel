@@ -513,7 +513,7 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $categories = MissionCategory::whereNotNull('m.mission_category_id')
+        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
             ->where('feeds.user_id', $user_id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
