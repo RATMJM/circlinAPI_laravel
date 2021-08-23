@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserWallpaper;
 use Illuminate\Http\Request;
 
 class MypageController extends Controller
@@ -61,5 +62,20 @@ class MypageController extends Controller
     public function following(): array
     {
         return (new UserController())->following(token()->uid);
+    }
+
+    public function wallpaper(): array
+    {
+        $user_id = token()->uid;
+
+        $data = UserWallpaper::where('user_id', $user_id)
+            ->select(['image', 'thumbnail_image'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return success([
+            'result' => true,
+            'wallpapers' => $data,
+        ]);
     }
 }

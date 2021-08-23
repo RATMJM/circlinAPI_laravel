@@ -41,13 +41,15 @@ Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
 /* 유저 관련 */
 Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::get('/', [v1\UserController::class, 'index'])->name('index');
-    Route::patch('/profile', [v1\UserController::class, 'update'])->name('profile.update');
-    Route::post('/profile/image', [v1\UserController::class, 'change_profile_image'])->name('profile.update.image');
-    Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image'])->name('profile.delete.image');
-    Route::post('/profile/token', [v1\UserController::class, 'update_token'])->name('profile.update.token');
-    Route::post('/profile/change_password', [v1\UserController::class, 'change_password'])->name('profile.change_password');
-    Route::post('/profile/find_password', [v1\UserController::class, 'find_password'])->name('profile.find_password');
-    Route::post('/profile/withdraw', [v1\UserController::class, 'withdraw'])->name('profile.withdraw');
+    Route::group(['prefix' => 'profile', 'as' => 'profile.'], function () {
+        Route::patch('/', [v1\UserController::class, 'update'])->name('update');
+        Route::post('/image', [v1\UserController::class, 'change_profile_image'])->name('update.image');
+        Route::delete('/image', [v1\UserController::class, 'remove_profile_image'])->name('delete.image');
+        Route::post('/token', [v1\UserController::class, 'update_token'])->name('update.token');
+        Route::post('/change_password', [v1\UserController::class, 'change_password'])->name('change_password');
+        Route::post('/find_password', [v1\UserController::class, 'find_password'])->name('find_password');
+        Route::post('/withdraw', [v1\UserController::class, 'withdraw'])->name('withdraw');
+    });
 
     Route::resource('favorite_category', v1\UserFavoriteCategoryController::class);
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');
@@ -126,6 +128,8 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/mission/created', [v1\MypageController::class, 'created_mission'])->name('mission.created');
     Route::get('/follower', [v1\MypageController::class, 'follower'])->name('follower');
     Route::get('/following', [v1\MypageController::class, 'following'])->name('following');
+
+    Route::get('wallpaper', [v1\MypageController::class, 'wallpaper'])->name('wallpaper');
 });
 
 /* 탐색 페이지 */
