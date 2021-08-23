@@ -131,6 +131,7 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 /* 탐색 페이지 */
 Route::get('/explore', [v1\SearchController::class, 'index'])->name('explore');
 Route::get('/explore/search', [v1\SearchController::class, 'search'])->name('explore.search');
+Route::get('/explore/search/simple', [v1\SearchController::class, 'simple'])->name('explore.search.simple');
 Route::get('/explore/search/user', [v1\SearchController::class, 'user'])->name('explore.search.user');
 Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->name('explore.search.mission');
 
