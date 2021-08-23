@@ -31,7 +31,7 @@ class NoticeController extends Controller
 
         $data = Notice::where('id', $id)
             ->with('images', function ($query) {
-                $query->select(['type', 'image'])->orderBy('order');
+                $query->select(['notice_id', 'type', 'image'])->orderBy('order');
             })
             ->first();
 
