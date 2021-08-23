@@ -192,7 +192,7 @@ class MissionController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
             ->select([
-                'missions.id', 'missions.title', 'missions.description',
+                'missions.id', 'missions.title', 'missions.description', DB::raw("event_order > 0 as is_event"),
                 'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')

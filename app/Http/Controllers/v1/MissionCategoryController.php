@@ -127,7 +127,7 @@ class MissionCategoryController extends Controller
         })
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->select([
-                'missions.id', 'missions.title', 'missions.description',
+                'missions.id', 'missions.title', 'missions.description', DB::raw("event_order > 0 as is_event"),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')

@@ -680,6 +680,7 @@ class UserController extends Controller
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
+                DB::raw("missions.event_order > 0 as is_event"),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_id', 'missions.id'),

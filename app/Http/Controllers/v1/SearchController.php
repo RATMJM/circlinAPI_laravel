@@ -101,6 +101,7 @@ class SearchController extends Controller
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
+                DB::raw("missions.event_order > 0 as is_event"),
                 'users.id as owner_id', 'users.nickname as owner_nickname',
                 'users.profile_image as owner_profile_image', 'users.gender as owner_gender',
                 'owner_area' => area(),
