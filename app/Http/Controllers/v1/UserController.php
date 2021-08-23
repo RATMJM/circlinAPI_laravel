@@ -104,19 +104,19 @@ class UserController extends Controller
                     $user_data['socket_id'] = $socket_id;
                     $result[] = 'socket_id';
                 }
-                if ($agree4) {
+                if (isset($agree4)) {
                     $user_data['agree4'] = $agree4;
                     $result[] = 'agree_email';
                 }
-                if ($agree5) {
+                if (isset($agree5)) {
                     $user_data['agree5'] = $agree5;
                     $result[] = 'agree_sms';
                 }
-                if ($agree_push) {
+                if (isset($agree_push)) {
                     $user_data['agree_push'] = $agree_push;
                     $result[] = 'agree_push';
                 }
-                if ($agree_ad) {
+                if (isset($agree_ad)) {
                     $user_data['agree_ad'] = $agree_ad;
                     $result[] = 'agree_ad';
                 }
