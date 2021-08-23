@@ -86,17 +86,6 @@ class MissionCategoryController extends Controller
             ])
             ->first();
 
-        /*$users = User::whereHas('mission_stats', function ($query) use ($category_id) {
-            $query->whereHas('mission', function ($query) use ($category_id) {
-                $query->whereHas('category', function ($query) use ($category_id) {
-                    $query->where('id', $category_id);
-                });
-            });
-        })
-            ->leftJoin('follows as f', 'f.target_id', 'users.id')
-            ->select(['users.id', 'users.profile_image', DB::raw('COUNT(distinct f.id) as followers')])
-            ->groupBy('users.id')
-            ->orderBy('followers', 'desc')->paginate(3);*/
         $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
             ->join('users', 'users.id', 'user_favorite_categories.user_id')
             ->select([
