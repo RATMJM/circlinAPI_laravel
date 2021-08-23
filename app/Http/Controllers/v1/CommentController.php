@@ -66,6 +66,8 @@ class CommentController extends Controller
             $query = match ($table) {
                 'feed' => new FeedComment,
                 'mission' => new MissionComment,
+                'notice' => new NoticeComment(),
+                'product_review' => new ProductReviewComment(),
             };
 
             $max_group = $query->where("{$table}_id", $id)->max('group') ?? -1;
@@ -93,6 +95,8 @@ class CommentController extends Controller
             $data = match ($table) {
                 'feed' => FeedComment::where(['id' => $comment_id, "{$table}_id" => $id])->first(),
                 'mission' => MissionComment::where(['id' => $comment_id, "{$table}_id" => $id])->first(),
+                'notice' => NoticeComment::where(['id' => $comment_id, "{$table}_id" => $id])->first(),
+                'product_review' => ProductReviewComment::where(['id' => $comment_id, "{$table}_id" => $id])->first(),
             };
 
             if (is_null($data)) {
