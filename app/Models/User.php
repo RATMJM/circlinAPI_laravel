@@ -47,4 +47,9 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\MissionStat');
     }
+
+    public function delete_user()
+    {
+        return $this->hasOne(DeleteUser::class);
+    }
 }
