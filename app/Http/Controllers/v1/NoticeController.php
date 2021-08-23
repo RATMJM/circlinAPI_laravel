@@ -30,6 +30,10 @@ class NoticeController extends Controller
         $user_id = token()->uid;
 
         $data = Notice::where('id', $id)
+            ->select([
+                'id', 'created_at', 'title', 'content', 'link_text', 'link_url',
+                DB::raw("created_at >= CAST(now() as date) as is_new"),
+            ])
             ->with('images', function ($query) {
                 $query->select(['notice_id', 'type', 'image'])->orderBy('order');
             })
