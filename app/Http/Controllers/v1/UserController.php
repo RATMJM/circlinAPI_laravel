@@ -686,6 +686,8 @@ class UserController extends Controller
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("missions.event_order > 0 as is_event"),
+                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->limit(1),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_id', 'missions.id'),

@@ -126,8 +126,10 @@ class HomeController extends Controller
             ->select([
                 'feed_missions.feed_id', 'missions.id', 'missions.title', 'mission_categories.emoji',
                 DB::raw("event_order > 0 as is_event"),
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
-                    ->whereColumn('mission_id', 'missions.id'),
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id),
+                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->limit(1),
             ])
             ->get();
 
