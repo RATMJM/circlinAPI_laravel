@@ -12,6 +12,10 @@ class Mission extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_event' => 'bool',
+    ];
+
     public function images()
     {
         return $this->hasMany(MissionImage::class);
