@@ -116,6 +116,10 @@ class UserController extends Controller
                     $user_data['agree_push'] = $agree_push;
                     $result[] = 'agree_push';
                 }
+                if ($agree_ad) {
+                    $user_data['agree_ad'] = $agree_ad;
+                    $result[] = 'agree_ad';
+                }
                 $user = User::where('id', $user_id)->update($user_data);
 
                 if ($birthday && preg_match('/\d{8}/', $birthday)) {
