@@ -575,44 +575,24 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $feeds = FeedLike::where('feed_likes.user_id', $user_id) // 내가 체크한
-        ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
-            ->join('users as u', 'u.id', 'f.user_id')
-            ->leftJoin('feed_images as fi', 'fi.feed_id', 'f.id')
-            ->leftJoin('feed_products as fpr', 'fpr.feed_id', 'f.id')
-            ->leftJoin('feed_places as fpl', 'fpl.feed_id', 'f.id')
-            ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
-            ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'f.id') // 체크 수
-            ->leftJoin('feed_comments as fc', 'fc.feed_id', 'f.id') // 댓글 수
+        $feeds = FeedLike::where('feed_likes.user_id', $user_id)
+            ->join('feeds', 'feeds.id', 'feed_likes.feed_id')
+            ->join('users', 'users.id', 'feeds.user_id')
             ->select([
-                'f.id', 'f.created_at', 'f.content',
-                DB::raw("COUNT(distinct fi.id) > 1 as has_images"), // 이미지 여러장인지
-                DB::raw("COUNT(distinct fpr.id) > 0 as has_product"), // 상품 있는지
-                DB::raw("COUNT(distinct fpl.id) > 0 as has_place"), // 위치 있는지
-                'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'f.id')->orderBy('id')->limit(1),
-                'image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'f.id')
-                    ->orderBy('id')->limit(1),
-                DB::raw('COUNT(distinct fm.id) as missions'),
-                'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'f.id')
-                    ->orderBy('id')->limit(1),
-                'mission' => Mission::select('title')
-                    ->whereHas('feed_missions', function ($query) {
-                        $query->whereColumn('feed_missions.feed_id', 'f.id')->orderBy('id');
-                    })->orderBy('id')->limit(1),
-                'emoji' => MissionCategory::select('emoji')
-                    ->whereHas('missions', function ($query) {
-                        $query->whereHas('feed_missions', function ($query) {
-                            $query->whereColumn('feed_missions.feed_id', 'f.id')->orderBy('id');
-                        });
-                    })->limit(1),
-                DB::raw('COUNT(distinct fl2.id) as checks'),
-                DB::raw('COUNT(distinct fc.id) as comments'),
-                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'f.id')
+                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
+                'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
+                'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
+                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+                'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('feed_likes.user_id', token()->uid),
-                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'f.id')
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('feed_comments.user_id', token()->uid),
             ])
-            ->groupBy('f.id')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
