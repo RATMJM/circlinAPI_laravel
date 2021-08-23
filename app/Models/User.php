@@ -19,6 +19,10 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'birthday' => 'date:Ymd',
+    ];
+
     public function stat()
     {
         return $this->hasOne('App\Models\UserStat');
