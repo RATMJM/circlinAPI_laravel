@@ -41,15 +41,16 @@ class NotificationController extends Controller
             ->orderBy(DB::raw('MAX(id)'), 'desc')
             ->take(50);
 
-        $data = User::rightJoinSub($data, 'n', function ($query) {
-            $query->on('users.id', 'n.user_id');
-        })
+        $data = Notification::rightJoinSub($data, 'n', function ($query) {
+                $query->on('n.id', 'notifications.id');
+            })
+            ->join('users', 'users.id', 'n.user_id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
-                'n.*', 'type' => Notification::select('type')->whereColumn('id', 'n.id'),
+                'n.*', 'type', DB::raw("!ISNULL(read_at) as is_read"),
                 'users.nickname', 'users.profile_image', 'users.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
@@ -63,7 +64,7 @@ class NotificationController extends Controller
         if (is_null($data)) {
             return success([
                 'result' => true,
-                'data' => $data,
+                'notifies' => $data,
             ]);
         }
 
