@@ -18,6 +18,7 @@ use App\Models\MissionCategory;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -152,7 +153,8 @@ class HomeController extends Controller
                     $query->where('created_at', '>=', date('Y-m-d', time()));
                 })->count(),
             'notifies' => random_int(0, 50),
-            'messages' => random_int(0, 200),
+            'messages' => (new Collection((new NotificationController())->index()['data']['notifies']))
+                ->where('is_read', false)->count(),
         ]);
     }
 }
