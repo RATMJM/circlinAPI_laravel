@@ -527,7 +527,7 @@ class MissionController extends Controller
             return success(['result' => true]);
         } catch (Exception $e) {
             DB::rollBack();
-            exceped($e);
+            return exceped($e);
         }
     }
 
