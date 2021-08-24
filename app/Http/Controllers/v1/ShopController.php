@@ -419,7 +419,7 @@ class ShopController extends Controller
                                         VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $product_id, $qty)  ) ;
                     
                 DB::commit();
-                return array('2');
+               
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -427,36 +427,36 @@ class ShopController extends Controller
 
            
 
-            // if($cart>0){
-            //     try {
-            //         DB::beginTransaction();
-            //         $cartId = DB::select('select id from carts
-            //                                 where user_id=? order by id desc  limit 0,1 ; ', array($user_id)  ) ;
+            if($cart>0){
+                try {
+                    DB::beginTransaction();
+                    $cartId = DB::select('select id from carts
+                                            where user_id=? order by id desc  limit 0,1 ; ', array($user_id)  ) ;
                                         
-            //     } catch (Exception $e) {
-            //         DB::rollBack();
-            //         return exceped($e);
-            //     }
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
                 
-            //     try {
+                try {
              
-            //         foreach ($items as $key => $value){  
+                    foreach ($items as $key => $value){  
                         
-            //             $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
-            //                                 VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->$price)) ;            
-            //             DB::commit();
+                        $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
+                                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->$price)) ;            
+                        DB::commit();
     
-            //         }
-       
-            //     }
-            //     catch (Exception $e) {
-            //         DB::rollBack();
-            //         return exceped($e);
-            //     }
+                    }
+                    return array('2');
+                }
+                catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
 
-            // }else{
-            //     return false;
-            // }
+            }else{
+                return false;
+            }
             
     }
 
