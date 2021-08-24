@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
-use App\Models\UserWallpaper;
+use App\Models\FeedImage;
 use Illuminate\Http\Request;
 
 class MypageController extends Controller
@@ -67,5 +67,29 @@ class MypageController extends Controller
     public function wallpaper(): array
     {
         return (new UserController())->wallpaper(token()->uid);
+    }
+
+    public function gallery(Request $request): array
+    {
+        $user_id = token()->uid;
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 20);
+
+        $data = FeedImage::where('feeds.user_id', $user_id)
+            ->join('feeds', 'feeds.id', 'feed_images.feed_id')
+            ->select([
+                'feeds.id as feed_id',
+                'feed_images.type', 'feed_images.image',
+            ])
+            ->orderBy('feed_images.id', 'desc')
+            ->orderBy('order', 'desc')
+            ->skip($page * $limit)
+            ->take($limit)
+            ->get();
+
+        return success([
+            'result' => true,
+            'images' => $data,
+        ]);
     }
 }
