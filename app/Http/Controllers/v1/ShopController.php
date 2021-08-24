@@ -598,9 +598,9 @@ class ShopController extends Controller
                 DB::beginTransaction();
                 
                 $product_info = DB::select('SELECT shipping_fee, a.id as product_id , c.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status
-                                        from products a, product_images c , brands d
-                                        where  a.brand_id=d.id and a.id=c.id 
-                                        and a.id=?; ', array($product_id)  ) ;
+                from products a LEFT JOIN product_images c on  a.id=c.id  left join  brands d on a.brand_id=d.id 
+                where   
+                  a.id=? ; ', array($product_id)  ) ;
                     
                 $product_image = DB::select('select product_id, `order`, type, image  from product_images 
                             where product_id= ? ; ', array($product_id)  ) ; 
