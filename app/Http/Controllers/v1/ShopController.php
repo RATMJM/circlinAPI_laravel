@@ -606,11 +606,11 @@ class ShopController extends Controller
                             where product_id= ? ; ', array($product_id)  ) ; 
 
 
-                $optionList1 = DB::select('select * From product_options where product_id= ? and `group`=1 ; ', array($product_id)  ) ; 
-                $optionList2 = DB::select('select * From product_options where product_id= ? and `group`=2 ; ', array($product_id)  ) ; 
-                $optionList3 = DB::select('select * From product_options where product_id= ? and `group`=3 ; ', array($product_id)  ) ; 
-                $optionList4 = DB::select('select * From product_options where product_id= ? and `group`=4 ; ', array($product_id)  ) ; 
-                $optionList5 = DB::select('select * From product_options where product_id= ? and `group`=5 ; ', array($product_id)  ) ; 
+                $optionList1 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=1 ; ', array($product_id)  ) ; 
+                $optionList2 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=2 ; ', array($product_id)  ) ; 
+                $optionList3 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=3 ; ', array($product_id)  ) ; 
+                $optionList4 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=4 ; ', array($product_id)  ) ; 
+                $optionList5 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=5 ; ', array($product_id)  ) ; 
 
  
 
