@@ -407,7 +407,7 @@ class ShopController extends Controller
     public function cart(Request $request): array
     {   
             $user_id = token()->uid;
-            $product_Id = $request->get('product_Id'); 
+            $product_id = $request->get('product_id'); 
             $qty = $request->get('qty'); ;
             $options = $request->get('options'); //option_Id, price
             $time = date("Y-m-d H:i:s");
@@ -416,7 +416,7 @@ class ShopController extends Controller
             try {
                 DB::beginTransaction();        
                 $cart = DB::insert('INSERT into carts(created_at, updated_at, user_id, product_id,  qty)
-                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $product_Id, $qty)  ) ;
+                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $product_id, $qty)  ) ;
                     
                 DB::commit();
                 return array('2');
