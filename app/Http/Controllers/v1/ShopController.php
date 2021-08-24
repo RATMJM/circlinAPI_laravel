@@ -24,7 +24,7 @@ class ShopController extends Controller
         if($category=='전체'){
             if ($type=="hot") {
              
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -40,7 +40,7 @@ class ShopController extends Controller
   
             }else if($type=="high") {
                
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -56,7 +56,7 @@ class ShopController extends Controller
             } 
             else if($type=="low") {
                
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -71,7 +71,7 @@ class ShopController extends Controller
                 order by sale_price ;'   , array('1')) ;
             }else{
                
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -88,7 +88,7 @@ class ShopController extends Controller
         }else{// ㅋㅏ테고리 눌렀을떄
             if ($type=="hot") {
              
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -106,7 +106,7 @@ class ShopController extends Controller
                 
             }else if($type=="high") {
                
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -123,7 +123,7 @@ class ShopController extends Controller
             } 
             else if($type=="low") {
                
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
@@ -139,7 +139,7 @@ class ShopController extends Controller
                 order by sale_price  ;'    , array('1', $category)) ;
             }else{
                
-                $itemList = DB::select('select case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
                 code ,
                 thumbnail_image,
                 b.name_ko,
