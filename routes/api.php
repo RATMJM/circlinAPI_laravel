@@ -113,6 +113,8 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
     Route::post('/', [v1\FeedController::class, 'store'])->name('store');
     Route::group(['prefix' => '{feed_id}'], function () {
         Route::get('/', [v1\FeedController::class, 'show'])->name('show');
+        Route::get('/edit', [v1\FeedController::class, 'edit'])->name('edit');
+        Route::patch('/', [v1\FeedController::class, 'update'])->name('update');
         Route::post('/show', [v1\FeedController::class, 'show_feed'])->name('show');
         Route::post('/hide', [v1\FeedController::class, 'hide_feed'])->name('hide');
         Route::delete('/', [v1\FeedController::class, 'destroy'])->name('destroy');

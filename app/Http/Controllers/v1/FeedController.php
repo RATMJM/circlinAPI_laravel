@@ -253,6 +253,132 @@ class FeedController extends Controller
         ]);
     }
 
+    public function edit($feed_id): array
+    {
+        $user_id = token()->uid;
+
+        $feed = Feed::where('id', $feed_id)
+            ->select(['id', 'user_id', 'content', 'is_hidden'])
+            ->with('place', function ($query) {
+                $query->select(['feed_id', 'title', 'address', 'description', 'image', 'url']);
+            })
+            ->with('product', function ($query) {
+                $query->select(['feed_id', 'type', 'product_id', 'brand', 'title', 'image', 'url', 'price']);
+            })
+            ->first();
+
+        if (is_null($feed)) {
+            return success([
+                'result' => false,
+                'reason' => 'not found feed',
+            ]);
+        }
+
+        if ($feed->user_id != $user_id) {
+            return success([
+                'result' => false,
+                'reason' => 'access denied',
+            ]);
+        }
+
+        return success([
+            'result' => true,
+            'feed' => $feed,
+        ]);
+    }
+
+    public function update(Request $request, $feed_id): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            if (count($request->all()) === 0) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            $feed = Feed::where('id', $feed_id)->first();
+
+            if (is_null($feed)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not found feed',
+                ]);
+            }
+
+            if ($feed->user_id != $user_id) {
+                return success([
+                    'result' => false,
+                    'reason' => 'access denied',
+                ]);
+            }
+
+            $content = trim($request->get('content'));
+
+            $is_hidden = $request->get('is_hidden');
+
+            $product_id = $request->get('product_id');
+            $product_brand = $request->get('product_brand');
+            $product_title = $request->get('product_title');
+            $product_image = $request->get('product_image');
+            $product_url = $request->get('product_url');
+            $product_price = $request->get('product_price');
+
+            $place_address = $request->get('place_address');
+            $place_title = $request->get('place_title');
+            $place_description = $request->get('place_description');
+            $place_image = $request->get('place_image');
+            $place_url = $request->get('place_url');
+
+            $update_data = [];
+            if (isset($content) && $content !== '') {
+                $update_data['content'] = $content;
+            }
+            if (isset($is_hidden)) {
+                $update_data['is_hidden'] = $is_hidden;
+            }
+            if (count($update_data)) {
+                $feed->update($update_data);
+            }
+
+            if ($product_id) {
+                $feed->product()->update([
+                    'type' => 'inside',
+                    'product_id' => $product_id,
+                ]);
+            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                $feed->product()->update([
+                    'type' => 'outside',
+                    'image' => $product_image,
+                    'brand' => $product_brand,
+                    'title' => $product_title,
+                    'price' => $product_price,
+                    'url' => $product_url,
+                ]);
+            }
+
+            if ($place_address && $place_title && $place_image) {
+                $feed->place()->update([
+                    'address' => $place_address,
+                    'title' => $place_title,
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                ]);
+            }
+
+            DB::commit();
+            return success(['result' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     public function show_feed(Request $request, $feed_id): array
     {
         $data = Feed::where(['id' => $feed_id, 'user_id' => token()->uid])->update(['is_hidden' => false]);
