@@ -40,6 +40,8 @@ class MissionController extends Controller
             $thumbnail = $request->file('thumbnail');
             $files = $request->file('files');
 
+            $success_count = $request->get('success_count');
+
             $product_id = $request->get('product_id');
             $product_brand = $request->get('product_brand');
             $product_title = $request->get('product_title');
@@ -88,6 +90,7 @@ class MissionController extends Controller
                 'title' => $title,
                 'description' => $description,
                 'thumbnail_image' => image_url(3, $uploaded_thumbnail),
+                'success_count' => $success_count,
             ]);
 
             if ($files) {
@@ -456,19 +459,28 @@ class MissionController extends Controller
 
     public function destroy($id): array
     {
-        $user_id = token()->uid;
+        try {
+            DB::beginTransaction();
 
-        $mission = Mission::where('id', $id)->first();
+            $user_id = token()->uid;
 
-        if ($mission->user_id === $user_id) {
-            $data = $mission->delete();
+            $mission = Mission::where('id', $id)->first();
 
-            return success(['result' => true]);
-        } else {
-            return success([
-                'result' => false,
-                'reason' => 'not my mission',
-            ]);
+            if ($mission->user_id === $user_id) {
+                $mission->stats()->delete();
+                $data = $mission->delete();
+
+                return success(['result' => true]);
+            } else {
+                DB::rollBack();
+                return success([
+                    'result' => false,
+                    'reason' => 'not my mission',
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
         }
     }
 }
