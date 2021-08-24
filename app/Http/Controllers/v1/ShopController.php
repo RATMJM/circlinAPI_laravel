@@ -419,12 +419,13 @@ class ShopController extends Controller
                                         VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $product_Id, $qty)  ) ;
                     
                 DB::commit();
+                return array('2');
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
             }
 
-            return array($options);
+           
 
             // if($cart>0){
             //     try {
