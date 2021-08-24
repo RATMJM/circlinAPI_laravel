@@ -442,8 +442,7 @@ class ShopController extends Controller
                     
                      
                     foreach ($options as $key => $value){  
-                        return success([
-                            'option' => $options[$key]->option_id     ]);
+                    
 
                         // if($options[$key]->option_id != NULL){
                         //     DB::beginTransaction();
@@ -453,7 +452,8 @@ class ShopController extends Controller
                         // }
                     }
                      
-                   
+                    return success([
+                        'option' => '아18' ]);
                 }
                 catch (Exception $e) {
                     DB::rollBack();
