@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Follow;
 use App\Models\MissionCategory;
+use App\Models\Place;
 use App\Models\User;
 use App\Models\UserStat;
 use Illuminate\Http\Request;
@@ -52,6 +53,18 @@ class BaseController extends Controller
         return success([
             'result' => true,
             'users' => $users,
+        ]);
+    }
+
+    public function place(Request $request): array
+    {
+        $data = Place::where('address', $request->get('address'))
+            ->orderBy('id')
+            ->value('title');
+
+        return success([
+            'result' => isset($data),
+            'title' => $data,
         ]);
     }
 }
