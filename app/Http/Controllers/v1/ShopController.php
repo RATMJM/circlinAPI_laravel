@@ -350,7 +350,7 @@ class ShopController extends Controller
 
 
  
-  public function cart_list(Request $request): array
+  public function cart_list(Reqsuest $request): array
   {   
       $user_id = token()->uid;
       
@@ -370,12 +370,12 @@ class ShopController extends Controller
                 (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as opt5,
                 (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as opt6,
                 
-                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as price1,
-                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as price2,
-                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as price3,
-                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1) as price4,
-                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as price5,
-                (select price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as price6
+                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as price1,
+                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as price2,
+                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as price3,
+                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1) as price4,
+                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as price5,
+                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as price6
                        
                          
             
@@ -402,4 +402,237 @@ class ShopController extends Controller
     }
 
     }
+
+
+    public function cart(Request $request): array
+    {   
+            $user_id = '1';//token()->uid;
+            
+            $useCarePoint = '99';//$allPostPutVars[usePoint];
+
+            $orderName = 'pname';//; $allPostPutVars[orderName];
+            $orderPhone = 'ordph';//
+
+            $receiveName = 'rcvName'; 
+            $receivePhone = 'rcvPh';
+            $receiveAddress = 'rcvAddr';
+            $addressDetail = 'addrDet';
+            $postCode = 'postcd';
+
+            $amount = '99999'; // 총금
+            $shipFee ='3000';
+            $totalPrice = '999999991'; // 총액
+            $request = 'requests';
+            $items = '';// $allPostPutVars[items]; //결제된 아이템들 배열 구성요소는 똑같음 변동은 그 안에 QTY, 성공 실패 YN 변경 php에서 포이치로 인서트해야함
+            // optionId price recipient_name post_code  address address_detail           
+            // $price='99912';
+            // $productId = '59';//$items
+            // $qty
+            $qty ='11'; //$items
+            // $amount = $allPostPutVars[amount];  // 결제 된 총액
+            $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+            $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
+            // $option1 = $allPostPutVars[option1];// COMMON_CODE 의 SEQ
+            $time = date("Y-m-d H:i:s");
+            $cartNo = date("Ymdhis").'_'.$user_id; 
+        
+            try {
+                DB::beginTransaction();        
+                $cart = DB::insert('INSERT into carts(created_at, updated_at, user_id, product_id,  qty)
+                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $productId, $qty)  ) ;
+                    
+                DB::commit();
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+
+            if($cart>0){
+                try {
+                    DB::beginTransaction();
+                    $cartId = DB::select('select id from carts
+                                            where user_id=? order by id desc  limit 0,1 ; ', array($user_id)  ) ;
+                                        
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
+                
+                try {
+             
+                    foreach ($items as $key => $value){  
+                        
+                        $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
+                                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $items[$key]->optionId, $items[$key]->$price)) ;            
+                        DB::commit();
+    
+                    }
+       
+                }
+                catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
+
+            }else{
+                return false;
+            }
+            
+    }
+
+
+    public function order_product(Request $request): array
+    {   
+            $user_id = '1';//token()->uid;
+            
+            $useCarePoint = '99';//$allPostPutVars[usePoint];
+
+            $orderName = 'pname';//; $allPostPutVars[orderName];
+            $orderPhone = 'ordph';//
+
+            $receiveName = 'rcvName'; 
+            $receivePhone = 'rcvPh';
+            $receiveAddress = 'rcvAddr';
+            $addressDetail = 'addrDet';
+            $postCode = 'postcd';
+
+            $amount = '99999'; // 총금
+            $shipFee ='3000';
+            $totalPrice = '999999991'; // 총액
+            $request = 'requests';
+            $items = '';// $allPostPutVars[items]; //결제된 아이템들 배열 구성요소는 똑같음 변동은 그 안에 QTY, 성공 실패 YN 변경 php에서 포이치로 인서트해야함
+            // optionId price recipient_name post_code  address address_detail           
+            // $price='99912';
+            // $productId = '59';//$items
+            // $qty
+            $qty ='11'; //$items
+            // $amount = $allPostPutVars[amount];  // 결제 된 총액
+            $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+            $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
+            // $option1 = $allPostPutVars[option1];// COMMON_CODE 의 SEQ
+            $time = date("Y-m-d H:i:s");
+            $orderNo=date("Ymdhis").'_'.$user_id; 
+        
+
+            try {
+                DB::beginTransaction();
+                
+                $order = DB::insert(' 
+                INSERT into orders(created_at, updated_at, order_no, user_id, total_price)
+                                        values(?, ?, ?, ?, ? ); ', array($time, $time, $orderNo , $user_id, $totalPrice)  ) ;
+                    
+                DB::commit();
+            
+                $orderId = DB::select('select id from orders
+                                        where user_id=? and order_no=? ; ', array($user_id, $orderNo)  ) ;
+                                    
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+            
+            try {
+                DB::beginTransaction();        
+                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, product_id, qty)
+                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $productId, $qty)  ) ;
+                    
+                DB::commit();
+                
+                $orderProduct = DB::select('select id, product_id, order_id from order_products
+                                        where  order_id=64 ; ',);
+                                        //array($orderId[0]->id)  ) ;
+                        
+                        
+                    //     echo $orderProductId[0]->id;
+ 
+                    // foreach($orderProduct as $key2 => $value)
+                    // {
+                    //     echo $orderProduct[$key2]->product_id ."<br/>";
+                    // }
+                    //foreach($items as $key => $value)
+                    // {
+                    //     echo $items[$key]->product_id ."<br/>";
+                    // }
+        
+                    foreach ($items as $key => $value){ // 아이템 옵션리스트 선택된 1번옵션의 두번쨰
+                        foreach ($orderProduct as $key2 => $value) { // 주문서의 아이템정보
+
+                            if($item[$key]->productId = $orderProduct[$key2]->product_id ){ //선택된 옵션의 상품코드=주문서의 상품코드 같을때 orderProduct의 ID 입력
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $items[$key]->optionId, $items[$key]->$price)) ;            
+                                DB::commit();
+
+                                $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty)
+                                                    values(?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id,  $orderProduct[$key2]->$qty)  ) ;
+                                DB::commit();
+
+                                
+
+
+                            }
+                        }
+                    }
+ 
+                    
+                    $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
+                                                    values(?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $items[0]->post_code, $items[0]->address, $items[0]->address_detail, $items[$key]->$recipient_name)  ) ;
+                                DB::commit();
+
+                    
+                                return success([
+                                    'result' => true,     ]);
+            }
+            catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            } 
+    }
+
+ 
+    public function product_detail(Request $request): array
+    {   
+        $user_id = token()->uid; 
+        $product_id = $request->get('16'); 
+        
+            try {
+                DB::beginTransaction();
+                
+                $product_info = DB::select('SELECT shipping_fee, a.id as product_id , c.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status
+                                        from products a, product_images c , brands d
+                                        where  a.brand_id=d.id and a.id=c.id 
+                                        and a.id=?; ', array($product_id)  ) ;
+                    
+                $product_image = DB::select('select product_id, `order`, type, image  from product_images 
+                            where product_id= ? ; ', array($product_id)  ) ; 
+
+
+                $optionList1 = DB::select('select * From product_options where product_id= ? and `group`=1 ; ', array($product_id)  ) ; 
+                $optionList2 = DB::select('select * From product_options where product_id= ? and `group`=2 ; ', array($product_id)  ) ; 
+                $optionList3 = DB::select('select * From product_options where product_id= ? and `group`=3 ; ', array($product_id)  ) ; 
+                $optionList4 = DB::select('select * From product_options where product_id= ? and `group`=4 ; ', array($product_id)  ) ; 
+                $optionList5 = DB::select('select * From product_options where product_id= ? and `group`=5 ; ', array($product_id)  ) ; 
+
+ 
+
+                        return success([
+                        'result' => true,
+                        'product_info' => $product_info,   
+                        'product_image' => $product_image,  
+                        'optionList1' => $optionList1, 
+                        'optionList2' => $optionList2, 
+                        'optionList3' => $optionList3, 
+                        'optionList4' => $optionList4, 
+                        'optionList5' => $optionList5,                    
+                ]);
+        
+                
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+  
+    }
+
+    
+
 }
