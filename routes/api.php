@@ -64,6 +64,8 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
         Route::get('/follower', [v1\UserController::class, 'follower'])->name('follower');
         Route::get('/following', [v1\UserController::class, 'following'])->name('following');
+
+        Route::get('/wallpaper', [v1\UserController::class, 'wallpaper'])->name('wallpaper');
     });
 });
 Route::get('/area', [v1\BaseController::class, 'area'])->name('area');
@@ -129,7 +131,7 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/follower', [v1\MypageController::class, 'follower'])->name('follower');
     Route::get('/following', [v1\MypageController::class, 'following'])->name('following');
 
-    Route::get('wallpaper', [v1\MypageController::class, 'wallpaper'])->name('wallpaper');
+    Route::get('/wallpaper', [v1\MypageController::class, 'wallpaper'])->name('wallpaper');
 });
 
 /* 탐색 페이지 */
