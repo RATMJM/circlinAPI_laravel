@@ -66,16 +66,6 @@ class MypageController extends Controller
 
     public function wallpaper(): array
     {
-        $user_id = token()->uid;
-
-        $data = UserWallpaper::where('user_id', $user_id)
-            ->select(['image', 'thumbnail_image'])
-            ->orderBy('id', 'desc')
-            ->get();
-
-        return success([
-            'result' => true,
-            'wallpapers' => $data,
-        ]);
+        return (new UserController())->wallpaper(token()->uid);
     }
 }

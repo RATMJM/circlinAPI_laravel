@@ -20,6 +20,7 @@ use App\Models\MissionStat;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserStat;
+use App\Models\UserWallpaper;
 use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Http\File;
@@ -731,6 +732,21 @@ class UserController extends Controller
         return success([
             'result' => true,
             'missions' => $data,
+        ]);
+    }
+
+    public function wallpaper($user_id): array
+    {
+        $uid = token()->uid;
+
+        $data = UserWallpaper::where('user_id', $user_id)
+            ->select(['image', 'thumbnail_image'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return success([
+            'result' => true,
+            'wallpapers' => $data,
         ]);
     }
 }
