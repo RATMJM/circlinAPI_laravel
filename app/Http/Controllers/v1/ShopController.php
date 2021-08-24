@@ -575,10 +575,10 @@ class ShopController extends Controller
                 
                 $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status,
                 round((a.price-a.sale_price)/a.PRICE *100) as DISCOUNT_RATE,
-                (select CASE WHEN count(product_id) >0 THEN "Y" ELSE "N" END  FROM  carts  WHERE user_id=1 and product_id= ? ) AS CART_YN 
+                (select CASE WHEN count(product_id) >0 THEN "Y" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN 
                 from products a  left join  brands d on a.brand_id=d.id 
                 where   
-                  a.id=? ; ', array($product_id, $product_id)  ) ;
+                  a.id=? ; ', array($user_id, $product_id, $product_id)  ) ;
                     
                 $product_image = DB::select('select product_id, `order`, type, image  from product_images 
                             where product_id= ? ; ', array($product_id)  ) ; 
