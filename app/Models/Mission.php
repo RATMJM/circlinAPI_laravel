@@ -35,9 +35,4 @@ class Mission extends Model
     {
         return $this->belongsTo(MissionCategory::class, 'mission_category_id');
     }
-
-    public function stats()
-    {
-        return $this->hasMany(MissionStat::class);
-    }
 }

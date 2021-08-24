@@ -467,7 +467,7 @@ class MissionController extends Controller
             $mission = Mission::where('id', $id)->first();
 
             if ($mission->user_id === $user_id) {
-                $mission->stats()->delete();
+                $mission->mission_stats()->delete();
                 $data = $mission->delete();
 
                 return success(['result' => true]);
