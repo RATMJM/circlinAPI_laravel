@@ -439,8 +439,7 @@ class ShopController extends Controller
                 }
                 
                 try {
-                    return success([
-                        '$cartId' => $cartId     ]);
+                    
                      
                     foreach ($options as $key => $value){  
                         if($options[$key]->option_id != NULL){
@@ -451,7 +450,8 @@ class ShopController extends Controller
                         }
                     }
                      
-                  
+                    return success([
+                        'option' => $option     ]);
                 }
                 catch (Exception $e) {
                     DB::rollBack();
