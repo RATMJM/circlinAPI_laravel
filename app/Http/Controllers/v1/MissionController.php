@@ -171,6 +171,8 @@ class MissionController extends Controller
                 ]);
             }
 
+            $this->invite($request, $data->id);
+
             DB::commit();
 
             return success(['result' => true, 'mission' => $data]);
@@ -442,7 +444,7 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
 
-            $users = Arr::wrap($request->get('user_id'));
+            $users = Arr::wrap($request->get('user_id', $request->get('invite_id')));
             $users = array_unique($users);
             $success = [];
             $sockets = [];
