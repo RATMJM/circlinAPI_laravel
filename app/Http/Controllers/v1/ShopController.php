@@ -590,46 +590,47 @@ class ShopController extends Controller
  
     public function product_detail(Request $request): array
     {    
-        $allPostPutVars = $request->getParsedBody();
-        $product_id = $allPostPutVars['product_id']; 
-        $user_id = token()->uid; 
+        // $allPostPutVars = $request->getParsedBody();
+        $product_id = '1';//$allPostPutVars['product_id']; 
+        return array($product_id);
+        // $user_id = token()->uid; 
   
-            try {
-                DB::beginTransaction();
+        //     try {
+        //         DB::beginTransaction();
                 
-                $product_info = DB::select('SELECT shipping_fee, a.id as product_id , c.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status
-                from products a LEFT JOIN product_images c on  a.id=c.id  left join  brands d on a.brand_id=d.id 
-                where   
-                  a.id=? ; ', array($product_id)  ) ;
+        //         $product_info = DB::select('SELECT shipping_fee, a.id as product_id , c.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status
+        //         from products a LEFT JOIN product_images c on  a.id=c.id  left join  brands d on a.brand_id=d.id 
+        //         where   
+        //           a.id=? ; ', array($product_id)  ) ;
                     
-                $product_image = DB::select('select product_id, `order`, type, image  from product_images 
-                            where product_id= ? ; ', array($product_id)  ) ; 
+        //         $product_image = DB::select('select product_id, `order`, type, image  from product_images 
+        //                     where product_id= ? ; ', array($product_id)  ) ; 
 
 
-                $optionList1 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=1 ; ', array($product_id)  ) ; 
-                $optionList2 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=2 ; ', array($product_id)  ) ; 
-                $optionList3 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=3 ; ', array($product_id)  ) ; 
-                $optionList4 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=4 ; ', array($product_id)  ) ; 
-                $optionList5 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=5 ; ', array($product_id)  ) ; 
+        //         $optionList1 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=1 ; ', array($product_id)  ) ; 
+        //         $optionList2 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=2 ; ', array($product_id)  ) ; 
+        //         $optionList3 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=3 ; ', array($product_id)  ) ; 
+        //         $optionList4 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=4 ; ', array($product_id)  ) ; 
+        //         $optionList5 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=5 ; ', array($product_id)  ) ; 
 
  
 
-                        return success([
-                        'result' => true,
-                        'product_info' => $product_info,   
-                        'product_image' => $product_image,  
-                        'optionList1' => $optionList1, 
-                        'optionList2' => $optionList2, 
-                        'optionList3' => $optionList3, 
-                        'optionList4' => $optionList4, 
-                        'optionList5' => $optionList5,                    
-                ]);
+        //                 return success([
+        //                 'result' => true,
+        //                 'product_info' => $product_info,   
+        //                 'product_image' => $product_image,  
+        //                 'optionList1' => $optionList1, 
+        //                 'optionList2' => $optionList2, 
+        //                 'optionList3' => $optionList3, 
+        //                 'optionList4' => $optionList4, 
+        //                 'optionList5' => $optionList5,                    
+        //         ]);
         
                 
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
+        //     } catch (Exception $e) {
+        //         DB::rollBack();
+        //         return exceped($e);
+        //     }
   
     }
 
