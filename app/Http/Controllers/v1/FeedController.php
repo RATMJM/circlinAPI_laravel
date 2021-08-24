@@ -12,7 +12,7 @@ use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedPlace;
 use App\Models\FeedProduct;
-use App\Models\Follow;
+use App\Models\Mission;
 use App\Models\MissionStat;
 use Exception;
 use Illuminate\Http\File;
@@ -114,29 +114,31 @@ class FeedController extends Controller
 
             // 미션 적용
             if ($missions) {
-                foreach ($missions as $mission) {
-                    $stat = MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission])
+                foreach ($missions as $mission_id) {
+                    $stat = MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])
                         ->orderBy('id', 'desc')
-                        ->firstOr(function () use ($user_id, $mission) {
-                            return MissionStat::create([
-                                'user_id' => $user_id,
-                                'mission_id' => $mission,
-                            ]);
-                        });
+                        ->firstOrCreate();
+
+                    if (($mission = Mission::where('id', $mission_id)->first())?->success_count === 1 && FeedMission::where([
+                            'feed_id' => $feed->id,
+                            'mission_id' => $mission_id,
+                        ])->doesntExist()) {
+                        $completed_missions[] = $mission;
+                    }
+
                     FeedMission::create([
                         'feed_id' => $feed->id,
                         'mission_stat_id' => $stat->id,
-                        'mission_id' => $mission,
+                        'mission_id' => $mission_id,
                     ]);
                 }
-
             }
 
             if ($product_id) {
                 FeedProduct::create([
                     'feed_id' => $feed->id,
                     'type' => 'inside',
-                    'product_id' => $product_id
+                    'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
                 FeedProduct::create([
@@ -171,6 +173,7 @@ class FeedController extends Controller
             return success([
                 'result' => true,
                 'feed' => $feed,
+                'completed_missions' => $completed_missions ?? null,
             ]);
         } catch (Exception $e) {
             DB::rollBack();
