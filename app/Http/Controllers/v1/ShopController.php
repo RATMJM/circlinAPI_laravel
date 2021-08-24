@@ -587,12 +587,11 @@ class ShopController extends Controller
                 return exceped($e);
             } 
     }
-
  
     public function product_detail(Request $request): array
     {   
         $user_id = token()->uid; 
-        $product_id = $request->get('product_id'); 
+        $product_id = '69';// $request->get('4'); 
         
             try {
                 DB::beginTransaction();
