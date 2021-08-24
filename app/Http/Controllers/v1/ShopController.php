@@ -406,40 +406,17 @@ class ShopController extends Controller
 
     public function cart(Request $request): array
     {   
-            $user_id = '1';//token()->uid;
-            
-            $useCarePoint = '99';//$allPostPutVars[usePoint];
-
-            $orderName = 'pname';//; $allPostPutVars[orderName];
-            $orderPhone = 'ordph';//
-
-            $receiveName = 'rcvName'; 
-            $receivePhone = 'rcvPh';
-            $receiveAddress = 'rcvAddr';
-            $addressDetail = 'addrDet';
-            $postCode = 'postcd';
-
-            $amount = '99999'; // 총금
-            $shipFee ='3000';
-            $totalPrice = '999999991'; // 총액
-            $request = 'requests';
-            $items = '';// $allPostPutVars[items]; //결제된 아이템들 배열 구성요소는 똑같음 변동은 그 안에 QTY, 성공 실패 YN 변경 php에서 포이치로 인서트해야함
-            // optionId price recipient_name post_code  address address_detail           
-            // $price='99912';
-            // $productId = '59';//$items
-            // $qty
-            $qty ='11'; //$items
-            // $amount = $allPostPutVars[amount];  // 결제 된 총액
-            $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-            $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
-            // $option1 = $allPostPutVars[option1];// COMMON_CODE 의 SEQ
+            $user_id = token()->uid;
+            $product_Id = $request->get('product_Id'); 
+            $qty = $request->get('qty'); ;
+            $options = $request->get('options'); //option_Id, price
             $time = date("Y-m-d H:i:s");
-            $cartNo = date("Ymdhis").'_'.$user_id; 
+          //  $cartNo = date("Ymdhis").'_'.$user_id; 
         
             try {
                 DB::beginTransaction();        
                 $cart = DB::insert('INSERT into carts(created_at, updated_at, user_id, product_id,  qty)
-                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $productId, $qty)  ) ;
+                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $product_Id, $qty)  ) ;
                     
                 DB::commit();
             } catch (Exception $e) {
@@ -463,7 +440,7 @@ class ShopController extends Controller
                     foreach ($items as $key => $value){  
                         
                         $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
-                                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $items[$key]->optionId, $items[$key]->$price)) ;            
+                                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->optionId, $options[$key]->$price)) ;            
                         DB::commit();
     
                     }
@@ -597,10 +574,11 @@ class ShopController extends Controller
                 DB::beginTransaction();
                 
                 $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status,
-                round((a.price-a.sale_price)/a.PRICE *100) as DISCOUNT_RATE
+                round((a.price-a.sale_price)/a.PRICE *100) as DISCOUNT_RATE,
+                (select CASE WHEN count(product_id) >0 THEN "Y" ELSE "N" END  FROM  carts  WHERE user_id=1 and product_id= ? ) AS CART_YN 
                 from products a  left join  brands d on a.brand_id=d.id 
                 where   
-                  a.id=? ; ', array($product_id)  ) ;
+                  a.id=? ; ', array($product_id, $product_id)  ) ;
                     
                 $product_image = DB::select('select product_id, `order`, type, image  from product_images 
                             where product_id= ? ; ', array($product_id)  ) ; 
