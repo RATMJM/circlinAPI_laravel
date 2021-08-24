@@ -750,7 +750,7 @@ class UserController extends Controller
         $uid = token()->uid;
 
         $data = UserWallpaper::where('user_id', $user_id)
-            ->select(['image', 'thumbnail_image'])
+            ->select(['title', 'image', 'thumbnail_image'])
             ->orderBy('id', 'desc')
             ->get();
 
