@@ -442,10 +442,10 @@ class ShopController extends Controller
                      
                     foreach ($options as $key => $value){  
                      
-                        if($options[$key]->option_id){
-                            // if($options[$key]->option_id==NULL){
+                        // if($options[$key]->option_id){
+                        //     // if($options[$key]->option_id==NULL){
                           
-                        }
+                        // }
                     }
                      
                     return success([
