@@ -62,6 +62,39 @@ class SearchController extends Controller
         }
     }
 
+    public function simple(Request $request): array
+    {
+        $user_id = token()->uid;
+        $keyword = $request->get('keyword');
+        $keyword2 = str_replace(' ', '', $keyword);
+
+        if ($keyword) {
+            // users
+            $data = User::where(DB::raw("REPLACE(nickname, ' ', '')"), 'like', "$keyword2%")
+                ->select(['nickname as keyword', DB::raw("'user' as type")]);
+            // missions
+            $data = $data->union(Mission::where(DB::raw("REPLACE(title, ' ', '')"), 'like', "$keyword2%")
+                ->select(['title', DB::raw("'mission'")]));
+            // search_histories
+            $data = $data->union(SearchHistory::where(DB::raw("REPLACE(keyword, ' ', '')"), 'like', "$keyword2%")
+                ->select(['keyword', DB::raw("'keyword'")])
+                ->groupBy('keyword'))
+                ->orderBy(DB::raw("LENGTH(keyword)"))
+                ->take(10)
+                ->get();
+
+            return success([
+                'result' => true,
+                'data' => $data,
+            ]);
+        } else {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+    }
+
     public function user(Request $request): array
     {
         $user_id = token()->uid;
@@ -101,6 +134,9 @@ class SearchController extends Controller
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
+                DB::raw("missions.event_order > 0 as is_event"),
+                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->limit(1),
                 'users.id as owner_id', 'users.nickname as owner_nickname',
                 'users.profile_image as owner_profile_image', 'users.gender as owner_gender',
                 'owner_area' => area(),

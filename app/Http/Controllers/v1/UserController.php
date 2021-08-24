@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\FindPassword;
 use App\Models\Area;
 use App\Models\Feed;
 use App\Models\FeedComment;
@@ -14,16 +15,20 @@ use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
+use App\Models\MissionComment;
 use App\Models\MissionStat;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserStat;
+use App\Models\UserWallpaper;
 use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -37,7 +42,7 @@ class UserController extends Controller
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
-            ->select(['users.*', 'area' => area()])->first();
+            ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
             ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
@@ -46,11 +51,14 @@ class UserController extends Controller
 
         $badge = Arr::except((new HomeController())->badge()['data'], 'result');
 
+        $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
+
         return success([
             'result' => true,
             'user' => $user,
             'category' => $category,
             'badge' => $badge,
+            'wallpapers' => $wallpapers,
         ]);
     }
 
@@ -62,9 +70,16 @@ class UserController extends Controller
             $user_id = token()->uid;
             $nickname = $request->get('nickname');
             $area_code = $request->get('area_code');
+            $greeting = $request->get('greeting');
             $phone = preg_replace('/[^\d]/', '', $request->get('phone'));
             $gender = $request->get('gender');
             $socket_id = $request->get('socket_id');
+
+            $agree4 = $request->get('agree_email');
+            $agree5 = $request->get('agree_sms');
+            $agree_push = $request->get('agree_push');
+            $agree_push_mission = $request->get('agree_push_mission');
+            $agree_ad = $request->get('agree_ad');
 
             $birthday = $request->get('birthday');
 
@@ -82,6 +97,10 @@ class UserController extends Controller
                     $user_data['area_code'] = $area_code;
                     $result[] = 'area_code';
                 }
+                if ($greeting) {
+                    $user_data['greeting'] = $greeting;
+                    $result[] = 'greeting';
+                }
                 if ($phone && $phone !== $data->phone) {
                     $user_data['phone'] = $phone;
                     $user_data['phone_verified_at'] = date('Y-m-d H:i:s', time());
@@ -95,7 +114,27 @@ class UserController extends Controller
                     $user_data['socket_id'] = $socket_id;
                     $result[] = 'socket_id';
                 }
-                $user = User::where('id', $user_id)->update($user_data);
+                if (isset($agree4)) {
+                    $user_data['agree4'] = $agree4;
+                    $result[] = 'agree_email';
+                }
+                if (isset($agree5)) {
+                    $user_data['agree5'] = $agree5;
+                    $result[] = 'agree_sms';
+                }
+                if (isset($agree_push)) {
+                    $user_data['agree_push'] = $agree_push;
+                    $result[] = 'agree_push';
+                }
+                if (isset($agree_push_mission)) {
+                    $user_data['agree_push_mission'] = $agree_push_mission;
+                    $result[] = 'agree_push_mission';
+                }
+                if (isset($agree_ad)) {
+                    $user_data['agree_ad'] = $agree_ad;
+                    $result[] = 'agree_ad';
+                }
+                $user = $data->update($user_data);
 
                 if ($birthday && preg_match('/\d{8}/', $birthday)) {
                     $user_stat_data['birthday'] = date('Y-m-d', strtotime($birthday));
@@ -246,6 +285,96 @@ class UserController extends Controller
         }
     }
 
+    public function change_password(Request $request): array
+    {
+        try {
+            $user_id = token()->uid;
+
+            $old_password = $request->get('old');
+            $password = $request->get('password');
+            $password_confirm = $request->get('password_confirm');
+
+            if ($password !== $password_confirm) {
+                return success([
+                    'result' => false,
+                    'reason' => 'password confirm validation failed',
+                ]);
+            }
+
+            $user = User::find($user_id);
+
+            if (Hash::check($old_password, $user->password)) {
+                $res = $user->update(['password' => Hash::make($password)]);
+
+                return success(['result' => $res > 0]);
+            } else {
+                return success([
+                    'result' => false,
+                    'reason' => 'not matched old password',
+                ]);
+            }
+        } catch (Exception $e) {
+            return exceped($e);
+        }
+    }
+
+    public function find_password(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = User::where('email', $request->get('email'))->first();
+
+            if (isset($user)) {
+                $temp_password = Str::random(8);
+
+                $user->update(['password' => Hash::make($temp_password)]);
+
+                Mail::to($user)->send(new FindPassword($temp_password));
+
+                DB::commit();
+                return success(['result' => true]);
+            } else {
+                DB::rollBack();
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
+    public function withdraw(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            $user = User::find($user_id);
+
+            if (isset($user)) {
+                $user->delete_user()->create(['reason' => $request->get('reason')]);
+                $user->delete();
+
+                DB::commit();
+                return success(['result' => true]);
+            } else {
+                DB::rollBack();
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     /* 팔로우 관련 */
     /**
      * 팔로우 추가
@@ -253,6 +382,8 @@ class UserController extends Controller
     public function follow(Request $request): array
     {
         try {
+            DB::beginTransaction();
+
             $user_id = token()->uid;
             $target_id = $request->get('target_id');
 
@@ -275,8 +406,13 @@ class UserController extends Controller
             } else {
                 $data = Follow::create(['user_id' => $user_id, 'target_id' => $target_id]);
                 if ($data) {
+                    $res = NotificationController::send($target_id, 'follow');
+
+                    DB::commit();
+
                     return success(['result' => true]);
                 } else {
+                    DB::rollBack();
                     return success(['result' => false]);
                 }
             }
@@ -305,7 +441,7 @@ class UserController extends Controller
                 $result = $data->delete();
                 return success(['result' => $result]);
             } else {
-                return success(['result' => false, 'not following']);
+                return success(['result' => false, 'reason' => 'not following']);
             }
         } catch (Exception $e) {
             return exceped($e);
@@ -363,29 +499,26 @@ class UserController extends Controller
     public function show($user_id): array
     {
         $data = User::where('users.id', $user_id)
-            ->leftJoin('areas as a', 'a.ctg_sm', 'users.area_code')
-            ->leftJoin('user_stats as us', 'us.user_id', 'users.id')
-            ->leftJoin('missions as m', 'm.user_id', 'users.id') // 미션 제작
-            ->leftJoin('feeds as f', 'f.user_id', 'users.id')
-            ->leftJoin('feed_likes as fl', 'fl.user_id', 'users.id')
-            ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
             ->select([
-                'users.nickname', 'users.point', 'users.profile_image', 'users.greeting',
-                DB::raw("IF(a.name_lg=a.name_md, CONCAT_WS(' ', a.name_md, a.name_sm), CONCAT_WS(' ', a.name_lg, a.name_md, a.name_sm)) as area"),
+                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
-                DB::raw('COUNT(distinct m.id) as created_missions'),
-                DB::raw('COUNT(distinct f.id) as feeds'), DB::raw('COUNT(distinct fl.id) as checks'),
-                DB::raw('COUNT(distinct fm.id) as missions'),
+                'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'feeds' => Feed::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'checks' => FeedLike::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'missions' => FeedMission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id')
+                    ->join('feeds', 'feeds.id', 'feed_id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', token()->uid),
             ])
-            ->groupBy('users.id', 'a.id', 'us.id')
             ->first();
+
+        $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
 
         return success([
             'success' => true,
             'user' => $data,
+            'wallpapers' => $wallpapers,
         ]);
     }
 
@@ -397,14 +530,14 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $categories = MissionCategory::whereNotNull('m.mission_category_id')
-            ->where('f.user_id', $user_id)
-            ->join('missions as m', 'm.mission_category_id', 'mission_categories.id')
-            ->join('feed_missions as fm', 'fm.mission_id', 'm.id')
-            ->join('feeds as f', 'f.id', 'fm.feed_id')
+        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+            ->where('feeds.user_id', $user_id)
+            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
+            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
-                DB::raw('COUNT(distinct f.id) as feeds'),
+                DB::raw('COUNT(distinct feeds.id) as feeds'),
             ])
             ->groupBy('mission_categories.id')
             ->get();
@@ -459,44 +592,24 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $feeds = FeedLike::where('feed_likes.user_id', $user_id) // 내가 체크한
-        ->join('feeds as f', 'f.id', 'feed_likes.feed_id')
-            ->join('users as u', 'u.id', 'f.user_id')
-            ->leftJoin('feed_images as fi', 'fi.feed_id', 'f.id')
-            ->leftJoin('feed_products as fpr', 'fpr.feed_id', 'f.id')
-            ->leftJoin('feed_places as fpl', 'fpl.feed_id', 'f.id')
-            ->leftJoin('feed_missions as fm', 'fm.feed_id', 'f.id')
-            ->leftJoin('feed_likes as fl2', 'fl2.feed_id', 'f.id') // 체크 수
-            ->leftJoin('feed_comments as fc', 'fc.feed_id', 'f.id') // 댓글 수
+        $feeds = FeedLike::where('feed_likes.user_id', $user_id)
+            ->join('feeds', 'feeds.id', 'feed_likes.feed_id')
+            ->join('users', 'users.id', 'feeds.user_id')
             ->select([
-                'f.id', 'f.created_at', 'f.content',
-                DB::raw("COUNT(distinct fi.id) > 1 as has_images"), // 이미지 여러장인지
-                DB::raw("COUNT(distinct fpr.id) > 0 as has_product"), // 상품 있는지
-                DB::raw("COUNT(distinct fpl.id) > 0 as has_place"), // 위치 있는지
-                'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'f.id')->orderBy('id')->limit(1),
-                'image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'f.id')
-                    ->orderBy('id')->limit(1),
-                DB::raw('COUNT(distinct fm.id) as missions'),
-                'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'f.id')
-                    ->orderBy('id')->limit(1),
-                'mission' => Mission::select('title')
-                    ->whereHas('feed_missions', function ($query) {
-                        $query->whereColumn('feed_missions.feed_id', 'f.id')->orderBy('id');
-                    })->orderBy('id')->limit(1),
-                'emoji' => MissionCategory::select('emoji')
-                    ->whereHas('missions', function ($query) {
-                        $query->whereHas('feed_missions', function ($query) {
-                            $query->whereColumn('feed_missions.feed_id', 'f.id')->orderBy('id');
-                        });
-                    })->limit(1),
-                DB::raw('COUNT(distinct fl2.id) as checks'),
-                DB::raw('COUNT(distinct fc.id) as comments'),
-                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'f.id')
+                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
+                'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
+                'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
+                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+                'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('feed_likes.user_id', token()->uid),
-                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'f.id')
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('feed_comments.user_id', token()->uid),
             ])
-            ->groupBy('f.id')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
@@ -508,64 +621,64 @@ class UserController extends Controller
     /**
      * 진행했던 미션 전체
      */
-    public function mission(Request $request, $user_id): array
+    public function mission(Request $request, $id): array
     {
+        $user_id = token()->uid;
+
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $categories = MissionCategory::whereNotNull('m.mission_category_id')
-            ->where('f.user_id', $user_id)
-            ->join('missions as m', 'm.mission_category_id', 'mission_categories.id')
-            ->join('feed_missions as fm', 'fm.mission_id', 'm.id')
-            ->join('feeds as f', 'f.id', 'fm.feed_id')
+        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+            ->where('feeds.user_id', $id)
+            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
+            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
-                DB::raw('COUNT(distinct f.id) as feeds'),
+                DB::raw('COUNT(distinct feeds.id) as feeds'),
             ])
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions = Mission::whereHas('feed_missions', function ($query) use ($user_id) {
-            $query->whereHas('feed', function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            });
-        })
-            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_stats as ms', function ($query) {
-                $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
-            })
-            ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
+        $missions = Feed::where('feeds.user_id', $id)
+            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+            ->join('missions', 'missions.id', 'feed_missions.mission_id')
+            ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'user1' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->whereNull('mission_stats.ended_at')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                DB::raw('COUNT(distinct ms.id) as bookmarks'),
-                DB::raw('COUNT(distinct mc.id) as comments'),
+                    ->whereColumn('mission_id', 'missions.id'),
+                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
-            ->groupBy('missions.id', 'o.id')
+            ->groupBy('missions.id', 'users.id')
+            ->orderBy(DB::raw('MAx(feeds.id)'))
             ->skip($page * $limit)->take($limit)->get();
 
-        foreach ($missions as $i => $mission) {
-            $tmp = explode('|', $mission['owner'] ?? '|');
-            $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
-            $tmp1 = explode('|', $mission['user1'] ?? '|');
-            $tmp2 = explode('|', $mission['user2'] ?? '|');
-            $missions[$i]['users'] = [
-                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
-            ];
-            unset($missions[$i]['user1'], $missions[$i]['user2']);
+        if (count($missions)) {
+            function mission_user($mission_id)
+            {
+                return MissionStat::where('mission_id', $mission_id)
+                    ->join('users', 'users.id', 'mission_stats.user_id')
+                    ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                    ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
+                    ->take(2);
+            }
+
+            $query = null;
+            foreach ($missions as $i => $mission) {
+                if ($query) {
+                    $query = $query->union(mission_user($mission->id));
+                } else {
+                    $query = mission_user($mission->id);
+                }
+            }
+            $query = $query->get();
+            $keys = $missions->pluck('id')->toArray();
+            foreach ($query->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->users = $item;
+            }
         }
 
         return success([
@@ -579,47 +692,67 @@ class UserController extends Controller
     {
         $limit = $limit ?? $request->get('limit', 20);
 
-        $missions = Mission::where('missions.user_id', $user_id)
-            ->join('users as o', 'o.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_stats as ms', function ($query) {
-                $query->on('ms.mission_id', 'missions.id')->whereNull('ms.ended_at');
-            })
+        $data = Mission::where('missions.user_id', $user_id)
+            ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
-                DB::raw("CONCAT(COALESCE(o.id, ''), '|', COALESCE(o.profile_image, '')) as owner"),
+                DB::raw("missions.event_order > 0 as is_event"),
+                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->limit(1),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'user1' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->limit(1),
-                'user2' => MissionStat::selectRaw("CONCAT(COALESCE(u.id, ''), '|', COALESCE(u.profile_image, ''))")
-                    ->whereColumn('mission_stats.mission_id', 'missions.id')
-                    ->join('users as u', 'u.id', 'mission_stats.user_id')
-                    ->leftJoin('follows as f', 'f.target_id', 'mission_stats.user_id')
-                    ->groupBy('u.id')->orderBy(DB::raw('COUNT(f.id)'), 'desc')->skip(1)->limit(1),
-                DB::raw('COUNT(distinct ms.id) as bookmarks'),
-                DB::raw('COUNT(distinct mc.id) as comments'),
+                    ->whereColumn('mission_id', 'missions.id'),
+                'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
-            ->groupBy('missions.id', 'o.id')
             ->orderBy('id', 'desc')->take($limit)->get();
 
-        foreach ($missions as $i => $item) {
-            $tmp = explode('|', $item['owner'] ?? '|');
-            $missions[$i]['owner'] = ['user_id' => $tmp[0], 'profile_image' => $tmp[1]];
-            $tmp1 = explode('|', $item['user1'] ?? '|');
-            $tmp2 = explode('|', $item['user2'] ?? '|');
-            $missions[$i]['users'] = [
-                ['user_id' => $tmp1[0], 'profile_image' => $tmp1[1]], ['user_id' => $tmp2[0], 'profile_image' => $tmp2[1]]
-            ];
-            unset($missions[$i]['user1'], $missions[$i]['user2']);
+        if (count($data)) {
+            function mission_user($mission_id)
+            {
+                return MissionStat::where('mission_id', $mission_id)
+                    ->join('users', 'users.id', 'mission_stats.user_id')
+                    ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                    ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
+                    ->take(2);
+            }
+
+            $query = null;
+            foreach ($data as $i => $item) {
+                $data[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender']);
+
+                if ($query) {
+                    $query = $query->union(mission_user($item->id));
+                } else {
+                    $query = mission_user($item->id);
+                }
+            }
+            $query = $query->get();
+            $keys = $data->pluck('id')->toArray();
+            foreach ($query->groupBy('mission_id') as $i => $item) {
+                $data[array_search($i, $keys)]->users = $item;
+            }
         }
 
         return success([
             'result' => true,
-            'missions' => $missions,
+            'missions' => $data,
+        ]);
+    }
+
+    public function wallpaper($user_id): array
+    {
+        $uid = token()->uid;
+
+        $data = UserWallpaper::where('user_id', $user_id)
+            ->select(['image', 'thumbnail_image'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return success([
+            'result' => true,
+            'wallpapers' => $data,
         ]);
     }
 }

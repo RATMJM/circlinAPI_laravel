@@ -6,14 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ChatUser extends Model
+class ProductReviewComment extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
-
-    protected $casts = [
-        'is_hidden' => 'bool',
-        'is_block' => 'bool',
-    ];
 }

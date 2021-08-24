@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserWallpaper;
 use Illuminate\Http\Request;
 
 class MypageController extends Controller
@@ -18,9 +19,9 @@ class MypageController extends Controller
     /**
      * 내 피드 데이터
      */
-    public function feed(Request $request, $feed_id = null): array
+    public function feed(Request $request): array
     {
-        return (new UserController())->feed($request, token()->uid, $feed_id);
+        return (new UserController())->feed($request, token()->uid);
     }
 
     /**
@@ -61,5 +62,10 @@ class MypageController extends Controller
     public function following(): array
     {
         return (new UserController())->following(token()->uid);
+    }
+
+    public function wallpaper(): array
+    {
+        return (new UserController())->wallpaper(token()->uid);
     }
 }

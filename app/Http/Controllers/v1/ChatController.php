@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use App\Models\ChatUser;
+use App\Models\Feed;
 use App\Models\FeedImage;
 use App\Models\User;
 use Exception;
@@ -46,6 +47,20 @@ class ChatController extends Controller
     public function leave_room(Request $request, $room_id): array
     {
         $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->delete();
+
+        return success(['result' => $data > 0]);
+    }
+
+    public function show_room(Request $request, $room_id): array
+    {
+        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_hidden' => false]);
+
+        return success(['result' => $data > 0]);
+    }
+
+    public function hide_room(Request $request, $room_id): array
+    {
+        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_hidden' => true]);
 
         return success(['result' => $data > 0]);
     }
@@ -163,11 +178,38 @@ class ChatController extends Controller
             return success([
                 'result' => true,
                 'room' => $room,
+                'message' => $this->show($request, $room->id),
             ]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
+    }
+
+    public function enter_direct(Request $request, $target_id): array
+    {
+        $user_id = token()->uid;
+
+        $room = ChatRoom::join('chat_users as cu1', function ($query) use ($user_id) {
+            $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu1.user_id', $user_id);
+        })
+            ->join('chat_users as cu2', function ($query) use ($target_id) {
+                $query->on('cu2.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
+            })
+            ->where('is_group', false)
+            ->select('chat_rooms.*')
+            ->first();
+
+        if (isset($room)) {
+            $data = $this->show($request, $room->id)['data'];
+        }
+
+        return success([
+            'result' => true,
+            'room' => $room,
+            'users' => $data['users'] ?? null,
+            'messages' => $data['messages'] ?? null,
+        ]);
     }
 
     /* 1대1 메시지 전송 */
@@ -215,7 +257,11 @@ class ChatController extends Controller
 
         $data = ChatUser::where('chat_users.user_id', $user_id)
             ->select([
-                'chat_users.chat_room_id',
+                'chat_users.chat_room_id', 'chat_users.is_hidden as is_block',
+                'user_id' => DB::table('chat_users as cu')->select('users.id')
+                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
+                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
+                    ->join('users', 'users.id', 'user_id')->limit(1),
                 'nickname' => DB::table('chat_users as cu')->select('nickname')
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
@@ -234,9 +280,10 @@ class ChatController extends Controller
                     ->orderBy('id', 'desc')->limit(1),
                 'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('chat_messages.id', '>', DB::raw("COALESCE(read_message_id, 0)"))
+                    ->whereColumn('chat_messages.created_at', 'chat_users.created_at')
                     ->where('user_id', '!=', $user_id),
             ])
-            ->orderBy('latest_at', 'desc')
+            ->orderBy('is_hidden')->orderBy('latest_at', 'desc')
             ->get();
 
         return success([
@@ -269,7 +316,8 @@ class ChatController extends Controller
                 })
                 ->where('chat_messages.created_at', '>=', function ($query) use ($room_id, $user_id) {
                     $query->select('created_at')->from('chat_users')
-                        ->where('chat_users.chat_room_id', $room_id)->where('chat_users.user_id', $user_id)
+                        ->where('chat_room_id', $room_id)->where('user_id', $user_id)
+                        ->whereNull('deleted_at')
                         ->limit(1);
                 })
                 ->join('users', 'users.id', 'chat_messages.user_id')
@@ -277,10 +325,12 @@ class ChatController extends Controller
                 ->select([
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                     'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
-                    'missions.title as mission_title', 'missions.description as mission_description',
-                    'missions.thumbnail_image as mission_thumbnail_image',
+                    'feed_id', 'mission_id',
+                    'feed_content' => Feed::select('content')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
                     'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
                         ->orderBy('order')->limit(1),
+                    'missions.title as mission_title', 'missions.description as mission_description',
+                    'missions.thumbnail_image as mission_thumbnail_image',
                 ])
                 ->orderBy('chat_messages.id', 'desc')
                 ->take(20);
@@ -288,7 +338,7 @@ class ChatController extends Controller
             $messages = $messages->get();
 
             foreach ($messages as $i => $message) {
-                $messages[$i]->mission = arr_group($messages[$i], ['title', 'description', 'thumbnail_image'], 'mission_');
+                $messages[$i]->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
                 $messages[$i]->image = match ($message->type) {
                     'feed' => $message->feed_image,
                     'mission' => $message->mission_image,

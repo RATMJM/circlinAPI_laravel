@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
+use App\Models\ChatUser;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
@@ -17,6 +18,7 @@ use App\Models\MissionCategory;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -87,8 +89,15 @@ class HomeController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
                 'feed_places.address as place_address', 'feed_places.title as place_title', 'feed_places.description as place_description',
                 'feed_places.image as place_image', 'feed_places.url as place_url',
-                'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'emoji_total' => ChatUser::selectRaw("COUNT(distinct chat_messages.chat_room_id)")->withTrashed()
+                    ->whereColumn('chat_users.user_id', 'feeds.user_id')
+                    ->whereColumn('chat_messages.feed_id', 'feeds.id')
+                    ->join('chat_messages', function ($query) {
+                        $query->on('chat_messages.chat_room_id', 'chat_users.chat_room_id')
+                            ->whereColumn('chat_messages.user_id', '!=', 'chat_users.user_id');
+                    })->whereNotNull('message'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('user_id', token()->uid), // 해당 피드에 체크를 남겼는가
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
@@ -116,8 +125,11 @@ class HomeController extends Controller
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
                 'feed_missions.feed_id', 'missions.id', 'missions.title', 'mission_categories.emoji',
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
-                    ->whereColumn('mission_id', 'missions.id'),
+                DB::raw("event_order > 0 as is_event"),
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id),
+                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->limit(1),
             ])
             ->get();
 
@@ -143,7 +155,8 @@ class HomeController extends Controller
                     $query->where('created_at', '>=', date('Y-m-d', time()));
                 })->count(),
             'notifies' => random_int(0, 50),
-            'messages' => random_int(0, 200),
+            'messages' => (new Collection((new NotificationController())->index()['data']['notifies']))
+                ->where('is_read', false)->count(),
         ]);
     }
 }

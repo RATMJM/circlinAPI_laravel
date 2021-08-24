@@ -141,7 +141,7 @@ function compress($source, $destination, $quality): string
 // 정방형 컷팅 210810 JM 추가
 function image_to_square($imgSrc, $imgDes, $thumbSize = 640)
 {
-    list($width, $height) = getimagesize($imgSrc);
+    [$width, $height] = getimagesize($imgSrc);
     $myImage = imagecreatefromjpeg($imgSrc);
     if ($width > $height) {
         $y = 0;

@@ -14,13 +14,18 @@ class MissionStat extends Model
 
     const DELETED_AT = 'ended_at';
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function mission()
     {
-        return $this->belongsTo('App\Models\Mission');
+        return $this->belongsTo(Mission::class);
     }
 
     public function feed_missions()
     {
-        return $this->hasMany('App\Models\FeedMission');
+        return $this->hasMany(FeedMission::class, 'mission_id', 'mission_id');
     }
 }

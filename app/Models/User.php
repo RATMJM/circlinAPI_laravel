@@ -12,11 +12,15 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $guarded = ['point'];
+    protected $guarded = [];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'birthday' => 'date:Ymd',
     ];
 
     public function stat()
@@ -42,5 +46,10 @@ class User extends Authenticatable
     public function mission_stats()
     {
         return $this->hasMany('App\Models\MissionStat');
+    }
+
+    public function delete_user()
+    {
+        return $this->hasOne(DeleteUser::class);
     }
 }

@@ -12,6 +12,10 @@ class Feed extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_hidden' => 'bool',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

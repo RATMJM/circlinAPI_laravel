@@ -11,9 +11,18 @@ class Notification extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_read' => 'bool',
+    ];
+
     public function user()
     {
         return $this->belongsTo('App\Models\User');
+    }
+
+    public function target()
+    {
+        return $this->belongsTo('App\Models\User', 'target_id');
     }
 
     public function feed()

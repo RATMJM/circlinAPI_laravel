@@ -41,18 +41,24 @@ Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
 /* 유저 관련 */
 Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::get('/', [v1\UserController::class, 'index'])->name('index');
-    Route::patch('/profile', [v1\UserController::class, 'update'])->name('profile.update');
-    Route::post('/profile/image', [v1\UserController::class, 'change_profile_image'])->name('profile.update.image');
-    Route::delete('/profile/image', [v1\UserController::class, 'remove_profile_image'])->name('profile.delete.image');
-    Route::post('/profile/token', [v1\UserController::class, 'update_token'])->name('profile.update.token');
+    Route::group(['prefix' => 'profile', 'as' => 'profile.'], function () {
+        Route::patch('/', [v1\UserController::class, 'update'])->name('update');
+        Route::post('/image', [v1\UserController::class, 'change_profile_image'])->name('update.image');
+        Route::delete('/image', [v1\UserController::class, 'remove_profile_image'])->name('delete.image');
+        Route::post('/token', [v1\UserController::class, 'update_token'])->name('update.token');
+        Route::post('/change_password', [v1\UserController::class, 'change_password'])->name('change_password');
+        Route::post('/find_password', [v1\UserController::class, 'find_password'])->name('find_password');
+        Route::post('/withdraw', [v1\UserController::class, 'withdraw'])->name('withdraw');
+    });
+
     Route::resource('favorite_category', v1\UserFavoriteCategoryController::class);
     Route::post('/follow', [v1\UserController::class, 'follow'])->name('follow.create');
-    Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.delete');
+    Route::delete('/follow/{id}', [v1\UserController::class, 'unfollow'])->name('follow.destroy');
 
     /* 유저 상세 페이지 */
     Route::group(['prefix' => '{user_id}'], function () {
         Route::get('/', [v1\UserController::class, 'show'])->name('show');
-        Route::get('/feed/{feed_id?}', [v1\UserController::class, 'feed'])->name('feed');
+        Route::get('/feed', [v1\UserController::class, 'feed'])->name('feed');
         Route::get('/check', [v1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1\UserController::class, 'mission'])->name('mission');
         Route::get('/mission/created', [v1\UserController::class, 'created_mission'])->name('mission.created');
@@ -67,7 +73,9 @@ Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('s
 Route::get('/notification', [v1\NotificationController::class, 'index'])->name('notification.index');
 
 /* 미션 관련 */
-Route::resource('bookmark', v1\BookmarkController::class);
+Route::get('/bookmark', [v1\BookmarkController::class, 'index'])->name('bookmark.index');
+Route::post('/bookmark', [v1\BookmarkController::class, 'store'])->name('bookmark.store');
+Route::delete('/bookmark/{mission_id}', [v1\BookmarkController::class, 'destroy'])->name('bookmark.destroy');
 Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
     Route::get('/{town?}', [v1\MissionCategoryController::class, 'index'])->where(['town' => 'town'])->name('index');
     Route::get('/{category_id}', [v1\MissionCategoryController::class, 'show'])->name('show');
@@ -78,12 +86,15 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
     Route::group(['prefix' => '{mission_id}'], function () {
         Route::get('/', [v1\MissionController::class, 'show'])->name('show');
+        Route::delete('/', [v1\MissionController::class, 'destroy'])->name('destroy');
         Route::get('/user', [v1\MissionController::class, 'user'])->name('user');
         Route::post('/invite', [v1\MissionController::class, 'invite'])->name('invite');
         Route::get('/like', [v1\MissionLikeController::class, 'index'])->name('like.index');
         Route::post('/like', [v1\MissionLikeController::class, 'store'])->name('like.store');
         Route::delete('/like', [v1\MissionLikeController::class, 'destroy'])->name('like.destroy');
-        Route::resource('/comment', v1\MissionCommentController::class);
+        Route::get('/comment', [v1\MissionCommentController::class, 'index'])->name('comment.index');
+        Route::post('/comment', [v1\MissionCommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{comment_id}', [v1\MissionCommentController::class, 'destroy'])->name('comment.destroy');
     });
 });
 
@@ -96,39 +107,62 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
     Route::post('/', [v1\FeedController::class, 'store'])->name('store');
     Route::group(['prefix' => '{feed_id}'], function () {
         Route::get('/', [v1\FeedController::class, 'show'])->name('show');
+        Route::post('/show', [v1\FeedController::class, 'show_feed'])->name('show');
+        Route::post('/hide', [v1\FeedController::class, 'hide_feed'])->name('hide');
         Route::delete('/', [v1\FeedController::class, 'destroy'])->name('destroy');
         Route::get('/like', [v1\FeedLikeController::class, 'index'])->name('like.index');
         Route::post('/like', [v1\FeedLikeController::class, 'store'])->name('like.store');
         Route::delete('/like', [v1\FeedLikeController::class, 'destroy'])->name('like.destroy');
-        Route::resource('/comment', v1\FeedCommentController::class);
+        Route::get('/comment', [v1\FeedCommentController::class, 'index'])->name('comment.index');
+        Route::post('/comment', [v1\FeedCommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{comment_id}', [v1\FeedCommentController::class, 'destroy'])->name('comment.destroy');
     });
 });
 
 /* 마이페이지 (UserController 로 넘김) */
 Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/', [v1\MypageController::class, 'index'])->name('index');
-    Route::get('/feed/{feed_id?}', [v1\MypageController::class, 'feed'])->name('feed');
+    Route::get('/feed', [v1\MypageController::class, 'feed'])->name('feed');
     Route::get('/check', [v1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1\MypageController::class, 'mission'])->name('mission');
     Route::get('/mission/created', [v1\MypageController::class, 'created_mission'])->name('mission.created');
     Route::get('/follower', [v1\MypageController::class, 'follower'])->name('follower');
     Route::get('/following', [v1\MypageController::class, 'following'])->name('following');
+
+    Route::get('wallpaper', [v1\MypageController::class, 'wallpaper'])->name('wallpaper');
 });
 
 /* 탐색 페이지 */
 Route::get('/explore', [v1\SearchController::class, 'index'])->name('explore');
 Route::get('/explore/search', [v1\SearchController::class, 'search'])->name('explore.search');
+Route::get('/explore/search/simple', [v1\SearchController::class, 'simple'])->name('explore.search.simple');
 Route::get('/explore/search/user', [v1\SearchController::class, 'user'])->name('explore.search.user');
 Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->name('explore.search.mission');
 
 /* 채팅 관련 */
 Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
     Route::get('/', [v1\ChatController::class, 'index'])->name('index');
-    Route::get('/{room_id}', [v1\ChatController::class, 'show'])->name('show');
-    Route::post('/{room_id}/send', [v1\ChatController::class, 'send_message'])->name('send');
-    Route::get('/{room_id}/user', [v1\ChatController::class, 'user'])->name('user');
-    // Route::post('/direct/room/{target_id}', [v1\ChatController::class, 'create_or_enter_room'])->name('direct.enter');
+    Route::group(['prefix' => '{room_id}'], function () {
+        Route::get('/', [v1\ChatController::class, 'show'])->name('show');
+        Route::post('/send', [v1\ChatController::class, 'send_message'])->name('send');
+        Route::get('/user', [v1\ChatController::class, 'user'])->name('user');
+        Route::post('/leave', [v1\ChatController::class, 'leave_room'])->name('leave');
+        Route::post('/unblock', [v1\ChatController::class, 'show_room'])->name('show');
+        Route::post('/block', [v1\ChatController::class, 'hide_room'])->name('hide');
+    });
+    Route::post('/direct/enter/{target_id}', [v1\ChatController::class, 'enter_direct'])->name('direct.enter');
     Route::post('/direct/send/{target_id}', [v1\ChatController::class, 'send_direct'])->name('direct.send');
+});
+
+/* 공지 */
+Route::group(['prefix' => 'notice', 'as' => 'notice.'], function () {
+    Route::get('/', [v1\NoticeController::class, 'index'])->name('index');
+    Route::group(['prefix' => '{notice_id}'], function () {
+        Route::get('/', [v1\NoticeController::class, 'show'])->name('show');
+        Route::get('/comment', [v1\NoticeCommentController::class, 'index'])->name('comment.index');
+        Route::post('/comment', [v1\NoticeCommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{comment_id}', [v1\NoticeCommentController::class, 'destroy'])->name('comment.destroy');
+    });
 });
 
 /* 샵 관련 */

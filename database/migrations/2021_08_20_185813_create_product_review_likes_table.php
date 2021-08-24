@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePushLogsTable extends Migration
+class CreateProductReviewLikesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,12 @@ class CreatePushLogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('push_logs', function (Blueprint $table) {
+        Schema::create('product_review_likes', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->foreignId('product_review_id')->constrained();
             $table->foreignId('user_id')->constrained();
-            $table->string('title');
-            $table->string('message');
-            $table->foreignId('mission_id')->constrained();
-            $table->timestamp('read_at')->nullable();
+            $table->softDeletes();
         });
     }
 
@@ -31,6 +29,6 @@ class CreatePushLogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('push_logs');
+        Schema::dropIfExists('product_review_likes');
     }
 }

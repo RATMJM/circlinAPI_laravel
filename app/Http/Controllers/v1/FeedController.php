@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChatMessage;
+use App\Models\ChatUser;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
@@ -10,6 +12,7 @@ use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedPlace;
 use App\Models\FeedProduct;
+use App\Models\Follow;
 use App\Models\MissionStat;
 use Exception;
 use Illuminate\Http\File;
@@ -158,6 +161,11 @@ class FeedController extends Controller
                 ]);
             }
 
+            /*$noti = Follow::where(['target_id' => $user_id, 'feed_notify' => true])
+                ->join('users', 'users.id', 'follows.user_id')->pluck('device_token');
+
+            foreach ($)*/
+
             DB::commit();
 
             return success([
@@ -181,7 +189,7 @@ class FeedController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'feed_products.type as product_type', 'feed_products.product_id',
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, feed_products.brand) as product_brand"),
@@ -191,8 +199,26 @@ class FeedController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
                 'feed_places.address as place_address', 'feed_places.title as place_title', 'feed_places.description as place_description',
                 'feed_places.image as place_image', 'feed_places.url as place_url',
-                'like_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'emoji_total' => ChatUser::selectRaw("COUNT(distinct chat_messages.chat_room_id)")->withTrashed()
+                    ->whereColumn('chat_users.user_id', 'feeds.user_id')
+                    ->whereColumn('chat_messages.feed_id', 'feeds.id')
+                    ->join('chat_messages', function ($query) {
+                        $query->on('chat_messages.chat_room_id', 'chat_users.chat_room_id')
+                            ->whereColumn('chat_messages.user_id', '!=', 'chat_users.user_id');
+                    })->whereNotNull('message'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->where('user_id', token()->uid), // 해당 피드에 체크를 남겼는가
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->where('user_id', token()->uid), // 해당 피드에 댓글을 남겼는가
+                'has_emoji' => ChatMessage::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->whereNotNull('message') // 피드 공유와 반응 남김을 구분을 위해
+                    ->where('user_id', $user_id)->whereHas('room', function ($query) {
+                        $query->where('is_group', false)->whereHas('users', function ($query) {
+                            $query->whereColumn('user_id', 'feeds.user_id');
+                        });
+                    }), // 해당 피드로 이모지를 보낸 적이 있는가
             ])
             ->first();
 
@@ -224,6 +250,20 @@ class FeedController extends Controller
         ]);
     }
 
+    public function show_feed(Request $request, $feed_id): array
+    {
+        $data = Feed::where(['id' => $feed_id, 'user_id' => token()->uid])->update(['is_hidden' => false]);
+
+        return success(['result' => $data > 0]);
+    }
+
+    public function hide_feed(Request $request, $feed_id): array
+    {
+        $data = Feed::where(['id' => $feed_id, 'user_id' => token()->uid])->update(['is_hidden' => true]);
+
+        return success(['result' => $data > 0]);
+    }
+
     public function destroy($id): array
     {
         $user_id = token()->uid;
@@ -237,7 +277,7 @@ class FeedController extends Controller
         } else {
             return success([
                 'result' => false,
-                'reason' => 'not access feed',
+                'reason' => 'not my feed',
             ]);
         }
     }
