@@ -145,7 +145,7 @@ class MissionController extends Controller
                 MissionProduct::create([
                     'mission_id' => $data->id,
                     'type' => 'inside',
-                    'product_id' => $product_id
+                    'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
                 MissionProduct::create([
@@ -236,24 +236,26 @@ class MissionController extends Controller
             ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
             ->groupBy('users.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
 
-        $places = FeedPlace::whereExists(function ($query) use ($mission_id) {
-            $query->selectRaw(1)->from('feed_missions')->whereColumn('feed_id', 'feeds.id')
-                ->where('mission_id', $mission_id);
-        })
+        $places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
-                $query->on('feeds.id', 'feed_places.feed_id')->whereNull('deleted_at')
+                $query->on('feeds.id', 'feed_missions.feed_id')
                     ->where(function ($query) use ($user_id) {
                         $query->where('feeds.is_hidden', false)->orWhere('user_id', $user_id);
                     });
             })
-            ->select(['feed_places.title', DB::raw("COUNT(distinct feeds.id) as feed_total")])
-            ->groupBy('feed_places.title')
+            ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+            ->select([
+                'feed_places.title', 'feed_places.address', 'feed_places.description',
+                'feed_places.image', 'feed_places.url',
+                DB::raw("COUNT(distinct feeds.id) as feed_total"),
+            ])
+            ->groupBy('feed_places.title', 'feed_places.address', 'feed_places.description',
+                'feed_places.image', 'feed_places.url')
             ->orderBy('feed_total', 'desc')
             ->limit(3)
             ->get();
 
         if (count($places) > 0) {
-            $query = null;
             function place_feed($user_id, $place, $mission_id)
             {
                 return FeedPlace::where('feed_places.title', $place->title)
@@ -261,6 +263,7 @@ class MissionController extends Controller
                         $query->selectRaw(1)->from('feed_missions')
                             ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
                     })
+                    ->whereNull('feeds.deleted_at')
                     ->where(function ($query) use ($user_id) {
                         $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
                     })
@@ -287,6 +290,7 @@ class MissionController extends Controller
                     ->take(10);
             }
 
+            $query = null;
             foreach ($places as $place) {
                 if ($query) {
                     $query = $query->union(place_feed($user_id, $place, $mission_id));
@@ -301,24 +305,26 @@ class MissionController extends Controller
             }
         }
 
-        $products = FeedProduct::whereExists(function ($query) use ($mission_id) {
-            $query->selectRaw(1)->from('feed_missions')->whereColumn('feed_id', 'feeds.id')
-                ->where('mission_id', $mission_id);
-        })
+        $products = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
-                $query->on('feeds.id', 'feed_products.feed_id')->whereNull('deleted_at')
+                $query->on('feeds.id', 'feed_missions.feed_id')
                     ->where(function ($query) use ($user_id) {
                         $query->where('feeds.is_hidden', false)->orWhere('user_id', $user_id);
                     });
             })
-            ->select(['feed_products.title', DB::raw("COUNT(distinct feeds.id) as feed_total")])
-            ->groupBy('feed_products.title')
+            ->join('feed_products', 'feed_products.feed_id', 'feeds.id')
+            ->select([
+                'feed_products.type', 'feed_products.product_id', 'feed_products.brand', 'feed_products.title',
+                'feed_products.image', 'feed_products.url', 'feed_products.price',
+                DB::raw("COUNT(distinct feeds.id) as feed_total"),
+            ])
+            ->groupBy('feed_products.type', 'feed_products.product_id', 'feed_products.brand', 'feed_products.title',
+                'feed_products.image', 'feed_products.url', 'feed_products.price')
             ->orderBy('feed_total', 'desc')
             ->limit(3)
             ->get();
 
         if (count($products) > 0) {
-            $query = null;
             function product_feed($user_id, $product, $mission_id)
             {
                 return FeedProduct::where('feed_products.title', $product->title)
@@ -326,6 +332,7 @@ class MissionController extends Controller
                         $query->selectRaw(1)->from('feed_missions')
                             ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
                     })
+                    ->whereNull('feeds.deleted_at')
                     ->where(function ($query) use ($user_id) {
                         $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
                     })
@@ -352,6 +359,7 @@ class MissionController extends Controller
                     ->take(10);
             }
 
+            $query = null;
             foreach ($products as $product) {
                 if ($query) {
                     $query = $query->union(product_feed($user_id, $product, $mission_id));
@@ -367,10 +375,7 @@ class MissionController extends Controller
         }
 
         $feeds = FeedMission::where('feed_missions.mission_id', $mission_id)
-            ->whereExists(function ($query) use ($mission_id) {
-                $query->selectRaw(1)->from('feed_missions')
-                    ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
-            })
+            ->whereNull('feeds.deleted_at')
             ->where(function ($query) use ($user_id) {
                 $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
             })
@@ -394,6 +399,7 @@ class MissionController extends Controller
                     ->where('feed_comments.user_id', token()->uid),
             ])
             ->orderBy('id', 'desc')
+            ->take(10)
             ->get();
 
         return success([
