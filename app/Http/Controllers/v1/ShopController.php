@@ -591,13 +591,14 @@ class ShopController extends Controller
     public function product_detail(Request $request): array
     {   
         $user_id = token()->uid; 
-        $product_id = '69';// $request->get('4'); 
+        $product_id =  $request->get('product_id'); 
         
             try {
                 DB::beginTransaction();
                 
-                $product_info = DB::select('SELECT shipping_fee, a.id as product_id , c.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status
-                from products a LEFT JOIN product_images c on  a.id=c.id  left join  brands d on a.brand_id=d.id 
+                $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status,
+                round((a.price-a.sale_price)/a.PRICE *100) as DISCOUNT_RATE
+                from products a  left join  brands d on a.brand_id=d.id 
                 where   
                   a.id=? ; ', array($product_id)  ) ;
                     
