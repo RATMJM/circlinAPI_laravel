@@ -453,13 +453,15 @@ class UserController extends Controller
      */
     public function follower($user_id): array
     {
+        $uid = token()->uid;
+
         $users = Follow::where('follows.target_id', $user_id)
             ->join('users', 'users.id', 'follows.user_id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                    ->where('user_id', $user_id),
+                    ->where('user_id', $uid),
             ])
             ->orderBy('follows.id', 'desc')
             ->get();
@@ -475,13 +477,15 @@ class UserController extends Controller
      */
     public function following($user_id): array
     {
+        $uid = token()->uid;
+
         $users = Follow::where('follows.user_id', $user_id)
             ->join('users', 'users.id', 'follows.target_id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                    ->where('user_id', $user_id),
+                    ->where('user_id', $uid),
             ])
             ->orderBy('follows.id', 'desc')
             ->get();
