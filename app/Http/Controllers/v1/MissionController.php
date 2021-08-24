@@ -414,6 +414,123 @@ class MissionController extends Controller
         ]);
     }
 
+    public function edit($mission_id): array
+    {
+        $user_id = token()->uid;
+
+        $mission = Mission::where('id', $mission_id)
+            ->select(['id', 'user_id', 'title', 'description', 'thumbnail_image'])
+            ->with('place', function ($query) {
+                $query->select(['mission_id', 'title', 'address', 'description', 'image', 'url']);
+            })
+            ->with('product', function ($query) {
+                $query->select(['mission_id', 'type', 'product_id', 'brand', 'title', 'image', 'url', 'price']);
+            })
+            ->first();
+
+        if (is_null($mission)) {
+            return success([
+                'result' => false,
+                'reason' => 'not found mission',
+            ]);
+        }
+
+        if ($mission->user_id != $user_id) {
+            return success([
+                'result' => false,
+                'reason' => 'access denied',
+            ]);
+        }
+
+        return success([
+            'result' => true,
+            'mission' => $mission,
+        ]);
+    }
+
+    public function update(Request $request, $mission_id): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $user_id = token()->uid;
+
+            if (count($request->all()) === 0) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not enough data',
+                ]);
+            }
+
+            $description = trim($request->get('description'));
+
+            $product_id = $request->get('product_id');
+            $product_brand = $request->get('product_brand');
+            $product_title = $request->get('product_title');
+            $product_image = $request->get('product_image');
+            $product_url = $request->get('product_url');
+            $product_price = $request->get('product_price');
+
+            $place_address = $request->get('place_address');
+            $place_title = $request->get('place_title');
+            $place_description = $request->get('place_description');
+            $place_image = $request->get('place_image');
+            $place_url = $request->get('place_url');
+
+            $mission = Mission::where('id', $mission_id)->first();
+
+            if (is_null($mission)) {
+                return success([
+                    'result' => false,
+                    'reason' => 'not found mission',
+                ]);
+            }
+
+            if ($mission->user_id != $user_id) {
+                return success([
+                    'result' => false,
+                    'reason' => 'access denied',
+                ]);
+            }
+
+            if (isset($description) && $description !== '') {
+                $mission->update(['description' => $description]);
+            }
+
+            if ($product_id) {
+                $mission->product()->update([
+                    'type' => 'inside',
+                    'product_id' => $product_id,
+                ]);
+            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                $mission->product()->update([
+                    'type' => 'outside',
+                    'image' => $product_image,
+                    'brand' => $product_brand,
+                    'title' => $product_title,
+                    'price' => $product_price,
+                    'url' => $product_url,
+                ]);
+            }
+
+            if ($place_address && $place_title && $place_image) {
+                $mission->place()->update([
+                    'address' => $place_address,
+                    'title' => $place_title,
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                ]);
+            }
+
+            DB::commit();
+            return success(['result' => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            exceped($e);
+        }
+    }
+
     public function user(Request $request, $mission_id): array
     {
         $user_id = token()->uid;

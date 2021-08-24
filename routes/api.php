@@ -89,7 +89,10 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
     Route::group(['prefix' => '{mission_id}'], function () {
         Route::get('/', [v1\MissionController::class, 'show'])->name('show');
+        Route::get('/edit', [v1\MissionController::class, 'edit'])->name('edit');
+        Route::patch('/', [v1\MissionController::class, 'update'])->name('update');
         Route::delete('/', [v1\MissionController::class, 'destroy'])->name('destroy');
+
         Route::get('/user', [v1\MissionController::class, 'user'])->name('user');
         Route::post('/invite', [v1\MissionController::class, 'invite'])->name('invite');
         Route::get('/like', [v1\MissionLikeController::class, 'index'])->name('like.index');

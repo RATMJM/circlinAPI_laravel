@@ -21,6 +21,16 @@ class Mission extends Model
         return $this->hasMany(MissionImage::class);
     }
 
+    public function place()
+    {
+        return $this->hasOne(MissionPlace::class);
+    }
+
+    public function product()
+    {
+        return $this->hasOne(MissionProduct::class);
+    }
+
     public function mission_stats()
     {
         return $this->hasMany(MissionStat::class);
