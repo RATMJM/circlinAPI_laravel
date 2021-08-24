@@ -131,6 +131,7 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/follower', [v1\MypageController::class, 'follower'])->name('follower');
     Route::get('/following', [v1\MypageController::class, 'following'])->name('following');
 
+    Route::get('/gallery', [v1\MypageController::class, 'gallery'])->name('gallery');
     Route::get('/wallpaper', [v1\MypageController::class, 'wallpaper'])->name('wallpaper');
 });
 
