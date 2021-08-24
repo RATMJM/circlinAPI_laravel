@@ -589,11 +589,10 @@ class ShopController extends Controller
     }
  
     public function product_detail(Request $request): array
-    {    
-        $allPostPutVars = $request->getParsedBody();
-        $product_id = $allPostPutVars['product_id']; 
+    {   
         $user_id = token()->uid; 
-  
+        $product_id =  $request->get('product_id'); 
+        
             try {
                 DB::beginTransaction();
                 
