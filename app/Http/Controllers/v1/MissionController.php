@@ -462,21 +462,6 @@ class MissionController extends Controller
                 ]);
             }
 
-            $description = trim($request->get('description'));
-
-            $product_id = $request->get('product_id');
-            $product_brand = $request->get('product_brand');
-            $product_title = $request->get('product_title');
-            $product_image = $request->get('product_image');
-            $product_url = $request->get('product_url');
-            $product_price = $request->get('product_price');
-
-            $place_address = $request->get('place_address');
-            $place_title = $request->get('place_title');
-            $place_description = $request->get('place_description');
-            $place_image = $request->get('place_image');
-            $place_url = $request->get('place_url');
-
             $mission = Mission::where('id', $mission_id)->first();
 
             if (is_null($mission)) {
@@ -492,6 +477,21 @@ class MissionController extends Controller
                     'reason' => 'access denied',
                 ]);
             }
+
+            $description = trim($request->get('description'));
+
+            $product_id = $request->get('product_id');
+            $product_brand = $request->get('product_brand');
+            $product_title = $request->get('product_title');
+            $product_image = $request->get('product_image');
+            $product_url = $request->get('product_url');
+            $product_price = $request->get('product_price');
+
+            $place_address = $request->get('place_address');
+            $place_title = $request->get('place_title');
+            $place_description = $request->get('place_description');
+            $place_image = $request->get('place_image');
+            $place_url = $request->get('place_url');
 
             if (isset($description) && $description !== '') {
                 $mission->update(['description' => $description]);
