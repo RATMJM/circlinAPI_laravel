@@ -442,16 +442,18 @@ class ShopController extends Controller
                     
                      
                     foreach ($options as $key => $value){  
-                        if($options[$key]->option_id != NULL){
+                        
+                        if($value[price] != NULL){
                             DB::beginTransaction();
                             $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
-                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->price)) ;            
+                           
+                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id ,  $value[option_id] ,  $value[price]  )) ;         
+                            //  VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->price)) ;    
                              DB::commit();
                         }
                     }
                      
-                    return success([
-                        'option' => $option     ]);
+                   
                 }
                 catch (Exception $e) {
                     DB::rollBack();
