@@ -177,6 +177,6 @@ Route::post('/shop/product_detail', [v1\ShopController::class, 'product_detail']
 Route::get('/shop/point', [v1\ShopController::class, 'shop_point_list']);
 Route::get('/shop/bought', [v1\ShopController::class, 'bought_product_list']);
 Route::get('/shop/cart_list', [v1\ShopController::class, 'cart_list']);
-Route::get('/shop/order', [v1\ShopController::class, 'order_product']);
+Route::post('/shop/order', [v1\ShopController::class, 'order_product']);
 Route::post('/shop/cart', [v1\ShopController::class, 'cart']);
 
