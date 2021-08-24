@@ -16,173 +16,173 @@ class ShopController extends Controller
         //  $user_id = '4';//token()->uid;  
         //  $category = '2';//$request->get('category'); // 카테고리 
         //  $type = 'high';//$request->get('type'); // 필터값
-        // $user_id = token()->uid;  
-        //  $category = $request->get('category'); // 카테고리 
-        //  $type = $request->get('type'); // 필터값
-        //  try {
-        //     DB::beginTransaction();
-        // if($category=='전체'){
-        //     if ($type=="hot") {
+        $user_id = token()->uid;  
+         $category = $request->get('category'); // 카테고리 
+         $type = $request->get('type'); // 필터값
+         try {
+            DB::beginTransaction();
+        if($category=='전체'){
+            if ($type=="hot") {
              
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id  
-        //         order by status ;'   , array('1')) ;
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id  
+                order by status ;'   , array('1')) ;
   
-        //     }else if($type=="high") {
+            }else if($type=="high") {
                
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id
-        //         order by sale_price desc;'   , array('1')) ;
-        //     } 
-        //     else if($type=="low") {
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id
+                order by sale_price desc;'   , array('1')) ;
+            } 
+            else if($type=="low") {
                
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id
-        //         order by sale_price ;'   , array('1')) ;
-        //     }else{
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id
+                order by sale_price ;'   , array('1')) ;
+            }else{
                
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id
-        //         order by status;'   , array('1')) ;
-        //     } 
-        // }else{// ㅋㅏ테고리 눌렀을떄
-        //     if ($type=="hot") {
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id
+                order by status;'   , array('1')) ;
+            } 
+        }else{// ㅋㅏ테고리 눌렀을떄
+            if ($type=="hot") {
              
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b 
-        //         WHERE  
-        //         is_show= ?
-        //         and  a.product_category_id=?
-        //         and b.id=a.brand_id;'   , array('1', $category)) ;
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b 
+                WHERE  
+                is_show= ?
+                and  a.product_category_id=?
+                and b.id=a.brand_id;'   , array('1', $category)) ;
  
                 
                 
-        //     }else if($type=="high") {
+            }else if($type=="high") {
                
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id
-        //         and  a.product_category_id=? 
-        //         order by sale_price desc;'   , array('1', $category)) ;
-        //     } 
-        //     else if($type=="low") {
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id
+                and  a.product_category_id=? 
+                order by sale_price desc;'   , array('1', $category)) ;
+            } 
+            else if($type=="low") {
                
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id
-        //         and  a.product_category_id=? 
-        //         order by sale_price  ;'    , array('1', $category)) ;
-        //     }else{
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id
+                and  a.product_category_id=? 
+                order by sale_price  ;'    , array('1', $category)) ;
+            }else{
                
-        //         $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-        //         code ,
-        //         thumbnail_image,
-        //         b.name_ko,
-        //         a.name_ko as prod_name,
-        //         price, sale_price,
-        //         round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-        //         a.status
-        //         FROM products a, brands b  
-        //         WHERE  
-        //         is_show= ?
-        //         and b.id=a.brand_id
-        //         and  a.product_category_id=? 
-        //         order by status;'   , array('1', $category)) ;
-        //     } 
-        // }
+                $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                code ,
+                thumbnail_image,
+                b.name_ko,
+                a.name_ko as prod_name,
+                price, sale_price,
+                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                a.status
+                FROM products a, brands b  
+                WHERE  
+                is_show= ?
+                and b.id=a.brand_id
+                and  a.product_category_id=? 
+                order by status;'   , array('1', $category)) ;
+            } 
+        }
              
-        //     return success([
-        //         'result' => true,
-        //         'itemList' => $itemList,
-        //         'user_id' => $user_id,
-        //         'category' => $category,
-        //         'type' => $type,
-        //     ]);
+            return success([
+                'result' => true,
+                'itemList' => $itemList,
+                'user_id' => $user_id,
+                'category' => $category,
+                'type' => $type,
+            ]);
  
-        //     // else {
-        //     //     DB::rollBack();
-        //     //     return success([
-        //     //         'result' => false,
-        //     //         'reason' => 'not enough data',
-        //     //     ]);
-        //     // }
-        // } catch (Exception $e) {
-        //     DB::rollBack();
-        //     return exceped($e);
-        // }
+            // else {
+            //     DB::rollBack();
+            //     return success([
+            //         'result' => false,
+            //         'reason' => 'not enough data',
+            //     ]);
+            // }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
 
             
 
-        // return success([
-        //     'result' => true,
-        //     'areas' => $areas,
-        // ]);
+        return success([
+            'result' => true,
+            'areas' => $areas,
+        ]);
     }
 
 
@@ -589,10 +589,11 @@ class ShopController extends Controller
     }
  
     public function product_detail(Request $request): array
-    {   
+    {    
+        $allPostPutVars = $request->getParsedBody();
+        $product_id = $allPostPutVars['product_id']; 
         $user_id = token()->uid; 
-        $product_id =  $request->get('product_id'); 
-        
+  
             try {
                 DB::beginTransaction();
                 
