@@ -51,11 +51,14 @@ class UserController extends Controller
 
         $badge = Arr::except((new HomeController())->badge()['data'], 'result');
 
+        $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
+
         return success([
             'result' => true,
             'user' => $user,
             'category' => $category,
             'badge' => $badge,
+            'wallpapers' => $wallpapers,
         ]);
     }
 
@@ -510,9 +513,12 @@ class UserController extends Controller
             ])
             ->first();
 
+        $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
+
         return success([
             'success' => true,
             'user' => $data,
+            'wallpapers' => $wallpapers,
         ]);
     }
 
