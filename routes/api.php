@@ -70,6 +70,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
 });
 Route::get('/area', [v1\BaseController::class, 'area'])->name('area');
 Route::get('/suggest_user', [v1\BaseController::class, 'suggest_user'])->name('suggest.user');
+Route::get('/place', [v1\BaseController::class, 'place'])->name('place');
 
 /* 알림 관련 */
 Route::get('/notification', [v1\NotificationController::class, 'index'])->name('notification.index');
