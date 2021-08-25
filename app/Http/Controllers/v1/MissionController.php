@@ -498,12 +498,12 @@ class MissionController extends Controller
             }
 
             if ($product_id) {
-                $mission->product()->updateOrCreate([
+                $mission->product()->updateOrCreate([], [
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $mission->product()->updateOrCreate([
+                $mission->product()->updateOrCreate([], [
                     'type' => 'outside',
                     'image' => $product_image,
                     'brand' => $product_brand,
@@ -515,7 +515,7 @@ class MissionController extends Controller
 
             if ($place_address && $place_title && $place_image) {
                 $mission->place()
-                    ->updateOrCreate([
+                    ->updateOrCreate([], [
                     'address' => $place_address,
                     'title' => $place_title,
                     'description' => $place_description,
