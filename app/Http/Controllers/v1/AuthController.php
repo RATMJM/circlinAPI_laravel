@@ -135,12 +135,14 @@ class AuthController extends Controller
     public function login_user($user): array
     {
         try {
+            $data = Arr::except((new UserController())->index()['data'], 'result');
+
+            $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
+
             User::where('id', $user->id)->update([
                 'last_login_ip' => request()->server('REMOTE_ADDR'),
                 'last_login_at' => date('Y-m-d H:i:s', time()),
             ]);
-
-            $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
 
             return success(Arr::collapse([
                 [
@@ -152,8 +154,7 @@ class AuthController extends Controller
                         'nbf' => time(),
                         'uid' => $user->id,
                     ], env('JWT_SECRET')),
-                ],
-                Arr::except((new UserController())->index()['data'], 'result'),
+                ], $data
             ]));
         } catch (Exception $e) {
             return exceped($e);
