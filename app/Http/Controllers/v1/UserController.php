@@ -629,7 +629,6 @@ class UserController extends Controller
     {
         $uid = token()->uid;
 
-        DB::enableQueryLog();
         $categories = MissionCategory::where('feeds.user_id', $user_id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
@@ -687,8 +686,6 @@ class UserController extends Controller
                 }
             }
         }
-
-        dd(DB::getQueryLog());
 
         return success([
             'result' => true,
