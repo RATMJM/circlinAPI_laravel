@@ -146,8 +146,8 @@ class AuthController extends Controller
                 'token' => JWT::encode([
                     'iss' => 'https://www.circlin.co.kr',
                     'aud' => 'https://www.circlin.co.kr',
-                    'iat' => 1356999524,
-                    'nbf' => 1357000000,
+                    'iat' => time(),
+                    'nbf' => time(),
                     'uid' => $user->id,
                 ], env('JWT_SECRET')),
                 'user' => [
