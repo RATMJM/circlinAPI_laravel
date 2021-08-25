@@ -59,9 +59,9 @@ class UserController extends Controller
             ->sum('point');
 
         $yesterday_check = Feed::where('feeds.user_id', $user_id)
-            ->where('created_at', '>=', date('Y-m-d', time()))
+            ->where('feeds.created_at', '>=', date('Y-m-d', time()))
             ->join('feed_likes', function ($query) {
-                $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('deleted_at');
+                $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('feed_likes.deleted_at');
             })
             ->count();
 
