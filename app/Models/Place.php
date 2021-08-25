@@ -10,4 +10,8 @@ class Place extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'is_important' => 'bool',
+    ];
 }

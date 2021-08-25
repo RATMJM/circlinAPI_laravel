@@ -59,6 +59,7 @@ class BaseController extends Controller
     public function place(Request $request): array
     {
         $data = Place::where('title', $request->get('title'))
+            ->where('is_important', true)
             ->orderBy('id')
             ->first();
 
