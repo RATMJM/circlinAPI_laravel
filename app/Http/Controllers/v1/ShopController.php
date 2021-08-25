@@ -359,7 +359,7 @@ class ShopController extends Controller
         select 
           
                 c.thumbnail_image    , e.nickname, e.id, a.qty , c.name_ko as product_name, sale_price,  
-                    c.id , c.status, c.shipping_fee,
+                    c.id , c.status, c.shipping_fee,  c.brand_id,
                 (select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as opt_name1,
                 (select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as opt_name2,
                 (select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as opt_name3,
