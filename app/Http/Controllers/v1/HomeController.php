@@ -149,7 +149,7 @@ class HomeController extends Controller
 
         return success([
             'result' => true,
-            'feeds' => random_int(0, 50),
+            'feeds' => 0,
             'missions' => MissionStat::where('user_id', $user_id)
                 ->whereDoesntHave('feed_missions', function ($query) {
                     $query->where('created_at', '>=', date('Y-m-d', time()));
