@@ -139,6 +139,7 @@ class SearchController extends Controller
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
                 'users.id as owner_id', 'users.nickname as owner_nickname',

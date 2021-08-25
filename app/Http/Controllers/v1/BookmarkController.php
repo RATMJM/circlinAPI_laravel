@@ -33,6 +33,7 @@ class BookmarkController extends Controller
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
                 DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
