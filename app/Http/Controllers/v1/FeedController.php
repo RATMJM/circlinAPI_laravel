@@ -237,7 +237,7 @@ class FeedController extends Controller
 
         $feed->images = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
-        $feed->missions = $feed->missions()
+        $feed->missions = $feed->feed_missions()
             ->join('missions', 'missions.id', 'feed_missions.mission_id')
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
@@ -346,12 +346,12 @@ class FeedController extends Controller
             }
 
             if ($product_id) {
-                $feed->product()->updateOrCreate([
+                $feed->product()->updateOrCreate([], [
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $feed->product()->updateOrCreate([
+                $feed->product()->updateOrCreate([], [
                     'type' => 'outside',
                     'image' => $product_image,
                     'brand' => $product_brand,
@@ -362,7 +362,7 @@ class FeedController extends Controller
             }
 
             if ($place_address && $place_title && $place_image) {
-                $feed->place()->updateOrCreate([
+                $feed->place()->updateOrCreate([], [
                     'address' => $place_address,
                     'title' => $place_title,
                     'description' => $place_description,
