@@ -32,7 +32,7 @@ class HomeController extends Controller
 
         $tabs = [];
         foreach ($category_id as $id) {
-            $tmp = $id === 0 ? $category_id : $id;
+            // $tmp = $id === 0 ? $category_id : $id;
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($id),
@@ -42,7 +42,7 @@ class HomeController extends Controller
                 ->when($id, function ($query, $id) {
                     $query->whereIn('mission_category_id', Arr::wrap($id));
                 })->count(),
-                'missions' => (new MissionCategoryController())->mission($request, $tmp, 3)['data']['missions'],
+                'missions' => (new MissionCategoryController())->mission($request, $id, 3)['data']['missions'],
             ];
             break;
         }

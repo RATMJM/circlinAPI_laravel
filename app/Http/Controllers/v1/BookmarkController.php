@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class BookmarkController extends Controller
 {
-    public function index(Request $request, $category_id = [], $limit = null): array
+    public function index(Request $request, $category_id = null, $limit = null): array
     {
         $user_id = token()->uid;
 
@@ -22,6 +22,9 @@ class BookmarkController extends Controller
         $data = Mission::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
+            ->when($category_id === 0, function ($query) {
+                $query->where('event_order', '>', 0);
+            })
             ->whereHas('mission_stats', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
@@ -42,6 +45,8 @@ class BookmarkController extends Controller
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
             ])
             ->orderBy('has_check')
+            ->orderBy(DB::raw("event_order=0"))
+            ->orderBy('event_order')
             ->orderBy('id')
             ->when($limit, function ($query, $limit) {
                 $query->take($limit);

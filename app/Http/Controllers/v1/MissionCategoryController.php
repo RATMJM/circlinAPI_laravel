@@ -125,6 +125,9 @@ class MissionCategoryController extends Controller
         $data = Mission::when($id, function ($query, $id) {
             $query->whereIn('missions.mission_category_id', Arr::wrap($id));
         })
+            ->when($id === 0, function ($query) {
+                $query->where('event_order', '>', 0);
+            })
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->select([
                 'missions.id', 'missions.title', 'missions.description', DB::raw("event_order > 0 as is_event"),
