@@ -321,6 +321,7 @@ class FeedController extends Controller
 
             $is_hidden = $request->get('is_hidden');
 
+            $product_delete = $request->get('product_delete');
             $product_id = $request->get('product_id');
             $product_brand = $request->get('product_brand');
             $product_title = $request->get('product_title');
@@ -328,6 +329,7 @@ class FeedController extends Controller
             $product_url = $request->get('product_url');
             $product_price = $request->get('product_price');
 
+            $place_delete = $request->get('place_delete');
             $place_address = $request->get('place_address');
             $place_title = $request->get('place_title');
             $place_description = $request->get('place_description');
@@ -345,7 +347,10 @@ class FeedController extends Controller
                 $feed->update($update_data);
             }
 
-            if ($product_id) {
+
+            if ($product_delete) {
+                $feed->product()->delete();
+            } elseif ($product_id) {
                 $feed->product()->updateOrCreate([], [
                     'type' => 'inside',
                     'product_id' => $product_id,
@@ -361,7 +366,10 @@ class FeedController extends Controller
                 ]);
             }
 
-            if ($place_address && $place_title && $place_image) {
+
+            if ($place_delete) {
+                $feed->place()->delete();
+            } elseif ($place_address && $place_title && $place_image) {
                 $feed->place()->updateOrCreate([], [
                     'address' => $place_address,
                     'title' => $place_title,

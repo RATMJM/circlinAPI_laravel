@@ -480,6 +480,7 @@ class MissionController extends Controller
 
             $description = trim($request->get('description'));
 
+            $product_delete = $request->get('product_delete');
             $product_id = $request->get('product_id');
             $product_brand = $request->get('product_brand');
             $product_title = $request->get('product_title');
@@ -487,6 +488,7 @@ class MissionController extends Controller
             $product_url = $request->get('product_url');
             $product_price = $request->get('product_price');
 
+            $place_delete = $request->get('place_delete');
             $place_address = $request->get('place_address');
             $place_title = $request->get('place_title');
             $place_description = $request->get('place_description');
@@ -497,7 +499,9 @@ class MissionController extends Controller
                 $mission->update(['description' => $description]);
             }
 
-            if ($product_id) {
+            if ($product_delete) {
+                $mission->product()->delete();
+            } elseif ($product_id) {
                 $mission->product()->updateOrCreate([], [
                     'type' => 'inside',
                     'product_id' => $product_id,
@@ -513,7 +517,10 @@ class MissionController extends Controller
                 ]);
             }
 
-            if ($place_address && $place_title && $place_image) {
+
+            if ($place_delete) {
+                $mission->place()->delete();
+            } elseif ($place_address && $place_title && $place_image) {
                 $mission->place()
                     ->updateOrCreate([], [
                     'address' => $place_address,
