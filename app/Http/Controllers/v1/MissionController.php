@@ -197,7 +197,8 @@ class MissionController extends Controller
             ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
-                'missions.title', 'missions.description', DB::raw("event_order > 0 as is_event"),
+                'missions.title', 'missions.description',
+                DB::raw("event_order > 0 as is_event"), 'missions.thumbnail_image',
                 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
