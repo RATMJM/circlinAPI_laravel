@@ -58,9 +58,9 @@ class BaseController extends Controller
 
     public function place(Request $request): array
     {
-        $data = Place::where('address', $request->get('address'))
+        $data = Place::where('title', $request->get('title'))
             ->orderBy('id')
-            ->value('title');
+            ->first();
 
         return success([
             'result' => isset($data),
