@@ -411,6 +411,35 @@ class ShopController extends Controller
             $qty = $request->get('qty'); ;
             $options = $request->get('options'); //option_Id, price
             $time = date("Y-m-d H:i:s");
+
+            // $options =   
+            //       array([
+            //         "option_id" => 281,
+            //         'price'=> 14
+            //       ],
+            //       [
+            //         "option_id" => 280,
+            //         'price'=> 24
+            //       ],
+            //       [
+            //         "option_id" => '',
+            //         'price'=> 34
+            //       ]);
+               
+                 
+                //   let a = [
+                //     { option_id: 148, price: 0 },
+                //     { option_id: 270, price: 90000 },
+                //     { option_id: '', price: 0 },
+                //     { option_id: '', price: 0 },
+                //     { option_id: '', price: 0 },
+                //   ];
+              
+            //   DB::beginTransaction();
+            //           $cartId = DB::select('select id,user_id from carts
+            //                                   where user_id=? order by id desc limit 5  ; ', array($user_id)  ) ;
+            
+           
           //  $cartNo = date("Ymdhis").'_'.$user_id; 
         
             try {
@@ -425,45 +454,33 @@ class ShopController extends Controller
                 return exceped($e);
             }
 
-           
 
-            if($cart>0){
-                try {
-                    DB::beginTransaction();
-                    $cartId = DB::select('select id from carts
-                                            where user_id=? order by id desc  limit 0,1 ; ', array($user_id)  ) ;
-                                        
-                } catch (Exception $e) {
-                    DB::rollBack();
-                    return exceped($e);
-                }
-                
-                try {
-                    
-                     
-                    foreach ($options as $key => $value){  
-                        
-                        if($value[price] != NULL){
-                            DB::beginTransaction();
-                            $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
-                           
-                            VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id ,  $value[option_id] ,  $value[price]  )) ;         
-                            //  VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->price)) ;    
-                             DB::commit();
-                        }
-                    }
-                     
-                   
-                }
-                catch (Exception $e) {
-                    DB::rollBack();
-                    return exceped($e);
-                }
-              
-            }else{
-                return false;
+            try {
+                DB::beginTransaction();
+                $cartId = DB::select('select id from carts
+                                        where user_id=? order by id desc  limit 0,1 ; ', array($user_id)  ) ;
+                                    
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
             }
+
             
+                  foreach ($options as $key => $value){
+                    if($value['option_id']){  
+                          
+                                $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
+                            
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id ,  $value['option_id'] ,  $value['price']  )) ;         
+                                //  VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->price)) ;    
+                                DB::commit();
+                              echo $value['option_id'];
+                     }
+                  } 
+
+            return success([ 'result' => $cartId[0]->id, ]);
+            
+ 
     }
 
 
