@@ -356,10 +356,8 @@ class ShopController extends Controller
         DB::beginTransaction();
         
         $cartList = DB::select(' 
-        select 
-          
-                c.thumbnail_image    , e.nickname, e.id, a.qty , c.name_ko as product_name, sale_price,  
-                    c.id , c.status, c.shipping_fee,  c.brand_id,
+        select a.id as cart_id, c.thumbnail_image    , e.nickname, e.id as user_id, a.qty , c.name_ko as product_name, sale_price,  
+                    c.id as product_id , c.status, c.shipping_fee,  c.brand_id,
                 ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1),"") as opt_name1,
                 ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1),"") as opt_name2,
                 ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1),"") as opt_name3,
