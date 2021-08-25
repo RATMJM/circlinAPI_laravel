@@ -36,9 +36,9 @@ use Intervention\Image\Facades\Image;
 
 class UserController extends Controller
 {
-    public function index(): array
+    public function index($user_id = null): array
     {
-        $user_id = token()->uid;
+        $user_id = $user_id ?? token()->uid;
 
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')

@@ -135,7 +135,7 @@ class AuthController extends Controller
     public function login_user($user): array
     {
         try {
-            $data = Arr::except((new UserController())->index()['data'], 'result');
+            $data = Arr::except((new UserController())->index($user->id)['data'], 'result');
 
             $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
 
