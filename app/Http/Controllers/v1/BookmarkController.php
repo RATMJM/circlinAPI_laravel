@@ -39,6 +39,7 @@ class BookmarkController extends Controller
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
