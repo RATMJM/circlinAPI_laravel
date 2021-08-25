@@ -402,6 +402,7 @@ class FeedController extends Controller
         if ($feed->user_id === $user_id) {
             $data = $feed->delete();
 
+            DB::commit();
             return success(['result' => true]);
         } else {
             return success([

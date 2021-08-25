@@ -596,6 +596,7 @@ class MissionController extends Controller
                 $mission->mission_stats()->delete();
                 $data = $mission->delete();
 
+                DB::commit();
                 return success(['result' => true]);
             } else {
                 DB::rollBack();
