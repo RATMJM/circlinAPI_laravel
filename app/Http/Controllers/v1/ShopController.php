@@ -480,15 +480,15 @@ class ShopController extends Controller
     //상품주문
     public function order_product(Request $request): array
     {   
-            $user_id = '1';//token()->uid;
+            $user_id = token()->uid;
             
-            $product_id =  $request->get('product_id'); 
-            $post_code =  $request->get('post_code'); 
-            $address =  $request->get('address'); 
-            $address_detail =  $request->get('address_detail'); //상세주소
+            $product_id = $request->get('product_id'); 
+            $post_code = $request->get('post_code'); 
+            $address = $request->get('address'); 
+            $address_detail = $request->get('address_detail'); //상세주소
             $recipient_name =  $request->get('recipient_name');  // 받는사람 이름
-            $qty =  $request->get('qty'); //아이템수량 
-            $totalPrice =  $request->get('totalPrice'); //구매총액               
+            $qty = $request->get('qty'); //아이템수량 
+            $totalPrice = $request->get('totalPrice'); //구매총액               
             $used_point = $request->get('used_point');// 사용한 포인트       
             $options = $request->get('options');   ;//option_id, price, product_id 
               //   price recipient_name post_code  address address_detail           
@@ -500,7 +500,23 @@ class ShopController extends Controller
             $time = date("Y-m-d H:i:s");
             $orderNo=date("Ymdhis").'_'.$user_id; 
         
-
+            //  $options =   
+            //       array([
+            //         "option_id" => 281,
+            //         'price'=> 14,
+            //         'product_id'=> 59
+            //       ],
+            //       [
+            //         "option_id" => 280,
+            //         'price'=> 24,
+            //         'product_id'=> 59
+            //       ],
+            //       [
+            //         "option_id" => '',
+            //         'price'=> 34,
+            //         'product_id'=> 59
+            //       ]);
+                 
             try {
                 DB::beginTransaction();
                 
@@ -511,8 +527,8 @@ class ShopController extends Controller
                 DB::commit();
             
                 $orderId = DB::select('select id from orders
-                                        where user_id=? and order_no=? ; ', array($user_id, $orderNo)  ) ;
-                                    
+                                        where user_id=? and order_no=? order by id desc limit 1; ', array($user_id, $orderNo)  ) ;
+                             
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -525,9 +541,10 @@ class ShopController extends Controller
                     
                 DB::commit();
                 
-                $orderProduct = DB::select('select id, product_id, order_id from order_products
+                $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
                                         where  order_id=? ; ', 
-                                        array($orderId[0]->id)  ) ;
+                                       
+                                          array($orderId[0]->id)  ) ;
                         
                         
                     //     echo $orderProduct_id[0]->id;
@@ -541,24 +558,27 @@ class ShopController extends Controller
                     //     echo $items[$key]->product_id ."<br/>";
                     // }
         
-                    foreach ($items as $key => $value){ // 아이템 옵션리스트 선택된 1번옵션의 두번쨰
-                        foreach ($orderProduct as $key2 => $value) { // 주문서의 아이템정보
-
-                            if($item[$key]->product_id = $orderProduct[$key2]->product_id ){ //선택된 옵션의 상품코드=주문서의 상품코드 같을때 orderProduct의 ID 입력
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $items[$key]->option_id, $items[$key]->$price)) ;            
-                                DB::commit();
-
-                                $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty)
-                                                    values(?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id,  $orderProduct[$key2]->$qty)  ) ;
-                                DB::commit();
-
-                                
-
-
-                            }
+                    foreach ($options as $key => $value){ // 아이템 옵션리스트 선택된 1번옵션의 두번쨰
+                        foreach ($orderProduct as $key2 => $value2) { // 주문서의 아이템정보
+                            // print_r( $value['product_id'])    ;
+                            if( $value['product_id']==$orderProduct[$key2]->product_id ){
+                                if($value['option_id']){
+                                    $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['option_id'], $value['price'] )) ;            
+                                DB::commit();                                
+                                }
+                            };                       
                         }
                     }
+
+                    foreach ($orderProduct as $key2 => $value2) { // 주문서의 아이템정보
+                        // print_r( $value['product_id'])    ;
+                        $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+                                                    values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key2]->id , $orderProduct[$key2]->qty, 0 , 'request')  ) ;
+                                DB::commit();                    
+                    }
+
+                    
  
                     
                     $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
