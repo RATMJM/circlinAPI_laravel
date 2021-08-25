@@ -17,6 +17,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\PointHistory;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserStat;
@@ -41,7 +42,6 @@ class UserController extends Controller
 
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
             ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
@@ -53,10 +53,24 @@ class UserController extends Controller
 
         $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
 
+        $yesterday_point = PointHistory::where('user_id', $user_id)
+            ->where('created_at', '>=', date('Y-m-d', time()))
+            ->where('point', '>', 0)
+            ->sum('point');
+
+        $yesterday_check = Feed::where('feeds.user_id', $user_id)
+            ->where('created_at', '>=', date('Y-m-d', time()))
+            ->join('feed_likes', function ($query) {
+                $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('deleted_at');
+            })
+            ->count();
+
         return success([
             'result' => true,
             'user' => $user,
             'category' => $category,
+            'yesterday_point' => $yesterday_point,
+            'yesterday_check' => $yesterday_check,
             'badge' => $badge,
             'wallpapers' => $wallpapers,
         ]);
