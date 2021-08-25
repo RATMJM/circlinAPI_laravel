@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ShopController extends Controller
-{
+{   
+    // 샵 아이템리스트 조회
     public function item_list(Request $request): array
       {   
         //  $user_id = '4';//token()->uid;  
@@ -185,7 +186,7 @@ class ShopController extends Controller
         ]);
     }
 
-
+    // 샵 카테고리 조회
     public function shop_category(Request $request): array
       {   
  
@@ -210,6 +211,7 @@ class ShopController extends Controller
  
     }
  
+    //샵 배너 조회
     public function shop_banner(): array
     {   
  
@@ -233,6 +235,7 @@ class ShopController extends Controller
  
     }
 
+    // 포인트 내역 조회
     public function shop_point_list(Request $request): array
     {   
         $user_id = token()->uid;
@@ -277,7 +280,7 @@ class ShopController extends Controller
 
    }
  
-
+   //구매내역 리스트 조회
    public function bought_product_list(Request $request): array
     {   
         $user_id = token()->uid;
@@ -285,7 +288,7 @@ class ShopController extends Controller
        try {
           DB::beginTransaction();
           
-                $orderList = DB::select('select
+                $orderList = DB::select('select f.id as product_id,
                 ORDER_NO, a.total_price, f.name_ko as product_name, g.name_ko as brand_name, f.thumbnail_image, f.code, a.created_at as order_time,
                 h.id as feed_product_id,  "" SELECT_YN, b.qty, e.status,
                 concat(
@@ -348,6 +351,7 @@ class ShopController extends Controller
 
   }
  
+  //장바구니 조회
   public function cart_list(Request $request): array
   {   
       $user_id = token()->uid;
@@ -405,7 +409,7 @@ class ShopController extends Controller
 
 }
 
-
+    // 장바구니 입력
     public function cart(Request $request): array
     {   
             $user_id = token()->uid;
@@ -427,25 +431,11 @@ class ShopController extends Controller
             //         "option_id" => '',
             //         'price'=> 34
             //       ]);
-               
-                 
-                //   let a = [
-                //     { option_id: 148, price: 0 },
-                //     { option_id: 270, price: 90000 },
-                //     { option_id: '', price: 0 },
-                //     { option_id: '', price: 0 },
-                //     { option_id: '', price: 0 },
-                //   ];
-              
-            //   DB::beginTransaction();
-            //           $cartId = DB::select('select id,user_id from carts
-            //                                   where user_id=? order by id desc limit 5  ; ', array($user_id)  ) ;
-            
-           
-          //  $cartNo = date("Ymdhis").'_'.$user_id; 
+
         
             try {
                 DB::beginTransaction();        
+                //카트 입력
                 $cart = DB::insert('INSERT into carts(created_at, updated_at, user_id, product_id,  qty)
                                         VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $user_id, $product_id, $qty)  ) ;
                     
@@ -459,6 +449,7 @@ class ShopController extends Controller
 
             try {
                 DB::beginTransaction();
+                //카트아이디 구하기
                 $cartId = DB::select('select id from carts
                                         where user_id=? order by id desc  limit 0,1 ; ', array($user_id)  ) ;
                                     
@@ -467,7 +458,7 @@ class ShopController extends Controller
                 return exceped($e);
             }
 
-            
+                //옵션입력
                   foreach ($options as $key => $value){
                     if($value['option_id']){  
                           
@@ -486,7 +477,7 @@ class ShopController extends Controller
  
     }
 
-
+    //상품주문
     public function order_product(Request $request): array
     {   
             $user_id = '1';//token()->uid;
@@ -584,6 +575,7 @@ class ShopController extends Controller
             } 
     }
  
+    //상품 상세정보내역 조회
     public function product_detail(Request $request): array
     {   
         $user_id = token()->uid; 
@@ -630,7 +622,7 @@ class ShopController extends Controller
   
     }
 
-    
+    // 장바구니 내 품목 업데이트,삭제
     public function update_cart(Request $request): array
     {   
             $user_id = token()->uid;
@@ -640,9 +632,7 @@ class ShopController extends Controller
             $time = date("Y-m-d H:i:s");
    
             
-            if($type=='qty'){
-                 
-                
+            if($type=='qty'){ //카트 내 상품 수량업데이트
                 try {
                     DB::beginTransaction();        
                     $cart = DB::update('UPDATE carts set qty=?, updated_at =? 
@@ -657,7 +647,7 @@ class ShopController extends Controller
                 }
 
               }
-              else if($type=='delete'){
+              else if($type=='delete'){//카트상품옵션삭제,카트삭제
                   
                   try {
                     DB::beginTransaction();        
