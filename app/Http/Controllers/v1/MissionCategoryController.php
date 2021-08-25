@@ -139,7 +139,8 @@ class MissionCategoryController extends Controller
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
             ])
-            ->orderBy('event_order', 'desc');
+            ->orderBy(DB::raw("event_order=0"))
+            ->orderBy('event_order');
 
         if ($sort === 'popular') {
             $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
