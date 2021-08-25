@@ -347,10 +347,8 @@ class ShopController extends Controller
       }
 
   }
-
-
  
-  public function cart_list(Reqsuest $request): array
+  public function cart_list(Request $request): array
   {   
       $user_id = token()->uid;
       
@@ -361,21 +359,27 @@ class ShopController extends Controller
         select 
           
                 c.thumbnail_image    , e.nickname, e.id, a.qty , c.name_ko as product_name, sale_price,  
-                    c.id , c.status, c.shipping_fee,
+                    c.id , c.status, c.shipping_fee,  c.brand_id,
+                ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1),"") as opt_name1,
+                ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1),"") as opt_name2,
+                ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1),"") as opt_name3,
+                ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1),"") as opt_name4,
+                ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1),"") as opt_name5,
+                ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1),"") as opt_name6,
                 
-                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as opt1,
-                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as opt2,
-                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as opt3,
-                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1) as opt4,
-                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as opt5,
-                (select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as opt6,
+                ifnull((select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1),"") as opt1,
+                ifnull((select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1),"") as opt2,
+                ifnull((select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1),"") as opt3,
+                ifnull((select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1),"") as opt4,
+                ifnull((select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1),"") as opt5,
+                ifnull((select x.id from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1),"") as opt6,
                 
-                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1) as price1,
-                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1) as price2,
-                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1) as price3,
-                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1) as price4,
-                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1) as price5,
-                (select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1) as price6
+                ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1),0) as price1,
+                ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1),0) as price2,
+                ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 2,1),0) as price3,
+                ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 3,1),0) as price4,
+                ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 4,1),0) as price5,
+                ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 5,1),0) as price6
                        
                          
             
@@ -401,7 +405,7 @@ class ShopController extends Controller
         return exceped($e);
     }
 
-    }
+}
 
 
     public function cart(Request $request): array
@@ -629,5 +633,50 @@ class ShopController extends Controller
     }
 
     
+    public function update_cart(Request $request): array
+    {   
+            $user_id = token()->uid;
+            $qty = $request->get('qty'); 
+            $type = $request->get('type'); ;
+            $cart_id = $request->get('cart_id'); //option_Id, price
+            $time = date("Y-m-d H:i:s");
+   
+            
+            if($type=='qty'){
+                 
+                
+                try {
+                    DB::beginTransaction();        
+                    $cart = DB::update('UPDATE carts set qty=?, updated_at =? 
+                    where id=?; ', array($qty, $time, $cart_id )  ) ;
+                        
+                    DB::commit();
+                    return success([
+                        'result' => true,    ]);
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
+
+              }
+              else if($type=='delete'){
+                  
+                  try {
+                    DB::beginTransaction();        
+                    $cart_option = DB::delete('delete from cart_options  where cart_id=?; ', array( $cart_id )  ) ;
+                    $cart = DB::delete('delete from carts  where id=?; ', array( $cart_id )  ) ;
+                        
+                    DB::commit();
+                    return success([
+                        'result' => true,    ]);
+                   
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
+              }
+               
+ 
+    }
 
 }
