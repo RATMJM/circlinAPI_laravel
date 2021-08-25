@@ -356,7 +356,7 @@ class ShopController extends Controller
         DB::beginTransaction();
         
         $cartList = DB::select(' 
-        select a.id as cart_id, c.thumbnail_image    , e.nickname, e.id as user_id, a.qty , c.name_ko as product_name, sale_price,  
+        select a.id as cart_id, c.thumbnail_image    , e.nickname as brand_name, e.id as user_id, a.qty , c.name_ko as product_name, sale_price,  
                     c.id as product_id , c.status, c.shipping_fee,  c.brand_id,
                 ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 0,1),"") as opt_name1,
                 ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and a.id=y.cart_id limit 1,1),"") as opt_name2,
@@ -592,8 +592,8 @@ class ShopController extends Controller
             try {
                 DB::beginTransaction();
                 
-                $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as BRAND_NAME, a.name_ko as PRODUCT_NAME , a.price, a.sale_price, a.status,
-                round((a.price-a.sale_price)/a.PRICE *100) as DISCOUNT_RATE,
+                $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as brand_name, a.name_ko as product_name , a.price, a.sale_price, a.status,
+                round((a.price-a.sale_price)/a.PRICE *100) as discount_rate,
                 (select CASE WHEN count(product_id) >0 THEN "Y" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN 
                 from products a  left join  brands d on a.brand_id=d.id 
                 where   
