@@ -347,12 +347,10 @@ class ShopController extends Controller
       }
 
   }
-
-
  
-  public function cart_list(Reqsuest $request): array
+  public function cart_list(Request $request): array
   {   
-      $user_id = token()->uid;
+      $user_id = 1;//token()->uid;
       
      try {
         DB::beginTransaction();
@@ -401,7 +399,7 @@ class ShopController extends Controller
         return exceped($e);
     }
 
-    }
+}
 
 
     public function cart(Request $request): array
