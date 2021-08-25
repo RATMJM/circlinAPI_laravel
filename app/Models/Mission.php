@@ -41,6 +41,11 @@ class Mission extends Model
         return $this->hasMany(FeedMission::class);
     }
 
+    public function feeds()
+    {
+        return $this->belongsToMany(Feed::class, FeedMission::class);
+    }
+
     public function category()
     {
         return $this->belongsTo(MissionCategory::class, 'mission_category_id');

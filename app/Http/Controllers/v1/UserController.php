@@ -625,42 +625,40 @@ class UserController extends Controller
     /**
      * 진행했던 미션 전체
      */
-    public function mission(Request $request, $id): array
+    public function mission(Request $request, $user_id): array
     {
-        $user_id = token()->uid;
+        $uid = token()->uid;
 
-        $limit = $request->get('limit', 20);
-        $page = $request->get('page', 0);
-
-        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
-            ->where('feeds.user_id', $id)
+        DB::enableQueryLog();
+        $categories = MissionCategory::where('feeds.user_id', $user_id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
-                DB::raw('COUNT(distinct feeds.id) as feeds'),
+                DB::raw('COUNT(distinct feeds.id) as feed_total'),
             ])
+            ->with('missions', function ($query) use ($user_id, $uid) {
+                $query->where('feeds.user_id', $user_id)
+                    ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
+                    ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->select([
+                        'missions.mission_category_id', 'missions.id', 'missions.title', 'missions.description',
+                        'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                        'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $uid)
+                            ->whereColumn('mission_id', 'missions.id'),
+                        'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                        'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                    ])
+                    ->groupBy('missions.id', 'users.id')
+                    ->orderBy(DB::raw('MAX(feeds.id)'))
+                    ->take(20);
+            })
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions = Feed::where('feeds.user_id', $id)
-            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-            ->join('missions', 'missions.id', 'feed_missions.mission_id')
-            ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->select([
-                'missions.id', 'missions.title', 'missions.description',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-                    ->whereColumn('mission_id', 'missions.id'),
-                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-                'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-            ])
-            ->groupBy('missions.id', 'users.id')
-            ->orderBy(DB::raw('MAx(feeds.id)'))
-            ->skip($page * $limit)->take($limit)->get();
-
-        if (count($missions)) {
+        if (count($categories)) {
             function mission_user($mission_id)
             {
                 return MissionStat::where('mission_id', $mission_id)
@@ -669,26 +667,32 @@ class UserController extends Controller
                     ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
                     ->take(2);
             }
+            foreach ($categories as $i => $category) {
+                $missions = $category->missions;
+                if (count($missions)) {
 
-            $query = null;
-            foreach ($missions as $i => $mission) {
-                if ($query) {
-                    $query = $query->union(mission_user($mission->id));
-                } else {
-                    $query = mission_user($mission->id);
+                    $query = null;
+                    foreach ($missions as $mission) {
+                        if ($query) {
+                            $query = $query->union(mission_user($mission->id));
+                        } else {
+                            $query = mission_user($mission->id);
+                        }
+                    }
+                    $query = $query->get();
+                    $keys = $missions->pluck('id')->toArray();
+                    foreach ($query->groupBy('mission_id') as $j => $item) {
+                        $categories[$i]->missions[array_search($j, $keys)]->users = $item;
+                    }
                 }
             }
-            $query = $query->get();
-            $keys = $missions->pluck('id')->toArray();
-            foreach ($query->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->users = $item;
-            }
         }
+
+        dd(DB::getQueryLog());
 
         return success([
             'result' => true,
             'categories' => $categories,
-            'missions' => $missions,
         ]);
     }
 
