@@ -636,6 +636,7 @@ class UserController extends Controller
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 DB::raw('COUNT(distinct feeds.id) as feed_total'),
+                DB::raw('COUNT(distinct missions.id) as mission_total'),
             ])
             ->with('missions', function ($query) use ($user_id, $uid) {
                 $query->where('feeds.user_id', $user_id)
