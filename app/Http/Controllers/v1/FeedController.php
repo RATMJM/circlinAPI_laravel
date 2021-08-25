@@ -346,12 +346,12 @@ class FeedController extends Controller
             }
 
             if ($product_id) {
-                $feed->product()->update([
+                $feed->product()->updateOrCreate([
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $feed->product()->update([
+                $feed->product()->updateOrCreate([
                     'type' => 'outside',
                     'image' => $product_image,
                     'brand' => $product_brand,
@@ -362,7 +362,7 @@ class FeedController extends Controller
             }
 
             if ($place_address && $place_title && $place_image) {
-                $feed->place()->update([
+                $feed->place()->updateOrCreate([
                     'address' => $place_address,
                     'title' => $place_title,
                     'description' => $place_description,
