@@ -462,21 +462,6 @@ class MissionController extends Controller
                 ]);
             }
 
-            $description = trim($request->get('description'));
-
-            $product_id = $request->get('product_id');
-            $product_brand = $request->get('product_brand');
-            $product_title = $request->get('product_title');
-            $product_image = $request->get('product_image');
-            $product_url = $request->get('product_url');
-            $product_price = $request->get('product_price');
-
-            $place_address = $request->get('place_address');
-            $place_title = $request->get('place_title');
-            $place_description = $request->get('place_description');
-            $place_image = $request->get('place_image');
-            $place_url = $request->get('place_url');
-
             $mission = Mission::where('id', $mission_id)->first();
 
             if (is_null($mission)) {
@@ -493,17 +478,32 @@ class MissionController extends Controller
                 ]);
             }
 
+            $description = trim($request->get('description'));
+
+            $product_id = $request->get('product_id');
+            $product_brand = $request->get('product_brand');
+            $product_title = $request->get('product_title');
+            $product_image = $request->get('product_image');
+            $product_url = $request->get('product_url');
+            $product_price = $request->get('product_price');
+
+            $place_address = $request->get('place_address');
+            $place_title = $request->get('place_title');
+            $place_description = $request->get('place_description');
+            $place_image = $request->get('place_image');
+            $place_url = $request->get('place_url');
+
             if (isset($description) && $description !== '') {
                 $mission->update(['description' => $description]);
             }
 
             if ($product_id) {
-                $mission->product()->update([
+                $mission->product()->updateOrCreate([
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $mission->product()->update([
+                $mission->product()->updateOrCreate([
                     'type' => 'outside',
                     'image' => $product_image,
                     'brand' => $product_brand,
@@ -514,7 +514,8 @@ class MissionController extends Controller
             }
 
             if ($place_address && $place_title && $place_image) {
-                $mission->place()->update([
+                $mission->place()
+                    ->updateOrCreate([
                     'address' => $place_address,
                     'title' => $place_title,
                     'description' => $place_description,
@@ -527,7 +528,7 @@ class MissionController extends Controller
             return success(['result' => true]);
         } catch (Exception $e) {
             DB::rollBack();
-            exceped($e);
+            return exceped($e);
         }
     }
 
@@ -596,6 +597,7 @@ class MissionController extends Controller
                 $mission->mission_stats()->delete();
                 $data = $mission->delete();
 
+                DB::commit();
                 return success(['result' => true]);
             } else {
                 DB::rollBack();
