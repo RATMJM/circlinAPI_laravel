@@ -350,7 +350,7 @@ class ShopController extends Controller
  
   public function cart_list(Request $request): array
   {   
-      $user_id = 1;//token()->uid;
+      $user_id = token()->uid;
       
      try {
         DB::beginTransaction();
