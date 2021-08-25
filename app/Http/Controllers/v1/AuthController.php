@@ -135,7 +135,9 @@ class AuthController extends Controller
     public function login_user($user): array
     {
         try {
-            $data = Arr::except((new UserController())->index($user->id)['data'], 'result');
+            $data = User::where('users.id', $user->id)
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
 
             $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
 
@@ -144,8 +146,7 @@ class AuthController extends Controller
                 'last_login_at' => date('Y-m-d H:i:s', time()),
             ]);
 
-            return success(Arr::collapse([
-                [
+            return success([
                     'result' => true,
                     'token' => JWT::encode([
                         'iss' => 'https://www.circlin.co.kr',
@@ -154,8 +155,8 @@ class AuthController extends Controller
                         'nbf' => time(),
                         'uid' => $user->id,
                     ], env('JWT_SECRET')),
-                ], $data
-            ]));
+                    'user' => $data,
+                ]);
         } catch (Exception $e) {
             return exceped($e);
         }
