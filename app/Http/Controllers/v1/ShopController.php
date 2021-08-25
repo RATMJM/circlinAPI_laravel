@@ -474,11 +474,12 @@ class ShopController extends Controller
                                 VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id ,  $value['option_id'] ,  $value['price']  )) ;         
                                 //  VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->price)) ;    
                                 DB::commit();
-                              echo $value['option_id'];
+                             
                      }
                   } 
 
-            return success([ 'result' => $cartId[0]->id, ]);
+                  return success([
+                    'result' => true,    ]);
             
  
     }
