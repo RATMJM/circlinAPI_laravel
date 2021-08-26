@@ -131,9 +131,6 @@ class MissionCategoryController extends Controller
                 'missions.id',
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
             ])
-            ->withCount(['feeds' => function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            }])
             ->orderBy(DB::raw("event_order=0"))
             ->orderBy('event_order');
 
@@ -149,8 +146,8 @@ class MissionCategoryController extends Controller
 
         $data = Mission::joinSub($data, 'm', function ($query) {
             $query->on('m.id', 'missions.id');
-        })->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-        ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+        })->join('users', 'users.id', 'missions.user_id')
+            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
@@ -177,6 +174,9 @@ class MissionCategoryController extends Controller
                 'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
                 'places.image as place_image', 'places.url as place_url',
             ])
+            ->withCount(['feeds' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }])
             ->get();
 
         function mission_user($mission_id)
