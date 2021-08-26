@@ -17,7 +17,9 @@ use App\Models\MissionImage;
 use App\Models\MissionPlace;
 use App\Models\MissionProduct;
 use App\Models\MissionStat;
+use App\Models\OutsideProduct;
 use App\Models\Place;
+use App\Models\Product;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -195,6 +197,7 @@ class MissionController extends Controller
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->leftJoin('places', 'places.id', 'missions.place_id')
             ->select([
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
@@ -208,11 +211,11 @@ class MissionController extends Controller
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
                 'mission_products.type as product_type', 'mission_products.product_id',
-                DB::raw("IF(mission_products.type='inside', brands.name_ko, mission_products.brand) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', products.name_ko, mission_products.title) as product_title"),
-                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, mission_products.image) as product_image"),
-                'mission_products.url as product_url',
-                DB::raw("IF(mission_products.type='inside', products.price, mission_products.price) as product_price"),
+                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                'outside_products.url as product_url',
+                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
                 'places.image as place_image', 'places.url as place_url',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
@@ -253,7 +256,7 @@ class MissionController extends Controller
             })
             ->join('places', 'places.id', 'feeds.place_id')
             ->select([
-                'places.title', 'places.address', 'places.description',
+                'places.id', 'places.title', 'places.address', 'places.description',
                 'places.image', 'places.url',
                 DB::raw("COUNT(distinct feeds.id) as feed_total"),
             ])
@@ -265,17 +268,17 @@ class MissionController extends Controller
         if (count($places) > 0) {
             function place_feed($user_id, $place, $mission_id)
             {
-                return Place::where('places.title', $place->title)
+                return Place::where('places.id', $place->id)
                     ->whereExists(function ($query) use ($mission_id) {
                         $query->selectRaw(1)->from('feed_missions')
                             ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
                     })
                     ->whereNull('feeds.deleted_at')
-                    ->where(function ($query) use ($user_id) {
-                        $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
-                    })
-                    ->join('feeds', function ($query) {
-                        $query->on('feeds.place_id', 'places.id')->whereNull('deleted_at');
+                    ->join('feeds', function ($query) use ($user_id) {
+                        $query->on('feeds.place_id', 'places.id')->whereNull('deleted_at')
+                            ->where(function ($query) use ($user_id) {
+                                $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
+                            });
                     })
                     ->join('users', 'users.id', 'feeds.user_id')
                     ->select([
@@ -283,7 +286,7 @@ class MissionController extends Controller
                         'feeds.id', 'feeds.created_at', 'feeds.content',
                         'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                         'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                        'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+                        'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
                         'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                         'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                         'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
@@ -320,13 +323,19 @@ class MissionController extends Controller
                     });
             })
             ->join('feed_products', 'feed_products.feed_id', 'feeds.id')
+            ->leftJoin('products', 'products.id', 'feed_products.product_id')
+            ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
             ->select([
-                'feed_products.type', 'feed_products.product_id', 'feed_products.brand', 'feed_products.title',
-                'feed_products.image', 'feed_products.url', 'feed_products.price',
+                'feed_products.type as product_type', 'feed_products.product_id', 'feed_products.outside_product_id',
+                DB::raw("IF(feed_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                DB::raw("IF(feed_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                'outside_products.url as product_url',
+                DB::raw("IF(feed_products.type='inside', products.price, outside_products.price) as product_price"),
                 DB::raw("COUNT(distinct feeds.id) as feed_total"),
             ])
-            ->groupBy('feed_products.type', 'feed_products.product_id', 'feed_products.brand', 'feed_products.title',
-                'feed_products.image', 'feed_products.url', 'feed_products.price')
+            ->groupBy('feed_products.type', 'feed_products.product_id', 'feed_products.outside_product_id')
             ->orderBy('feed_total', 'desc')
             ->limit(3)
             ->get();
@@ -334,36 +343,69 @@ class MissionController extends Controller
         if (count($products) > 0) {
             function product_feed($user_id, $product, $mission_id)
             {
-                return FeedProduct::where('feed_products.title', $product->title)
-                    ->whereExists(function ($query) use ($mission_id) {
-                        $query->selectRaw(1)->from('feed_missions')
-                            ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
-                    })
-                    ->whereNull('feeds.deleted_at')
-                    ->where(function ($query) use ($user_id) {
-                        $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
-                    })
-                    ->join('feeds', function ($query) {
-                        $query->on('feeds.id', 'feed_products.feed_id')->whereNull('deleted_at');
-                    })
-                    ->join('users', 'users.id', 'feeds.user_id')
-                    ->select([
-                        'users.id as user_id', 'users.nickname', 'users.profile_image',
-                        'feeds.id', 'feeds.created_at', 'feeds.content',
-                        'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
-                        'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                        'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
-                        'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
-                        'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
-                        'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
-                        'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
-                        'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
-                            ->where('user_id', token()->uid),
-                        'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
-                            ->where('feed_comments.user_id', token()->uid),
-                    ])
-                    ->orderBy('id', 'desc')
-                    ->take(10);
+                return match ($product->product_type) {
+                    'inside' => Product::where('products.id', $product->product_id)
+                        ->whereExists(function ($query) use ($mission_id) {
+                            $query->selectRaw(1)->from('feed_missions')
+                                ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
+                        })
+                        ->where(function ($query) use ($user_id) {
+                            $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
+                        })
+                        ->join('feed_products', 'feed_products.product_id', 'products.id')
+                        ->join('feeds', function ($query) {
+                            $query->on('feeds.id', 'feed_products.feed_id')->whereNull('deleted_at');
+                        })
+                        ->join('users', 'users.id', 'feeds.user_id')
+                        ->select([
+                            'users.id as user_id', 'users.nickname', 'users.profile_image',
+                            'feeds.id', 'feeds.created_at', 'feeds.content',
+                            'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
+                            'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
+                            'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
+                            'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                            'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                            'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                            'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                            'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                                ->where('user_id', token()->uid),
+                            'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
+                                ->where('feed_comments.user_id', token()->uid),
+                        ])
+                        ->orderBy('id', 'desc')
+                        ->take(10),
+                    'outside' => OutsideProduct::where('outside_products.id', $product->outside_product_id)
+                        ->whereExists(function ($query) use ($mission_id) {
+                            $query->selectRaw(1)->from('feed_missions')
+                                ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
+                        })
+                        ->where(function ($query) use ($user_id) {
+                            $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
+                        })
+                        ->join('feed_products', 'feed_products.outside_product_id', 'outside_products.id')
+                        ->join('feeds', function ($query) {
+                            $query->on('feeds.id', 'feed_products.feed_id')->whereNull('deleted_at');
+                        })
+                        ->join('users', 'users.id', 'feeds.user_id')
+                        ->select([
+                            'users.id as user_id', 'users.nickname', 'users.profile_image',
+                            'feeds.id', 'feeds.created_at', 'feeds.content',
+                            'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
+                            'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
+                            'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
+                            'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                            'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                            'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                            'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                            'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                                ->where('user_id', token()->uid),
+                            'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
+                                ->where('feed_comments.user_id', token()->uid),
+                        ])
+                        ->orderBy('id', 'desc')
+                        ->take(10),
+                    default => null
+                };
             }
 
             $query = null;
