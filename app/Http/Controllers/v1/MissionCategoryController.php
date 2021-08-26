@@ -210,6 +210,7 @@ class MissionCategoryController extends Controller
         $user_id = token()->uid;
 
         $limit = $request->get('limit', 20);
+        $page = $request->get('page', 0);
 
         $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
             ->join('users', 'users.id', 'user_favorite_categories.user_id')
@@ -220,7 +221,7 @@ class MissionCategoryController extends Controller
                     ->where('user_id', $user_id),
             ])
             ->orderBy('follower', 'desc')->orderBy('user_favorite_categories.id')
-            ->take($limit)->get();
+            ->skip($page * $limit)->take($limit)->get();
 
         return success([
             'success' => true,

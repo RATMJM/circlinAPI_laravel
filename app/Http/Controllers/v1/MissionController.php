@@ -548,6 +548,7 @@ class MissionController extends Controller
         $user_id = token()->uid;
 
         $limit = $request->get('limit', 20);
+        $page = $request->get('page', 0);
 
         $users = MissionStat::where('mission_stats.mission_id', $mission_id)
             ->join('users', 'users.id', 'mission_stats.user_id')
@@ -560,7 +561,7 @@ class MissionController extends Controller
                     ->where('user_id', $user_id),
             ])
             ->orderBy('mission_feeds')->orderBy('follower', 'desc')->orderBy('id', 'desc')
-            ->take($limit)->get();
+            ->skip($page * $limit)->take($limit)->get();
 
         return success([
             'success' => true,
