@@ -17,6 +17,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\Place;
 use App\Models\PointHistory;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
@@ -568,10 +569,10 @@ class UserController extends Controller
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+                'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
-                'missions' => FeedPlace::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'missions' => Place::selectRaw("COUNT(1)")->whereColumn('id', 'feeds.place_id'),
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
                     ->orderBy('id')->limit(1),
                 'mission' => Mission::select('title')
