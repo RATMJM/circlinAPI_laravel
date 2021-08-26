@@ -625,12 +625,14 @@ class ShopController extends Controller
         $address = $request->get('address'); 
         $address_detail = $request->get('address_detail'); //상세주소
         $recipient_name = $request->get('recipient_name');  // 받는사람 이름 
-        $totalPrice = $request->get('totalPrice'); //구매총액               
+        $shipping_fee = $request->get('shipFee');
+        $price = $request->get('amount'); 
+        $totalPrice = $request->get('amountTotal'); //구매총액               
         $used_point = $request->get('used_point');// 사용한 포인트       
         $items = $request->get('items');   ;//option_id, price, product_id , qty
-        $options = $request->get('options'); 
+        // $options = $request->get('options'); 
         $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-        
+        $merchant_id = $request->get('merchantuid');
             // $user_id = 1;//; token()->uid;
             
             // // $product_id = $request->get('product_id'); 
@@ -721,8 +723,8 @@ class ShopController extends Controller
                         try {
                              
                             DB::beginTransaction();        
-                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, product_id, qty)
-                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $value['product_id'], $value['qty'])  ) ;
+                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
+                                                    VALUES(?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $price, $value['product_id'], $value['qty'])  ) ;
                                 
                             DB::commit();
                                  
