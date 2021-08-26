@@ -274,8 +274,12 @@ class ChatController extends Controller
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
                     ->join('users', 'users.id', 'user_id')->limit(1),
-                'latest_message' => ChatMessage::select('message')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
-                    ->orderBy('id', 'desc')->limit(1),
+                'latest_message' => ChatMessage::selectRaw("CASE WHEN type='chat' THEN message ".
+                        "WHEN type='feed' THEN IF(message is null, CONCAT(users.nickname, '님이 피드를 공유하셨습니다.'), message) ".
+                        "WHEN type='mission' THEN IF(message is null, CONCAT(users.nickname, '님이 미션을 공유하셨습니다.'), message) END")
+                    ->join('users', 'users.id', 'chat_messages.user_id')
+                    ->whereColumn('chat_room_id', 'chat_users.chat_room_id')
+                    ->orderBy('chat_messages.id', 'desc')->limit(1),
                 'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
                 'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
