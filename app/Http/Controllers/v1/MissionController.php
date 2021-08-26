@@ -44,7 +44,7 @@ class MissionController extends Controller
             $thumbnail = $request->file('thumbnail');
             $files = $request->file('files');
 
-            $success_count = $request->get('success_count');
+            $success_count = $request->get('success_count', 0);
 
             $product_id = $request->get('product_id');
             $product_brand = $request->get('product_brand');
@@ -152,26 +152,29 @@ class MissionController extends Controller
                     'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate([
+                    'brand' => $product_brand,
+                    'title' => $product_title,
+                ], [
+                    'image' => $product_image,
+                    'price' => $product_price,
+                    'url' => $product_url,
+                ]);
                 MissionProduct::create([
                     'mission_id' => $data->id,
                     'type' => 'outside',
-                    'image' => $product_image,
-                    'brand' => $product_brand,
-                    'title' => $product_title,
-                    'price' => $product_price,
-                    'url' => $product_url,
+                    'outside_product_id' => $product->id,
                 ]);
             }
 
             if ($place_address && $place_title && $place_image) {
-                MissionPlace::create([
-                    'mission_id' => $data->id,
+                $place = Place::updateOrCreate(['title' => $place_title], [
                     'address' => $place_address,
-                    'title' => $place_title,
                     'description' => $place_description,
                     'image' => $place_image,
                     'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
                 ]);
+                $data->update(['place_id' => $place->id]);
             }
 
             $this->invite($request, $data->id);

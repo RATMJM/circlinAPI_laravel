@@ -10,10 +10,11 @@ use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
-use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Mission;
 use App\Models\MissionStat;
+use App\Models\OutsideProduct;
+use App\Models\Place;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -141,26 +142,29 @@ class FeedController extends Controller
                     'product_id' => $product_id,
                 ]);
             } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate([
+                    'brand' => $product_brand,
+                    'title' => $product_title,
+                ], [
+                    'image' => $product_image,
+                    'price' => $product_price,
+                    'url' => $product_url,
+                ]);
                 FeedProduct::create([
                     'feed_id' => $feed->id,
                     'type' => 'outside',
-                    'image' => $product_image,
-                    'brand' => $product_brand,
-                    'title' => $product_title,
-                    'price' => $product_price,
-                    'url' => $product_url,
+                    'outside_product_id' => $product->id,
                 ]);
             }
 
             if ($place_address && $place_title && $place_image) {
-                FeedPlace::create([
-                    'feed_id' => $feed->id,
+                $place = Place::updateOrCreate(['title' => $place_title], [
                     'address' => $place_address,
-                    'title' => $place_title,
                     'description' => $place_description,
                     'image' => $place_image,
                     'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
                 ]);
+                $feed->update(['place_id' => $place->id]);
             }
 
             /*$noti = Follow::where(['target_id' => $user_id, 'feed_notify' => true])
