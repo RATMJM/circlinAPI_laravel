@@ -744,37 +744,37 @@ class ShopController extends Controller
                             if($value['opt1']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['price1'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['opt_price1'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt2']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['price2'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['opt_price2'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt3']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['price3'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['opt_price3'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt4']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['price4'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['opt_price4'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt5']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['price5'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt6']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['price6'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
                                 DB::commit();
                             }
                         }
