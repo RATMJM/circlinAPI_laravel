@@ -804,26 +804,26 @@ class ShopController extends Controller
             } //end of foreach 
   
 
-            try {
-                DB::beginTransaction();
+            // try {
+            //     DB::beginTransaction();
                 
-                foreach ($orderProduct as $key => $value) {
-                    $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
-                                        values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
-                        DB::commit();  
-                }
+            //     foreach ($orderProduct as $key => $value) {
+            //         $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+            //                             values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
+            //             DB::commit();  
+            //     }
                 
                               
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
+            // } catch (Exception $e) {
+            //     DB::rollBack();
+            //     return exceped($e);
+            // }
 
             try {
                 DB::beginTransaction();
                 
-                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name, phone, comment )
-                                values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
+                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, post_code, address, address_detail, recipient_name, phone, comment )
+                                values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
                 DB::commit();
  
                 return success([ 'result' => true,     ]);
