@@ -7,9 +7,10 @@ use App\Models\User;
 use App\Models\UserStat;
 use Exception;
 use Firebase\JWT\JWT;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -134,34 +135,28 @@ class AuthController extends Controller
     public function login_user($user): array
     {
         try {
+            $data = User::where('users.id', $user->id)
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
+
+            $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
+
             User::where('id', $user->id)->update([
                 'last_login_ip' => request()->server('REMOTE_ADDR'),
                 'last_login_at' => date('Y-m-d H:i:s', time()),
             ]);
 
-            $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
-
             return success([
-                'result' => true,
-                'token' => JWT::encode([
-                    'iss' => 'https://www.circlin.co.kr',
-                    'aud' => 'https://www.circlin.co.kr',
-                    'iat' => time(),
-                    'nbf' => time(),
-                    'uid' => $user->id,
-                ], env('JWT_SECRET')),
-                'user' => [
-                    'name' => $user->name,
-                    'nickname' => $user->nickname,
-                    'phone' => $user->phone,
-                    'point' => $user->point,
-                    'birthday' => $user_stat?->birth,
-                    'gender' => $user->gender,
-                    'height' => $user_stat?->height,
-                    'weight' => $user_stat?->weight,
-                    'bmi' => $user_stat?->bmi,
-                ],
-            ]);
+                    'result' => true,
+                    'token' => JWT::encode([
+                        'iss' => 'https://www.circlin.co.kr',
+                        'aud' => 'https://www.circlin.co.kr',
+                        'iat' => time(),
+                        'nbf' => time(),
+                        'uid' => $user->id,
+                    ], env('JWT_SECRET')),
+                    'user' => $data,
+                ]);
         } catch (Exception $e) {
             return exceped($e);
         }

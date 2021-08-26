@@ -198,7 +198,7 @@ class MissionController extends Controller
             ->select([
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
                 'missions.title', 'missions.description',
-                DB::raw("event_order > 0 as is_event"), 'missions.thumbnail_image',
+                DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
                 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
@@ -219,6 +219,9 @@ class MissionController extends Controller
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
+            ->withCount(['feeds' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }])
             ->first();
 
         if (is_null($data)) {
@@ -545,6 +548,7 @@ class MissionController extends Controller
         $user_id = token()->uid;
 
         $limit = $request->get('limit', 20);
+        $page = $request->get('page', 0);
 
         $users = MissionStat::where('mission_stats.mission_id', $mission_id)
             ->join('users', 'users.id', 'mission_stats.user_id')
@@ -557,7 +561,7 @@ class MissionController extends Controller
                     ->where('user_id', $user_id),
             ])
             ->orderBy('mission_feeds')->orderBy('follower', 'desc')->orderBy('id', 'desc')
-            ->take($limit)->get();
+            ->skip($page * $limit)->take($limit)->get();
 
         return success([
             'success' => true,

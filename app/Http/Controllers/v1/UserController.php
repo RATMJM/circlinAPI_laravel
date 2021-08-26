@@ -17,6 +17,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\PointHistory;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use App\Models\UserStat;
@@ -41,7 +42,6 @@ class UserController extends Controller
 
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->leftJoin('areas', 'areas.ctg_sm', 'users.area_code')
             ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
@@ -53,10 +53,24 @@ class UserController extends Controller
 
         $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
 
+        $yesterday_point = PointHistory::where('user_id', $user_id)
+            ->where('created_at', '>=', date('Y-m-d', time()))
+            ->where('point', '>', 0)
+            ->sum('point');
+
+        $yesterday_check = Feed::where('feeds.user_id', $user_id)
+            ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+            ->join('feed_likes', function ($query) {
+                $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('feed_likes.deleted_at');
+            })
+            ->count();
+
         return success([
             'result' => true,
             'user' => $user,
             'category' => $category,
+            'yesterday_point' => $yesterday_point,
+            'yesterday_check' => $yesterday_check,
             'badge' => $badge,
             'wallpapers' => $wallpapers,
         ]);
@@ -700,18 +714,33 @@ class UserController extends Controller
 
         $data = Mission::where('missions.user_id', $user_id)
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_comments as mc', 'mc.mission_id', 'missions.id')
+            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+            ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_id', 'missions.id'),
+                'mission_products.type as product_type', 'mission_products.product_id',
+                DB::raw("IF(mission_products.type='inside', brands.name_ko, mission_products.brand) as product_brand"),
+                DB::raw("IF(mission_products.type='inside', products.name_ko, mission_products.title) as product_title"),
+                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, mission_products.image) as product_image"),
+                'mission_products.url as product_url',
+                DB::raw("IF(mission_products.type='inside', products.price, mission_products.price) as product_price"),
+                'mission_places.address as place_address', 'mission_places.title as place_title', 'mission_places.description as place_description',
+                'mission_places.image as place_image', 'mission_places.url as place_url',
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
+            ->withCount(['feeds' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }])
             ->orderBy('id', 'desc')->take($limit)->get();
 
         if (count($data)) {

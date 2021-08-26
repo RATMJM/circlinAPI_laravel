@@ -32,18 +32,23 @@ class BookmarkController extends Controller
             ->select([
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
-                DB::raw("event_order > 0 as is_event"), 'missions.thumbnail_image',
+                DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d', time()))
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
             ])
+            ->withCount(['feeds' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }])
             ->orderBy('has_check')
             ->orderBy(DB::raw("event_order=0"))
             ->orderBy('event_order')
