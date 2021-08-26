@@ -660,8 +660,7 @@ class ShopController extends Controller
             //         'opt_price2'=> 12,
             //         'opt_price3'=> 13,
             //         'opt_price4'=> 14,
-            //         'opt_price5'=> 15,
-            //         'opt_price6'=> '',
+            //         'opt_price5'=> 15, 
             //         'product_id'=> 59,
             //         'qty'=>'68'
             //       ],
@@ -676,8 +675,7 @@ class ShopController extends Controller
             //         'opt_price2'=> 22,
             //         'opt_price3'=> 23,
             //         'opt_price4'=> 24,
-            //         'opt_price5'=> 25,
-            //         'opt_price6'=> '',
+            //         'opt_price5'=> 25, 
             //         'product_id'=> 58,
             //         'qty'=>'78'
             //       ],
@@ -692,8 +690,7 @@ class ShopController extends Controller
             //         'opt_price2'=> '',
             //         'opt_price3'=> '',
             //         'opt_price4'=> '',
-            //         'opt_price5'=> '',
-            //         'opt_price6'=> '',
+            //         'opt_price5'=> '', 
             //         'price'=> 34,
             //         'product_id'=> 57,
             //         'qty'=>'178'
@@ -771,12 +768,12 @@ class ShopController extends Controller
                                 VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
                                 DB::commit();
                             }
-                            if($value['opt6']){
-                                DB::beginTransaction();        
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
-                                DB::commit();
-                            }
+                            // if($value['opt6']){
+                            //     DB::beginTransaction();        
+                            //     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                            //     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
+                            //     DB::commit();
+                            // }
                         }
                     } 
                     catch (Exception $e) {
