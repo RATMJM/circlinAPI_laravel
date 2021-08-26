@@ -635,7 +635,8 @@ class ShopController extends Controller
         $items          = $request->get('items');  //option_id, price, product_id , qty
         $imp_id         = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
         $merchant_id    = $request->get('merchantuid');
-             
+            // $phone='11-1';
+            // $comment='cccc';
             // $post_code = '123';//$request->get('post_code'); 
             // $address = 'ㄹㄹㄹ';//$request->get('address'); 
             // $address_detail = 'ㄴㅇㄻㅇ';//$request->get('address_detail'); //상세주소
@@ -665,7 +666,10 @@ class ShopController extends Controller
             //         'opt_price4'=> 14,
             //         'opt_price5'=> 15, 
             //         'product_id'=> 59,
-            //         'qty'=>'68'
+            //         'qty'=>'68',
+            //         'sale_price'=>'555',
+            //         'brand_id'=>'2',
+            //         'shipping_fee'=>'4000',
             //       ],
             //       [
             //         "opt1" => 180,
@@ -680,7 +684,10 @@ class ShopController extends Controller
             //         'opt_price4'=> 24,
             //         'opt_price5'=> 25, 
             //         'product_id'=> 58,
-            //         'qty'=>'78'
+            //         'qty'=>'78',
+            //         'sale_price'=>'666',
+            //         'brand_id'=>'1',
+            //         'shipping_fee'=>'5000',
             //       ],
             //       [
             //         "opt1" => '',
@@ -696,7 +703,10 @@ class ShopController extends Controller
             //         'opt_price5'=> '', 
             //         'price'=> 34,
             //         'product_id'=> 57,
-            //         'qty'=>'178'
+            //         'qty'=>'178',
+            //         'sale_price'=>'777',
+            //         'brand_id'=>'3',
+            //         'shipping_fee'=>'3000',
             //       ]);
 
                  
@@ -723,7 +733,7 @@ class ShopController extends Controller
                             DB::beginTransaction();  
                            
                                 $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderId[0]->id ,  $value['price1'], $value['product_id'], $value['qty'])  ) ;
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderId[0]->id ,  $value['sale_price'], $value['product_id'], $value['qty'])  ) ;
                             
                             if($value['shipping_fee']>0){
                                 $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, brand_id, qty)
@@ -740,58 +750,58 @@ class ShopController extends Controller
                         } 
                                            
             } //end of foreach 
+return array('true');
+            // $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
+            // where  order_id=?   ; ', array($orderId[0]->id)  ) ;
 
-            $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
-            where  order_id=?   ; ', array($orderId[0]->id)  ) ;
-
-            foreach ($items as $key => $value){   // order_products , order_product_options
-                foreach ($orderProduct as $key2 => $value2){
-                    try {
-                        if( $value['product_id']==$orderProduct[$key2]->product_id ){
-                            if($value['opt1']){
-                                DB::beginTransaction();        
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['opt_price1'] )) ;     
-                                DB::commit();
-                            }
-                            if($value['opt2']){
-                                DB::beginTransaction();        
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['opt_price2'] )) ;     
-                                DB::commit();
-                            }
-                            if($value['opt3']){
-                                DB::beginTransaction();        
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['opt_price3'] )) ;     
-                                DB::commit();
-                            }
-                            if($value['opt4']){
-                                DB::beginTransaction();        
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['opt_price4'] )) ;     
-                                DB::commit();
-                            }
-                            if($value['opt5']){
-                                DB::beginTransaction();        
-                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
-                                DB::commit();
-                            }
-                            // if($value['opt6']){
-                            //     DB::beginTransaction();        
-                            //     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                            //     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
-                            //     DB::commit();
-                            // }
-                        }
-                    } 
-                    catch (Exception $e) {
-                        DB::rollBack();
-                        return exceped($e); 
-                    } 
-                }                    
-            } //end of foreach 
+            // foreach ($items as $key => $value){   // order_products , order_product_options
+            //     foreach ($orderProduct as $key2 => $value2){
+            //         try {
+            //             if( $value['product_id']==$orderProduct[$key2]->product_id ){
+            //                 if($value['opt1']){
+            //                     DB::beginTransaction();        
+            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['opt_price1'] )) ;     
+            //                     DB::commit();
+            //                 }
+            //                 if($value['opt2']){
+            //                     DB::beginTransaction();        
+            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['opt_price2'] )) ;     
+            //                     DB::commit();
+            //                 }
+            //                 if($value['opt3']){
+            //                     DB::beginTransaction();        
+            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['opt_price3'] )) ;     
+            //                     DB::commit();
+            //                 }
+            //                 if($value['opt4']){
+            //                     DB::beginTransaction();        
+            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['opt_price4'] )) ;     
+            //                     DB::commit();
+            //                 }
+            //                 if($value['opt5']){
+            //                     DB::beginTransaction();        
+            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
+            //                     DB::commit();
+            //                 }
+            //                 // if($value['opt6']){
+            //                 //     DB::beginTransaction();        
+            //                 //     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+            //                 //     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
+            //                 //     DB::commit();
+            //                 // }
+            //             }
+            //         } 
+            //         catch (Exception $e) {
+            //             DB::rollBack();
+            //             return exceped($e); 
+            //         } 
+            //     }                    
+            // } //end of foreach 
   
 
             // try {
@@ -809,19 +819,19 @@ class ShopController extends Controller
             //     return exceped($e);
             // }
 
-            try {
-                DB::beginTransaction();
+            // try {
+            //     DB::beginTransaction();
                 
-                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name, phone, comment )
-                                values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
-                DB::commit();
+            //     $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name, phone, comment )
+            //                     values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
+            //     DB::commit();
  
-                return success([ 'result' => true,     ]);
+            //     return success([ 'result' => true,     ]);
                               
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
+            // } catch (Exception $e) {
+            //     DB::rollBack();
+            //     return exceped($e);
+            // }
             
 
             
