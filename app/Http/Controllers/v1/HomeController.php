@@ -9,14 +9,9 @@ use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
-use App\Models\FeedMission;
-use App\Models\FeedPlace;
-use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
-use App\Models\MissionCategory;
 use App\Models\MissionStat;
-use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -34,27 +29,59 @@ class HomeController extends Controller
         $tabs = [];
         foreach ($category_id as $id) {
             // $tmp = $id === 0 ? $category_id : $id;
-            $places = Place::where('missions.mission_category_id', $id)
-                ->join('feeds', 'feeds.place_id', 'places.id')
-                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                ->join('missions', 'missions.id', 'feed_missions.mission_id')
+            DB::enableQueryLog();
+            $places = Mission::when($id, function ($query, $id) {
+                $query->where('missions.mission_category_id', $id);
+            })
+                ->when($category_id === 0, function ($query) {
+                    $query->where('event_order', '>', 0);
+                })
+                ->join('places', 'places.id', 'missions.place_id')
                 ->select([
-                    'places.title',
-                    DB::raw("COUNT(distinct feed_missions.mission_id) as missions_count"),
+                    'places.id', 'places.address', 'places.title', 'places.description',
+                    'places.image', 'places.url',
+                    DB::raw("COUNT(distinct missions.id) as missions_count"),
                 ])
-                ->groupBy('places.title')
+                ->groupBy('places.id')
+                ->orderBy('missions_count', 'desc')
+                ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
+                ->get();
+
+            $products = Mission::when($id, function ($query, $id) {
+                $query->where('missions.mission_category_id', $id);
+            })
+                ->when($category_id === 0, function ($query) {
+                    $query->where('event_order', '>', 0);
+                })
+                ->join('mission_products', 'mission_products.mission_id', 'missions.id')
+                ->leftJoin('products', 'products.id', 'mission_products.product_id')
+                ->leftJoin('brands', 'brands.id', 'products.brand_id')
+                ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+                ->select([
+                    'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id',
+                    DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as brand"),
+                    DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as title"),
+                    DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as image"),
+                    'outside_products.url as url',
+                    DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as price"),
+                    DB::raw("COUNT(distinct missions.id) as missions_count"),
+                ])
+                ->groupBy('type', 'product_id', 'outside_product_id')
+                ->orderBy('missions_count', 'desc')
+                ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
                 ->get();
 
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($id),
                 'places' => $places,
+                'products' => $products,
                 'mission_total' => Mission::where(function ($query) {
                     $query->whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'));
                 })
-                ->when($id, function ($query, $id) {
-                    $query->whereIn('mission_category_id', Arr::wrap($id));
-                })->count(),
+                    ->when($id, function ($query, $id) {
+                        $query->whereIn('mission_category_id', Arr::wrap($id));
+                    })->count(),
                 'missions' => (new MissionCategoryController())->mission($request, $id, 3)['data']['missions'],
             ];
             break; // 첫번째 탭만 가져오도록
