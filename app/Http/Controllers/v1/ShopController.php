@@ -288,9 +288,10 @@ class ShopController extends Controller
        try {
           DB::beginTransaction();
           
-                $orderList = DB::select('select f.id as product_id,
+                $orderList = DB::select('select a.id as order_id, f.id as product_id,
                 ORDER_NO, a.total_price, f.name_ko as product_name, g.name_ko as brand_name, f.thumbnail_image, f.code, a.created_at as order_time,
-                h.id as feed_product_id,  "" SELECT_YN, b.qty, e.status,
+                h.id as feed_product_id,  "" SELECT_YN, b.qty, 
+                case when e.tracking_no is null then "상품준비중" else case when e.completed_at is null then "배송중" else "배송완료" end end as status ,
                 concat(
                 (opt1.name_ko  ) , " / ",
                 (opt2.name_ko  ) , " / ",
@@ -307,19 +308,20 @@ class ShopController extends Controller
                 LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 2,1 ) opt3 ON opt3.order_product_id=b.id
                 LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 3,1 ) opt4 ON opt4.order_product_id=b.id
                 LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 4,1 ) opt5 ON opt5.order_product_id=b.id
-                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 5,1 ) opt6 ON opt6.order_product_id=b.id,
-                
+                LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 5,1 ) opt6 ON opt6.order_product_id=b.id
+                LEFT JOIN order_product_deliveries e on  b.id=e.order_product_id,
                 order_destinations d,
-                order_product_deliveries e,
-                products f LEFT JOIN feed_products h ON f.id=h.product_id ,
+                  
+                products f LEFT JOIN feed_products h ON f.id=h.product_id,
                 brands g
                 where
                 a.id=b.order_id
-                and a.id=d.order_id
-                and b.id=e.order_product_id
+                and a.id=d.order_id 
                 and f.id=b.product_id
+                
                 and f.brand_id = g.id
-                and a.user_id=?
+                and a.user_id=? 
+                order by a.id desc , product_id desc
                 ;', array($user_id)  ) ;
               
 
@@ -619,7 +621,8 @@ class ShopController extends Controller
     public function order_product(Request $request): array
     {   
         $user_id = token()->uid;
-            
+        $phone = $request->get('receivePhone');
+        $comment = $request->get('request');    
         $product_id     = $request->get('product_id'); 
         $post_code      = $request->get('post_code'); 
         $address        = $request->get('address'); 
@@ -718,8 +721,8 @@ class ShopController extends Controller
                         try {
                              
                             DB::beginTransaction();        
-                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $price, $value['product_id'], $value['qty'])  ) ;
+                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty, brand_id)
+                                                    VALUES(?, ?, ?, ?, ?, ?, ); ', array($time, $time, $orderId[0]->id , $price, $value['product_id'], $value['qty'], $value['brand_id'])  ) ;
                                 
                             DB::commit();
                                  
@@ -778,32 +781,32 @@ class ShopController extends Controller
                     } 
                     catch (Exception $e) {
                         DB::rollBack();
-                        return exceped($e);
+                        return exceped($e); 
                     } 
                 }                    
             } //end of foreach 
   
 
-            try {
-                DB::beginTransaction();
+            // try {
+            //     DB::beginTransaction();
                 
-                foreach ($orderProduct as $key => $value) {
-                    $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
-                                        values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
-                        DB::commit();  
-                }
+            //     foreach ($orderProduct as $key => $value) {
+            //         $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+            //                             values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
+            //             DB::commit();  
+            //     }
                 
                               
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
+            // } catch (Exception $e) {
+            //     DB::rollBack();
+            //     return exceped($e);
+            // }
 
             try {
                 DB::beginTransaction();
                 
-                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
-                                values(?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name)  ) ;
+                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name, phone, comment )
+                                values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
                 DB::commit();
  
                 return success([ 'result' => true,     ]);
