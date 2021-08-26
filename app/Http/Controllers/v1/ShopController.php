@@ -823,7 +823,7 @@ class ShopController extends Controller
                 DB::beginTransaction();
                 
                 $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, post_code, address, address_detail, recipient_name, phone, comment )
-                                values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
+                                values(?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
                 DB::commit();
  
                 return success([ 'result' => true,     ]);
