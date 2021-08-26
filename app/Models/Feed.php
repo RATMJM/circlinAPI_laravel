@@ -53,6 +53,6 @@ class Feed extends Model
 
     public function place()
     {
-        return $this->hasOne(FeedPlace::class);
+        return $this->belongsTo(Place::class);
     }
 }
