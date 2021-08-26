@@ -629,7 +629,7 @@ class ShopController extends Controller
         $price = $request->get('amount'); 
         $totalPrice = $request->get('amountTotal'); //구매총액               
         $used_point = $request->get('used_point');// 사용한 포인트       
-        $items = $request->get('items');   ;//option_id, price, product_id , qty
+        $items = $request->get('items');  //option_id, price, product_id , qty
         $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
         $merchant_id = $request->get('merchantuid');
             // $user_id = 1;//; token()->uid;
