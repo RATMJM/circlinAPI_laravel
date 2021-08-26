@@ -477,52 +477,235 @@ class ShopController extends Controller
  
     }
 
-    //상품주문
+    // //상품주문
+    // public function order_product(Request $request): array
+    // {   
+    //         $user_id = 1;//; token()->uid;
+            
+    //         // $product_id = $request->get('product_id'); 
+    //         $post_code = '111';//$request->get('post_code'); 
+    //         $address = '주소';//$request->get('address'); 
+    //         $address_detail = '상세';//$request->get('address_detail'); //상세주소
+    //         $recipient_name = '박태정';// $request->get('recipient_name');  // 받는사람 이름 
+    //         $totalPrice = '9999';//$request->get('totalPrice'); //구매총액               
+    //         $used_point = '111';//$request->get('used_point');// 사용한 포인트       
+    //         // $items = $request->get('items');   ;//option_id, price, product_id , qty
+    //         $options = $request->get('options'); 
+    //         $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+    //         $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
+            
+    //         $time = date("Y-m-d H:i:s");
+    //         $orderNo=date("Ymdhis").'_'.$user_id; 
+        
+    //          $items =   
+    //               array([
+    //                 "option_id" => 281,
+    //                 'price'=> 14,
+    //                 'product_id'=> 59,
+    //                 'qty'=>'68'
+    //               ],
+    //               [
+    //                 "option_id" => 280,
+    //                 'price'=> 24,
+    //                 'product_id'=> 59,
+    //                 'qty'=>'78'
+    //               ],
+    //               [
+    //                 "option_id" => '',
+    //                 'price'=> 34,
+    //                 'product_id'=> 59,
+    //                 'qty'=>'178'
+    //               ]);
+
+    //             $options =   
+    //             array([
+    //             "option_id" => 281,
+    //             'price'=> 14,
+    //             'product_id'=> 59,
+              
+    //             ],
+    //             [
+    //             "option_id" => 280,
+    //             'price'=> 24,
+    //             'product_id'=> 59,
+               
+    //             ],
+    //             [
+    //             "option_id" => '',
+    //             'price'=> 34,
+    //             'product_id'=> 59,
+                
+    //             ]);
+                 
+    //         try {
+    //             DB::beginTransaction();
+                
+    //             $order = DB::insert(' 
+    //             INSERT into orders(created_at, updated_at, order_no, user_id, total_price)
+    //                                     values(?, ?, ?, ?, ? ); ', array($time, $time, $orderNo , $user_id, $totalPrice)  ) ;
+                    
+    //             DB::commit();
+            
+    //             $orderId = DB::select('select id from orders
+    //                                     where user_id=? and order_no=? order by id desc limit 1; ', array($user_id, $orderNo)  ) ;
+                             
+    //         } catch (Exception $e) {
+    //             DB::rollBack();
+    //             return exceped($e);
+    //         }
+    //         foreach ($items as $key3 => $value3) {   
+    //                     try {
+                             
+    //                         DB::beginTransaction();        
+    //                         $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, product_id, qty)
+    //                                                 VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $value3['product_id'], $value3['qty'])  ) ;
+                                
+    //                         DB::commit();
+                            
+    //                         $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
+    //                                                 where  order_id=? order by id desc limit 1 ; ', array($orderId[0]->id)  ) ;
+                            
+    //                             // foreach ($options as $key => $value){ // 아이템 옵션리스트 선택된 1번옵션의 두번쨰
+    //                             //     foreach ($orderProduct as $key2 => $value2) { // 주문서의 아이템정보
+    //                             //         // print_r( $value['product_id'])    ;
+    //                             //         if( $value['product_id']==$orderProduct[$key2]->product_id && $value3['product_id']==$orderProduct[$key2]->product_id  ){
+    //                             //             if($value['option_id']){
+    //                             //                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+    //                             //                                 VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['option_id'], $value['price'] )) ;            
+    //                             //             DB::commit();                                
+    //                             //             }
+    //                             //         };                       
+    //                             //     }
+    //                             // }
+    //                             foreach ($options as $key => $value){ // 아이템 옵션리스트 선택된 1번옵션의 두번쨰
+    //                                 foreach ($orderProduct as $key2 => $value2) { // 주문서의 아이템정보
+    //                                     // print_r( $value['product_id'])    ;
+    //                                     if( $value3['product_id']==$orderProduct[$key2]->product_id ){
+    //                                         if($value['option_id']){
+    //                                             $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+    //                                                             VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['option_id'], $key )) ;            
+    //                                         DB::commit();                                
+    //                                         }
+    //                                     };                       
+    //                                 }
+    //                             }
+                                
+    //                     } 
+    //                     catch (Exception $e) {
+    //                         DB::rollBack();
+    //                         return exceped($e);
+    //                     } 
+             
+                                          
+    //         } //end of foreach 
+
+    //         foreach ($orderProduct as $key4 => $value4) {
+    //             $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+    //                                 values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key4]->id , $orderProduct[$key4]->qty , 0 , 'request')  ) ;
+    //                 DB::commit();  
+    //             }
+
+    //                     $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
+    //                                         values(?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name)  ) ;
+    //                     DB::commit();
+
+            
+    //                     return success([
+    //                         'result' => true,     ]);
+                                          
+    // }
+ 
+ //상품주문
     public function order_product(Request $request): array
     {   
-            $user_id = token()->uid;
+        $user_id = token()->uid;
             
-            $product_id = $request->get('product_id'); 
-            $post_code = $request->get('post_code'); 
-            $address = $request->get('address'); 
-            $address_detail = $request->get('address_detail'); //상세주소
-            $recipient_name =  $request->get('recipient_name');  // 받는사람 이름
-            $qty = $request->get('qty'); //아이템수량 
-            $totalPrice = $request->get('totalPrice'); //구매총액               
-            $used_point = $request->get('used_point');// 사용한 포인트       
-            $options = $request->get('options');   ;//option_id, price, product_id 
-              //   price recipient_name post_code  address address_detail           
-     
-            // $amount = $allPostPutVars[amount];  // 결제 된 총액
-            $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-            $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
-            // $option1 = $allPostPutVars[option1];// COMMON_CODE 의 SEQ
+        // $product_id = $request->get('product_id'); 
+        $post_code = $request->get('post_code'); 
+        $address = $request->get('address'); 
+        $address_detail = $request->get('address_detail'); //상세주소
+        $recipient_name = $request->get('recipient_name');  // 받는사람 이름 
+        $totalPrice = $request->get('totalPrice'); //구매총액               
+        $used_point = $request->get('used_point');// 사용한 포인트       
+        $items = $request->get('items');   ;//option_id, price, product_id , qty
+        $options = $request->get('options'); 
+        $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+        
+            // $user_id = 1;//; token()->uid;
+            
+            // // $product_id = $request->get('product_id'); 
+            // $post_code = '111';//$request->get('post_code'); 
+            // $address = '주소';//$request->get('address'); 
+            // $address_detail = '상세';//$request->get('address_detail'); //상세주소
+            // $recipient_name = '박태정';// $request->get('recipient_name');  // 받는사람 이름 
+            // $totalPrice = '9999';//$request->get('totalPrice'); //구매총액               
+            // $used_point = '111';//$request->get('used_point');// 사용한 포인트       
+            // // $items = $request->get('items');   ;//option_id, price, product_id , qty
+            // $options = $request->get('options'); 
+            // $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+            // $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
+            
             $time = date("Y-m-d H:i:s");
             $orderNo=date("Ymdhis").'_'.$user_id; 
         
-            //  $options =   
+            //  $items =   
             //       array([
-            //         "option_id" => 281,
-            //         'price'=> 14,
-            //         'product_id'=> 59
+            //         "opt1" => 281,
+            //         "opt2" => 282,
+            //         "opt3" => 275,
+            //         "opt4" => 276,
+            //         "opt5" => 280,
+            //         "opt6" => '',
+            //         'price1'=> 11,
+            //         'price2'=> 12,
+            //         'price3'=> 13,
+            //         'price4'=> 14,
+            //         'price5'=> 15,
+            //         'price6'=> '',
+            //         'product_id'=> 59,
+            //         'qty'=>'68'
             //       ],
             //       [
-            //         "option_id" => 280,
-            //         'price'=> 24,
-            //         'product_id'=> 59
+            //         "opt1" => 180,
+            //         "opt2" => 184,
+            //         "opt3" => 183,
+            //         "opt4" => 182,
+            //         "opt5" => 181,
+            //         "opt6" => '',
+            //         'price1'=> 21,
+            //         'price2'=> 22,
+            //         'price3'=> 23,
+            //         'price4'=> 24,
+            //         'price5'=> 25,
+            //         'price6'=> '',
+            //         'product_id'=> 58,
+            //         'qty'=>'78'
             //       ],
             //       [
-            //         "option_id" => '',
+            //         "opt1" => '',
+            //         "opt2" => '',
+            //         "opt3" => '',
+            //         "opt4" => '',
+            //         "opt5" => '',
+            //         "opt6" => '',
+            //         'price1'=> '',
+            //         'price2'=> '',
+            //         'price3'=> '',
+            //         'price4'=> '',
+            //         'price5'=> '',
+            //         'price6'=> '',
             //         'price'=> 34,
-            //         'product_id'=> 59
+            //         'product_id'=> 57,
+            //         'qty'=>'178'
             //       ]);
+
                  
             try {
                 DB::beginTransaction();
                 
                 $order = DB::insert(' 
-                INSERT into orders(created_at, updated_at, order_no, user_id, total_price)
-                                        values(?, ?, ?, ?, ? ); ', array($time, $time, $orderNo , $user_id, $totalPrice)  ) ;
+                INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id)
+                                        values(?, ?, ?, ?, ? ); ', array($time, $time, $orderNo , $user_id, $totalPrice, $imp_id)  ) ;
                     
                 DB::commit();
             
@@ -533,68 +716,93 @@ class ShopController extends Controller
                 DB::rollBack();
                 return exceped($e);
             }
-            
-            try {
-                DB::beginTransaction();        
-                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, product_id, qty)
-                                        VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $product_id, $qty)  ) ;
-                    
-                DB::commit();
-                
-                $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
-                                        where  order_id=? ; ', 
-                                       
-                                          array($orderId[0]->id)  ) ;
-                        
-                        
-                    //     echo $orderProduct_id[0]->id;
- 
-                    // foreach($orderProduct as $key2 => $value)
-                    // {
-                    //     echo $orderProduct[$key2]->product_id ."<br/>";
-                    // }
-                    //foreach($items as $key => $value)
-                    // {
-                    //     echo $items[$key]->product_id ."<br/>";
-                    // }
-        
-                    foreach ($options as $key => $value){ // 아이템 옵션리스트 선택된 1번옵션의 두번쨰
-                        foreach ($orderProduct as $key2 => $value2) { // 주문서의 아이템정보
-                            // print_r( $value['product_id'])    ;
-                            if( $value['product_id']==$orderProduct[$key2]->product_id ){
-                                if($value['option_id']){
-                                    $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['option_id'], $value['price'] )) ;            
-                                DB::commit();                                
-                                }
-                            };                       
-                        }
-                    }
 
-                    foreach ($orderProduct as $key2 => $value2) { // 주문서의 아이템정보
-                        // print_r( $value['product_id'])    ;
-                        $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
-                                                    values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key2]->id , $orderProduct[$key2]->qty, 0 , 'request')  ) ;
-                                DB::commit();                    
-                    }
+            foreach ($items as $key => $value) {   // order_products , order_product_options
+                        try {
+                             
+                            DB::beginTransaction();        
+                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, product_id, qty)
+                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $value['product_id'], $value['qty'])  ) ;
+                                
+                            DB::commit();
+                                 
+                        } 
+                        catch (Exception $e) {
+                            DB::rollBack();
+                            return exceped($e);
+                        } 
+                                           
+            } //end of foreach 
 
-                    
- 
-                    
-                    $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
-                                                    values(?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name)  ) ;
+            $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
+            where  order_id=?   ; ', array($orderId[0]->id)  ) ;
+
+            foreach ($items as $key => $value){   // order_products , order_product_options
+                foreach ($orderProduct as $key2 => $value2){
+                    try {
+                        if( $value['product_id']==$orderProduct[$key2]->product_id ){
+                            if($value['opt1']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['price1'] )) ;     
                                 DB::commit();
+                            }
+                            if($value['opt2']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['price2'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt3']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['price3'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt4']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['price4'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt5']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['price5'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt6']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['price6'] )) ;     
+                                DB::commit();
+                            }
+                        }
+                    } 
+                    catch (Exception $e) {
+                        DB::rollBack();
+                        return exceped($e);
+                    } 
+                }                    
+            } //end of foreach 
+  
 
-                    
-                                return success([
-                                    'result' => true,     ]);
+            foreach ($orderProduct as $key4 => $value4) {
+                $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+                                    values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key4]->id , $orderProduct[$key4]->qty , 0 , 'request')  ) ;
+                    DB::commit();  
             }
-            catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            } 
+
+            $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
+                                values(?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name)  ) ;
+            DB::commit();
+
+
+            return success([
+                'result' => true,     ]);
+                                          
     }
- 
+
     //상품 상세정보내역 조회
     public function product_detail(Request $request): array
     {   
