@@ -620,30 +620,30 @@ class ShopController extends Controller
     {   
         $user_id = token()->uid;
             
-        // $product_id = $request->get('product_id'); 
+        $product_id = $request->get('product_id'); 
         $post_code = $request->get('post_code'); 
         $address = $request->get('address'); 
         $address_detail = $request->get('address_detail'); //상세주소
         $recipient_name = $request->get('recipient_name');  // 받는사람 이름 
-        $totalPrice = $request->get('totalPrice'); //구매총액               
+        $shipping_fee = $request->get('shipFee');
+        $price = $request->get('amount'); 
+        $totalPrice = $request->get('amountTotal'); //구매총액               
         $used_point = $request->get('used_point');// 사용한 포인트       
-        $items = $request->get('items');   ;//option_id, price, product_id , qty
-        $options = $request->get('options'); 
+        $items = $request->get('items');  //option_id, price, product_id , qty
         $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-        
-            // $user_id = 1;//; token()->uid;
-            
-            // // $product_id = $request->get('product_id'); 
-            // $post_code = '111';//$request->get('post_code'); 
-            // $address = '주소';//$request->get('address'); 
-            // $address_detail = '상세';//$request->get('address_detail'); //상세주소
-            // $recipient_name = '박태정';// $request->get('recipient_name');  // 받는사람 이름 
-            // $totalPrice = '9999';//$request->get('totalPrice'); //구매총액               
-            // $used_point = '111';//$request->get('used_point');// 사용한 포인트       
-            // // $items = $request->get('items');   ;//option_id, price, product_id , qty
-            // $options = $request->get('options'); 
-            // $imp_uid = '1113';//$allPostPutVars[impuid];  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-            // $merchant_uid = '114';//$allPostPutVars[merchantuid]; // 가맹점 주문번호(우리주문번호)
+        $merchant_id = $request->get('merchantuid');
+             
+            // $post_code = '123';//$request->get('post_code'); 
+            // $address = 'ㄹㄹㄹ';//$request->get('address'); 
+            // $address_detail = 'ㄴㅇㄻㅇ';//$request->get('address_detail'); //상세주소
+            // $recipient_name = 'ㅇㄹㄹ';//$request->get('recipient_name');  // 받는사람 이름 
+            // $shipping_fee = '3000'; //$request->get('shipFee');
+            // $price ='99999' ;// $request->get('amount'); 
+            // $totalPrice = '333';//$request->get('amountTotal'); //구매총액               
+            // $used_point = '11';// $request->get('used_point');// 사용한 포인트       
+            // // $items = 11;//$request->get('items');  //option_id, price, product_id , qty
+            // $imp_id = 'ㅇㄹ3';//$request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+            // $merchant_id = 'ㄹㄷ14';//$request->get('merchantuid');
             
             $time = date("Y-m-d H:i:s");
             $orderNo=date("Ymdhis").'_'.$user_id; 
@@ -656,12 +656,12 @@ class ShopController extends Controller
             //         "opt4" => 276,
             //         "opt5" => 280,
             //         "opt6" => '',
-            //         'price1'=> 11,
-            //         'price2'=> 12,
-            //         'price3'=> 13,
-            //         'price4'=> 14,
-            //         'price5'=> 15,
-            //         'price6'=> '',
+            //         'opt_price1'=> 11,
+            //         'opt_price2'=> 12,
+            //         'opt_price3'=> 13,
+            //         'opt_price4'=> 14,
+            //         'opt_price5'=> 15,
+            //         'opt_price6'=> '',
             //         'product_id'=> 59,
             //         'qty'=>'68'
             //       ],
@@ -672,12 +672,12 @@ class ShopController extends Controller
             //         "opt4" => 182,
             //         "opt5" => 181,
             //         "opt6" => '',
-            //         'price1'=> 21,
-            //         'price2'=> 22,
-            //         'price3'=> 23,
-            //         'price4'=> 24,
-            //         'price5'=> 25,
-            //         'price6'=> '',
+            //         'opt_price1'=> 21,
+            //         'opt_price2'=> 22,
+            //         'opt_price3'=> 23,
+            //         'opt_price4'=> 24,
+            //         'opt_price5'=> 25,
+            //         'opt_price6'=> '',
             //         'product_id'=> 58,
             //         'qty'=>'78'
             //       ],
@@ -688,12 +688,12 @@ class ShopController extends Controller
             //         "opt4" => '',
             //         "opt5" => '',
             //         "opt6" => '',
-            //         'price1'=> '',
-            //         'price2'=> '',
-            //         'price3'=> '',
-            //         'price4'=> '',
-            //         'price5'=> '',
-            //         'price6'=> '',
+            //         'opt_price1'=> '',
+            //         'opt_price2'=> '',
+            //         'opt_price3'=> '',
+            //         'opt_price4'=> '',
+            //         'opt_price5'=> '',
+            //         'opt_price6'=> '',
             //         'price'=> 34,
             //         'product_id'=> 57,
             //         'qty'=>'178'
@@ -704,8 +704,8 @@ class ShopController extends Controller
                 DB::beginTransaction();
                 
                 $order = DB::insert(' 
-                INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id)
-                                        values(?, ?, ?, ?, ? ); ', array($time, $time, $orderNo , $user_id, $totalPrice, $imp_id)  ) ;
+                INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id )
+                                        values(?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderNo , $user_id, $totalPrice, $imp_id, $merchant_id)  ) ;
                     
                 DB::commit();
             
@@ -721,8 +721,8 @@ class ShopController extends Controller
                         try {
                              
                             DB::beginTransaction();        
-                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, product_id, qty)
-                                                    VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $value['product_id'], $value['qty'])  ) ;
+                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
+                                                    VALUES(?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $price, $value['product_id'], $value['qty'])  ) ;
                                 
                             DB::commit();
                                  
@@ -744,37 +744,37 @@ class ShopController extends Controller
                             if($value['opt1']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['price1'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['opt_price1'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt2']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['price2'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['opt_price2'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt3']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['price3'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['opt_price3'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt4']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['price4'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['opt_price4'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt5']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['price5'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
                                 DB::commit();
                             }
                             if($value['opt6']){
                                 DB::beginTransaction();        
                                 $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['price6'] )) ;     
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
                                 DB::commit();
                             }
                         }
