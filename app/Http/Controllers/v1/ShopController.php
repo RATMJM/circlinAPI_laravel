@@ -720,9 +720,16 @@ class ShopController extends Controller
             foreach ($items as $key => $value) {   // order_products , order_product_options
                         try {
                              
-                            DB::beginTransaction();        
-                            $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty, brand_id)
-                                                    VALUES(?, ?, ?, ?, ?, ?, ); ', array($time, $time, $orderId[0]->id , $price, $value['product_id'], $value['qty'], $value['brand_id'])  ) ;
+                            DB::beginTransaction();  
+                           
+                                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderId[0]->id ,  $value['price1'], $value['product_id'], $value['qty'])  ) ;
+                            
+                            if($value['shipping_fee']>0){
+                                $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, brand_id, qty)
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderId[0]->id, $value['shipping_fee'], $value['brand_id'], $value['qty'])  ) ;
+                            } 
+                            
                                 
                             DB::commit();
                                  
