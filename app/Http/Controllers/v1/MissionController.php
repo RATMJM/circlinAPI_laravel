@@ -17,6 +17,7 @@ use App\Models\MissionImage;
 use App\Models\MissionPlace;
 use App\Models\MissionProduct;
 use App\Models\MissionStat;
+use App\Models\Place;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -194,7 +195,7 @@ class MissionController extends Controller
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+            ->leftJoin('places', 'places.id', 'missions.place_id')
             ->select([
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
                 'missions.title', 'missions.description',
@@ -212,8 +213,8 @@ class MissionController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, mission_products.image) as product_image"),
                 'mission_products.url as product_url',
                 DB::raw("IF(mission_products.type='inside', products.price, mission_products.price) as product_price"),
-                'mission_places.address as place_address', 'mission_places.title as place_title', 'mission_places.description as place_description',
-                'mission_places.image as place_image', 'mission_places.url as place_url',
+                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
+                'places.image as place_image', 'places.url as place_url',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
@@ -250,14 +251,13 @@ class MissionController extends Controller
                         $query->where('feeds.is_hidden', false)->orWhere('user_id', $user_id);
                     });
             })
-            ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+            ->join('places', 'places.id', 'feeds.place_id')
             ->select([
-                'feed_places.title', 'feed_places.address', 'feed_places.description',
-                'feed_places.image', 'feed_places.url',
+                'places.title', 'places.address', 'places.description',
+                'places.image', 'places.url',
                 DB::raw("COUNT(distinct feeds.id) as feed_total"),
             ])
-            ->groupBy('feed_places.title', 'feed_places.address', 'feed_places.description',
-                'feed_places.image', 'feed_places.url')
+            ->groupBy('places.id')
             ->orderBy('feed_total', 'desc')
             ->limit(3)
             ->get();
@@ -265,7 +265,7 @@ class MissionController extends Controller
         if (count($places) > 0) {
             function place_feed($user_id, $place, $mission_id)
             {
-                return FeedPlace::where('feed_places.title', $place->title)
+                return Place::where('places.title', $place->title)
                     ->whereExists(function ($query) use ($mission_id) {
                         $query->selectRaw(1)->from('feed_missions')
                             ->whereColumn('feed_id', 'feeds.id')->where('mission_id', $mission_id);
@@ -275,7 +275,7 @@ class MissionController extends Controller
                         $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
                     })
                     ->join('feeds', function ($query) {
-                        $query->on('feeds.id', 'feed_places.feed_id')->whereNull('deleted_at');
+                        $query->on('feeds.place_id', 'places.id')->whereNull('deleted_at');
                     })
                     ->join('users', 'users.id', 'feeds.user_id')
                     ->select([
@@ -395,7 +395,7 @@ class MissionController extends Controller
                 'feeds.id', 'feeds.created_at', 'feeds.content',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+                'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),

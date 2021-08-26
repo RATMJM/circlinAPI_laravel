@@ -717,7 +717,7 @@ class UserController extends Controller
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+            ->leftJoin('places', 'places.id', 'missions.place_id')
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
@@ -733,8 +733,8 @@ class UserController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, mission_products.image) as product_image"),
                 'mission_products.url as product_url',
                 DB::raw("IF(mission_products.type='inside', products.price, mission_products.price) as product_price"),
-                'mission_places.address as place_address', 'mission_places.title as place_title', 'mission_places.description as place_description',
-                'mission_places.image as place_image', 'mission_places.url as place_url',
+                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
+                'places.image as place_image', 'places.url as place_url',
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])

@@ -33,9 +33,20 @@ class HomeController extends Controller
         $tabs = [];
         foreach ($category_id as $id) {
             // $tmp = $id === 0 ? $category_id : $id;
+            $places = FeedPlace::where('missions.mission_category_id', $id)
+                ->join('feed_missions', 'feed_missions.feed_id', 'feed_places.feed_id')
+                ->join('missions', 'missions.id', 'feed_missions.mission_id')
+                ->select([
+                    'feed_places.title',
+                    DB::raw("COUNT(distinct feed_missions.mission_id) as missions_count"),
+                ])
+                ->groupBy('feed_places.title')
+                ->get();
+
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($id),
+                'places' => $places,
                 'mission_total' => Mission::where(function ($query) {
                     $query->whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'));
                 })
@@ -44,7 +55,7 @@ class HomeController extends Controller
                 })->count(),
                 'missions' => (new MissionCategoryController())->mission($request, $id, 3)['data']['missions'],
             ];
-            break;
+            break; // 첫번째 탭만 가져오도록
         }
 
         if (count($category_id) > 1) {
@@ -71,7 +82,7 @@ class HomeController extends Controller
             ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
+            ->leftJoin('places', 'places.id', 'feeds.place_id')
             ->select([
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
@@ -87,8 +98,8 @@ class HomeController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, feed_products.image) as product_image"),
                 'feed_products.url as product_url',
                 DB::raw("IF(feed_products.type='inside', products.price, feed_products.price) as product_price"),
-                'feed_places.address as place_address', 'feed_places.title as place_title', 'feed_places.description as place_description',
-                'feed_places.image as place_image', 'feed_places.url as place_url',
+                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
+                'places.image as place_image', 'places.url as place_url',
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'emoji_total' => ChatUser::selectRaw("COUNT(distinct chat_messages.chat_room_id)")->withTrashed()

@@ -23,7 +23,7 @@ class Mission extends Model
 
     public function place()
     {
-        return $this->hasOne(MissionPlace::class);
+        return $this->belongsTo(Place::class);
     }
 
     public function product()
