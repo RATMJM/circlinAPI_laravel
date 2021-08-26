@@ -16,6 +16,7 @@ use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionStat;
+use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -33,14 +34,15 @@ class HomeController extends Controller
         $tabs = [];
         foreach ($category_id as $id) {
             // $tmp = $id === 0 ? $category_id : $id;
-            $places = FeedPlace::where('missions.mission_category_id', $id)
-                ->join('feed_missions', 'feed_missions.feed_id', 'feed_places.feed_id')
+            $places = Place::where('missions.mission_category_id', $id)
+                ->join('feeds', 'feeds.place_id', 'places.id')
+                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                 ->join('missions', 'missions.id', 'feed_missions.mission_id')
                 ->select([
-                    'feed_places.title',
+                    'places.title',
                     DB::raw("COUNT(distinct feed_missions.mission_id) as missions_count"),
                 ])
-                ->groupBy('feed_places.title')
+                ->groupBy('places.title')
                 ->get();
 
             $tabs[$id] = [
