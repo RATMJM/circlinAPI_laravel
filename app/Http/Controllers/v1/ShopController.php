@@ -620,18 +620,18 @@ class ShopController extends Controller
     {   
         $user_id = token()->uid;
             
-        $product_id = $request->get('product_id'); 
-        $post_code = $request->get('post_code'); 
-        $address = $request->get('address'); 
+        $product_id     = $request->get('product_id'); 
+        $post_code      = $request->get('post_code'); 
+        $address        = $request->get('address'); 
         $address_detail = $request->get('address_detail'); //상세주소
         $recipient_name = $request->get('recipient_name');  // 받는사람 이름 
-        $shipping_fee = $request->get('shipFee');
-        $price = $request->get('amount'); 
-        $totalPrice = $request->get('amountTotal'); //구매총액               
-        $used_point = $request->get('used_point');// 사용한 포인트       
-        $items = $request->get('items');  //option_id, price, product_id , qty
-        $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-        $merchant_id = $request->get('merchantuid');
+        $shipping_fee   = $request->get('shipFee');
+        $price          = $request->get('amount'); 
+        $totalPrice     = $request->get('amountTotal'); //구매총액               
+        $used_point     = $request->get('used_point');// 사용한 포인트       
+        $items          = $request->get('items');  //option_id, price, product_id , qty
+        $imp_id         = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+        $merchant_id    = $request->get('merchantuid');
              
             // $post_code = '123';//$request->get('post_code'); 
             // $address = 'ㄹㄹㄹ';//$request->get('address'); 
@@ -787,19 +787,37 @@ class ShopController extends Controller
             } //end of foreach 
   
 
-            foreach ($orderProduct as $key4 => $value4) {
-                $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
-                                    values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key4]->id , $orderProduct[$key4]->qty , 0 , 'request')  ) ;
-                    DB::commit();  
+            try {
+                DB::beginTransaction();
+                
+                foreach ($orderProduct as $key => $value) {
+                    $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+                                        values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
+                        DB::commit();  
+                }
+                
+                              
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
             }
 
-            $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
+            try {
+                DB::beginTransaction();
+                
+                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name )
                                 values(?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name)  ) ;
-            DB::commit();
+                DB::commit();
+ 
+                return success([ 'result' => true,     ]);
+                              
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+            
 
-
-            return success([
-                'result' => true,     ]);
+            
                                           
     }
 
