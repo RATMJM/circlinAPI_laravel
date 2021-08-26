@@ -329,6 +329,7 @@ class ChatController extends Controller
                     'feed_content' => Feed::select('content')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
                     'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
                         ->orderBy('order')->limit(1),
+                    'feed_user_id' => Feed::select('user_id')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
                     'missions.title as mission_title', 'missions.description as mission_description',
                     'missions.thumbnail_image as mission_thumbnail_image',
                 ])
