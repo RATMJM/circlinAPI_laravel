@@ -750,88 +750,88 @@ class ShopController extends Controller
                         } 
                                            
             } //end of foreach 
-return array('true');
-            // $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
-            // where  order_id=?   ; ', array($orderId[0]->id)  ) ;
+ 
+            $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
+            where  order_id=?   ; ', array($orderId[0]->id)  ) ;
 
-            // foreach ($items as $key => $value){   // order_products , order_product_options
-            //     foreach ($orderProduct as $key2 => $value2){
-            //         try {
-            //             if( $value['product_id']==$orderProduct[$key2]->product_id ){
-            //                 if($value['opt1']){
-            //                     DB::beginTransaction();        
-            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['opt_price1'] )) ;     
-            //                     DB::commit();
-            //                 }
-            //                 if($value['opt2']){
-            //                     DB::beginTransaction();        
-            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['opt_price2'] )) ;     
-            //                     DB::commit();
-            //                 }
-            //                 if($value['opt3']){
-            //                     DB::beginTransaction();        
-            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['opt_price3'] )) ;     
-            //                     DB::commit();
-            //                 }
-            //                 if($value['opt4']){
-            //                     DB::beginTransaction();        
-            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['opt_price4'] )) ;     
-            //                     DB::commit();
-            //                 }
-            //                 if($value['opt5']){
-            //                     DB::beginTransaction();        
-            //                     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-            //                     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
-            //                     DB::commit();
-            //                 }
-            //                 // if($value['opt6']){
-            //                 //     DB::beginTransaction();        
-            //                 //     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
-            //                 //     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
-            //                 //     DB::commit();
-            //                 // }
-            //             }
-            //         } 
-            //         catch (Exception $e) {
-            //             DB::rollBack();
-            //             return exceped($e); 
-            //         } 
-            //     }                    
-            // } //end of foreach 
+            foreach ($items as $key => $value){   // order_products , order_product_options
+                foreach ($orderProduct as $key2 => $value2){
+                    try {
+                        if( $value['product_id']==$orderProduct[$key2]->product_id ){
+                            if($value['opt1']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt1'], $value['opt_price1'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt2']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt2'], $value['opt_price2'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt3']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt3'], $value['opt_price3'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt4']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt4'], $value['opt_price4'] )) ;     
+                                DB::commit();
+                            }
+                            if($value['opt5']){
+                                DB::beginTransaction();        
+                                $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                                VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt5'], $value['opt_price5'] )) ;     
+                                DB::commit();
+                            }
+                            // if($value['opt6']){
+                            //     DB::beginTransaction();        
+                            //     $option = DB::insert('INSERT into order_product_options(created_at, updated_at, order_product_id, product_option_id, price)
+                            //     VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $orderProduct[$key2]->id , $value['opt6'], $value['opt_price6'] )) ;     
+                            //     DB::commit();
+                            // }
+                        }
+                    } 
+                    catch (Exception $e) {
+                        DB::rollBack();
+                        return exceped($e); 
+                    } 
+                }                    
+            } //end of foreach 
   
 
-            // try {
-            //     DB::beginTransaction();
+            try {
+                DB::beginTransaction();
                 
-            //     foreach ($orderProduct as $key => $value) {
-            //         $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
-            //                             values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
-            //             DB::commit();  
-            //     }
+                foreach ($orderProduct as $key => $value) {
+                    $delivery = DB::insert('INSERT into order_product_deliveries(created_at, updated_at, order_product_id, qty, tracking_no, status)
+                                        values(?, ?, ?, ?, ?, ?); ', array($time, $time, $orderProduct[$key]->id , $orderProduct[$key]->qty , 0 , 'request')  ) ;
+                        DB::commit();  
+                }
                 
                               
-            // } catch (Exception $e) {
-            //     DB::rollBack();
-            //     return exceped($e);
-            // }
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
 
-            // try {
-            //     DB::beginTransaction();
+            try {
+                DB::beginTransaction();
                 
-            //     $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name, phone, comment )
-            //                     values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
-            //     DB::commit();
+                $destination = DB::insert('INSERT into order_destinations(created_at, updated_at, order_id, user_id, post_code, address, address_detail, recipient_name, phone, comment )
+                                values(?, ?, ?, ?, ?, ?, ?, ?, ?, ? ); ', array($time, $time, $orderId[0]->id , $user_id,  $post_code, $address, $address_detail, $recipient_name, $phone, $comment)  ) ;
+                DB::commit();
  
-            //     return success([ 'result' => true,     ]);
+                return success([ 'result' => true,     ]);
                               
-            // } catch (Exception $e) {
-            //     DB::rollBack();
-            //     return exceped($e);
-            // }
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
             
 
             
