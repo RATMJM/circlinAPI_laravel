@@ -14,4 +14,9 @@ class Place extends Model
     protected $casts = [
         'is_important' => 'bool',
     ];
+
+    public function missions()
+    {
+        return $this->hasMany(Mission::class);
+    }
 }

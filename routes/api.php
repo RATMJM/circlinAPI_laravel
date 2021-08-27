@@ -110,6 +110,11 @@ Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
 Route::get('/newsfeed', [v1\HomeController::class, 'newsfeed'])->name('home.newsfeed');
 Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
+Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
+    Route::get('/place', [v1\PopularPlaceController::class, 'index'])->name('index');
+    Route::get('/product', [v1\PopularProductController::class, 'index'])->name('index');
+});
+
 Route::group(['prefix' => 'feed', 'feed.'], function () {
     Route::post('/', [v1\FeedController::class, 'store'])->name('store');
     Route::group(['prefix' => '{feed_id}'], function () {

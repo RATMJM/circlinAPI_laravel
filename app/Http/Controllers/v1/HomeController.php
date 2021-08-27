@@ -30,58 +30,54 @@ class HomeController extends Controller
 
         $tabs = [];
         foreach ($category_id as $id) {
+            if ($id > 0) {
+
+                $places = Place::when($id, function ($query, $id) {
+                    $query->where('missions.mission_category_id', $id);
+                })
+                    ->join('missions', function ($query) {
+                        $query->on('missions.place_id', 'places.id')->whereNull('deleted_at');
+                    })
+                    ->select([
+                        'places.id', 'places.address', 'places.title', 'places.description',
+                        'places.image', 'places.url',
+                        DB::raw("COUNT(distinct missions.id) as missions_count"),
+                    ])
+                    ->groupBy('places.id')
+                    ->orderBy('missions_count', 'desc')
+                    ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
+                    ->take(2)
+                    ->get();
+
+                $products = MissionProduct::when($id, function ($query, $id) {
+                    $query->where('missions.mission_category_id', $id);
+                })
+                    ->join('missions', 'missions.id', 'mission_products.mission_id')
+                    ->leftJoin('products', 'products.id', 'mission_products.product_id')
+                    ->leftJoin('brands', 'brands.id', 'products.brand_id')
+                    ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+                    ->select([
+                        'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id',
+                        DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as brand"),
+                        DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as title"),
+                        DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as image"),
+                        'outside_products.url as url',
+                        DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as price"),
+                        DB::raw("COUNT(distinct missions.id) as missions_count"),
+                    ])
+                    ->groupBy('type', 'product_id', 'outside_product_id')
+                    ->orderBy('missions_count', 'desc')
+                    ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
+                    ->take(2)
+                    ->get();
+            }
+
             // $tmp = $id === 0 ? $category_id : $id;
-            DB::enableQueryLog();
-            $places = Place::when($id, function ($query, $id) {
-                $query->where('missions.mission_category_id', $id);
-            })
-                ->when($id === 0, function ($query) {
-                    $query->where('event_order', '>', 0);
-                })
-                ->join('missions', function ($query) {
-                    $query->on('missions.place_id', 'places.id')->whereNull('deleted_at');
-                })
-                ->select([
-                    'places.id', 'places.address', 'places.title', 'places.description',
-                    'places.image', 'places.url',
-                    DB::raw("COUNT(distinct missions.id) as missions_count"),
-                ])
-                ->groupBy('places.id')
-                ->orderBy('missions_count', 'desc')
-                ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
-                ->take(4)
-                ->get();
-
-            $products = MissionProduct::when($id, function ($query, $id) {
-                $query->where('missions.mission_category_id', $id);
-            })
-                ->when($id === 0, function ($query) {
-                    $query->where('event_order', '>', 0);
-                })
-                ->join('missions', 'missions.id', 'mission_products.mission_id')
-                ->leftJoin('products', 'products.id', 'mission_products.product_id')
-                ->leftJoin('brands', 'brands.id', 'products.brand_id')
-                ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-                ->select([
-                    'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id',
-                    DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as brand"),
-                    DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as title"),
-                    DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as image"),
-                    'outside_products.url as url',
-                    DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as price"),
-                    DB::raw("COUNT(distinct missions.id) as missions_count"),
-                ])
-                ->groupBy('type', 'product_id', 'outside_product_id')
-                ->orderBy('missions_count', 'desc')
-                ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
-                ->take(4)
-                ->get();
-
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($id),
-                'places' => $places,
-                'products' => $products,
+                'places' => $places ?? null,
+                'products' => $products ?? null,
                 'mission_total' => Mission::where(function ($query) {
                     $query->whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'));
                 })
