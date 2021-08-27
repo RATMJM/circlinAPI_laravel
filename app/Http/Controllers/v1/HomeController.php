@@ -38,7 +38,9 @@ class HomeController extends Controller
                 ->when($id === 0, function ($query) {
                     $query->where('event_order', '>', 0);
                 })
-                ->join('missions', 'missions.place_id', 'places.id')
+                ->join('missions', function ($query) {
+                    $query->on('missions.place_id', 'places.id')->whereNull('deleted_at');
+                })
                 ->select([
                     'places.id', 'places.address', 'places.title', 'places.description',
                     'places.image', 'places.url',
