@@ -188,21 +188,23 @@ class MissionCategoryController extends Controller
                 ->take(2);
         }
 
-        $query = null;
-        foreach ($data as $i => $item) {
-            $data[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
-                'area', 'followers', 'is_following']);
+        if (count($data)) {
+            $query = null;
+            foreach ($data as $i => $item) {
+                $data[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
 
-            if ($query) {
-                $query = $query->union(mission_user($item->id));
-            } else {
-                $query = mission_user($item->id);
+                if ($query) {
+                    $query = $query->union(mission_user($item->id));
+                } else {
+                    $query = mission_user($item->id);
+                }
             }
-        }
-        $query = $query->get();
-        $keys = $data->pluck('id')->toArray();
-        foreach ($query->groupBy('mission_id') as $i => $item) {
-            $data[array_search($i, $keys)]->users = $item;
+            $query = $query->get();
+            $keys = $data->pluck('id')->toArray();
+            foreach ($query->groupBy('mission_id') as $i => $item) {
+                $data[array_search($i, $keys)]->users = $item;
+            }
         }
 
         return success([
