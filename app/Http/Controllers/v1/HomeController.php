@@ -45,6 +45,7 @@ class HomeController extends Controller
                 ->groupBy('places.id')
                 ->orderBy('missions_count', 'desc')
                 ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
+                ->take(4)
                 ->get();
 
             $products = Mission::when($id, function ($query, $id) {
@@ -69,6 +70,7 @@ class HomeController extends Controller
                 ->groupBy('type', 'product_id', 'outside_product_id')
                 ->orderBy('missions_count', 'desc')
                 ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
+                ->take(4)
                 ->get();
 
             $tabs[$id] = [
