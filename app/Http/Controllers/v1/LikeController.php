@@ -65,10 +65,12 @@ class LikeController extends Controller
                 ]);
             }
 
+            $paid_point = false;
             if ($type === 'feed') {
                 if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
                     && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
                     PointController::change_point($target_id, 10, 'feed_check', 'feed', $id);
+                    $paid_point = true;
                 }
             }
 
@@ -76,7 +78,7 @@ class LikeController extends Controller
 
             DB::commit();
 
-            return success(['result' => true]);
+            return success(['result' => true, 'paid_point' => $paid_point]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
