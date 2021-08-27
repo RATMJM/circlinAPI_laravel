@@ -33,7 +33,7 @@ class HomeController extends Controller
             $places = Mission::when($id, function ($query, $id) {
                 $query->where('missions.mission_category_id', $id);
             })
-                ->when($category_id === 0, function ($query) {
+                ->when($id === 0, function ($query) {
                     $query->where('event_order', '>', 0);
                 })
                 ->join('places', 'places.id', 'missions.place_id')
@@ -51,7 +51,7 @@ class HomeController extends Controller
             $products = Mission::when($id, function ($query, $id) {
                 $query->where('missions.mission_category_id', $id);
             })
-                ->when($category_id === 0, function ($query) {
+                ->when($id === 0, function ($query) {
                     $query->where('event_order', '>', 0);
                 })
                 ->join('mission_products', 'mission_products.mission_id', 'missions.id')
