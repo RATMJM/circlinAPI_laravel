@@ -692,7 +692,7 @@ class MissionController extends Controller
             ifnull(c.RANK,0) as RANK, 
             round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , e.distance, e.laptime, e.laptime_origin, e.distance_origin,
               (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
-             case when d.completed_at is null then ="" else "1" end as BONUS_FLAG,  
+             case when d.completed_at is null then "" else "1" end as BONUS_FLAG,  
              case when d.ended_at is null then "Y" else "N" end as STATE ,
               ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
               ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, -- 받은변수로 고정값넣어주면 좋음
