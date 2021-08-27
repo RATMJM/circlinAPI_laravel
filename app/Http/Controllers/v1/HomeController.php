@@ -11,7 +11,9 @@ use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\Follow;
 use App\Models\Mission;
+use App\Models\MissionProduct;
 use App\Models\MissionStat;
+use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -30,13 +32,13 @@ class HomeController extends Controller
         foreach ($category_id as $id) {
             // $tmp = $id === 0 ? $category_id : $id;
             DB::enableQueryLog();
-            $places = Mission::when($id, function ($query, $id) {
+            $places = Place::when($id, function ($query, $id) {
                 $query->where('missions.mission_category_id', $id);
             })
                 ->when($id === 0, function ($query) {
                     $query->where('event_order', '>', 0);
                 })
-                ->join('places', 'places.id', 'missions.place_id')
+                ->join('missions', 'missions.place_id', 'places.id')
                 ->select([
                     'places.id', 'places.address', 'places.title', 'places.description',
                     'places.image', 'places.url',
@@ -48,13 +50,13 @@ class HomeController extends Controller
                 ->take(4)
                 ->get();
 
-            $products = Mission::when($id, function ($query, $id) {
+            $products = MissionProduct::when($id, function ($query, $id) {
                 $query->where('missions.mission_category_id', $id);
             })
                 ->when($id === 0, function ($query) {
                     $query->where('event_order', '>', 0);
                 })
-                ->join('mission_products', 'mission_products.mission_id', 'missions.id')
+                ->join('missions', 'missions.id', 'mission_products.mission_id')
                 ->leftJoin('products', 'products.id', 'mission_products.product_id')
                 ->leftJoin('brands', 'brands.id', 'products.brand_id')
                 ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
