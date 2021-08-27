@@ -159,6 +159,7 @@ Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
         Route::post('/block', [v1\ChatController::class, 'hide_room'])->name('hide');
     });
     Route::post('/direct/enter/{target_id}', [v1\ChatController::class, 'enter_direct'])->name('direct.enter');
+    Route::post('/direct/send/multiple', [v1\ChatController::class, 'send_direct_multiple'])->name('direct.send.multiple');
     Route::post('/direct/send/{target_id}', [v1\ChatController::class, 'send_direct'])->name('direct.send');
 });
 

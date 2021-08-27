@@ -8,7 +8,6 @@ use App\Models\ChatRoom;
 use App\Models\ChatUser;
 use App\Models\Feed;
 use App\Models\FeedImage;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -71,8 +70,8 @@ class ChatController extends Controller
 
         $message = $message ?? $request->get('message');
         $file = $request->file('file');
-        $mission_id = $type==='mission' && $id ? $id : $request->get('mission_id');
-        $feed_id = $type==='feed' && $id ? $id : $request->get('feed_id');
+        $mission_id = $type === 'mission' && $id ? $id : $request->get('mission_id');
+        $feed_id = $type === 'feed' && $id ? $id : $request->get('feed_id');
 
         if (!$message && !$file && !$mission_id && !$feed_id) {
             return success([
@@ -166,7 +165,7 @@ class ChatController extends Controller
                 ChatUser::create(['chat_room_id' => $room->id, 'user_id' => $target_id]);
             }
 
-            if(ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $user_id])->doesntExist()) {
+            if (ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $user_id])->doesntExist()) {
                 ChatUser::create([
                     'chat_room_id' => $room->id,
                     'user_id' => $user_id,
@@ -229,7 +228,7 @@ class ChatController extends Controller
 
             $room = $this->create_or_enter_room($request, $target_id)['data']['room'];
 
-            if(ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $target_id])->doesntExist()) {
+            if (ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $target_id])->doesntExist()) {
                 ChatUser::create([
                     'chat_room_id' => $room->id,
                     'user_id' => $target_id,
@@ -245,6 +244,32 @@ class ChatController extends Controller
             }
 
             return $result;
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
+    public function send_direct_multiple(Request $request): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $users = Arr::wrap($request->get('user_id'));
+            $users = array_unique($users);
+            $success = [];
+            $sockets = [];
+            foreach ($users as $user) {
+                $res = (new ChatController())->send_direct($request, $user);
+                if ($res['success'] && $res['data']['result']) {
+                    $success[] = $user;
+                    $sockets = Arr::collapse([$sockets, $res['data']['sockets']]);
+                }
+            }
+
+            DB::commit();
+
+            return success(['result' => true, 'users' => $success, 'sockets' => $sockets]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -274,9 +299,9 @@ class ChatController extends Controller
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
                     ->join('users', 'users.id', 'user_id')->limit(1),
-                'latest_message' => ChatMessage::selectRaw("CASE WHEN type='chat' THEN message ".
-                        "WHEN type='feed' THEN IF(message is null, CONCAT(users.nickname, '님이 피드를 공유하셨습니다.'), message) ".
-                        "WHEN type='mission' THEN IF(message is null, CONCAT(users.nickname, '님이 미션을 공유하셨습니다.'), message) END")
+                'latest_message' => ChatMessage::selectRaw("CASE WHEN type='chat' THEN message " .
+                    "WHEN type='feed' THEN IF(message is null, CONCAT(users.nickname, '님이 피드를 공유하셨습니다.'), message) " .
+                    "WHEN type='mission' THEN IF(message is null, CONCAT(users.nickname, '님이 미션을 공유하셨습니다.'), message) END")
                     ->join('users', 'users.id', 'chat_messages.user_id')
                     ->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('chat_messages.id', 'desc')->limit(1),
