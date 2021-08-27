@@ -668,4 +668,96 @@ class MissionController extends Controller
             return exceped($e);
         }
     }
+
+
+    public function event_mission_info(Request $request): array
+    {
+        $user_id = token()->uid;
+        $mission_stat_id =  $request->get('challPk'); 
+        $mission_id =  $request->get('challId');  
+        $time = date("Y-m-d H:i:s");
+        $today = date("Y-m-d");
+        $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+        // $user_id = 1;//token()->uid;
+        // $mission_stat_id = 1046185;// $request->get('challPk'); 
+        // $mission_id = 1000;// $request->get('challId');  
+        // $time = date("Y-m-d H:i:s");
+        // $today = date("Y-m-d");
+        // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+ 
+
+        try {
+            DB::beginTransaction();
+            $event_mission = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
+            ifnull(c.RANK,0) as RANK, 
+            round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , e.distance, e.laptime, e.laptime_origin, e.distance_origin,
+              (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
+             d.completed_at as BONUS_FLAG,  case when d.ended_at is null then "Y" else "N" end as STATE ,
+              ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
+              ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, -- 받은변수로 고정값넣어주면 좋음
+              b.started_at as START_DATE, Adddate(b.ended_at, interval 1 day )  as END_DAY1,
+              (SELECT COUNT(*) FROM  feed_missions WHERE  mission_stat_id = ? and mission_id= ? and substr(created_at,1,10)= ?)  as CERT_TODAY,
+              (SELECT count(k.mission_id) FROM mission_stats k 
+                WHERE k.mission_id=? and completed_at is not null) as FINISH,
+             ifnull(   ( SELECT ifnull(YEST.RANK-TODAY.RANK,"0") CHANGED FROM
+                                               (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
+                                               FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
+                                               WHERE  a._ID=b.USER_PK
+                                               and USER_PK= ?  and INS_DATE=? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1) TODAY 
+                                               LEFT JOIN 
+                                               (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
+                                               FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
+                                               WHERE
+                                               a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
+                       ),"") as CHANGED,
+               f.CHALL_ROUT_0W_TITLE2, f.RUN_IMG1 as EVENT_IMG1 , f.RUN_IMG2 as RUN_EVENT_IMG1, f.RUN_IMG3 as RUN_EVENT_IMG2, f.RUN_IMG4 as RUN_EVENT_IMG3,f.RUN_IMG5 as RUN_EVENT_IMG4,f.CHALLINFO_PK,
+               f.CHALL_ROUT_0W_DETAIL1, f.CHALL_ROUT_3W_DETAIL3, f.BG_IMG
+            
+            FROM users a, 
+            missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK, 
+            mission_stats d 
+            LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? ,
+            feed_missions e
+            where b.id=d.mission_id
+            and d.user_id=a.id
+            and b.id=e.mission_id
+            and e.mission_stat_id=d.id and a.id= ?    and d.id=? and b.id =?
+             ; ', array($mission_id,
+             $user_id, 
+                 $mission_id,
+             $mission_stat_id, $mission_id, $today, $mission_id, 
+                 $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
+             $today, 
+             $user_id, $mission_stat_id, $mission_id )  ) ;
+    
+            DB::commit();
+        
+           
+                         
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+
+        
+
+        // $state = $data[0]->STATE;
+        // $sex = $data[0]->SEX;
+        // $challId = $data[0]->CHALL_ID;
+        // $score = $data[0]->SCORE;
+        // $bonusFlag = $data[0]->BONUS_FLAG;
+        // $rank = $data[0]->RANK;
+        // $certToday = $data[0]->CERT_TODAY;
+        // $finCnt = $data[0]->FINISH;
+
+
+
+        return success([
+            'success' => true,
+            'users' => $event_mission,
+        ]);
+    }
+
+
 }
