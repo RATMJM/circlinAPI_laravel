@@ -5,10 +5,8 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Follow;
-use App\Models\MissionCategory;
 use App\Models\Place;
 use App\Models\User;
-use App\Models\UserStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,18 +34,33 @@ class BaseController extends Controller
 
         $limit = max(min($request->get('limit', 50), 50), 1);
 
-        $users = User::where('users.id', '!=', $user_id)
+        $user_ids = User::where('users.id', '!=', $user_id)
             ->whereNotNull('users.nickname')
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
             ->select([
+                'id',
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
+                    ->whereHas('user_target_follow', function ($query) use ($user_id) {
+                        $query->where('user_id', $user_id);
+                    }),
+            ])
+            ->orderBy('together_following', 'desc')
+            ->orderBy('follower', 'desc')
+            ->orderBy('id', 'desc')
+            ->take(50);
+
+        $users = User::joinSub($user_ids, 'u', function ($query) {
+            $query->on('u.id', 'users.id');
+        })
+            ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
-                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
+                'follower', 'together_following',
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
             ])
-            ->orderBy('id')
             ->take($limit)->get();
 
         return success([
