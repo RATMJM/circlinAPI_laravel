@@ -674,13 +674,13 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
         $mission_stat_id =  $request->get('challPk'); 
-        $mission_id =  $request->get('challId');  
+        $mission_id = $request->get('challId');  
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
-        // $user_id = 1;//token()->uid;
-        // $mission_stat_id = 1046185;// $request->get('challPk'); 
-        // $mission_id = 1000;// $request->get('challId');  
+        // $user_id =1;//token()->uid;
+        // $mission_stat_id = "1042518";//  $request->get('challPk'); 
+        // $mission_id = "962" ;//$request->get('challId');  
         // $time = date("Y-m-d H:i:s");
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
@@ -688,11 +688,12 @@ class MissionController extends Controller
 
         try {
             DB::beginTransaction();
-            $event_mission = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
+            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
             ifnull(c.RANK,0) as RANK, 
             round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , e.distance, e.laptime, e.laptime_origin, e.distance_origin,
               (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
-             d.completed_at as BONUS_FLAG,  case when d.ended_at is null then "Y" else "N" end as STATE ,
+             case when d.completed_at is null then "" else "1" end as BONUS_FLAG,  
+             case when d.ended_at is null then "Y" else "N" end as STATE ,
               ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
               ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, -- 받은변수로 고정값넣어주면 좋음
               b.started_at as START_DATE, Adddate(b.ended_at, interval 1 day )  as END_DAY1,
@@ -716,19 +717,20 @@ class MissionController extends Controller
             FROM users a, 
             missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK, 
             mission_stats d 
-            LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? ,
-            feed_missions e
+            LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
+            left join feed_missions e on   d.id=e.mission_stat_id
             where b.id=d.mission_id
             and d.user_id=a.id
-            and b.id=e.mission_id
-            and e.mission_stat_id=d.id and a.id= ?    and d.id=? and b.id =?
+            -- and b.id=e.mission_id
+            -- and e.mission_stat_id=d.id 
+            and a.id= ?    and d.id=? and b.id =?
              ; ', array($mission_id,
-             $user_id, 
-                 $mission_id,
-             $mission_stat_id, $mission_id, $today, $mission_id, 
-                 $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
-             $today, 
-             $user_id, $mission_stat_id, $mission_id )  ) ;
+                        $user_id, 
+                        $mission_id,
+                        $mission_stat_id, $mission_id, $today, $mission_id, 
+                        $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
+                        $today, 
+                        $user_id, $mission_stat_id, $mission_id )  ) ;
     
             DB::commit();
         
@@ -755,7 +757,7 @@ class MissionController extends Controller
 
         return success([
             'success' => true,
-            'users' => $event_mission,
+            'event_mission_info' => $event_mission_info,
         ]);
     }
 
