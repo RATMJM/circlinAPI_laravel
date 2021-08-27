@@ -11,12 +11,12 @@ class BannerController extends Controller
     {
         return [
             [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/00_fake_banner01.jpg',
+                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/00_fake_banner01.png',
                 'link_type' => 'url',
                 'link_url' => 'https://via.placeholder.com/1500x750',
             ],
             [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/00_fake_banner02.jpg',
+                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/00_fake_banner02.png',
                 'link_type' => 'url',
                 'link_url' => 'https://via.placeholder.com/1500x750',
             ],
