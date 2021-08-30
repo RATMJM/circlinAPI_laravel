@@ -766,18 +766,16 @@ class MissionController extends Controller
     public function mission_info(Request $request): array
     {
         $user_id         = token()->uid;  
-        $mission_id      = $request->get('mission_id');  
-        $mission_stat_id = $request->get('mission_stat_id');  
+        $mission_id      = $request->get('mission_id');   
         // $user_id         = 4;//token()->uid;  
-        // $mission_id      = 786;//$request->get('mission_id');  
-        // $mission_stat_id =  //$request->get('mission_stat_id');          
+        // $mission_id      = 786;//$request->get('mission_id');           
         $time = date("Y-m-d H:i:s"); 
 
         try {
             DB::beginTransaction();
             //미션 댓글 입력
             $mission_info = DB::select('SELECT youtube, youtube_text, a.week_duration, a.week_min_count, a.thumbnail_image,  a.reward_point, a.title as mission_name, a.user_limit,
-            a.id as mission_id, a.user_id, c.logo, c.apply_image1, c.apply_image2, c.apply_image3, c.apply_image4, c.apply_image5,  c.subtitle_1 ,
+            a.id as mission_id, a.user_id, c.logo, c.apply_image1, c.apply_image2, c.apply_image3, c.apply_image4, c.apply_image5,  c.subtitle_1 , subtitle_2 ,
             ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants, 
             ifnull(( select count(user_id) from mission_likes where mission_id= ? ),0) as likes,
              
@@ -793,7 +791,7 @@ class MissionController extends Controller
              "https://www.circlin.co.kr/SNS/assets/img/maraTab6.png" as IMG_URL6,
              "https://www.circlin.co.kr/SNS/assets/img/medal_design.png" as IMG_MEDAL,
             ifnull((SELECT "Y" FROM mission_likes n WHERE user_id=? and a.id=n.mission_id),"N" )as like_yn ,         
-            case when (SELECT count(*)  FROM mission_stats WHERE user_id=? and completed_at is not null and mission_id= ? ) = "0" then "N" ELSE "Y" END as DO_YN  ,       
+            -- case when (SELECT count(*)  FROM mission_stats WHERE user_id=? and completed_at is not null and mission_id= ? ) = "0" then "N" ELSE "Y" END as DO_YN  ,       
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
@@ -803,7 +801,7 @@ class MissionController extends Controller
             , array($mission_id,
             $mission_id, 
             $user_id,
-            $user_id, $mission_id,
+             
             $mission_id )  ) ;
           
             return success([
