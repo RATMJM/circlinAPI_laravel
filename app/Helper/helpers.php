@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Area;
 use Firebase\JWT\JWT;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 const ALLOW_IP = [
@@ -82,8 +84,16 @@ function image_url($server, $image_url): string|null
  */
 function area($table = 'users')
 {
-    return \App\Models\Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
+    return Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
         CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', "$table.area_code");
+}
+
+/**
+ * 기존 챌린지 type
+ */
+function challenge_type()
+{
+    return DB::raw("CASE WHEN missions.id in (786,796,811) THEN 1 WHEN missions.id in (1174) THEN 2 WHEN missions.id in (8962,1027,1213) THEN 3 END as event_type");
 }
 
 /**

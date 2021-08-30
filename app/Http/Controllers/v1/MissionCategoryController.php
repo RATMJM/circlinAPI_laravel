@@ -155,7 +155,7 @@ class MissionCategoryController extends Controller
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("missions.event_order > 0 as is_event"),
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"),
+                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.thumbnail_image', 'missions.success_count',
                 'm.bookmarks',
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
