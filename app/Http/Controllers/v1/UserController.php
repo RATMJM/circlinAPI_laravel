@@ -49,10 +49,6 @@ class UserController extends Controller
             ->select(['mission_categories.title'])
             ->get();
 
-        $badge = Arr::except((new HomeController())->badge()['data'], 'result');
-
-        $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
-
         $yesterday_point = PointHistory::where('user_id', $user_id)
             ->where('created_at', '>=', date('Y-m-d', time()))
             ->where('point', '>', 0)
@@ -65,12 +61,22 @@ class UserController extends Controller
             })
             ->count();
 
+        $today_paid_check = FeedLike::withTrashed()->where('user_id', $user_id)
+            ->where('point', '>', 0)
+            ->where('feed_likes.created_at', '>=', date('Y-m-d'))
+            ->count();
+
+        $badge = Arr::except((new HomeController())->badge()['data'], 'result');
+
+        $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
+
         return success([
             'result' => true,
             'user' => $user,
             'category' => $category,
             'yesterday_point' => $yesterday_point,
             'yesterday_check' => $yesterday_check,
+            'today_paid_check' => $today_paid_check,
             'badge' => $badge,
             'wallpapers' => $wallpapers,
         ]);
