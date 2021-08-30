@@ -597,13 +597,14 @@ class UserController extends Controller
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
                     ->where('feed_comments.user_id', token()->uid),
             ])
-            ->groupBy('feeds.id')
-            ->orderBy('feeds.id', 'desc')
-            ->skip($page * $limit)->take($limit)->get();
+            ->orderBy('feeds.id', 'desc');
+        $feeds_count = $feeds->count();
+        $feeds = $feeds->skip($page * $limit)->take($limit)->get();
 
         return success([
             'result' => true,
             'categories' => $categories,
+            'feeds_count' => $feeds_count,
             'feeds' => $feeds,
         ]);
     }
@@ -665,8 +666,9 @@ class UserController extends Controller
                     ->whereColumn('mission_id', 'missions.id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-            ])
-            ->groupBy('mission_categories.id', 'missions.id', 'users.id')
+            ]);
+        $missions_count = $missions->count(DB::raw("distinct missions.id"));
+        $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id')
             ->orderBy(DB::raw("MAX(feeds.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
@@ -697,6 +699,7 @@ class UserController extends Controller
 
         return success([
             'result' => true,
+            'missions_count' => $missions_count,
             'missions' => $missions,
         ]);
     }
