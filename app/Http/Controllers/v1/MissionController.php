@@ -763,4 +763,62 @@ class MissionController extends Controller
     }
 
 
+    public function mission_info(Request $request): array
+    {
+        $user_id         = token()->uid;  
+        $mission_id      = $request->get('mission_id');  
+        $mission_stat_id = $request->get('mission_stat_id');  
+        // $user_id         = 4;//token()->uid;  
+        // $mission_id      = 786;//$request->get('mission_id');  
+        // $mission_stat_id =  //$request->get('mission_stat_id');          
+        $time = date("Y-m-d H:i:s"); 
+
+        try {
+            DB::beginTransaction();
+            //미션 댓글 입력
+            $mission_info = DB::select('SELECT youtube, youtube_text, a.week_duration, a.week_min_count, a.thumbnail_image,  a.reward_point, a.title as mission_name, a.user_limit,
+            a.id as mission_id, a.user_id, c.logo, c.apply_image1, c.apply_image2, c.apply_image3, c.apply_image4, c.apply_image5,  c.subtitle_1 ,
+            ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants, 
+            ifnull(( select count(user_id) from mission_likes where mission_id= ? ),0) as likes,
+             
+             intro_image_1,intro_image_2,intro_image_3,intro_image_4,intro_image_5,intro_image_6,intro_image_7,intro_image_8,intro_image_9,intro_image_10,
+             owner.nickname as owner_nickname, owner.profile_image , 
+             ifnull((select count(user_id) from follows where a.user_id= target_id ) ,0) as FOLLOWER, 
+             a.reserve_started_at, a.reserve_ended_at, a.started_at, a.ended_at, 
+             "https://www.circlin.co.kr/SNS/assets/img/marathon.mp4" as IMG_URL1,
+             "https://www.circlin.co.kr/SNS/assets/img/maraTab2.png" as IMG_URL2,
+             "https://www.circlin.co.kr/SNS/assets/img/maraTab3.png" as IMG_URL3,
+             "https://www.circlin.co.kr/SNS/assets/img/maraTab4.png" as IMG_URL4,
+             "https://www.circlin.co.kr/SNS/assets/img/maraTab5.png" as IMG_URL5,
+             "https://www.circlin.co.kr/SNS/assets/img/maraTab6.png" as IMG_URL6,
+             "https://www.circlin.co.kr/SNS/assets/img/medal_design.png" as IMG_MEDAL,
+            ifnull((SELECT "Y" FROM mission_likes n WHERE user_id=? and a.id=n.mission_id),"N" )as like_yn ,         
+            case when (SELECT count(*)  FROM mission_stats WHERE user_id=? and completed_at is not null and mission_id= ? ) = "0" then "N" ELSE "Y" END as DO_YN  ,       
+            CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
+                            when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
+                            ELSE "END" end as CHECK_START
+                            
+            from  missions a LEFT JOIN mission_etc c on  a.id=c.mission_id  ,  `users` as owner 
+            where a.user_id=owner.id and a.id=? and a.deleted_at is null;'
+            , array($mission_id,
+            $mission_id, 
+            $user_id,
+            $user_id, $mission_id,
+            $mission_id )  ) ;
+          
+            return success([
+                'success' => true, 
+                'mission'=>$mission_info
+            ]);
+                                
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+    }
+    
+    
+
+
 }
