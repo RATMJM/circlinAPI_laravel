@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProductKeywordsTable extends Migration
+class CreateKeywordsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,10 @@ class CreateProductKeywordsTable extends Migration
      */
     public function up()
     {
-        Schema::create('product_keywords', function (Blueprint $table) {
+        Schema::create('keywords', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('type');
             $table->string('area_code');
             $table->string('keyword');
             $table->softDeletes();
