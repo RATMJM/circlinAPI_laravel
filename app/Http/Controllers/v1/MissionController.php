@@ -205,8 +205,9 @@ class MissionController extends Controller
             ->select([
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
                 'missions.title', 'missions.description',
-                DB::raw("missions.event_order > 0 as is_event"), 'missions.thumbnail_image',
-                'missions.success_count',
+                DB::raw("missions.event_order > 0 as is_event"),
+                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"),
+                'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
                 'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
@@ -673,18 +674,18 @@ class MissionController extends Controller
     public function event_mission_info(Request $request): array
     {
         $user_id = token()->uid;
-        $mission_stat_id =  $request->get('challPk'); 
-        $mission_id = $request->get('challId');  
+        $mission_stat_id =  $request->get('challPk');
+        $mission_id = $request->get('challId');
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
         // $user_id =1;//token()->uid;
-        // $mission_stat_id = "1042518";//  $request->get('challPk'); 
-        // $mission_id = "962" ;//$request->get('challId');  
+        // $mission_stat_id = "1042518";//  $request->get('challPk');
+        // $mission_id = "962" ;//$request->get('challId');
         // $time = date("Y-m-d H:i:s");
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
- 
+
 
         try {
             DB::beginTransaction();
@@ -725,24 +726,24 @@ class MissionController extends Controller
             -- and e.mission_stat_id=d.id 
             and a.id= ?    and d.id=? and b.id =?
              ; ', array($mission_id,
-                        $user_id, 
+                        $user_id,
                         $mission_id,
-                        $mission_stat_id, $mission_id, $today, $mission_id, 
+                        $mission_stat_id, $mission_id, $today, $mission_id,
                         $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
-                        $today, 
+                        $today,
                         $user_id, $mission_stat_id, $mission_id )  ) ;
-    
+
             DB::commit();
-        
-           
-                         
+
+
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
 
 
-        
+
 
         // $state = $data[0]->STATE;
         // $sex = $data[0]->SEX;
