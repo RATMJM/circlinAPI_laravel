@@ -202,9 +202,9 @@ class HomeController extends Controller
                 ->whereDoesntHave('feed_missions', function ($query) {
                     $query->where('created_at', '>=', date('Y-m-d', time()));
                 })->count(),
-            'notifies' => random_int(0, 50),
-            'messages' => (new Collection((new NotificationController())->index()['data']['notifies']))
+            'notifies' => (new Collection((new NotificationController())->index()['data']['notifies']))
                 ->where('is_read', false)->count(),
+            'messages' => random_int(0, 50),
         ]);
     }
 }
