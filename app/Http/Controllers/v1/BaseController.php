@@ -47,8 +47,8 @@ class BaseController extends Controller
                         $query->where('user_id', $user_id);
                     }),
             ])
-            ->orderBy('together_following', 'desc')
-            ->orderBy('follower', 'desc')
+            ->orderBy(DB::raw('(together_following*200) + follower + FLOOR(RAND()*1000)'), 'desc')
+            // ->orderBy('follower', 'desc')
             ->orderBy('id', 'desc')
             ->take(50);
 
