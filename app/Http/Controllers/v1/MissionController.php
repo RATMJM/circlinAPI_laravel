@@ -778,7 +778,7 @@ class MissionController extends Controller
             a.id as mission_id, a.user_id, c.logo, c.apply_image1, c.apply_image2, c.apply_image3, c.apply_image4, c.apply_image5,
             c.apply_image6, 
             subtitle_1 , `description`,subtitle_3 , subtitle_4 ,subtitle_5 , subtitle_6 ,subtitle_7 ,
-            desc1, desc2, bg_image,
+            desc1, desc2, bg_image, video_1,
             ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants, 
             ifnull(( select count(user_id) from mission_likes where mission_id= ? ),0) as likes,
              
