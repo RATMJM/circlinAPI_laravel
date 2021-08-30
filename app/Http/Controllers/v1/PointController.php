@@ -37,7 +37,9 @@ class PointController extends Controller
                 'reason' => $reason,
             ];
 
-            $data = Arr::collapse([$data, ["{$type}_id" => $id]]);
+            if (isset($type)) {
+                $data = Arr::collapse([$data, ["{$type}_id" => $id]]);
+            }
 
             PointHistory::create($data);
 

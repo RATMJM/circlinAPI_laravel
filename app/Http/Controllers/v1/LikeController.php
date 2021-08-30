@@ -51,6 +51,13 @@ class LikeController extends Controller
                 default => [null, null],
             };
 
+            if ($table->where('id', $id)->doesntExists()) {
+                return success([
+                    'result' => false,
+                    'reason' => "not found $type",
+                ]);
+            }
+
             if (($target_id = $table->where('id', $id)->value('user_id')) === $user_id) {
                 return success([
                     'result' => false,
@@ -65,20 +72,34 @@ class LikeController extends Controller
                 ]);
             }
 
-            $paid_point = false;
+            $point = 10;
+            $paid_point = false; // 대상에게 포인트 줬는지
+            $take_point = false; // 10번 체크해서 포인트 받았는지
             if ($type === 'feed') {
                 if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
                     && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
-                    PointController::change_point($target_id, 10, 'feed_check', 'feed', $id);
-                    $paid_point = true;
+                    $res = PointController::change_point($target_id, $point, 'feed_check', 'feed', $id);
+                    $paid_point = $res['success'] && $res['data']['result'];
+
+                    $count = FeedLike::withTrashed()->where('user_id', $user_id)
+                        ->where('point', '>', 0)
+                        ->where('feed_likes.created_at', '>=', date('Y-m-d'))
+                        ->count();
+
+                    // 지금이 10번째 피드체크 && 100회까지만 지급
+                    if ($count % 10 === 9 && $count < 100) {
+                        $res = PointController::change_point($user_id, 10, 'feed_check_cumulate');
+                        $take_point = $res['success'] && $res['data']['result'];
+                    }
                 }
             }
 
-            $data = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id]);
+            $data = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
+            dd($data);
 
             DB::commit();
 
-            return success(['result' => true, 'paid_point' => $paid_point]);
+            return success(['result' => (bool)$data, 'paid_point' => $paid_point, 'take_point' => $take_point]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
