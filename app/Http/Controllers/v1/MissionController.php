@@ -777,7 +777,7 @@ class MissionController extends Controller
             $mission_info = DB::select('SELECT youtube, youtube_text, a.week_duration, a.week_min_count, a.thumbnail_image,  a.reward_point, a.title as mission_name, a.user_limit,
             a.id as mission_id, a.user_id, c.logo, c.apply_image1, c.apply_image2, c.apply_image3, c.apply_image4, c.apply_image5,
             c.apply_image6, 
-            subtitle_1 , subtitle_2,subtitle_3 , subtitle_4 ,subtitle_5 , subtitle_6 ,subtitle_7 ,
+            subtitle_1 , `description`,subtitle_3 , subtitle_4 ,subtitle_5 , subtitle_6 ,subtitle_7 ,
             desc1, desc2, bg_image,
             ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants, 
             ifnull(( select count(user_id) from mission_likes where mission_id= ? ),0) as likes,
