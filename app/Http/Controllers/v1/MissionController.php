@@ -645,7 +645,7 @@ class MissionController extends Controller
     public function destroy($id): array
     {
         try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
             $user_id = token()->uid;
 
@@ -670,7 +670,7 @@ class MissionController extends Controller
         }
     }
 
-
+    // 이벤트 미션 룸 페이지 정보
     public function event_mission_info(Request $request): array
     {
         $user_id = token()->uid;
@@ -714,12 +714,15 @@ class MissionController extends Controller
                        ),"") as CHANGED,
                f.CHALL_ROUT_0W_TITLE2, f.RUN_IMG1 as EVENT_IMG1 , f.RUN_IMG2 as RUN_EVENT_IMG1, f.RUN_IMG3 as RUN_EVENT_IMG2, f.RUN_IMG4 as RUN_EVENT_IMG3,f.RUN_IMG5 as RUN_EVENT_IMG4,f.CHALLINFO_PK,
                f.CHALL_ROUT_0W_DETAIL1, f.CHALL_ROUT_3W_DETAIL3, f.BG_IMG
-            
+               , g.info_image_1 , g.info_image_2,
+               case when (SELECT count(*)  FROM mission_stats WHERE user_id= ? and completed_at is null and mission_id= ? ) = "0" then "N" ELSE "Y" END as do_yn 
             FROM users a, 
-            missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK, 
+            missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
+                       LEFT JOIN mission_etc g on  b.id=g.mission_id , 
             mission_stats d 
             LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
             left join feed_missions e on   d.id=e.mission_stat_id
+            
             where b.id=d.mission_id
             and d.user_id=a.id
             -- and b.id=e.mission_id
@@ -733,17 +736,40 @@ class MissionController extends Controller
                         $today,
                         $user_id, $mission_stat_id, $mission_id )  ) ;
 
-            DB::commit();
-
-
-
+       
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
 
 
+        try {
+            DB::beginTransaction();
+            $finished_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
+            (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
+            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
+            From mission_stats a, users b 
+            where a.mission_id= ? and a.completed_at is not null 
+            and b.id=a.user_id and b.deleted_at is null
+            order by a.completed_at desc limit 15
+             ; ', array(    $user_id,   $mission_id,   )  ) ;
 
+       
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+        try {
+            DB::beginTransaction();
+            $total_km = DB::select('select ifnull(sum(distance),0) as total_km From feed_missions a where mission_id= ? ; ',
+             array(    $mission_id,   )  ) ;
+
+       
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
         // $state = $data[0]->STATE;
         // $sex = $data[0]->SEX;
@@ -753,12 +779,13 @@ class MissionController extends Controller
         // $rank = $data[0]->RANK;
         // $certToday = $data[0]->CERT_TODAY;
         // $finCnt = $data[0]->FINISH;
-
-
-
+        
         return success([
             'success' => true,
             'event_mission_info' => $event_mission_info,
+            'finish_user' => $finished_user,
+            'total_km' => $total_km,
+            
         ]);
     }
 
@@ -802,6 +829,7 @@ class MissionController extends Controller
                             , d.id as product_id
                             , d.thumbnail_image as product_image
                             
+                            
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
 					LEFT JOIN mission_products b on b.mission_id=a.id
@@ -826,6 +854,70 @@ class MissionController extends Controller
     }
     
     
+    public function start_event_mission(Request $request): array
+    {
+        $user_id         =  token()->uid;  
+        $mission_id      =  $request->get('mission_id');   
+        // $user_id         = 4;//token()->uid;  
+        // $mission_id      = 786;//$request->get('mission_id');           
+        $time = date("Y-m-d H:i:s"); 
+        // insertExtUserCode($uid,$code,$challId);
+         
+       
+            
+            //미션마스터 조회
+            $mission_info = DB::select('select started_at, ended_at, CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
+            when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
+            ELSE "" end as START_DATE_CHECK, 
+            (select   count(id) +1 from mission_stats where mission_id = ?) as user_count
+            From missions a
+            where id= ?;'
+            , array(  $mission_id,$mission_id  )  ) ;
+           
+              if($mission_info[0]->START_DATE_CHECK=='PRE'){ // 오늘날짜와 비교해서 당일이면 상태를 시작상태(Y)로 변경
+                $state='R'; // 안쓰는 로직으로 변경됨. 무조건 다음날 부터 선택가능
+                $timestamp1 = $mission_info[0]->started_at;
+                $today="";
+              }else if($mission_info[0]->START_DATE_CHECK=='START'){
+                $state='Y';
+                // $timestamp1 = $checkDate;
+                $today = date("Y-m-d H:i:s");
+              }else if($mission_info[0]->START_DATE_CHECK=='END'){
+                return success([
+                    'success' => 'END',  
+                ]);
+              }
+              
+        
+        try {
+            DB::beginTransaction();
+            //미션 댓글 입력
+            $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id, ended_at)
+                                            values( ?, ? ,? ,? ,?) ;'
+            , array($time, $time,
+            $user_id, 
+            $mission_id, 
+            $mission_info[0]->ended_at )  ) ;
+            
+            DB::commit();
 
+
+            $mission_stat_id = DB::select('select max(id) as mission_stat_id
+            From mission_stats a
+            where mission_id= ? and user_id= ?  ;'
+            , array(  $mission_id,$user_id  )  ) ;
+
+            return success([
+                'success' => true,  
+                'mission_stat_id' => $mission_stat_id,
+                'user_count' => $mission_info[0] -> user_count,
+            ]);
+                                
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+    }
 
 }

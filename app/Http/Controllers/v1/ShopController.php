@@ -35,7 +35,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id  
                 order by status ;'   , array('1')) ;
   
@@ -51,7 +51,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 order by sale_price desc;'   , array('1')) ;
             } 
@@ -67,7 +67,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 order by sale_price ;'   , array('1')) ;
             }else{
@@ -82,7 +82,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 order by status;'   , array('1')) ;
             } 
@@ -99,7 +99,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b 
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and  a.product_category_id=?
                 and b.id=a.brand_id;'   , array('1', $category)) ;
  
@@ -117,7 +117,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
                 order by sale_price desc;'   , array('1', $category)) ;
@@ -134,7 +134,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
                 order by sale_price  ;'    , array('1', $category)) ;
@@ -150,7 +150,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ?
+                is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
                 order by status;'   , array('1', $category)) ;
@@ -220,7 +220,7 @@ class ShopController extends Controller
             
                 $shopBannerList = DB::select('select b.image, b.product_id, b.link_url  From products a , banners b
                 where   date_add(sysdate(), interval 9 hour) between  b.started_at and b.ended_at
-                and b.product_id=a.id and b.deleted_at is null
+                and b.product_id=a.id and b.deleted_at is null and a.skin="N"
                 order by sort_num;;'  ) ;
 
             return success([
@@ -315,7 +315,7 @@ class ShopController extends Controller
                 products f LEFT JOIN feed_products h ON f.id=h.product_id,
                 brands g
                 where
-                a.id=b.order_id
+                a.id=b.order_id and f.skin="N"
                 and a.id=d.order_id 
                 and f.id=b.product_id
                 
@@ -392,7 +392,7 @@ class ShopController extends Controller
                brands d, 
                users e  
 
-               where a.user_id=?    
+               where a.user_id=?    and c.skin="N"
                and a.product_id=c.id
                and d.user_id=e.id
                and c.brand_id=d.id; ', array($user_id)  ) ;
@@ -852,7 +852,7 @@ class ShopController extends Controller
                 (select CASE WHEN count(product_id) >0 THEN "Y" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN 
                 from products a  left join  brands d on a.brand_id=d.id 
                 where   
-                  a.id=? ; ', array($user_id, $product_id, $product_id)  ) ;
+                  a.id=? and a.skin="N" ; ', array($user_id, $product_id, $product_id)  ) ;
                     
                 $product_image = DB::select('select product_id, `order`, type, image  from product_images 
                             where product_id= ? ; ', array($product_id)  ) ; 
