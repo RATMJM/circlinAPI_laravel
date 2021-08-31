@@ -160,7 +160,7 @@ Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
     Route::get('/', [v1\ChatController::class, 'index'])->name('index');
     Route::group(['prefix' => '{room_id}'], function () {
         Route::get('/', [v1\ChatController::class, 'show'])->name('show');
-        Route::post('/send', [v1\ChatController::class, 'send_message'])->name('send');
+        // Route::post('/send', [v1\ChatController::class, 'send_message'])->name('send');
         Route::get('/user', [v1\ChatController::class, 'user'])->name('user');
         Route::post('/leave', [v1\ChatController::class, 'leave_room'])->name('leave');
         Route::post('/unblock', [v1\ChatController::class, 'show_room'])->name('show');
