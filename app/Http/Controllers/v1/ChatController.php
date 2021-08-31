@@ -52,14 +52,14 @@ class ChatController extends Controller
 
     public function show_room(Request $request, $room_id): array
     {
-        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_hidden' => false]);
+        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_block' => false]);
 
         return success(['result' => $data > 0]);
     }
 
     public function hide_room(Request $request, $room_id): array
     {
-        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_hidden' => true]);
+        $data = ChatUser::where(['chat_room_id' => $room_id, 'user_id' => token()->uid])->update(['is_block' => true]);
 
         return success(['result' => $data > 0]);
     }
@@ -151,9 +151,10 @@ class ChatController extends Controller
 
             $user_id = token()->uid;
 
-            $room = ChatRoom::join('chat_users as cu1', function ($query) use ($user_id) {
-                $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu1.user_id', $user_id);
-            })
+            $room = ChatRoom::where('is_group', false)
+                ->join('chat_users as cu1', function ($query) use ($user_id) {
+                    $query->on('cu1.chat_room_id', 'chat_rooms.id')->where('cu1.user_id', $user_id);
+                })
                 ->join('chat_users as cu2', function ($query) use ($target_id) {
                     $query->on('cu2.chat_room_id', 'chat_rooms.id')->where('cu2.user_id', $target_id);
                 })
@@ -165,12 +166,7 @@ class ChatController extends Controller
                 ChatUser::create(['chat_room_id' => $room->id, 'user_id' => $target_id]);
             }
 
-            if (ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $user_id])->doesntExist()) {
-                ChatUser::create([
-                    'chat_room_id' => $room->id,
-                    'user_id' => $user_id,
-                ]);
-            }
+            ChatUser::updateOrCreate(['chat_room_id' => $room->id, 'user_id' => $user_id], ['is_block' => false]);
 
             DB::commit();
 
@@ -228,10 +224,12 @@ class ChatController extends Controller
 
             $room = $this->create_or_enter_room($request, $target_id)['data']['room'];
 
-            if (ChatUser::where(['chat_room_id' => $room->id, 'user_id' => $target_id])->doesntExist()) {
-                ChatUser::create([
-                    'chat_room_id' => $room->id,
-                    'user_id' => $target_id,
+            $target = ChatUser::firstOrCreate(['chat_room_id' => $room->id, 'user_id' => $target_id]);
+
+            if ($target->is_block) {
+                return success([
+                    'result' => false,
+                    'reason' => 'is block',
                 ]);
             }
 
@@ -282,7 +280,7 @@ class ChatController extends Controller
 
         $data = ChatUser::where('chat_users.user_id', $user_id)
             ->select([
-                'chat_users.chat_room_id', 'chat_users.is_hidden as is_block',
+                'chat_users.chat_room_id', 'chat_users.is_block',
                 'user_id' => DB::table('chat_users as cu')->select('users.id')
                     ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
                     ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
@@ -312,7 +310,7 @@ class ChatController extends Controller
                     ->whereColumn('chat_messages.created_at', 'chat_users.created_at')
                     ->where('user_id', '!=', $user_id),
             ])
-            ->orderBy('is_hidden')->orderBy('latest_at', 'desc')
+            ->orderBy('is_block')->orderBy('latest_at', 'desc')
             ->get();
 
         return success([
