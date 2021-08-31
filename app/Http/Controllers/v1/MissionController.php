@@ -645,7 +645,7 @@ class MissionController extends Controller
     public function destroy($id): array
     {
         try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
             $user_id = token()->uid;
 
@@ -853,6 +853,60 @@ class MissionController extends Controller
     }
     
     
+    public function start_event_mission(Request $request): array
+    {
+        $user_id         =  token()->uid;  
+        $mission_id      =  $request->get('mission_id');   
+        // $user_id         = 4;//token()->uid;  
+        // $mission_id      = 786;//$request->get('mission_id');           
+        $time = date("Y-m-d H:i:s"); 
+        // insertExtUserCode($uid,$code,$challId);
+         
+       
+            
+            //미션마스터 조회
+            $mission_info = DB::select('select started_at, ended_at, CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
+            when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
+            ELSE "" end as START_DATE_CHECK From missions a
+            where id= ?;'
+            , array(  $mission_id  )  ) ;
+           
+              if($mission_info[0]->START_DATE_CHECK=='PRE'){ // 오늘날짜와 비교해서 당일이면 상태를 시작상태(Y)로 변경
+                $state='R'; // 안쓰는 로직으로 변경됨. 무조건 다음날 부터 선택가능
+                $timestamp1 = $mission_info[0]->started_at;
+                $today="";
+              }else if($mission_info[0]->START_DATE_CHECK=='START'){
+                $state='Y';
+                // $timestamp1 = $checkDate;
+                $today = date("Y-m-d H:i:s");
+              }else if($mission_info[0]->START_DATE_CHECK=='END'){
+                return success([
+                    'success' => 'END',  
+                ]);
+              }
+              
+        
+        try {
+            DB::beginTransaction();
+            //미션 댓글 입력
+            $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id, ended_at)
+                                            values( ?, ? ,? ,? ,?) ;'
+            , array($time, $time,
+            $user_id, 
+            $mission_id, 
+            $mission_info[0]->ended_at )  ) ;
+            
+            DB::commit();
 
+            return success([
+                'success' => true,  
+            ]);
+                                
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+    }
 
 }
