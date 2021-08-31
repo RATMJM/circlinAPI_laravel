@@ -51,7 +51,7 @@ class LikeController extends Controller
                 default => [null, null],
             };
 
-            if ($table->where('id', $id)->doesntExists()) {
+            if ($table->where('id', $id)->doesntExist()) {
                 return success([
                     'result' => false,
                     'reason' => "not found $type",
