@@ -21,7 +21,7 @@ class NotificationController extends Controller
 
         $nogroup = ["follow_feed", "follow_bookmark", "mission_invite", "bookmark_warning"];
 
-        $q = "'".implode("','", $nogroup)."'";
+        $q = "'" . implode("','", $nogroup) . "'";
 
         $data = Notification::where('target_id', $user_id)
             ->select([
@@ -43,9 +43,9 @@ class NotificationController extends Controller
             ->orderBy(DB::raw('MAX(id)'), 'desc')
             ->take(50);
 
-        $data = Notification::rightJoinSub($data, 'n', function ($query) {
-                $query->on('n.id', 'notifications.id');
-            })
+        $data = Notification::joinSub($data, 'n', function ($query) {
+            $query->on('n.id', 'notifications.id');
+        })
             ->join('users', 'users.id', 'n.user_id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
@@ -53,6 +53,9 @@ class NotificationController extends Controller
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
                 'n.*', DB::raw("IF(type in ($q) and count > 1, type, CONCAT(type,'_multi')) as type"),
+                'message' => CommonCode::selectRaw("IFNULL(content_ko, notifications.type)")
+                    ->where('common_codes.ctg_sm', DB::raw("IF(type in ($q) and count > 1, type, CONCAT(type,'_multi'))"))
+                    ->where('common_codes.ctg_lg', 'notifications')->limit(1),
                 DB::raw("!ISNULL(read_at) as is_read"),
                 'users.nickname', 'users.profile_image', 'users.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
@@ -71,27 +74,20 @@ class NotificationController extends Controller
             ]);
         }
 
-        $messages = CommonCode::where('ctg_lg', 'notifications')->pluck('content_ko', 'ctg_sm');
-
-        $res = $data->toArray();
         foreach ($data as $i => $item) {
             $replaces = [
                 '{%count}' => '{' . $item->count - 1 . '}',
                 '{%nickname}' => '{' . $item->nickname . '}',
                 '{%mission}' => '{' . $item->mission_title . '}',
             ];
-            if (array_key_exists($res[$i]['type'], $messages->toArray())) {
-                $res[$i]['message'] = str_replace(array_keys($replaces), array_values($replaces), $messages[$res[$i]['type']]);
-            } else {
-                $res[$i]['message'] = $item->type;
-            }
+            $data[$i]->message = str_replace(array_keys($replaces), array_values($replaces), $item->message);
         }
 
         Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
 
         return success([
             'result' => false,
-            'notifies' => $res,
+            'notifies' => $data,
         ]);
     }
 
