@@ -663,6 +663,12 @@ class UserController extends Controller
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
+                DB::raw("missions.event_order > 0 as is_event"),
+                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                'missions.thumbnail_image',
+                'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                DB::raw("$user_id as mission_stat_user_id"),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $uid)
                     ->whereColumn('mission_id', 'missions.id'),
