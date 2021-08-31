@@ -716,11 +716,12 @@ class MissionController extends Controller
                f.CHALL_ROUT_0W_DETAIL1, f.CHALL_ROUT_3W_DETAIL3, f.BG_IMG
                , g.info_image_1 , g.info_image_2
             FROM users a, 
-            missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK, 
+            missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
+                       LEFT JOIN mission_etc g on  b.id=g.mission_id , 
             mission_stats d 
             LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
             left join feed_missions e on   d.id=e.mission_stat_id
-            LEFT JOIN mission_etc g on  b.id=g.mission_id 
+            
             where b.id=d.mission_id
             and d.user_id=a.id
             -- and b.id=e.mission_id
