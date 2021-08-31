@@ -867,9 +867,11 @@ class MissionController extends Controller
             //미션마스터 조회
             $mission_info = DB::select('select started_at, ended_at, CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
-            ELSE "" end as START_DATE_CHECK From missions a
+            ELSE "" end as START_DATE_CHECK, 
+            (select   count(id) +1 from mission_stats where mission_id = ?) as user_count
+            From missions a
             where id= ?;'
-            , array(  $mission_id  )  ) ;
+            , array(  $mission_id,$mission_id  )  ) ;
            
               if($mission_info[0]->START_DATE_CHECK=='PRE'){ // 오늘날짜와 비교해서 당일이면 상태를 시작상태(Y)로 변경
                 $state='R'; // 안쓰는 로직으로 변경됨. 무조건 다음날 부터 선택가능
@@ -898,8 +900,16 @@ class MissionController extends Controller
             
             DB::commit();
 
+
+            $mission_stat_id = DB::select('select max(id) as mission_stat_id
+            From mission_stats a
+            where mission_id= ? and user_id= ?  ;'
+            , array(  $mission_id,$user_id  )  ) ;
+
             return success([
                 'success' => true,  
+                'mission_stat_id' => $mission_stat_id,
+                'user_count' => $mission_info[0] -> user_count,
             ]);
                                 
         } catch (Exception $e) {
