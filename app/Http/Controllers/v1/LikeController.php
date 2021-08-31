@@ -95,7 +95,6 @@ class LikeController extends Controller
             }
 
             $data = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
-            dd($data);
 
             DB::commit();
 
