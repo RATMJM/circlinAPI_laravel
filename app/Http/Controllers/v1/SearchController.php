@@ -80,6 +80,7 @@ class SearchController extends Controller
                 ->select(['keyword', DB::raw("'keyword'")])
                 ->groupBy('keyword'))
                 ->orderBy(DB::raw("LENGTH(keyword)"))
+                ->distinct()
                 ->take(10)
                 ->get();
 
