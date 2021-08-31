@@ -113,8 +113,10 @@ class UserController extends Controller
                     $user_data['nickname'] = $nickname;
                     $result[] = 'nickname';
                 }
-                if ($area_code && Area::where('ctg_sm', $area_code)->exists()) {
+                if ($area_code && strtotime($data->area_updated_at) + (86400*7) < time()
+                    && Area::where('ctg_sm', $area_code)->exists()) {
                     $user_data['area_code'] = $area_code;
+                    $user_data['area_updated_at'] = date('Y-m-d H:i:s');
                     $result[] = 'area_code';
                 }
                 if ($greeting) {
