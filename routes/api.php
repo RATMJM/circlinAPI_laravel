@@ -114,7 +114,10 @@ Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
     Route::get('/place', [v1\PopularPlaceController::class, 'index'])->name('index');
+    Route::get('/place/{id}', [v1\PopularPlaceController::class, 'show'])->name('show');
     Route::get('/product', [v1\PopularProductController::class, 'index'])->name('index');
+    Route::get('/product/{type}/{id}', [v1\PopularProductController::class, 'show'])
+        ->where(['type' => '(in|out)side'])->name('show');
 });
 
 Route::group(['prefix' => 'feed', 'feed.'], function () {

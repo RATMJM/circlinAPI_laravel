@@ -69,4 +69,29 @@ class PopularPlaceController extends Controller
             'places' => $data,
         ]);
     }
+
+    public function show(Request $request, $id): array
+    {
+        $user_id = token()->uid;
+
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 8);
+
+        $data = Place::where('places.id', $id)
+            ->select([
+                'places.id', 'places.address', 'places.title', 'places.description',
+                'places.image', 'places.url',
+            ])
+            ->withCount('missions')
+            ->with('missions', function ($query) use ($page, $limit) {
+                $query->orderBy('id', 'desc')
+                    ->skip($page * $limit)->take($limit);
+            })
+            ->first();
+
+        return success([
+            'result' => true,
+            'missions' => $data,
+        ]);
+    }
 }

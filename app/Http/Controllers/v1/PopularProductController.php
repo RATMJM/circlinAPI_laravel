@@ -4,6 +4,8 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\MissionProduct;
+use App\Models\OutsideProduct;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,12 +22,12 @@ class PopularProductController extends Controller
         $data = MissionProduct::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
-            ->join('missions', function ($query) {
-                $query->on('missions.id', 'mission_products.mission_id')->whereNull('missions.deleted_at');
-            })
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            ->join('missions', function ($query) {
+                $query->on('missions.id', 'mission_products.mission_id')->whereNull('missions.deleted_at');
+            })
             ->select([
                 'mission_products.type', //'mission_products.product_id', 'mission_products.outside_product_id',
                 DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
@@ -39,8 +41,7 @@ class PopularProductController extends Controller
             ->groupBy('type', 'product_id', 'outside_product_id')
             ->orderBy('missions_count', 'desc')
             ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
-            ->take(2)
-            ->get();
+            ->skip($page * $limit)->take($limit)->get();
 
         if (count($data)) {
             function missions($type, $product_id, $category_id = null)
@@ -80,6 +81,53 @@ class PopularProductController extends Controller
         return success([
             'result' => true,
             'places' => $data,
+        ]);
+    }
+
+    public function show(Request $request, $type, $id): array
+    {
+        $user_id = token()->uid;
+
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 8);
+
+        if ($type === 'inside') {
+            $data = Product::where('products.id', $id)
+                ->leftJoin('brands', 'brands.id', 'products.brand_id')
+                ->select([
+                    'products.id', 'brands.name_ko as brand', 'products.name_ko as title',
+                    'products.thumbnail_image as image', DB::raw("null as url"), 'products.price',
+                ])
+                ->withCount('missions')
+                ->with('missions', function ($query) use ($page, $limit) {
+                    $query->join('users', 'users.id', 'missions.user_id')
+                        ->select([
+                            'missions.id', 'missions.title', 'missions.description', 'missions.thumbnail_image',
+                            'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                        ])
+                        ->orderBy('missions.id', 'desc')->skip($page * $limit)->take($limit);
+                })
+                ->first();
+        } else {
+            $data = OutsideProduct::where('outside_products.id', $id)
+                ->select([
+                    'id', 'brand', 'title', 'image', 'url', 'price',
+                ])
+                ->withCount('missions')
+                ->with('missions', function ($query) use ($page, $limit) {
+                    $query->join('users', 'users.id', 'missions.user_id')
+                        ->select([
+                            'missions.id', 'missions.title', 'missions.description', 'missions.thumbnail_image',
+                            'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                        ])
+                        ->orderBy('missions.id', 'desc')->skip($page * $limit)->take($limit);
+                })
+                ->first();
+        }
+
+        return success([
+            'result' => true,
+            'missions' => $data,
         ]);
     }
 }
