@@ -44,7 +44,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             \App\Models\SortUser::insert($data);
-        })->everyMinute();
+        })->daily();
     }
 
     /**
