@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $users = User::inRandomOrder()->pluck('id');
+            $users = User::select('id', DB::raw("RAND() r"))->get();
 
             $i = 0;
             $data = [];
@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
             foreach ($users as $j => $user) {
                 $data[] = [
                     'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
-                    'user_id' => $user, 'order' => $i++,
+                    'user_id' => $user->id, 'order' => $user->r,
                 ];
                 if ($j % 1000 === 0) {
                     \App\Models\SortUser::insert($data);

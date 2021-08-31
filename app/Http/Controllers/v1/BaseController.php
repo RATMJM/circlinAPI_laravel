@@ -39,18 +39,17 @@ class BaseController extends Controller
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
+            ->leftJoin('sort_users', 'sort_users.user_id', 'users.id')
             ->select([
-                'id',
-                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'users.id', 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
                     ->whereHas('user_target_follow', function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
                     }),
             ])
-            ->orderBy(DB::raw('(together_following*200) + follower + FLOOR(RAND()*1000)'), 'desc')
-            // ->orderBy('follower', 'desc')
-            ->orderBy('id', 'desc')
-            ->take(50);
+            ->orderBy(DB::raw('follower'), 'desc')
+            // ->orderBy('users.id', 'desc')
+            ->take($limit);
 
         $users = User::joinSub($user_ids, 'u', function ($query) {
             $query->on('u.id', 'users.id');
