@@ -760,7 +760,7 @@ class MissionController extends Controller
 
         try {
             DB::beginTransaction();
-            $total_km = DB::select('select sum(distance) as totak_km From feed_missions a where mission_id= ? ; ',
+            $total_km = DB::select('select sum(distance) as total_km From feed_missions a where mission_id= ? ; ',
              array(    $mission_id,   )  ) ;
 
        
