@@ -800,7 +800,7 @@ class MissionController extends Controller
                             ELSE "END" end as CHECK_START
                             , d.name_ko as product_name
                             , d.id as product_id
-                            , d.thumbnail_image
+                            , d.thumbnail_image as product_image
                             
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
