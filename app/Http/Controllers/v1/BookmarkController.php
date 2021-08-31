@@ -34,6 +34,7 @@ class BookmarkController extends Controller
                 'missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
                 DB::raw("missions.event_order > 0 as is_event"),
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
