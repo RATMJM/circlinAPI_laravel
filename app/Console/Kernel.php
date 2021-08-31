@@ -2,8 +2,10 @@
 
 namespace App\Console;
 
+use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
 {
@@ -24,7 +26,25 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->call(function () {
+            $users = User::inRandomOrder()->pluck('id');
+
+            $i = 0;
+            $data = [];
+
+            \App\Models\SortUser::truncate();
+            foreach ($users as $j => $user) {
+                $data[] = [
+                    'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
+                    'user_id' => $user, 'order' => $i++,
+                ];
+                if ($j % 1000 === 0) {
+                    \App\Models\SortUser::insert($data);
+                    $data = [];
+                }
+            }
+            \App\Models\SortUser::insert($data);
+        })->everyMinute();
     }
 
     /**
