@@ -559,7 +559,7 @@ class UserController extends Controller
 
         $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
             ->when($category_id, function ($query, $category_id) {
-                $query->where('mission_categories.id', $category_id);
+                $query->whereIn('mission_categories.id', Arr::wrap($category_id));
             })
             ->where('feeds.user_id', $user_id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
@@ -578,7 +578,7 @@ class UserController extends Controller
             })
             ->when($category_id, function ($query, $category_id) {
                 $query->whereHas('missions', function ($query) use ($category_id) {
-                    $query->where('mission_category_id', $category_id);
+                    $query->whereIn('mission_categories.id', Arr::wrap($category_id));
                 });
             })
             ->select([
@@ -667,7 +667,7 @@ class UserController extends Controller
 
         $missions = MissionCategory::where('feeds.user_id', $user_id)
             ->when($category_id, function ($query, $category_id) {
-                $query->where('mission_categories.id', $category_id);
+                $query->whereIn('mission_categories.id', Arr::wrap($category_id));
             })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
