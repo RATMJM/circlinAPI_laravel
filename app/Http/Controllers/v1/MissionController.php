@@ -745,7 +745,8 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
             $finished_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
-            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as FOLLOW_YN
+            (SELECT count(target_id) as '1' FROM follows WHERE  user_id=a.user_id ) as follower,
+            ifnull((SELECT 'Y' FROM follows WHERE user_id='1' and target_id=a.user_id LIMIT 0,1),'N') as follow_yn
             From mission_stats a, users b 
             where a.mission_id= ? and a.completed_at is not null 
             and b.id=a.user_id and b.deleted_at is null
