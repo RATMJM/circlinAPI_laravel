@@ -714,12 +714,13 @@ class MissionController extends Controller
                        ),"") as CHANGED,
                f.CHALL_ROUT_0W_TITLE2, f.RUN_IMG1 as EVENT_IMG1 , f.RUN_IMG2 as RUN_EVENT_IMG1, f.RUN_IMG3 as RUN_EVENT_IMG2, f.RUN_IMG4 as RUN_EVENT_IMG3,f.RUN_IMG5 as RUN_EVENT_IMG4,f.CHALLINFO_PK,
                f.CHALL_ROUT_0W_DETAIL1, f.CHALL_ROUT_3W_DETAIL3, f.BG_IMG
-            
+               , g.info_image_1 , g.info_image_2
             FROM users a, 
             missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK, 
             mission_stats d 
             LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
             left join feed_missions e on   d.id=e.mission_stat_id
+            LEFT JOIN mission_etc g on  b.id=g.mission_id 
             where b.id=d.mission_id
             and d.user_id=a.id
             -- and b.id=e.mission_id
@@ -801,7 +802,7 @@ class MissionController extends Controller
                             , d.name_ko as product_name
                             , d.id as product_id
                             , d.thumbnail_image as product_image
-                            , c.info_image_1 , c.info_image_2
+                            
                             
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
