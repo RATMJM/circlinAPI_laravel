@@ -578,7 +578,7 @@ class UserController extends Controller
             })
             ->when($category_id, function ($query, $category_id) {
                 $query->whereHas('missions', function ($query) use ($category_id) {
-                    $query->whereIn('mission_categories.id', Arr::wrap($category_id));
+                    $query->whereIn('missions.mission_category_id', Arr::wrap($category_id));
                 });
             })
             ->select([
