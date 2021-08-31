@@ -304,6 +304,9 @@ class ChatController extends Controller
                         $query->on('common_codes.ctg_sm', 'chat_messages.type')
                             ->where('common_codes.ctg_lg', 'chat');
                     })->orderBy('chat_messages.id', 'desc')->limit(1),
+                'latest_nickname' => ChatMessage::select('nickname')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
+                    ->join('users', 'users.id', 'chat_messages.user_id')
+                    ->orderBy('chat_messages.id', 'desc')->limit(1),
                 'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
                 'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
@@ -316,7 +319,7 @@ class ChatController extends Controller
 
         foreach ($data as $i => $item) {
             $replaces = [
-                '{%nickname}' => '{' . $item->nickname . '}',
+                '{%nickname}' => '{' . $item->latest_nickname . '}',
             ];
 
             $data[$i]->latest_message = str_replace(array_keys($replaces), array_values($replaces), $item->latest_message);
