@@ -119,7 +119,8 @@ class ChatController extends Controller
             $data = ChatMessage::create([
                 'chat_room_id' => $room_id,
                 'user_id' => token()->uid,
-                'type' => $feed_id ? 'feed' : ($mission_id ? 'mission' : 'chat'),
+                'type' => $feed_id ? ($message ? 'feed_emoji' : 'feed') :
+                    ($mission_id ? ($message ? 'mission_invite' : 'mission') : 'chat'),
                 'message' => $message,
                 'image_type' => $image_type,
                 'image' => image_url(3, $uploaded_file),
