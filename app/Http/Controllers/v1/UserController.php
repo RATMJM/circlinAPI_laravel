@@ -553,10 +553,14 @@ class UserController extends Controller
      */
     public function feed(Request $request, $user_id): array
     {
+        $category_id = $request->get('category_id');
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
         $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+            ->when($category_id, function ($query, $category_id) {
+                $query->where('mission_categories.id', $category_id);
+            })
             ->where('feeds.user_id', $user_id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
@@ -571,6 +575,11 @@ class UserController extends Controller
         $feeds = Feed::where('feeds.user_id', $user_id)
             ->when(token()->uid != $user_id, function ($query) {
                 $query->where('is_hidden', false);
+            })
+            ->when($category_id, function ($query, $category_id) {
+                $query->whereHas('missions', function ($query) use ($category_id) {
+                    $query->where('mission_category_id', $category_id);
+                });
             })
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
@@ -652,10 +661,14 @@ class UserController extends Controller
     {
         $uid = token()->uid;
 
+        $category_id = $request->get('category_id');
         $limit = $limit ?? $request->get('limit', 20);
         $page = $request->get('page', 0);
 
         $missions = MissionCategory::where('feeds.user_id', $user_id)
+            ->when($category_id, function ($query, $category_id) {
+                $query->where('mission_categories.id', $category_id);
+            })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
