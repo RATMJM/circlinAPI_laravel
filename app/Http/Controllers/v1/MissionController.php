@@ -842,6 +842,8 @@ class MissionController extends Controller
           
             if($mission_info[0]->mission_stat_id == null){
                 $do_yn='N';
+            }else{
+                $do_yn='Y';
             } 
             return success([
                 'success' => true, 
