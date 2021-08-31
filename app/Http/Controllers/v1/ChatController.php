@@ -68,7 +68,7 @@ class ChatController extends Controller
     {
         $user_id = token()->uid;
 
-        $message = $message ?? $request->get('message');
+        $message = trim($message ?? $request->get('message'));
         $file = $request->file('file');
         $mission_id = $type === 'mission' && $id ? $id : $request->get('mission_id');
         $feed_id = $type === 'feed' && $id ? $id : $request->get('feed_id');
