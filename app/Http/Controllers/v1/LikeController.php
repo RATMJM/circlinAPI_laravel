@@ -51,14 +51,16 @@ class LikeController extends Controller
                 default => [null, null],
             };
 
-            if ($table->where('id', $id)->doesntExist()) {
+            $data = $table->where('id', $id)->first();
+
+            if (is_null($data)) {
                 return success([
                     'result' => false,
                     'reason' => "not found $type",
                 ]);
             }
 
-            if (($target_id = $table->where('id', $id)->value('user_id')) === $user_id) {
+            if (($target_id = $data->user_id) === $user_id) {
                 return success([
                     'result' => false,
                     'reason' => "my $type",
