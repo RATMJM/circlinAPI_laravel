@@ -838,7 +838,7 @@ class MissionController extends Controller
             $user_id,
             $user_id,
             $mission_id,
-            $mission_id )  ) ;
+            $mission_id )  )  ;
           
             if($mission_info[0]->mission_stat_id == null){
                 $do_yn='N';
@@ -847,7 +847,7 @@ class MissionController extends Controller
                 'success' => true, 
                 'mission'=>$mission_info,
                 'do_yn'=>$do_yn,
-                'mission_stat_id'=>$mission_info[0]->mission_stat_id,
+                'mission_stat_id'=>$mission_info[0]->mission_stat_id, 
             ]);
                                 
         } catch (Exception $e) {
