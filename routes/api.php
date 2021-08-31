@@ -89,7 +89,6 @@ Route::post('/event_mission_info', [v1\MissionController::class, 'event_mission_
 Route::post('/mission_info', [v1\MissionController::class, 'mission_info']);
 Route::post('/start_event_mission', [v1\MissionController::class, 'start_event_mission']);
 
-
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
     Route::group(['prefix' => '{mission_id}'], function () {

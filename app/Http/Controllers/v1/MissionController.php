@@ -791,7 +791,7 @@ class MissionController extends Controller
 
     public function mission_info(Request $request): array
     {
-        $user_id         = token()->uid;  
+        $user_id         =  token()->uid;  
         $mission_id      = $request->get('mission_id');     
         // $user_id         = 4;//token()->uid;  
         // $mission_id      = 786;//$request->get('mission_id');           
@@ -820,7 +820,7 @@ class MissionController extends Controller
              "https://www.circlin.co.kr/SNS/assets/img/maraTab6.png" as IMG_URL6,
              "https://www.circlin.co.kr/SNS/assets/img/medal_design.png" as IMG_MEDAL,
         ifnull((SELECT "Y" FROM mission_likes n WHERE user_id= ? and a.id=n.mission_id),"N" )as like_yn ,         
-        ifnull((SELECT id FROM mission_stats WHERE user_id= ? and completed_at is null and mission_id= ? ),'' ) as mission_stat_id,
+        ifnull((SELECT id FROM mission_stats WHERE user_id= ? and completed_at is null and mission_id= ? ),"" ) as mission_stat_id,
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
@@ -847,7 +847,7 @@ class MissionController extends Controller
                 'success' => true, 
                 'mission'=>$mission_info,
                 'do_yn'=>$do_yn,
-                'mission_stat_id'=>$mission_info[0]->mission_stat_id, 
+                'mission_stat_id'=> $mission_info[0]->mission_stat_id, 
             ]);
                                 
         } catch (Exception $e) {
