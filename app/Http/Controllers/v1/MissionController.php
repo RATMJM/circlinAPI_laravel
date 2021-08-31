@@ -670,7 +670,7 @@ class MissionController extends Controller
         }
     }
 
-
+    // 이벤트 미션 룸 페이지 정보
     public function event_mission_info(Request $request): array
     {
         $user_id = token()->uid;
@@ -735,17 +735,39 @@ class MissionController extends Controller
                         $today,
                         $user_id, $mission_stat_id, $mission_id )  ) ;
 
-            DB::commit();
-
-
-
+       
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
 
 
+        try {
+            DB::beginTransaction();
+            $finished_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
+            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as FOLLOW_YN
+            From mission_stats a, users b 
+            where a.mission_id= ? and a.completed_at is not null 
+            and b.id=a.user_id and b.deleted_at is null
+            order by a.completed_at desc limit 15
+             ; ', array(    $user_id,   $mission_id,   )  ) ;
 
+       
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+        try {
+            DB::beginTransaction();
+            $total_km = DB::select('select sum(distance) From feed_missions a where mission_id= ? ; ',
+             array(    $mission_id,   )  ) ;
+
+       
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
         // $state = $data[0]->STATE;
         // $sex = $data[0]->SEX;
@@ -755,12 +777,13 @@ class MissionController extends Controller
         // $rank = $data[0]->RANK;
         // $certToday = $data[0]->CERT_TODAY;
         // $finCnt = $data[0]->FINISH;
-
-
-
+        
         return success([
             'success' => true,
             'event_mission_info' => $event_mission_info,
+            'finish_user' => $finished_user,
+            'total_km' => $total_km,
+            
         ]);
     }
 
