@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $users = User::select('id', DB::raw("RAND() r"))->get();
+            $users = User::select('id', DB::raw("RAND()*1000 r"))->get();
 
             $i = 0;
             $data = [];
