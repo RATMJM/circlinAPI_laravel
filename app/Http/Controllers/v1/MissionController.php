@@ -714,7 +714,8 @@ class MissionController extends Controller
                        ),"") as CHANGED,
                f.CHALL_ROUT_0W_TITLE2, f.RUN_IMG1 as EVENT_IMG1 , f.RUN_IMG2 as RUN_EVENT_IMG1, f.RUN_IMG3 as RUN_EVENT_IMG2, f.RUN_IMG4 as RUN_EVENT_IMG3,f.RUN_IMG5 as RUN_EVENT_IMG4,f.CHALLINFO_PK,
                f.CHALL_ROUT_0W_DETAIL1, f.CHALL_ROUT_3W_DETAIL3, f.BG_IMG
-               , g.info_image_1 , g.info_image_2
+               , g.info_image_1 , g.info_image_2,
+               case when (SELECT count(*)  FROM mission_stats WHERE user_id= ? and completed_at is null and mission_id= ? ) = "0" then "N" ELSE "Y" END as do_yn 
             FROM users a, 
             missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
                        LEFT JOIN mission_etc g on  b.id=g.mission_id , 
