@@ -12,6 +12,6 @@ class UserWallpaper extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'created_at' => 'datetime',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 }
