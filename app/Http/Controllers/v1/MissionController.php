@@ -801,7 +801,7 @@ class MissionController extends Controller
                             , d.name_ko as product_name
                             , d.id as product_id
                             , d.thumbnail_image as product_image
-                            , c.info_image_1, c.info_image_2
+                            , c.info_image_1 , c.info_image_2
                             
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
