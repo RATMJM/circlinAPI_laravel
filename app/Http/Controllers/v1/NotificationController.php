@@ -21,6 +21,8 @@ class NotificationController extends Controller
 
         $nogroup = ["follow_feed", "follow_bookmark", "mission_invite", "bookmark_warning"];
 
+        $q = "'".implode("','", $nogroup)."'";
+
         $data = Notification::where('target_id', $user_id)
             ->select([
                 // 'type as group_type',
@@ -35,7 +37,7 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
-            ->groupBy(DB::raw("IF(type in ('" . implode("','", $nogroup) . "'), id, type)"),
+            ->groupBy(DB::raw("IF(type in ($q), id, type)"),
                 DB::raw("CONCAT(YEAR(notifications.created_at),'|',WEEK(notifications.created_at))"),
                 'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
@@ -50,7 +52,8 @@ class NotificationController extends Controller
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
-                'n.*', 'type', DB::raw("!ISNULL(read_at) as is_read"),
+                'n.*', DB::raw("IF(type in ($q) and count > 1, type, CONCAT(type,'_multi')) as type"),
+                DB::raw("!ISNULL(read_at) as is_read"),
                 'users.nickname', 'users.profile_image', 'users.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
@@ -72,16 +75,6 @@ class NotificationController extends Controller
 
         $res = $data->toArray();
         foreach ($data as $i => $item) {
-            // common_codes 에 매칭되도록 type 치환
-            if ($item->count > 1 && !in_array($item->type, $nogroup)) {
-                $res[$i]['type'] = match ($item->type) {
-                    'follow', 'feed_check', 'feed_comment', 'mission_like', 'mission_comment' => $item->type . 's',
-                    'feed_reply' => 'feed_replies',
-                    'mission_reply' => 'mission_replies',
-                    default => null,
-                };
-            }
-
             $replaces = [
                 '{%count}' => '{' . $item->count - 1 . '}',
                 '{%nickname}' => '{' . $item->nickname . '}',
