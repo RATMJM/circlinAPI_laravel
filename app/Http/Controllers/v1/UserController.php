@@ -61,7 +61,7 @@ class UserController extends Controller
             })
             ->count();
 
-        $today_paid_check = FeedLike::withTrashed()->where('user_id', $user_id)
+        $today_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
             ->where('feed_likes.created_at', '>=', date('Y-m-d'))
             ->count();
@@ -76,7 +76,7 @@ class UserController extends Controller
             'category' => $category,
             'yesterday_point' => $yesterday_point,
             'yesterday_check' => $yesterday_check,
-            'today_paid_check' => $today_paid_check,
+            'today_paid_count' => $today_paid_count,
             'badge' => $badge,
             'wallpapers' => $wallpapers,
         ]);
