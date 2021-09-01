@@ -176,6 +176,7 @@ class HomeController extends Controller
                     ->where('user_id', $user_id),
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
+                DB::raw("$user_id as mission_stat_user_id"),
             ])
             ->withCount(['feeds' => function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
