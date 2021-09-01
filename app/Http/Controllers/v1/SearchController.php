@@ -144,8 +144,10 @@ class SearchController extends Controller
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
-                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->limit(1),
+                'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'users.id as owner_id', 'users.nickname as owner_nickname',
                 'users.profile_image as owner_profile_image', 'users.gender as owner_gender',
                 'owner_area' => area(),

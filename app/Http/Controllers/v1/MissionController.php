@@ -209,8 +209,10 @@ class MissionController extends Controller
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
-                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->limit(1),
+                'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
