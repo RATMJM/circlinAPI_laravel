@@ -92,8 +92,8 @@ class BookmarkController extends Controller
 
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
-        } elseif (MissionStat::where('user_id', $user_id)->count() >= 5) {
-            return success(['result' => false, 'reason' => 'bookmark is full']);
+        /*} elseif (MissionStat::where('user_id', $user_id)->count() >= 5) {
+            return success(['result' => false, 'reason' => 'bookmark is full']);*/
         } else {
             $data = MissionStat::create([
                 'user_id' => $user_id,
