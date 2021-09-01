@@ -88,6 +88,7 @@ Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
 Route::post('/event_mission_info', [v1\MissionController::class, 'event_mission_info']);
 Route::post('/mission_info', [v1\MissionController::class, 'mission_info']);
 Route::post('/start_event_mission', [v1\MissionController::class, 'start_event_mission']);
+Route::post('/participant_list', [v1\MissionController::class, 'participant_list']);
 
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');

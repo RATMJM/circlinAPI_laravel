@@ -770,13 +770,13 @@ class MissionController extends Controller
  
          try {
              DB::beginTransaction();
-             $finished_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
+             $recent_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
              (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
              ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
              From mission_stats a, users b 
-             where a.mission_id= ? and a.completed_at is not null 
+             where a.mission_id= ? and a.completed_at is null 
              and b.id=a.user_id and b.deleted_at is null
-             order by a.completed_at desc limit 15
+             order by a.created_at desc limit 15
               ; ', array(    $user_id,   $mission_id,   )  ) ;
  
         
@@ -845,7 +845,7 @@ class MissionController extends Controller
          return success([
              'success' => true,
              'event_mission_info' => $event_mission_info,
-             'finish_user' => $finished_user,
+             'recent_user' => $recent_user,
              'total_km' => $total_km,
              'myRecord' => $myRecord ,
              'mission_stat' => $mission_stat,
@@ -961,7 +961,7 @@ class MissionController extends Controller
 
         try {
             DB::beginTransaction();
-            //미션 댓글 입력
+            //미션   입력
             $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id, ended_at)
                                             values( ?, ? ,? ,? ,?) ;'
                 , [$time, $time,
@@ -989,5 +989,38 @@ class MissionController extends Controller
         }
 
     }
+     //참가자 조회
+    public function participant_list(Request $request): array
+    {
+        $user_id = token()->uid;
+        $mission_id = $request->get('mission_id');
+        $time = date("Y-m-d H:i:s");
+ 
+
+        try {
+            DB::beginTransaction();
+            //참가자 조회
+            $participant_list = DB::select ('select a.user_id, b.nickname, b.profile_image, 
+            (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
+            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
+            From mission_stats a, users b 
+            where a.mission_id= ? and a.completed_at is null 
+            and b.id=a.user_id and b.deleted_at is null
+            order by a.created_at desc;'
+                , [   $user_id,
+                    $mission_id, ]);
+  
+            return success([
+                'success' => true,
+                'participant_list' => $participant_list ,
+            ]);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+    }
+
 
 }
