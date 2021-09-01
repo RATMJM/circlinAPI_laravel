@@ -95,11 +95,12 @@ class NotificationController extends Controller
      * 알림 전송
      *
      * @param string|array $target_ids 알림 받을 대상
+     * @param bool $push 푸시 전송 여부
      * @param string $type 알림 종류
      * @param int|null $id integer 연결될 테이블 id
      * @return array
      */
-    public static function send(string|array $target_ids, string $type, int $id = null): array
+    public static function send(string|array $target_ids, bool $push, string $type, int $id = null): array
     {
         try {
             DB::beginTransaction();
@@ -135,12 +136,12 @@ class NotificationController extends Controller
                 $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id]]));
             }
 
-            $push = match ($type) {
-                'follow', 'feed_check', 'feed_comment', 'feed_reply',
+            /*$push = match ($type) {
+                'feed_check', 'feed_comment', 'feed_reply',
                 'mission_like', 'follow_bookmark',
                 'mission_comment', 'mission_reply', 'bookmark_warning' => true,
                 default => false,
-            };
+            };*/
 
             $user = User::where('id', $user_id)->first();
 
