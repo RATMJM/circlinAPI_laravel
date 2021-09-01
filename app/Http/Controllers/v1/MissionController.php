@@ -819,7 +819,8 @@ class MissionController extends Controller
          $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
          ifnull(sum(b.distance),0) total_distance, 
            ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
-            sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today  
+            sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
+            ifnull((select count(id) from feed_missions where mission_id=612) ,0) cert_count            
            from feeds a, feed_missions b , mission_stats c
          where a.id=b.feed_id and b.mission_id=c.mission_id and b.mission_stat_id=c.id
          and a.user_id= ?
