@@ -198,3 +198,10 @@ Route::get('/shop/cart_list', [v1\ShopController::class, 'cart_list']);
 Route::post('/shop/order', [v1\ShopController::class, 'order_product']);
 Route::post('/shop/cart', [v1\ShopController::class, 'cart']);
 Route::post('/shop/update_cart', [v1\ShopController::class, 'update_cart']);
+
+Route::get('/latest_version', function () {
+    return success([
+        'result' => true,
+        'version' => 5.5,
+    ]);
+});
