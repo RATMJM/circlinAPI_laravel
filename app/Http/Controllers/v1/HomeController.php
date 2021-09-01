@@ -31,7 +31,6 @@ class HomeController extends Controller
         $tabs = [];
         foreach ($category_id as $id) {
             if ($id > 0) {
-
                 $places = Place::when($id, function ($query, $id) {
                     $query->where('missions.mission_category_id', $id);
                 })
@@ -66,7 +65,7 @@ class HomeController extends Controller
                         DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as price"),
                         DB::raw("COUNT(distinct missions.id) as missions_count"),
                     ])
-                    ->groupBy('type', 'product_id', 'outside_product_id')
+                    ->groupBy('mission_products.id')
                     ->orderBy('missions_count', 'desc')
                     ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
                     ->take(2)
