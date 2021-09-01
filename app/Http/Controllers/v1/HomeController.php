@@ -57,7 +57,8 @@ class HomeController extends Controller
                     ->leftJoin('brands', 'brands.id', 'products.brand_id')
                     ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
                     ->select([
-                        'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id',
+                        'mission_products.type', //'mission_products.product_id', 'mission_products.outside_product_id',
+                        DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                         DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as brand"),
                         DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as title"),
                         DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as image"),
