@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use App\Models\ChatUser;
+use App\Models\CommonCode;
 use App\Models\Feed;
 use App\Models\FeedImage;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -116,11 +118,12 @@ class ChatController extends Controller
                 }
             }
 
-            $data = ChatMessage::create([
+            $res = ChatMessage::create($data = [
                 'chat_room_id' => $room_id,
                 'user_id' => token()->uid,
                 'type' => $feed_id ? ($message ? 'feed_emoji' : 'feed') :
-                    ($mission_id ? ($message ? 'mission_invite' : 'mission') : 'chat'),
+                    ($mission_id ? ($message ? 'mission_invite' : 'mission') :
+                        (isset($file) && is_null($message) ? 'chat_image' : 'chat')),
                 'message' => $message,
                 'image_type' => $image_type,
                 'image' => image_url(3, $uploaded_file),
@@ -128,13 +131,29 @@ class ChatController extends Controller
                 'mission_id' => $mission_id,
             ]);
 
+            // 푸시 관련
+            $ids = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)->pluck('user_id');
+            $user = User::find($user_id);
+
+            $latest_message = CommonCode::where('ctg_sm', $data['type'])
+                    ->where('ctg_lg', 'chat')->value('content_ko') ?? $message;
+            $replaces = [
+                '{%nickname}' => $user->nickname,
+            ];
+            $latest_message = str_replace(array_keys($replaces), array_values($replaces), $latest_message);
+
+            $prefix = $data['type'] === 'chat' ? "{$user->nickname}님이 메시지를 발송했습니다.\n" : '';
+
+            PushController::send_gcm_notify($ids, $user->nickname, $prefix . $latest_message,
+                'chat', 'chat.' . $room_id);
+
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
                 ->whereNotNull('socket_id')->join('users', 'users.id', 'user_id')->pluck('socket_id');
 
             return success([
                 'result' => true,
                 'sockets' => $sockets,
-                'message' => $data,
+                'message' => $res,
             ]);
         } else {
             return success([
