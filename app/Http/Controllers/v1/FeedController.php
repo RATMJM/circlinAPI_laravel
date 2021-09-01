@@ -251,8 +251,17 @@ class FeedController extends Controller
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
                 'missions.id', 'mission_categories.emoji', 'missions.title',
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                DB::raw("missions.event_order > 0 as is_event"),
+                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                'missions.started_at', 'missions.ended_at',
+                'missions.thumbnail_image', 'missions.success_count',
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id),
+                'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                DB::raw("$user_id as mission_stat_user_id"),
             ])
             ->get();
 
