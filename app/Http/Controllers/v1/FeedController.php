@@ -36,6 +36,7 @@ class FeedController extends Controller
         $is_hidden = $request->get('is_hidden', 0);
 
         $product_id = $request->get('product_id');
+            $outside_product_id = $request->get('outside_product_id');
         $product_brand = $request->get('product_brand');
         $product_title = $request->get('product_title');
         $product_image = $request->get('product_image');
@@ -143,20 +144,15 @@ class FeedController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $product = OutsideProduct::updateOrCreate([
+            } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
+                    'image' => $product_image,
                     'brand' => $product_brand,
                     'title' => $product_title,
-                ], [
-                    'image' => $product_image,
                     'price' => $product_price,
                     'url' => $product_url,
                 ]);
-                FeedProduct::create([
-                    'feed_id' => $feed->id,
-                    'type' => 'outside',
-                    'outside_product_id' => $product->id,
-                ]);
+                $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
             if ($place_address && $place_title && $place_image) {
@@ -203,7 +199,8 @@ class FeedController extends Controller
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
-                'feed_products.type as product_type', 'feed_products.product_id',
+                'feed_products.type as product_type',
+                DB::raw("IF(feed_products.type='inside', feed_products.product_id, feed_products.outside_product_id) as product_id"),
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
@@ -341,6 +338,7 @@ class FeedController extends Controller
 
             $product_delete = $request->get('product_delete');
             $product_id = $request->get('product_id');
+            $outside_product_id = $request->get('outside_product_id');
             $product_brand = $request->get('product_brand');
             $product_title = $request->get('product_title');
             $product_image = $request->get('product_image');
@@ -375,30 +373,30 @@ class FeedController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $feed->product()->updateOrCreate([], [
-                    'type' => 'outside',
+            } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
                     'image' => $product_image,
                     'brand' => $product_brand,
                     'title' => $product_title,
                     'price' => $product_price,
                     'url' => $product_url,
                 ]);
+                $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
 
             if ($place_delete) {
                 $feed->place()->delete();
             } elseif ($place_address && $place_title && $place_image) {
-                $feed->place()->updateOrCreate([], [
-                        'address' => $place_address,
-                        'title' => $place_title,
-                        'description' => $place_description,
-                        'image' => $place_image,
-                        'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
-                        'lat' => $place_lat,
-                        'lng' => $place_lng,
+                $place = Place::updateOrCreate(['title' => $place_title], [
+                    'address' => $place_address,
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                    'lat' => $place_lat,
+                    'lng' => $place_lng,
                 ]);
+                $feed->update(['place_id' => $place->id]);
             }
 
             DB::commit();

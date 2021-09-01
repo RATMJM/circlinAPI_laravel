@@ -45,6 +45,7 @@ class MissionController extends Controller
             $success_count = $request->get('success_count', 0);
 
             $product_id = $request->get('product_id');
+            $outside_product_id = $request->get('outside_product_id');
             $product_brand = $request->get('product_brand');
             $product_title = $request->get('product_title');
             $product_image = $request->get('product_image');
@@ -151,20 +152,15 @@ class MissionController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $product = OutsideProduct::updateOrCreate([
+            } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
+                    'image' => $product_image,
                     'brand' => $product_brand,
                     'title' => $product_title,
-                ], [
-                    'image' => $product_image,
                     'price' => $product_price,
                     'url' => $product_url,
                 ]);
-                MissionProduct::create([
-                    'mission_id' => $data->id,
-                    'type' => 'outside',
-                    'outside_product_id' => $product->id,
-                ]);
+                $data->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
             if ($place_address && $place_title && $place_image) {
@@ -534,6 +530,7 @@ class MissionController extends Controller
 
             $product_delete = $request->get('product_delete');
             $product_id = $request->get('product_id');
+            $outside_product_id = $request->get('outside_product_id');
             $product_brand = $request->get('product_brand');
             $product_title = $request->get('product_title');
             $product_image = $request->get('product_image');
@@ -560,31 +557,30 @@ class MissionController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_url) {
-                $mission->product()->updateOrCreate([], [
-                    'type' => 'outside',
+            } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
                     'image' => $product_image,
                     'brand' => $product_brand,
                     'title' => $product_title,
                     'price' => $product_price,
                     'url' => $product_url,
                 ]);
+                $mission->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
 
             if ($place_delete) {
                 $mission->place()->delete();
             } elseif ($place_address && $place_title && $place_image) {
-                $mission->place()
-                    ->updateOrCreate([], [
-                        'address' => $place_address,
-                        'title' => $place_title,
-                        'description' => $place_description,
-                        'image' => $place_image,
-                        'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
-                        'lat' => $place_lat,
-                        'lng' => $place_lng,
-                    ]);
+                $place = Place::updateOrCreate(['title' => $place_title], [
+                    'address' => $place_address,
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                    'lat' => $place_lat,
+                    'lng' => $place_lng,
+                ]);
+                $mission->update(['place_id' => $place->id]);
             }
 
             DB::commit();
@@ -691,8 +687,8 @@ class MissionController extends Controller
          // $time = date("Y-m-d H:i:s");
          // $today = date("Y-m-d");
          // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
- 
- 
+
+
          try {
              DB::beginTransaction();
              $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , 
@@ -760,14 +756,14 @@ class MissionController extends Controller
                          $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
                          $today,
                          $user_id, $mission_stat_id, $mission_id )  ) ;
- 
-        
+
+
          } catch (Exception $e) {
              DB::rollBack();
              return exceped($e);
          }
- 
- 
+
+
          try {
              DB::beginTransaction();
              $recent_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
@@ -778,13 +774,13 @@ class MissionController extends Controller
              and b.id=a.user_id and b.deleted_at is null
              order by a.created_at desc limit 15
               ; ', array(    $user_id,   $mission_id,   )  ) ;
- 
-        
+
+
          } catch (Exception $e) {
              DB::rollBack();
              return exceped($e);
          }
- 
+
          // 참가자 총 거리
          try{
              DB::beginTransaction();
@@ -794,7 +790,7 @@ class MissionController extends Controller
              DB::rollBack();
              return exceped($e);
          }
- 
+
          // 내 기록
          try{
              DB::beginTransaction();
@@ -832,7 +828,7 @@ class MissionController extends Controller
          DB::rollBack();
          return exceped($e);
      }
-   
+
          // $state = $data[0]->STATE;
          // $sex = $data[0]->SEX;
          // $challId = $data[0]->CHALL_ID;
@@ -841,7 +837,7 @@ class MissionController extends Controller
          // $rank = $data[0]->RANK;
          // $certToday = $data[0]->CERT_TODAY;
          // $finCnt = $data[0]->FINISH;
-         
+
          return success([
              'success' => true,
              'event_mission_info' => $event_mission_info,
@@ -849,7 +845,7 @@ class MissionController extends Controller
              'total_km' => $total_km,
              'myRecord' => $myRecord ,
              'mission_stat' => $mission_stat,
-             
+
          ]);
      }
 
@@ -995,7 +991,7 @@ class MissionController extends Controller
         $user_id = token()->uid;
         $mission_id = $request->get('mission_id');
         $time = date("Y-m-d H:i:s");
- 
+
 
         try {
             DB::beginTransaction();
@@ -1009,7 +1005,7 @@ class MissionController extends Controller
             order by a.created_at desc;'
                 , [   $user_id,
                     $mission_id, ]);
-  
+
             return success([
                 'success' => true,
                 'participant_list' => $participant_list ,
