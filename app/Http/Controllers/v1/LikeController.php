@@ -74,7 +74,7 @@ class LikeController extends Controller
                 ]);
             }
 
-            $point = 10;
+            $point = 0;
             $paid_point = false; // 대상에게 포인트 줬는지
             $take_point = false; // 10번 체크해서 포인트 받았는지
             $count = FeedLike::withTrashed()->where('user_id', $user_id)
@@ -84,7 +84,7 @@ class LikeController extends Controller
             if ($type === 'feed') {
                 if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
                     && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
-                    $res = PointController::change_point($target_id, $point, 'feed_check', 'feed', $id);
+                    $res = PointController::change_point($target_id, $point+=10, 'feed_check', 'feed', $id);
                     $paid_point = $res['success'] && $res['data']['result'];
 
                     // 지금이 10번째 피드체크 && 100회까지만 지급
