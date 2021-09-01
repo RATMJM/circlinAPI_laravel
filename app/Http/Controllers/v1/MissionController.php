@@ -799,8 +799,8 @@ class MissionController extends Controller
          try{
              DB::beginTransaction();
              $myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
-             (select image from feed_images x where a.id=x.feed_id and `order`=1 ) as image,
-             (select image from feed_images x where a.id=x.feed_id and `order`=1 ) as type, 
+             (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
+             (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
              b.distance, b.laptime, c.goal_distance -- , case when c.completed_at >  ended_at 
              from feeds a, feed_missions b, mission_stats c, missions d
              where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
@@ -820,14 +820,14 @@ class MissionController extends Controller
          ifnull(sum(b.distance),0) total_distance, 
            ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
             sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
-            ifnull((select count(id) from feed_missions where mission_id=612) ,0) cert_count            
+            ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count            
            from feeds a, feed_missions b , mission_stats c
          where a.id=b.feed_id and b.mission_id=c.mission_id and b.mission_stat_id=c.id
          and a.user_id= ?
          and b.mission_id= ?
          and b.mission_stat_id= ?
          GROUP BY  b.distance, c.goal_distance',
-          array(    $user_id, $mission_id, $mission_stat_id   )  ) ;
+          array(  $mission_id, $user_id, $mission_id, $mission_stat_id   )  ) ;
      } catch (Exception $e) {
          DB::rollBack();
          return exceped($e);
