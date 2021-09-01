@@ -38,7 +38,7 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
             ->groupBy(DB::raw("IF(type in ($q), id, type)"),
-                DB::raw("CONCAT(YEAR(notifications.created_at),'|',WEEK(notifications.created_at))"),
+                DB::raw("CONCAT(YEAR(notifications.created_at),'|',MONTH(notifications.created_at),'|',DAY(notifications.created_at))"),
                 'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
             ->take(50);
