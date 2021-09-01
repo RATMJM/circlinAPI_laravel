@@ -7,6 +7,7 @@ use App\Models\PushHistory;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class PushController extends Controller
 {
@@ -21,12 +22,14 @@ class PushController extends Controller
                 ->pluck('device_token', 'id')->toArray();
 
             if (count($users) > 0) {
-                $res = self::send_gcm_notify_android($users, $title, $message, $url, $type);
+                $res = self::send_gcm_notify_android(array_values($users), $title, $message, $url, $type);
 
                 $data = [];
                 $j = 0;
                 foreach ($users as $i => $user) {
                     $data[] = [
+                        'created_at' => DB::raw("NOW()"),
+                        'updated_at' => DB::raw("NOW()"),
                         'target_id' => $i,
                         'device_token' => $user,
                         'title' => $title,
@@ -36,7 +39,7 @@ class PushController extends Controller
                     ];
                     $j += 1;
                 }
-                PushHistory::createMany($data);
+                PushHistory::insert($data);
 
                 return $res;
             } else {
