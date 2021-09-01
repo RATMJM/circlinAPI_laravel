@@ -601,16 +601,6 @@ class UserController extends Controller
                             $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
                         });
                     })->limit(1),
-                'mission_stat_id' => MissionStat::withTrashed()->select('id')
-                    ->whereHas('feed_missions', function ($query) {
-                        $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
-                    })
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')
-                    ->whereHas('feed_missions', function ($query) {
-                        $query->whereColumn('feed_missions.feed_id', 'feeds.id')->orderBy('id');
-                    })
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'checks' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comments' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'feeds.id')
