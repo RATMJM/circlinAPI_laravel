@@ -175,6 +175,8 @@ class MissionController extends Controller
                 $data->update(['place_id' => $place->id]);
             }
 
+            (new BookmarkController())->store($request, $data->id);
+
             $this->invite($request, $data->id);
 
             DB::commit();
