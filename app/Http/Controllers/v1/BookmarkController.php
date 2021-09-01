@@ -78,10 +78,10 @@ class BookmarkController extends Controller
         ]);
     }
 
-    public function store(Request $request): array
+    public function store(Request $request, $mission_id = null): array
     {
         $user_id = token()->uid;
-        $mission_id = $request->get('mission_id');
+        $mission_id = $mission_id ?? $request->get('mission_id');
 
         if (is_null($mission_id)) {
             return success([
