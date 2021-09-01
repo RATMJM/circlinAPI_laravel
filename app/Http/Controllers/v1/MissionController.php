@@ -693,8 +693,11 @@ class MissionController extends Controller
             ifnull(c.RANK,0) as RANK, 
             round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , e.distance, e.laptime, e.laptime_origin, e.distance_origin,
               (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
-             case when d.completed_at is null then "" else "1" end as BONUS_FLAG,  
-             case when d.ended_at is null then "Y" else "N" end as STATE ,
+             case when d.completed_at is null then "" else "1" end as BONUS_FLAG,   
+             CASE when date_add(SYSDATE() , interval + 9 hour ) between b.reserve_started_at and b.reserve_ended_at then "R"
+             when date_add(SYSDATE() , interval + 9 hour ) between b.started_at and b.ended_at then "Y"
+             ELSE "N" end as STATE,
+
               ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
               ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, -- 받은변수로 고정값넣어주면 좋음
               b.started_at as START_DATE, Adddate(b.ended_at, interval 1 day )  as END_DAY1,
