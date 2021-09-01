@@ -75,7 +75,7 @@ class ChatController extends Controller
         $mission_id = $type === 'mission' && $id ? $id : $request->get('mission_id');
         $feed_id = $type === 'feed' && $id ? $id : $request->get('feed_id');
 
-        if (!$message && !$file && !$mission_id && !$feed_id) {
+        if ($message==='' && !$file && !$mission_id && !$feed_id) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
@@ -123,7 +123,7 @@ class ChatController extends Controller
                 'user_id' => token()->uid,
                 'type' => $feed_id ? ($message ? 'feed_emoji' : 'feed') :
                     ($mission_id ? ($message ? 'mission_invite' : 'mission') :
-                        (isset($file) && is_null($message) ? 'chat_image' : 'chat')),
+                        (isset($file) && $message==='' ? 'chat_image' : 'chat')),
                 'message' => $message,
                 'image_type' => $image_type,
                 'image' => image_url(3, $uploaded_file),
