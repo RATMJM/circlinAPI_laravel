@@ -47,6 +47,8 @@ class FeedController extends Controller
         $place_description = $request->get('place_description');
         $place_image = $request->get('place_image');
         $place_url = $request->get('place_url');
+        $place_lat = $request->get('place_lat');
+        $place_lng = $request->get('place_lng');
 
         if (!$content || !$files) {
             return success([
@@ -163,6 +165,8 @@ class FeedController extends Controller
                     'description' => $place_description,
                     'image' => $place_image,
                     'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                    'lat' => $place_lat,
+                    'lng' => $place_lng,
                 ]);
                 $feed->update(['place_id' => $place->id]);
             }
@@ -340,6 +344,8 @@ class FeedController extends Controller
             $place_description = $request->get('place_description');
             $place_image = $request->get('place_image');
             $place_url = $request->get('place_url');
+            $place_lat = $request->get('place_lat');
+            $place_lng = $request->get('place_lng');
 
             $update_data = [];
             if (isset($content) && $content !== '') {
@@ -376,11 +382,13 @@ class FeedController extends Controller
                 $feed->place()->delete();
             } elseif ($place_address && $place_title && $place_image) {
                 $feed->place()->updateOrCreate([], [
-                    'address' => $place_address,
-                    'title' => $place_title,
-                    'description' => $place_description,
-                    'image' => $place_image,
-                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                        'address' => $place_address,
+                        'title' => $place_title,
+                        'description' => $place_description,
+                        'image' => $place_image,
+                        'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                        'lat' => $place_lat,
+                        'lng' => $place_lng,
                 ]);
             }
 

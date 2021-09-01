@@ -7,14 +7,12 @@ use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
-use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionImage;
-use App\Models\MissionPlace;
 use App\Models\MissionProduct;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
@@ -58,6 +56,8 @@ class MissionController extends Controller
             $place_description = $request->get('place_description');
             $place_image = $request->get('place_image');
             $place_url = $request->get('place_url');
+            $place_lat = $request->get('place_lat');
+            $place_lng = $request->get('place_lng');
 
             if (!$title && !$files) {
                 return success([
@@ -173,6 +173,8 @@ class MissionController extends Controller
                     'description' => $place_description,
                     'image' => $place_image,
                     'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                    'lat' => $place_lat,
+                    'lng' => $place_lng,
                 ]);
                 $data->update(['place_id' => $place->id]);
             }
@@ -544,6 +546,8 @@ class MissionController extends Controller
             $place_description = $request->get('place_description');
             $place_image = $request->get('place_image');
             $place_url = $request->get('place_url');
+            $place_lat = $request->get('place_lat');
+            $place_lng = $request->get('place_lng');
 
             if (isset($description) && $description !== '') {
                 $mission->update(['description' => $description]);
@@ -573,12 +577,14 @@ class MissionController extends Controller
             } elseif ($place_address && $place_title && $place_image) {
                 $mission->place()
                     ->updateOrCreate([], [
-                    'address' => $place_address,
-                    'title' => $place_title,
-                    'description' => $place_description,
-                    'image' => $place_image,
-                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
-                ]);
+                        'address' => $place_address,
+                        'title' => $place_title,
+                        'description' => $place_description,
+                        'image' => $place_image,
+                        'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                        'lat' => $place_lat,
+                        'lng' => $place_lng,
+                    ]);
             }
 
             DB::commit();
@@ -645,7 +651,7 @@ class MissionController extends Controller
     public function destroy($id): array
     {
         try {
-        DB::beginTransaction();
+            DB::beginTransaction();
 
             $user_id = token()->uid;
 
@@ -674,11 +680,11 @@ class MissionController extends Controller
     public function event_mission_info(Request $request): array
     {
         $user_id = token()->uid;
-        $mission_stat_id =  $request->get('challPk');
+        $mission_stat_id = $request->get('challPk');
         $mission_id = $request->get('challId');
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
-        $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+        $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
         // $user_id =1;//token()->uid;
         // $mission_stat_id = "1042518";//  $request->get('challPk');
         // $mission_id = "962" ;//$request->get('challId');
@@ -743,15 +749,15 @@ class MissionController extends Controller
             -- and b.id=e.mission_id
             -- and e.mission_stat_id=d.id 
             and a.id= ?    and d.id=? and b.id =?
-             ; ', array($mission_id,
-                        $user_id,
-                        $mission_id,
-                        $mission_stat_id, $mission_id, $today, $mission_id,
-                        $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
-                        $today,
-                        $user_id, $mission_stat_id, $mission_id )  ) ;
+             ; ', [$mission_id,
+                $user_id,
+                $mission_id,
+                $mission_stat_id, $mission_id, $today, $mission_id,
+                $user_id, $today, $mission_id, $user_id, $yesterDay, $mission_id,
+                $today,
+                $user_id, $mission_stat_id, $mission_id]);
 
-       
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -767,9 +773,9 @@ class MissionController extends Controller
             where a.mission_id= ? and a.completed_at is not null 
             and b.id=a.user_id and b.deleted_at is null
             order by a.completed_at desc limit 15
-             ; ', array(    $user_id,   $mission_id,   )  ) ;
+             ; ', [$user_id, $mission_id,]);
 
-       
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -778,9 +784,9 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
             $total_km = DB::select('select ifnull(sum(distance),0) as total_km From feed_missions a where mission_id= ? ; ',
-             array(    $mission_id,   )  ) ;
+                [$mission_id,]);
 
-       
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -794,24 +800,24 @@ class MissionController extends Controller
         // $rank = $data[0]->RANK;
         // $certToday = $data[0]->CERT_TODAY;
         // $finCnt = $data[0]->FINISH;
-        
+
         return success([
             'success' => true,
             'event_mission_info' => $event_mission_info,
             'finish_user' => $finished_user,
             'total_km' => $total_km,
-            
+
         ]);
     }
 
 
     public function mission_info(Request $request): array
     {
-        $user_id         =  token()->uid;  
-        $mission_id      = $request->get('mission_id');     
-        // $user_id         = 4;//token()->uid;  
-        // $mission_id      = 786;//$request->get('mission_id');           
-        $time = date("Y-m-d H:i:s"); 
+        $user_id = token()->uid;
+        $mission_id = $request->get('mission_id');
+        // $user_id         = 4;//token()->uid;
+        // $mission_id      = 786;//$request->get('mission_id');
+        $time = date("Y-m-d H:i:s");
 
         try {
             DB::beginTransaction();
@@ -849,92 +855,91 @@ class MissionController extends Controller
 					LEFT JOIN mission_products b on b.mission_id=a.id
                     LEFT JOIN products d on b.product_id = d.id,  `users` as owner 
             where a.user_id=owner.id and a.id=? and a.deleted_at is null;'
-            , array($mission_id,
-            $mission_id, 
-            $user_id,
-            $user_id,
-            $mission_id,
-            $mission_id )  )  ;
-          
-            if($mission_info[0]->mission_stat_id == null){
-                $do_yn='N';
-            }else{
-                $do_yn='Y';
-            } 
+                , [$mission_id,
+                    $mission_id,
+                    $user_id,
+                    $user_id,
+                    $mission_id,
+                    $mission_id]);
+
+            if ($mission_info[0]->mission_stat_id == null) {
+                $do_yn = 'N';
+            } else {
+                $do_yn = 'Y';
+            }
             return success([
-                'success' => true, 
-                'mission'=>$mission_info,
-                'do_yn'=>$do_yn,
-                'mission_stat_id'=> $mission_info[0]->mission_stat_id, 
+                'success' => true,
+                'mission' => $mission_info,
+                'do_yn' => $do_yn,
+                'mission_stat_id' => $mission_info[0]->mission_stat_id,
             ]);
-                                
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
 
     }
-    
-    
+
+
     public function start_event_mission(Request $request): array
     {
-        $user_id         =  token()->uid;  
-        $mission_id      =  $request->get('mission_id');   
-        // $user_id         = 4;//token()->uid;  
-        // $mission_id      = 786;//$request->get('mission_id');           
-        $time = date("Y-m-d H:i:s"); 
+        $user_id = token()->uid;
+        $mission_id = $request->get('mission_id');
+        // $user_id         = 4;//token()->uid;
+        // $mission_id      = 786;//$request->get('mission_id');
+        $time = date("Y-m-d H:i:s");
         // insertExtUserCode($uid,$code,$challId);
-         
-       
-            
-            //미션마스터 조회
-            $mission_info = DB::select('select started_at, ended_at, CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
+
+
+        //미션마스터 조회
+        $mission_info = DB::select('select started_at, ended_at, CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
             ELSE "" end as START_DATE_CHECK, 
             (select   count(id) +1 from mission_stats where mission_id = ?) as user_count
             From missions a
             where id= ?;'
-            , array(  $mission_id,$mission_id  )  ) ;
-           
-              if($mission_info[0]->START_DATE_CHECK=='PRE'){ // 오늘날짜와 비교해서 당일이면 상태를 시작상태(Y)로 변경
-                $state='R'; // 안쓰는 로직으로 변경됨. 무조건 다음날 부터 선택가능
-                $timestamp1 = $mission_info[0]->started_at;
-                $today="";
-              }else if($mission_info[0]->START_DATE_CHECK=='START'){
-                $state='Y';
-                // $timestamp1 = $checkDate;
-                $today = date("Y-m-d H:i:s");
-              }else if($mission_info[0]->START_DATE_CHECK=='END'){
-                return success([
-                    'success' => 'END',  
-                ]);
-              }
-              
-        
+            , [$mission_id, $mission_id]);
+
+        if ($mission_info[0]->START_DATE_CHECK == 'PRE') { // 오늘날짜와 비교해서 당일이면 상태를 시작상태(Y)로 변경
+            $state = 'R'; // 안쓰는 로직으로 변경됨. 무조건 다음날 부터 선택가능
+            $timestamp1 = $mission_info[0]->started_at;
+            $today = "";
+        } elseif ($mission_info[0]->START_DATE_CHECK == 'START') {
+            $state = 'Y';
+            // $timestamp1 = $checkDate;
+            $today = date("Y-m-d H:i:s");
+        } elseif ($mission_info[0]->START_DATE_CHECK == 'END') {
+            return success([
+                'success' => 'END',
+            ]);
+        }
+
+
         try {
             DB::beginTransaction();
             //미션 댓글 입력
             $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id, ended_at)
                                             values( ?, ? ,? ,? ,?) ;'
-            , array($time, $time,
-            $user_id, 
-            $mission_id, 
-            $mission_info[0]->ended_at )  ) ;
-            
+                , [$time, $time,
+                    $user_id,
+                    $mission_id,
+                    $mission_info[0]->ended_at]);
+
             DB::commit();
 
 
             $mission_stat_id = DB::select('select max(id) as mission_stat_id
             From mission_stats a
             where mission_id= ? and user_id= ?  ;'
-            , array(  $mission_id,$user_id  )  ) ;
+                , [$mission_id, $user_id]);
 
             return success([
-                'success' => true,  
+                'success' => true,
                 'mission_stat_id' => $mission_stat_id,
-                'user_count' => $mission_info[0] -> user_count,
+                'user_count' => $mission_info[0]->user_count,
             ]);
-                                
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
