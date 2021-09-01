@@ -766,6 +766,7 @@ class UserController extends Controller
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
+            ->orderBy('missions.id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
