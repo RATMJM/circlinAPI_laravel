@@ -89,7 +89,7 @@ class LikeController extends Controller
 
                     // 지금이 10번째 피드체크 && 100회까지만 지급
                     if ($count % 10 === 9 && $count < 10) {
-                        $res = PointController::change_point($user_id, 100, 'feed_check_cumulate');
+                        $res = PointController::change_point($user_id, 10, 'feed_check_cumulate');
                         $take_point = $res['success'] && $res['data']['result'];
                     }
 
