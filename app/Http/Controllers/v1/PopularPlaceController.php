@@ -26,7 +26,7 @@ class PopularPlaceController extends Controller
             })
             ->select([
                 'places.id', 'places.address', 'places.title', 'places.description',
-                'places.image', 'places.url',
+                'places.image', 'places.url', 'places.lat', 'places.lng',
                 DB::raw("COUNT(distinct missions.id) as missions_count"),
             ])
             ->groupBy('places.id')
@@ -80,7 +80,7 @@ class PopularPlaceController extends Controller
         $data = Place::where('places.id', $id)
             ->select([
                 'places.id', 'places.address', 'places.title', 'places.description',
-                'places.image', 'places.url',
+                'places.image', 'places.url', 'places.lat', 'places.lng',
             ])
             ->withCount('missions')
             ->with('missions', function ($query) use ($page, $limit) {
