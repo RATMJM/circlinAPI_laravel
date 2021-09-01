@@ -676,139 +676,182 @@ class MissionController extends Controller
         }
     }
 
-    // 이벤트 미션 룸 페이지 정보
-    public function event_mission_info(Request $request): array
-    {
-        $user_id = token()->uid;
-        $mission_stat_id = $request->get('challPk');
-        $mission_id = $request->get('challId');
-        $time = date("Y-m-d H:i:s");
-        $today = date("Y-m-d");
-        $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
-        // $user_id =1;//token()->uid;
-        // $mission_stat_id = "1042518";//  $request->get('challPk');
-        // $mission_id = "962" ;//$request->get('challId');
-        // $time = date("Y-m-d H:i:s");
-        // $today = date("Y-m-d");
-        // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
-
-
-        try {
-            DB::beginTransaction();
-            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
-            ifnull(c.RANK,0) as RANK, 
-            round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , e.distance, e.laptime, e.laptime_origin, e.distance_origin,
-              (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
-             case when d.completed_at is null then "" else "1" end as BONUS_FLAG,   
-             CASE when date_add(SYSDATE() , interval + 9 hour ) between b.reserve_started_at and b.reserve_ended_at then "R"
-             when date_add(SYSDATE() , interval + 9 hour ) between b.started_at and b.ended_at then "Y"
-             ELSE "N" end as STATE,
-
-              ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
-              ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, -- 받은변수로 고정값넣어주면 좋음
-              b.started_at as START_DATE, Adddate(b.ended_at, interval 1 day )  as END_DAY1,
-              (SELECT COUNT(*) FROM  feed_missions WHERE  mission_stat_id = ? and mission_id= ? and substr(created_at,1,10)= ?)  as CERT_TODAY,
-              (SELECT count(k.mission_id) FROM mission_stats k 
-                WHERE k.mission_id=? and completed_at is not null) as FINISH,
-             ifnull(   ( SELECT ifnull(YEST.RANK-TODAY.RANK,"0") CHANGED FROM
-                                               (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
-                                               FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
-                                               WHERE  a._ID=b.USER_PK
-                                               and USER_PK= ?  and INS_DATE=? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1) TODAY 
-                                               LEFT JOIN 
-                                               (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
-                                               FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
-                                               WHERE
-                                               a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
-                       ),"") as CHANGED,
-                    g.bg_image,
-                    g.info_image_1 , 
-                    g.info_image_2, 
-                    g.info_image_3,
-                    g.info_image_4,
-                    g.info_image_5,
-                    g.info_image_6,
-                    g.info_image_7,
-                    g.intro_image_1, 
-                    g.intro_image_2, 
-                    g.intro_image_3,
-                    g.intro_image_4,
-                    g.intro_image_5,
-                    g.intro_image_6,
-                    g.intro_image_7, g.intro_image_8, g.intro_image_9, g.intro_image_10,
-                    g.subtitle_1 , `description`, g.subtitle_3 , g.subtitle_4 ,g.subtitle_5 , g.subtitle_6, g.subtitle_7 
-            FROM users a, 
-            missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
-                       LEFT JOIN mission_etc g on  b.id=g.mission_id , 
-            mission_stats d 
-            LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
-            left join feed_missions e on   d.id=e.mission_stat_id
-            
-            where b.id=d.mission_id
-            and d.user_id=a.id
-            -- and b.id=e.mission_id
-            -- and e.mission_stat_id=d.id 
-            and a.id= ?    and d.id=? and b.id =?
-             ; ', [$mission_id,
-                $user_id,
-                $mission_id,
-                $mission_stat_id, $mission_id, $today, $mission_id,
-                $user_id, $today, $mission_id, $user_id, $yesterDay, $mission_id,
-                $today,
-                $user_id, $mission_stat_id, $mission_id]);
-
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
-        }
-
-
-        try {
-            DB::beginTransaction();
-            $finished_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
-            (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
-            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
-            From mission_stats a, users b 
-            where a.mission_id= ? and a.completed_at is not null 
-            and b.id=a.user_id and b.deleted_at is null
-            order by a.completed_at desc limit 15
-             ; ', [$user_id, $mission_id,]);
-
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
-        }
-
-        try {
-            DB::beginTransaction();
-            $total_km = DB::select('select ifnull(sum(distance),0) as total_km From feed_missions a where mission_id= ? ; ',
-                [$mission_id,]);
-
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
-        }
-
-        // $state = $data[0]->STATE;
-        // $sex = $data[0]->SEX;
-        // $challId = $data[0]->CHALL_ID;
-        // $score = $data[0]->SCORE;
-        // $bonusFlag = $data[0]->BONUS_FLAG;
-        // $rank = $data[0]->RANK;
-        // $certToday = $data[0]->CERT_TODAY;
-        // $finCnt = $data[0]->FINISH;
-
-        return success([
-            'success' => true,
-            'event_mission_info' => $event_mission_info,
-            'finish_user' => $finished_user,
-            'total_km' => $total_km,
-
-        ]);
-    }
+     // 이벤트 미션 룸 페이지 정보
+     public function event_mission_info(Request $request): array
+     {
+         $user_id = token()->uid;
+         $mission_stat_id =  $request->get('challPk');
+         $mission_id = $request->get('challId');
+         $time = date("Y-m-d H:i:s");
+         $today = date("Y-m-d");
+         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+         // $user_id =1;//token()->uid;
+         // $mission_stat_id = "1042518";//  $request->get('challPk');
+         // $mission_id = "962" ;//$request->get('challId');
+         // $time = date("Y-m-d H:i:s");
+         // $today = date("Y-m-d");
+         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+ 
+ 
+         try {
+             DB::beginTransaction();
+             $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , 
+             CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
+             ifnull(c.RANK,0) as RANK, 
+             round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , 
+             e.distance, e.laptime, e.laptime_origin, e.distance_origin,
+               (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
+              case when d.completed_at is null then "" else "1" end as BONUS_FLAG,   
+              CASE when date_add(SYSDATE() , interval + 9 hour ) between b.reserve_started_at and b.reserve_ended_at then "R"
+              when date_add(SYSDATE() , interval + 9 hour ) between b.started_at and b.ended_at then "Y"
+              ELSE "N" end as STATE,
+ 
+               ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
+               ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, 
+               b.started_at as START_DATE, Adddate(b.ended_at, interval 1 day )  as END_DAY1,
+               (SELECT COUNT(*) FROM  feed_missions WHERE  mission_stat_id = ? 
+               and mission_id= ? and substr(created_at,1,10)= ?)  as CERT_TODAY,
+               (SELECT count(k.mission_id) FROM mission_stats k 
+                 WHERE k.mission_id=? and completed_at is not null) as FINISH,
+              ifnull(   ( SELECT ifnull(YEST.RANK-TODAY.RANK,"0") CHANGED FROM
+                             (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
+                             FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
+                             WHERE  a._ID=b.USER_PK
+                             and USER_PK= ?  and INS_DATE=? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1) TODAY 
+                             LEFT JOIN 
+                             (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
+                             FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
+                             WHERE
+                             a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN="N" 
+                             and b.SEX="A" and b.CHALL_ID= ? limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
+                        ),"") as CHANGED,
+                     g.bg_image,
+                     g.info_image_1 , 
+                     g.info_image_2, 
+                     g.info_image_3,
+                     g.info_image_4,
+                     g.info_image_5,
+                     g.info_image_6,
+                     g.info_image_7,
+                     g.intro_image_1, 
+                     g.intro_image_2, 
+                     g.intro_image_3,
+                     g.intro_image_4,
+                     g.intro_image_5,
+                     g.intro_image_6,
+                     g.intro_image_7, g.intro_image_8, g.intro_image_9, g.intro_image_10,
+                     g.subtitle_1 , `description`, g.subtitle_3 , g.subtitle_4 ,g.subtitle_5 , g.subtitle_6, g.subtitle_7 
+             FROM users a, 
+             missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
+                        LEFT JOIN mission_etc g on  b.id=g.mission_id , 
+             mission_stats d 
+             LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
+             left join feed_missions e on   d.id=e.mission_stat_id
+             
+             where b.id=d.mission_id
+             and d.user_id=a.id
+             -- and b.id=e.mission_id
+             -- and e.mission_stat_id=d.id 
+             and a.id= ?    and d.id=? and b.id =?
+              ; ', array($mission_id,
+                         $user_id,
+                         $mission_id,
+                         $mission_stat_id, $mission_id, $today, $mission_id,
+                         $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
+                         $today,
+                         $user_id, $mission_stat_id, $mission_id )  ) ;
+ 
+        
+         } catch (Exception $e) {
+             DB::rollBack();
+             return exceped($e);
+         }
+ 
+ 
+         try {
+             DB::beginTransaction();
+             $finished_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
+             (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
+             ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
+             From mission_stats a, users b 
+             where a.mission_id= ? and a.completed_at is not null 
+             and b.id=a.user_id and b.deleted_at is null
+             order by a.completed_at desc limit 15
+              ; ', array(    $user_id,   $mission_id,   )  ) ;
+ 
+        
+         } catch (Exception $e) {
+             DB::rollBack();
+             return exceped($e);
+         }
+ 
+         // 참가자 총 거리
+         try{
+             DB::beginTransaction();
+             $total_km = DB::select('select ifnull(sum(distance),0) as total_km From feed_missions a where mission_id= ? ; ',
+              array(    $mission_id,   )  ) ;
+         } catch (Exception $e) {
+             DB::rollBack();
+             return exceped($e);
+         }
+ 
+         // 내 기록
+         try{
+             DB::beginTransaction();
+             $myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+             (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
+             (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+             b.distance, b.laptime, c.goal_distance -- , case when c.completed_at >  ended_at 
+             from feeds a, feed_missions b, mission_stats c, missions d
+             where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
+             and a.user_id=c.user_id
+             and a.user_id= ? 
+             and b.mission_id= ? 
+             and b.mission_stat_id = ?; ',
+              array(    $user_id, $mission_id, $mission_stat_id   )  ) ;
+         } catch (Exception $e) {
+             DB::rollBack();
+             return exceped($e);
+         }
+        // 내 미션 상태
+        try{
+         DB::beginTransaction();
+         $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
+         ifnull(sum(b.distance),0) total_distance, 
+           ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
+            sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
+            ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count            
+           from feeds a, feed_missions b , mission_stats c
+         where a.id=b.feed_id and b.mission_id=c.mission_id and b.mission_stat_id=c.id
+         and a.user_id= ?
+         and b.mission_id= ?
+         and b.mission_stat_id= ?
+         GROUP BY  b.distance, c.goal_distance',
+          array(  $mission_id, $user_id, $mission_id, $mission_stat_id   )  ) ;
+     } catch (Exception $e) {
+         DB::rollBack();
+         return exceped($e);
+     }
+   
+         // $state = $data[0]->STATE;
+         // $sex = $data[0]->SEX;
+         // $challId = $data[0]->CHALL_ID;
+         // $score = $data[0]->SCORE;
+         // $bonusFlag = $data[0]->BONUS_FLAG;
+         // $rank = $data[0]->RANK;
+         // $certToday = $data[0]->CERT_TODAY;
+         // $finCnt = $data[0]->FINISH;
+         
+         return success([
+             'success' => true,
+             'event_mission_info' => $event_mission_info,
+             'finish_user' => $finished_user,
+             'total_km' => $total_km,
+             'myRecord' => $myRecord ,
+             'mission_stat' => $mission_stat,
+             
+         ]);
+     }
 
 
     public function mission_info(Request $request): array
