@@ -92,6 +92,8 @@ class LikeController extends Controller
                         $res = PointController::change_point($user_id, 100, 'feed_check_cumulate');
                         $take_point = $res['success'] && $res['data']['result'];
                     }
+
+                    $count += 1;
                 }
             }
 
