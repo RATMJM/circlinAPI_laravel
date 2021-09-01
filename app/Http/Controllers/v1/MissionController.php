@@ -720,6 +720,13 @@ class MissionController extends Controller
                     g.info_image_5,
                     g.info_image_6,
                     g.info_image_7,
+                    g.intro_image_1, 
+                    g.intro_image_2, 
+                    g.intro_image_3,
+                    g.intro_image_4,
+                    g.intro_image_5,
+                    g.intro_image_6,
+                    g.intro_image_7, g.intro_image_8, g.intro_image_9, g.intro_image_10,
                     g.subtitle_1 , `description`, g.subtitle_3 , g.subtitle_4 ,g.subtitle_5 , g.subtitle_6, g.subtitle_7 
             FROM users a, 
             missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
