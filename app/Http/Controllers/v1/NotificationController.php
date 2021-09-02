@@ -112,11 +112,11 @@ class NotificationController extends Controller
         try {
             DB::beginTransaction();
 
-            $user_id = token()->uid;
+            $user_id = token_option()?->uid;
 
             $parent_id = null;
             $data = match ($type) {
-                'follow' => ['user_id' => $user_id],
+                'follow', 'feed_emoji' => ['user_id' => $user_id],
                 'feed_check' => ['user_id' => $user_id, 'feed_id' => $parent_id = $id],
                 'feed_comment', 'feed_reply' => [
                     'user_id' => $user_id,

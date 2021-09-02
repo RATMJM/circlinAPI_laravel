@@ -132,7 +132,7 @@ class ChatController extends Controller
             ]);
 
             // 푸시 관련
-            $ids = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)->pluck('user_id');
+            $ids = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)->pluck('user_id')->toArray();
             $user = User::find($user_id);
 
             $latest_message = CommonCode::where('ctg_sm', $data['type'])
@@ -144,7 +144,11 @@ class ChatController extends Controller
 
             $prefix = $data['type'] === 'chat' ? "{$user->nickname}님이 메시지를 발송했습니다.\n" : '';
 
-            PushController::send_gcm_notify($ids, $user->nickname, /*$prefix .*/ $latest_message,
+            if ($res->type === 'feed_emoji') {
+                NotificationController::send($ids, false, 'feed_emoji');
+            }
+
+            PushController::send_gcm_notify($ids, $user->nickname, /*$prefix .*/ $latest_message."\n\"$message\"",
                 profile_image($user), 'chat.' . $room_id, $user_id);
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
