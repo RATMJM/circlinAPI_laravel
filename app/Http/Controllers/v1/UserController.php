@@ -666,6 +666,18 @@ class UserController extends Controller
         $limit = $limit ?? $request->get('limit', 20);
         $page = $request->get('page', 0);
 
+        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+            ->where('feeds.user_id', $user_id)
+            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
+            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->select([
+                'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
+                DB::raw('COUNT(distinct feeds.id) as feeds'),
+            ])
+            ->groupBy('mission_categories.id')
+            ->get();
+
         $missions = MissionCategory::where('feeds.user_id', $user_id)
             ->when($category_id, function ($query, $category_id) {
                 $query->whereIn('mission_categories.id', Arr::wrap($category_id));
@@ -725,6 +737,7 @@ class UserController extends Controller
             function users($mission_id)
             {
                 return MissionStat::where('mission_id', $mission_id)
+                    ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
                     ->join('users', 'users.id', 'mission_stats.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
                     ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
@@ -748,6 +761,7 @@ class UserController extends Controller
 
         return success([
             'result' => true,
+            'categories' => $categories,
             'missions_count' => $missions_count,
             'missions' => $missions,
         ]);
@@ -799,6 +813,7 @@ class UserController extends Controller
             function mission_user($mission_id)
             {
                 return MissionStat::where('mission_id', $mission_id)
+                    ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
                     ->join('users', 'users.id', 'mission_stats.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
                     ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')

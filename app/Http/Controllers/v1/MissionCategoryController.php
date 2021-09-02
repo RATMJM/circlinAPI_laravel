@@ -119,7 +119,7 @@ class MissionCategoryController extends Controller
 
         $limit = $limit ?? $request->get('limit', 20);
         $page = $page ?? $request->get('page', 0);
-        $sort = $sort ?? $request->get('sort', 'popular');
+        $sort = $sort ?? $request->get('sort', 'recent');
 
         $data = Mission::when($id, function ($query, $id) {
             $query->whereIn('missions.mission_category_id', Arr::wrap($id));
@@ -127,10 +127,16 @@ class MissionCategoryController extends Controller
             ->when($id === 0, function ($query) {
                 $query->where('event_order', '>', 0);
             })
+            /*->leftJoin('mission_stats', function ($query) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->whereNull('deleted_at');
+            })*/
             ->select([
                 'missions.id',
-                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
+                // DB::raw("COUNT(distinct mission_stats.user_id) as bookmarks"),
+                // 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
+            // ->groupBy('missions.id')
             ->orderBy(DB::raw("event_order=0"))
             ->orderBy('event_order');
 
@@ -158,7 +164,7 @@ class MissionCategoryController extends Controller
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
-                'm.bookmarks',
+                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),//'m.bookmarks',
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
@@ -170,7 +176,8 @@ class MissionCategoryController extends Controller
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'mission_products.type as product_type', 'mission_products.product_id', 'mission_products.outside_product_id',
+                'mission_products.type as product_type', //'mission_products.product_id', 'mission_products.outside_product_id',
+                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
@@ -187,6 +194,7 @@ class MissionCategoryController extends Controller
         function mission_user($mission_id)
         {
             return MissionStat::where('mission_id', $mission_id)
+                ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
                 ->join('users', 'users.id', 'mission_stats.user_id')
                 ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
                 ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
