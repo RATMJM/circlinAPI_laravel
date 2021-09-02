@@ -1070,6 +1070,8 @@ class MissionController extends Controller
                     return success([
                         'success' => true,
                         'certification_image' => $certification_image,
+                        'filename' => $filename,
+                        'mission_stat_id' => $mission_stat_id
                     ]);
         
                 } catch (Exception $e) {
