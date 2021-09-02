@@ -676,26 +676,26 @@ class MissionController extends Controller
         }
     }
 
-     // 이벤트 미션 룸 페이지 정보
-     public function event_mission_info(Request $request): array
-     {
-         $user_id = token()->uid;
-         $mission_stat_id =  $request->get('challPk');
-         $mission_id = $request->get('challId');
-         $time = date("Y-m-d H:i:s");
-         $today = date("Y-m-d");
-         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
-         // $user_id =1;//token()->uid;
-         // $mission_stat_id = "1042518";//  $request->get('challPk');
-         // $mission_id = "962" ;//$request->get('challId');
-         // $time = date("Y-m-d H:i:s");
-         // $today = date("Y-m-d");
-         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+    // 이벤트 미션 룸 페이지 정보
+    public function event_mission_info(Request $request): array
+    {
+        $user_id = token()->uid;
+        $mission_stat_id = $request->get('challPk');
+        $mission_id = $request->get('challId');
+        $time = date("Y-m-d H:i:s");
+        $today = date("Y-m-d");
+        $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
+        // $user_id =1;//token()->uid;
+        // $mission_stat_id = "1042518";//  $request->get('challPk');
+        // $mission_id = "962" ;//$request->get('challId');
+        // $time = date("Y-m-d H:i:s");
+        // $today = date("Y-m-d");
+        // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
 
-         try {
-             DB::beginTransaction();
-             $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , 
+        try {
+            DB::beginTransaction();
+            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , 
              CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
              ifnull(c.RANK,0) as RANK, 
              round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , 
@@ -753,52 +753,52 @@ class MissionController extends Controller
              -- and b.id=e.mission_id
              -- and e.mission_stat_id=d.id 
              and a.id= ?    and d.id=? and b.id =?
-              ; ', array($mission_id,
-                         $user_id,
-                         $mission_id,
-                         $mission_stat_id, $mission_id, $today, $mission_id,
-                         $user_id, $today, $mission_id, $user_id, $yesterDay , $mission_id,
-                         $today,
-                         $user_id, $mission_stat_id, $mission_id )  ) ;
+              ; ', [$mission_id,
+                $user_id,
+                $mission_id,
+                $mission_stat_id, $mission_id, $today, $mission_id,
+                $user_id, $today, $mission_id, $user_id, $yesterDay, $mission_id,
+                $today,
+                $user_id, $mission_stat_id, $mission_id]);
 
 
-         } catch (Exception $e) {
-             DB::rollBack();
-             return exceped($e);
-         }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
 
-         try {
-             DB::beginTransaction();
-             $recent_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
+        try {
+            DB::beginTransaction();
+            $recent_user = DB::select('select a.user_id, b.nickname, b.profile_image, 
              (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
              ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
              From mission_stats a, users b 
              where a.mission_id= ? and a.completed_at is null 
              and b.id=a.user_id and b.deleted_at is null
              order by a.created_at desc limit 15
-              ; ', array(    $user_id,   $mission_id,   )  ) ;
+              ; ', [$user_id, $mission_id,]);
 
 
-         } catch (Exception $e) {
-             DB::rollBack();
-             return exceped($e);
-         }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
-         // 참가자 총 거리
-         try{
-             DB::beginTransaction();
-             $total_km = DB::select('select ifnull(sum(distance),0) as total_km From feed_missions a where mission_id= ? ; ',
-              array(    $mission_id,   )  ) ;
-         } catch (Exception $e) {
-             DB::rollBack();
-             return exceped($e);
-         }
+        // 참가자 총 거리
+        try {
+            DB::beginTransaction();
+            $total_km = DB::select('select ifnull(sum(distance),0) as total_km From feed_missions a where mission_id= ? ; ',
+                [$mission_id,]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
-         // 내 기록
-         try{
-             DB::beginTransaction();
-             $myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+        // 내 기록
+        try {
+            DB::beginTransaction();
+            $myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
              (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
              (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
              b.distance, b.laptime, c.goal_distance -- , case when c.completed_at >  ended_at 
@@ -808,15 +808,15 @@ class MissionController extends Controller
              and a.user_id= ? 
              and b.mission_id= ? 
              and b.mission_stat_id = ?; ',
-              array(    $user_id, $mission_id, $mission_stat_id   )  ) ;
-         } catch (Exception $e) {
-             DB::rollBack();
-             return exceped($e);
-         }
+                [$user_id, $mission_id, $mission_stat_id]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
         // 내 미션 상태
-        try{
-         DB::beginTransaction();
-         $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
+        try {
+            DB::beginTransaction();
+            $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
          ifnull(sum(b.distance),0) total_distance, 
            ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
             sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
@@ -827,31 +827,31 @@ class MissionController extends Controller
          and b.mission_id= ?
          and b.mission_stat_id= ?
          GROUP BY  b.distance, c.goal_distance',
-          array(  $mission_id, $user_id, $mission_id, $mission_stat_id   )  ) ;
-     } catch (Exception $e) {
-         DB::rollBack();
-         return exceped($e);
-     }
+                [$mission_id, $user_id, $mission_id, $mission_stat_id]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
 
-         // $state = $data[0]->STATE;
-         // $sex = $data[0]->SEX;
-         // $challId = $data[0]->CHALL_ID;
-         // $score = $data[0]->SCORE;
-         // $bonusFlag = $data[0]->BONUS_FLAG;
-         // $rank = $data[0]->RANK;
-         // $certToday = $data[0]->CERT_TODAY;
-         // $finCnt = $data[0]->FINISH;
+        // $state = $data[0]->STATE;
+        // $sex = $data[0]->SEX;
+        // $challId = $data[0]->CHALL_ID;
+        // $score = $data[0]->SCORE;
+        // $bonusFlag = $data[0]->BONUS_FLAG;
+        // $rank = $data[0]->RANK;
+        // $certToday = $data[0]->CERT_TODAY;
+        // $finCnt = $data[0]->FINISH;
 
-         return success([
-             'success' => true,
-             'event_mission_info' => $event_mission_info,
-             'recent_user' => $recent_user,
-             'total_km' => $total_km,
-             'myRecord' => $myRecord ,
-             'mission_stat' => $mission_stat,
+        return success([
+            'success' => true,
+            'event_mission_info' => $event_mission_info,
+            'recent_user' => $recent_user,
+            'total_km' => $total_km,
+            'myRecord' => $myRecord,
+            'mission_stat' => $mission_stat,
 
-         ]);
-     }
+        ]);
+    }
 
 
     public function mission_info(Request $request): array
@@ -962,12 +962,12 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
             //미션   입력
-            $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id, ended_at)
+            $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id)
                                             values( ?, ? ,? ,? ,?) ;'
                 , [$time, $time,
                     $user_id,
                     $mission_id,
-                    $mission_info[0]->ended_at]);
+                ]);
 
             DB::commit();
 
@@ -989,7 +989,8 @@ class MissionController extends Controller
         }
 
     }
-     //참가자 조회
+
+    //참가자 조회
     public function participant_list(Request $request): array
     {
         $user_id = token()->uid;
@@ -1000,19 +1001,19 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
             //참가자 조회
-            $participant_list = DB::select ('select a.user_id, b.nickname, b.profile_image, 
+            $participant_list = DB::select('select a.user_id, b.nickname, b.profile_image, 
             (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
             ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
             From mission_stats a, users b 
             where a.mission_id= ? and a.completed_at is null 
             and b.id=a.user_id and b.deleted_at is null
             order by a.created_at desc;'
-                , [   $user_id,
-                    $mission_id, ]);
+                , [$user_id,
+                    $mission_id,]);
 
             return success([
                 'success' => true,
-                'participant_list' => $participant_list ,
+                'participant_list' => $participant_list,
             ]);
 
         } catch (Exception $e) {
