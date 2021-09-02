@@ -27,9 +27,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $users = User::select('id', DB::raw("(COUNT(distinct follows.user_id)*200) + (RAND()*1000) r"))
+            $max = \App\Models\Follow::select('target_id', DB::raw("COUNT(distinct user_id) as c"))
+                ->groupBy('target_id')->orderBy('c', 'desc')->value('c');
+
+            $users = User::select('users.id', DB::raw("COUNT(distinct follows.user_id) + (RAND()*$max) r"))
                 ->leftJoin('follows', 'follows.target_id', 'users.id')
                 ->groupBy('users.id')
+                ->orderBy('users.id')
                 ->get();
 
             $i = 0;
