@@ -1064,7 +1064,9 @@ class MissionController extends Controller
                     $certification_image = DB::update('update mission_stats set image = ? where id = ? ;'
                         , [$filename,
                             $mission_stat_id]);
-        
+                    
+                    DB::commit();
+                    
                     return success([
                         'success' => true,
                         'certification_image' => $certification_image,
