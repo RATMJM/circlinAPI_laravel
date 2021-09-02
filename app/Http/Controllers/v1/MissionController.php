@@ -1037,7 +1037,7 @@ class MissionController extends Controller
                 'result' => false,
                 'reason' => 'not enough data',
             ]);
-        }
+        } 
  
 // echo '??';
         $file =  $request->file('file');
