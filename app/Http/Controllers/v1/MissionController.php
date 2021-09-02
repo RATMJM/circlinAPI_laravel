@@ -1030,18 +1030,18 @@ class MissionController extends Controller
     {
         $user_id =  token()->uid;
         $mission_stat_id = $mission_stat_id;
-        $data = User::where('id', $user_id)->first();
+        // $data = User::where('id', $user_id)->first();
 
-        if (is_null($data) || !$request->file('file')) {
-            return success([
-                'result' => false,
-                'reason' => 'not enough data',
-            ]);
-        }
+        // if (is_null($data) || !$request->file('file')) {
+        //     return success([
+        //         'result' => false,
+        //         'reason' => 'not enough data',
+        //     ]);
+        // }
  
 // echo '??';
         $file =  $request->file('file');
-        // if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
             if ($image->width() > $image->height()) {
@@ -1078,9 +1078,9 @@ class MissionController extends Controller
             } else {
                 return success(['result' => false, 'reason' => 'upload failed']);
             }
-        // } else {
-        //     return success(['result' => false, 'reason' => 'not image']);
-        // }
+        } else {
+            return success(['result' => false, 'reason' => 'not image']);
+        }
     }
 
 }
