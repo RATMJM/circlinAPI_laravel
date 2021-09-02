@@ -51,7 +51,7 @@ class PushController extends Controller
         }
     }
 
-    public static function send_gcm_notify_android($reg_id, $title, $message, $tag, $id): array
+    public static function send_gcm_notify_android($reg_id, $title, $message, $tag, $id, $image): array
     {
         $action = CommonCode::where('ctg_lg', 'click_action')->pluck('content_ko', 'ctg_sm');
         //Creating the notification array.
@@ -64,12 +64,15 @@ class PushController extends Controller
         ];
 
         $replaces = [
-            '{%count}' => '{' . $id . '}',
+            '{%count}' => $id,
         ];
-        $link = str_replace(array_keys($replaces), array_values($replaces), $action[explode('.', $tag)[0]] ?? '');
+        $data = [
+            'link' => str_replace(array_keys($replaces), array_values($replaces), $action[explode('.', $tag)[0]] ?? ''),
+            'image' => $image,
+        ];
 
         //This array contains, the token and the notification. The 'to' attribute stores the token.
-        $arrayToSend = ['registration_ids' => $reg_id, 'notification' => $notification, 'priority' => 'high', 'link' => $link];
+        $arrayToSend = ['registration_ids' => $reg_id, 'notification' => $notification, 'priority' => 'high', 'data' => $data];
 
         $headers = [
             'Authorization: key=AAAALKBQqQQ:APA91bHBUnrkt4QVKuO6FR0ZikkWMQ2zvr_2k7JCkIo4DVBUOB3HUZTK5pH-Rug8ygfgtjzb2lES3SaqQ9Iq8YhmU-HwdbADN5dvDdbq0IjrOPKzqNZ2tTFDWgMQ9ckPVQiBj63q9pGq',
