@@ -89,6 +89,7 @@ Route::post('/event_mission_info', [v1\MissionController::class, 'event_mission_
 Route::post('/mission_info', [v1\MissionController::class, 'mission_info']);
 Route::post('/start_event_mission', [v1\MissionController::class, 'start_event_mission']);
 Route::post('/participant_list', [v1\MissionController::class, 'participant_list']);
+Route::post('/certification_image', [v1\MissionController::class, 'certification_image']);
 
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
@@ -112,9 +113,6 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
 Route::get('/newsfeed', [v1\HomeController::class, 'newsfeed'])->name('home.newsfeed');
 Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
-
-Route::get('/banner/local', [v1\BannerController::class, 'category_banner'])->name('banner');
-Route::get('/banner/{type}', [v1\BannerController::class, 'index'])->name('banner');
 
 Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
     Route::get('/place', [v1\PopularPlaceController::class, 'index'])->name('index');
