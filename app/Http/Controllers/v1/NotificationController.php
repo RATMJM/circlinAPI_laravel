@@ -78,9 +78,9 @@ class NotificationController extends Controller
 
         foreach ($data as $i => $item) {
             $replaces = [
-                '{%count}' => '{' . $item->count - 1 . '}',
-                '{%nickname}' => '{' . $item->nickname . '}',
-                '{%mission}' => '{' . $item->mission_title . '}',
+                '{%count}' => $item->count - 1,
+                '{%nickname}' => $item->nickname,
+                '{%mission}' => $item->mission_title,
             ];
             $data[$i]->message = str_replace(array_keys($replaces), array_values($replaces), $item->message);
         }
