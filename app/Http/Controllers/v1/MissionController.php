@@ -163,7 +163,7 @@ class MissionController extends Controller
                 $data->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
-            if ($place_address && $place_title && $place_image) {
+            if ($place_address && $place_title) {
                 $place = Place::updateOrCreate(['title' => $place_title], [
                     'address' => $place_address,
                     'description' => $place_description,
@@ -573,7 +573,7 @@ class MissionController extends Controller
 
             if ($place_delete) {
                 $mission->place()->delete();
-            } elseif ($place_address && $place_title && $place_image) {
+            } elseif ($place_address && $place_title) {
                 $place = Place::updateOrCreate(['title' => $place_title], [
                     'address' => $place_address,
                     'description' => $place_description,
