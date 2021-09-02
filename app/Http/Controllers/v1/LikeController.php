@@ -99,6 +99,16 @@ class LikeController extends Controller
 
             $data = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
 
+
+            $type = match ($type) {
+                'feed' => 'feed_check',
+                'mission' => 'mission_like',
+                default => null,
+            };
+            if (isset($type)) {
+                NotificationController::send($data->user_id, true, $type, $id);
+            }
+
             DB::commit();
 
             return success([
