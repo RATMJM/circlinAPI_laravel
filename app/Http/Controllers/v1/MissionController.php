@@ -9,6 +9,7 @@ use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedProduct;
 use App\Models\Follow;
+use App\Models\User;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
@@ -23,6 +24,8 @@ use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -993,8 +996,8 @@ class MissionController extends Controller
     //참가자 조회
     public function participant_list(Request $request): array
     {
-        $user_id = token()->uid;
-        $mission_id = $request->get('mission_id');
+        $user_id = 1;//token()->uid;
+        $mission_id = 1051759;//$request->get('mission_id');
         $time = date("Y-m-d H:i:s");
 
 
@@ -1036,8 +1039,8 @@ class MissionController extends Controller
             ]);
         }
  
-
-        $file = $request->file('file');
+// echo '??';
+        $file =  $request->file('file');
         if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
@@ -1058,7 +1061,7 @@ class MissionController extends Controller
                 try {
                     DB::beginTransaction();
                     //참가자 조회
-                    $certification_image = DB::update('update mission_stats set image = ? where id ? ;'
+                    $certification_image = DB::update('update mission_stats set image = ? where id = ? ;'
                         , [$filename,
                             $mission_stat_id]);
         
