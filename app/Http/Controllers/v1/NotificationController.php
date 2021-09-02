@@ -24,7 +24,7 @@ class NotificationController extends Controller
         $q = "'" . implode("','", $nogroup) . "'";
 
         $data = Notification::where('target_id', $user_id)
-            ->where('type', 'like', '%서로 메이트%')
+            ->where('type', 'not like', '%서로 메이트%')
             ->select([
                 // 'type as group_type',
                 DB::raw("MAX(id) as id"),
