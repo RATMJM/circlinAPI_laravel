@@ -15,7 +15,7 @@ class PushController extends Controller
     /**
      * gcm push notice
      */
-    public static function send_gcm_notify($uid, $title, $message, $type = null, $id = null): array|null
+    public static function send_gcm_notify($uid, $title, $message, $image = '', $type = null, $id = null): array|null
     {
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)
@@ -23,7 +23,7 @@ class PushController extends Controller
                 ->pluck('device_token', 'id')->toArray();
 
             if (count($users) > 0) {
-                $res = self::send_gcm_notify_android(array_values($users), $title, $message, $type, $id);
+                $res = self::send_gcm_notify_android(array_values($users), $title, $message, $type, $id, $image);
 
                 $data = [];
                 $j = 0;
@@ -61,6 +61,7 @@ class PushController extends Controller
             'title' => $title,
             'subtitle' => $title,
             'body' => $message,
+            'image' => $image,
         ];
 
         $replaces = [

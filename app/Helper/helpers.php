@@ -67,6 +67,12 @@ function token_option(): object|null
     }
 }
 
+function profile_image($user): string|null
+{
+    return $user->profile_image ?: ($user->gender==='M' ? 'https://www.circlin.co.kr/SNS/assets/img/man.png' :
+        ($user->gender==='W' ? 'https://www.circlin.co.kr/SNS/assets/img/woman.png' : 'https://www.circlin.co.kr/SNS/assets/img/x.png'));
+}
+
 /**
  * ftp url 자동완성 $server: (2, 3, 4)
  */
