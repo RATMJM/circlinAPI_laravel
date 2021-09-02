@@ -89,9 +89,9 @@ class CommentController extends Controller
             }
 
             // 글 주인한테 푸시
-            if (($feed_target_id = Feed::where('id', $id)->value('user_id')) !== $comment_target_id) {
+            /*if (($feed_target_id = Feed::where('id', $id)->value('user_id')) !== $comment_target_id) {
                 NotificationController::send($feed_target_id, true, "{$table}_comment", $data->id);
-            }
+            }*/
 
             DB::commit();
 
