@@ -400,8 +400,8 @@ class ChatController extends Controller
             foreach ($messages as $i => $message) {
                 $messages[$i]->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
                 $messages[$i]->image = match ($message->type) {
-                    'feed' => $message->feed_image,
-                    'mission' => $message->mission_image,
+                    'feed', 'feed_emoji' => $message->feed_image,
+                    'mission', 'mission_invite' => $message->mission_image,
                     default => $message->image,
                 };
                 Arr::except($messages[$i], ['feed_image', 'mission_image']);
