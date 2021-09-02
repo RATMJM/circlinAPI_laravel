@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class BannerController extends Controller
 {
-    public function category_banner(Request $request, $category_id): array
+    public function category_banner(Request $request, $category_id = null): array
     {
         return $this->index(['local', 'local.'.($category_id ?? $request->get('category_id'))]);
     }
