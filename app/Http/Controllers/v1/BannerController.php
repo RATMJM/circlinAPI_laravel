@@ -3,48 +3,56 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class BannerController extends Controller
 {
-    public function category_banner($category_id): array
+    public function category_banner(Request $request, $category_id): array
     {
-        return [
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/00_fake_banner01.png',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/00_fake_banner02.png',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/KRKO_3UP_STATIC_1000x625_BAN_WATCH_NA_STA_BNOW_NA.jpg',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/20210809-challenge-habit-mymealprotein3-app-banner-ad-h.png',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/20210809-challenge-habit-arginine3-app-banner-ad-h.png',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/20210802-challenge-run-815virtual-app-banner-ad-h.png',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-            [
-                'banner_image' => 'https://cyld20183.speedgabia.com/Image/BANNER/20210722-challenge-habbit-Growjee-app-banner-ad-h.png',
-                'link_type' => 'url',
-                'link_url' => 'https://via.placeholder.com/1500x750',
-            ],
-        ]; // 더미데이터
+        return $this->index(['local', 'local.'.($category_id ?? $request->get('category_id'))]);
+    }
+
+    public function index($type)
+    {
+        $now = date('Y-m-d H:i:s');
+
+        $banners = Banner::whereIn('type', Arr::wrap($type))
+            ->where(function ($query) use ($now) {
+                $query->where('started_at', '<=', $now)
+                    ->orWhereNull('started_at');
+            })
+            ->where(function ($query) use ($now) {
+                $query->where('ended_at', '>', $now)
+                    ->orWhereNull('ended_at');
+            })
+            ->leftJoin('common_codes', function ($query) {
+                $query->on('common_codes.ctg_sm', 'banners.link_type')
+                    ->where('common_codes.ctg_lg', 'click_action');
+            })
+            ->select([
+                'banners.image', 'common_codes.content_ko',
+                DB::raw("CASE WHEN link_type='mission' THEN mission_id
+                    WHEN link_type='product' THEN product_id
+                    WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url'
+            ])
+            ->orderBy('sort_num', 'desc')
+            ->orderBy('banners.id', 'desc')
+            ->get();
+
+
+        foreach ($banners as $i => $banner) {
+            $replaces = [
+                '{%id}' => $banner->link_id,
+            ];
+            $banners[$i]->content_ko = str_replace(array_keys($replaces), array_values($replaces), $banner->content_ko);
+        }
+
+        return success([
+            'result' => true,
+            'banners' => $banners,
+        ]);
     }
 }

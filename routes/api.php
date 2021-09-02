@@ -113,6 +113,9 @@ Route::get('/town', [v1\HomeController::class, 'town'])->name('home.town');
 Route::get('/newsfeed', [v1\HomeController::class, 'newsfeed'])->name('home.newsfeed');
 Route::get('/badge', [v1\HomeController::class, 'badge'])->name('home.badge');
 
+Route::get('/banner/local', [v1\BannerController::class, 'category_banner'])->name('banner');
+Route::get('/banner/{type}', [v1\BannerController::class, 'index'])->name('banner');
+
 Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
     Route::get('/place', [v1\PopularPlaceController::class, 'index'])->name('index');
     Route::get('/place/{id}', [v1\PopularPlaceController::class, 'show'])->name('show');
