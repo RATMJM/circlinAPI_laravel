@@ -339,7 +339,7 @@ class ChatController extends Controller
 
         foreach ($data as $i => $item) {
             $replaces = [
-                '{%nickname}' => '{' . $item->latest_nickname . '}',
+                '{%nickname}' => $item->latest_nickname,
             ];
 
             $data[$i]->latest_message = str_replace(array_keys($replaces), array_values($replaces), $item->latest_message);
