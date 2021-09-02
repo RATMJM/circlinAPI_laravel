@@ -695,7 +695,7 @@ class MissionController extends Controller
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
-
+ 
         try {
             DB::beginTransaction();
             $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, d.image as certification_image,
