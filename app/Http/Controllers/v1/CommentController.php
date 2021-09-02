@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\MissionComment;
 use App\Models\NoticeComment;
@@ -64,8 +65,8 @@ class CommentController extends Controller
             }
 
             $query = match ($table) {
-                'feed' => new FeedComment,
-                'mission' => new MissionComment,
+                'feed' => new FeedComment(),
+                'mission' => new MissionComment(),
                 'notice' => new NoticeComment(),
                 'product_review' => new ProductReviewComment(),
             };
@@ -79,6 +80,18 @@ class CommentController extends Controller
                 'depth' => ($group >= $max_group + 1) ? 0 : 1,
                 'comment' => $comment,
             ]);
+
+            // 답글인 경우 푸시
+            $comment_target_id = null;
+            if ($group <= $max_group) {
+                $comment_target_id = $query->where(['feed_id' => $id, 'group' => $group, 'depth' => 0])->value('user_id');
+                NotificationController::send($comment_target_id, true, "{$table}_reply", $data->id);
+            }
+
+            // 글 주인한테 푸시
+            if (($feed_target_id = Feed::where('id', $id)->value('user_id')) !== $comment_target_id) {
+                NotificationController::send($feed_target_id, true, "{$table}_comment", $data->id);
+            }
 
             DB::commit();
 
