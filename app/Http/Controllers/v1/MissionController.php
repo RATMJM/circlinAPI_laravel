@@ -996,8 +996,8 @@ class MissionController extends Controller
     //참가자 조회
     public function participant_list(Request $request): array
     {
-        $user_id = 1;//token()->uid;
-        $mission_id = 1051759;//$request->get('mission_id');
+        $user_id = token()->uid;
+        $mission_id = $request->get('mission_id');
         $time = date("Y-m-d H:i:s");
 
 
@@ -1029,7 +1029,7 @@ class MissionController extends Controller
     public function certification_image(Request $request): array
     {
         $user_id = token()->uid;
-        $mission_stat_id = $mission_stat_id;
+        $mission_stat_id = $request->get('mission_stat_id');
         $data = User::where('id', $user_id)->first();
 
         if (is_null($data) || !$request->file('file')) {
@@ -1037,7 +1037,7 @@ class MissionController extends Controller
                 'result' => false,
                 'reason' => 'not enough data',
             ]);
-        }
+        } 
  
 // echo '??';
         $file =  $request->file('file');
@@ -1060,14 +1060,18 @@ class MissionController extends Controller
             if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
                 try {
                     DB::beginTransaction();
-                    //참가자 조회
-                    $certification_image = DB::update('update mission_stats set image = ? where id = ? ;'
-                        , [$filename,
-                            $mission_stat_id]);
-        
+                    //인증서 사진 업로드 
+                    $certification_image = DB::update('UPDATE mission_stats set image = ? where id = ? ;'
+                        , array($filename,
+                            $mission_stat_id)); 
+                          
+                    DB::commit();
+
                     return success([
                         'success' => true,
                         'certification_image' => $certification_image,
+                        'filename' => $filename,
+                        'mission_stat_id' => $mission_stat_id
                     ]);
         
                 } catch (Exception $e) {
