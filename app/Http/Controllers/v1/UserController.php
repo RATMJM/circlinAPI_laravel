@@ -50,12 +50,12 @@ class UserController extends Controller
             ->get();
 
         $yesterday_point = PointHistory::where('user_id', $user_id)
-            ->where('created_at', '>=', date('Y-m-d 08:00:00'))
+            ->where('created_at', '>=', today())
             ->where('point', '>', 0)
             ->sum('point');
 
         $yesterday_check = Feed::where('feeds.user_id', $user_id)
-            ->where('feeds.created_at', '>=', date('Y-m-d 08:00:00'))
+            ->where('feeds.created_at', '>=', today())
             ->join('feed_likes', function ($query) {
                 $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('feed_likes.deleted_at');
             })
@@ -63,7 +63,7 @@ class UserController extends Controller
 
         $today_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
-            ->where('feed_likes.created_at', '>=', date('Y-m-d 08:00:00'))
+            ->where('feed_likes.created_at', '>=', today())
             ->count();
 
         $badge = Arr::except((new HomeController())->badge()['data'], 'result');
@@ -125,7 +125,7 @@ class UserController extends Controller
                 }
                 if ($phone && $phone !== $data->phone) {
                     $user_data['phone'] = $phone;
-                    $user_data['phone_verified_at'] = date('Y-m-d H:i:s', time());
+                    $user_data['phone_verified_at'] = date('Y-m-d H:i:s');
                     $result[] = 'phone';
                 }
                 if ($gender) {
@@ -691,6 +691,10 @@ class UserController extends Controller
             ->leftJoin('places', 'places.id', 'missions.place_id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->join('mission_stats', function ($query) use ($user_id) {
+                $query->on('mission_stats.id', 'feed_missions.mission_stat_id')
+                    ->whereNull('mission_stats.ended_at');
+            })
             ->select([
                 'mission_categories.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
@@ -714,22 +718,28 @@ class UserController extends Controller
                 'places.image as place_image', 'places.url as place_url',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $uid)
                     ->whereColumn('mission_id', 'missions.id'),
+                'today_upload' => FeedMission::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', today())
+                    ->whereNull('feeds.deleted_at')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->where('feeds.created_at', '>=', today())
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->where('feeds.created_at', '>=', today())
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
                 DB::raw("COUNT(distinct feeds.id) as feeds_count"),
             ]);
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
         $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id',
             'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
+            ->orderBy('is_bookmark', 'desc')
             ->orderBy(DB::raw("MAX(feeds.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 

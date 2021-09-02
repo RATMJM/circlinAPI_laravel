@@ -67,12 +67,6 @@ function token_option(): object|null
     }
 }
 
-function profile_image($user): string|null
-{
-    return $user->profile_image ?: ($user->gender==='M' ? 'https://www.circlin.co.kr/SNS/assets/img/man.png' :
-        ($user->gender==='W' ? 'https://www.circlin.co.kr/SNS/assets/img/woman.png' : 'https://www.circlin.co.kr/SNS/assets/img/x.png'));
-}
-
 /**
  * ftp url 자동완성 $server: (2, 3, 4)
  */
@@ -83,23 +77,6 @@ function image_url($server, $image_url): string|null
     } else {
         return null;
     }
-}
-
-/**
- * area 변환
- */
-function area($table = 'users')
-{
-    return Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
-        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', "$table.area_code");
-}
-
-/**
- * 기존 챌린지 type
- */
-function challenge_type()
-{
-    return DB::raw("CASE WHEN missions.id in (786,796,811,1610) THEN 1 WHEN missions.id in (1174) THEN 2 WHEN missions.id in (962,1027,1213) THEN 3 END as event_type");
 }
 
 /**
@@ -211,4 +188,32 @@ function uploadVideoResizing($uid, $ftp_server, $ftp_user_name, $ftp_user_pass, 
     } catch (Exception $e) {
         return false;
     }
+}
+
+function profile_image($user): string|null
+{
+    return $user->profile_image ?: ($user->gender === 'M' ? 'https://www.circlin.co.kr/SNS/assets/img/man.png' :
+        ($user->gender === 'W' ? 'https://www.circlin.co.kr/SNS/assets/img/woman.png' : 'https://www.circlin.co.kr/SNS/assets/img/x.png'));
+}
+
+/**
+ * area 변환
+ */
+function area($table = 'users')
+{
+    return Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
+        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', "$table.area_code");
+}
+
+/**
+ * 기존 챌린지 type
+ */
+function challenge_type()
+{
+    return DB::raw("CASE WHEN missions.id in (786,796,811,1610) THEN 1 WHEN missions.id in (1174) THEN 2 WHEN missions.id in (962,1027,1213) THEN 3 END as event_type");
+}
+
+function today()
+{
+    return date('Y-m-d 08:00:00');
 }
