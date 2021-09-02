@@ -52,9 +52,9 @@ class NotificationController extends Controller
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->select([
-                'n.*', DB::raw("IF(type in ($q) and count > 1, type, CONCAT(type,'_multi')) as type"),
+                'n.*', DB::raw("IF(type not in ($q) and count > 1, type, CONCAT(type,'_multi')) as type"),
                 'message' => CommonCode::selectRaw("IFNULL(content_ko, notifications.type)")
-                    ->where('common_codes.ctg_sm', DB::raw("IF(type in ($q) and count > 1, type, CONCAT(type,'_multi'))"))
+                    ->where('common_codes.ctg_sm', DB::raw("IF(type not in ($q) and count > 1, type, CONCAT(type,'_multi'))"))
                     ->where('common_codes.ctg_lg', 'notifications')->limit(1),
                 DB::raw("!ISNULL(read_at) as is_read"),
                 'users.nickname', 'users.profile_image', 'users.gender',
