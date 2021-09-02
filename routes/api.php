@@ -202,6 +202,13 @@ Route::post('/shop/update_cart', [v1\ShopController::class, 'update_cart']);
 Route::get('/latest_version', function () {
     return success([
         'result' => true,
-        'version' => 5.5,
+        'version' => '5.5',
+    ]);
+});
+
+Route::get('/show_construction', function () {
+    return success([
+        'result' => true,
+        'show' => false,
     ]);
 });
