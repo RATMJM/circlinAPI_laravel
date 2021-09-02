@@ -646,6 +646,7 @@ class UserController extends Controller
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('feed_comments.user_id', token()->uid),
             ])
+            ->orderBy('feeds.id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
