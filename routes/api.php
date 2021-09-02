@@ -121,6 +121,9 @@ Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
         ->where(['type' => '(in|out)side'])->name('show');
 });
 
+Route::get('/keyword/{type}', [v1\KeywordController::class, 'index'])
+    ->where(['type' => '(place|product)'])->name('place');
+
 Route::group(['prefix' => 'feed', 'feed.'], function () {
     Route::post('/', [v1\FeedController::class, 'store'])->name('store');
     Route::group(['prefix' => '{feed_id}'], function () {
