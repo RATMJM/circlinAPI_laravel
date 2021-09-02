@@ -679,7 +679,7 @@ class UserController extends Controller
                 DB::raw("missions.event_order > 0 as is_event"),
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
-                'missions.thumbnail_image',
+                'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
@@ -689,7 +689,19 @@ class UserController extends Controller
                     ->whereColumn('mission_id', 'missions.id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-            ]);
+                'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->whereNull('feeds.deleted_at')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
+                'feed_id' => FeedMission::select('feed_id')
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
+            ])
+            ->withCount(['feeds' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }]);
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
         $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id')
             ->orderBy(DB::raw("MAX(feeds.id)"), 'desc')
