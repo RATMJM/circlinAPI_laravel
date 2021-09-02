@@ -691,7 +691,7 @@ class UserController extends Controller
             ->leftJoin('places', 'places.id', 'missions.place_id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
-            ->join('mission_stats', function ($query) use ($user_id) {
+            ->leftJoin('mission_stats', function ($query) use ($user_id) {
                 $query->on('mission_stats.id', 'feed_missions.mission_stat_id')
                     ->whereNull('mission_stats.ended_at');
             })
