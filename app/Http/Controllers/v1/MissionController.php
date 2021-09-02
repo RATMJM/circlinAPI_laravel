@@ -214,7 +214,8 @@ class MissionController extends Controller
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
-                'mission_products.type as product_type', 'mission_products.product_id',
+                'mission_products.type as product_type', //'mission_products.product_id',
+                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),

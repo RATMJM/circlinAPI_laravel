@@ -671,6 +671,11 @@ class UserController extends Controller
             })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
+            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+            ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            ->leftJoin('places', 'places.id', 'missions.place_id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->select([
@@ -685,6 +690,15 @@ class UserController extends Controller
                 'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'mission_products.type as product_type', //'mission_products.product_id',
+                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
+                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                'outside_products.url as product_url',
+                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
+                'places.image as place_image', 'places.url as place_url',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $uid)
                     ->whereColumn('mission_id', 'missions.id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
@@ -698,12 +712,11 @@ class UserController extends Controller
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d', time()))
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
-            ])
-            ->withCount(['feeds' => function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            }]);
+                DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+            ]);
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
-        $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id')
+        $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id',
+            'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
             ->orderBy(DB::raw("MAX(feeds.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
