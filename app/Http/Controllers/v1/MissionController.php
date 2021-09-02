@@ -698,7 +698,8 @@ class MissionController extends Controller
 
         try {
             DB::beginTransaction();
-            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , 
+            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, d.image as certification_image,
+             b.id as mission_id , 
              CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
              ifnull(c.RANK,0) as RANK, 
              round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , 
