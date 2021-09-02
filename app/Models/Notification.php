@@ -13,6 +13,7 @@ class Notification extends Model
 
     protected $casts = [
         'is_read' => 'bool',
+        'variables' => 'array',
     ];
 
     public function user()

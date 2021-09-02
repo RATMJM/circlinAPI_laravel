@@ -67,6 +67,7 @@ class NotificationController extends Controller
                     ->orderBy('order')->limit(1),
                 'missions.title as mission_title',
                 'missions.thumbnail_image as mission_image',
+                'notifications.variables',
             ])
             ->orderBy('id', 'desc')
             ->get();
@@ -84,6 +85,7 @@ class NotificationController extends Controller
                 '{%nickname}' => $item->nickname,
                 '{%mission}' => $item->mission_title,
             ];
+            $replaces = Arr::collapse([$replaces, $item->variables]);
             $data[$i]->message = str_replace(array_keys($replaces), array_values($replaces), $item->message);
         }
 
@@ -102,9 +104,10 @@ class NotificationController extends Controller
      * @param bool $push 푸시 전송 여부
      * @param string $type 알림 종류
      * @param int|null $id integer 연결될 테이블 id
+     * @param null $var
      * @return array
      */
-    public static function send(string|array $target_ids, bool $push, string $type, int $id = null): array
+    public static function send(string|array $target_ids, bool $push, string $type, int $id = null, $var = null): array
     {
         try {
             DB::beginTransaction();
@@ -114,13 +117,13 @@ class NotificationController extends Controller
             $parent_id = null;
             $data = match ($type) {
                 'follow' => ['user_id' => $user_id],
-                'feed_check' => ['user_id' => $user_id, 'feed_id' => $id],
+                'feed_check' => ['user_id' => $user_id, 'feed_id' => $parent_id = $id],
                 'feed_comment', 'feed_reply' => [
                     'user_id' => $user_id,
                     'feed_id' => $parent_id = FeedComment::where('id', $id)->value('feed_id'),
                     'feed_comment_id' => $id,
                 ],
-                'mission_like', 'follow_bookmark' => ['user_id' => $user_id, 'mission_id' => $id],
+                'mission_like', 'follow_bookmark' => ['user_id' => $user_id, 'mission_id' => $parent_id = $id],
                 'mission_comment', 'mission_reply' => [
                     'user_id' => $user_id,
                     'mission_id' => $parent_id = MissionComment::where('id', $id)->value('mission_id'),
@@ -137,8 +140,13 @@ class NotificationController extends Controller
                 ]);
             }
 
+            if (Arr::accessible($var)) {
+                $var_json = json_encode($var);
+            } else {
+                $var_json = null;
+            }
             foreach (Arr::wrap($target_ids) as $target_id) {
-                $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id]]));
+                $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id, 'variables' => $var_json]]));
             }
 
             /*$push = match ($type) {
@@ -172,6 +180,7 @@ class NotificationController extends Controller
                     '{%nickname}' => $item->nickname,
                     '{%mission}' => $item->mission_title,
                 ];
+                $replaces = Arr::collapse([$replaces, $var]);
                 $message = str_replace(array_keys($replaces), array_values($replaces), $messages[$type]);
 
                 $res = PushController::send_gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)),
