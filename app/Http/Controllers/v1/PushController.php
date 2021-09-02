@@ -51,7 +51,7 @@ class PushController extends Controller
         }
     }
 
-    public static function send_gcm_notify_android($reg_id, $title, $message, $tag, $id, $image = null): array
+    public static function send_gcm_notify_android($reg_id, $title, $message, $tag, $id, $image = ''): array
     {
         $action = CommonCode::where('ctg_lg', 'click_action')->pluck('content_ko', 'ctg_sm');
         //Creating the notification array.
