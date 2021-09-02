@@ -28,4 +28,10 @@ class MissionStat extends Model
     {
         return $this->hasMany(FeedMission::class, 'mission_id', 'mission_id');
     }
+
+    public function feeds()
+    {
+        return $this->hasManyThrough(Feed::class, FeedMission::class,
+            'mission_id', 'id', 'mission_id', 'feed_id');
+    }
 }
