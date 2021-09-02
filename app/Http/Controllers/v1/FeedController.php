@@ -15,6 +15,7 @@ use App\Models\Mission;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
 use App\Models\Place;
+use App\Models\PointHistory;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -36,7 +37,7 @@ class FeedController extends Controller
         $is_hidden = $request->get('is_hidden', 0);
 
         $product_id = $request->get('product_id');
-            $outside_product_id = $request->get('outside_product_id');
+        $outside_product_id = $request->get('outside_product_id');
         $product_brand = $request->get('product_brand');
         $product_title = $request->get('product_title');
         $product_image = $request->get('product_image');
@@ -138,12 +139,27 @@ class FeedController extends Controller
                 }
             }
 
+            // 제품이나 장소 등록 시 50포인트 씩 제공
+            $point = PointHistory::where('user_id', $user_id)
+                ->whereIn('reason', ['feed_upload_place', 'feed_upload_product'])
+                ->where('point', '>', 0)
+                ->where('created_at', '>=', init_today())
+                ->sum('point');
+
+            $product_reward = false;
+            $place_reward = false;
             if ($product_id) {
                 FeedProduct::create([
                     'feed_id' => $feed->id,
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
+
+                if ($point < 500) {
+                    PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
+                    $point += 50;
+                    $product_reward = true;
+                }
             } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
                 $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
                     'image' => $product_image,
@@ -153,6 +169,12 @@ class FeedController extends Controller
                     'url' => $product_url,
                 ]);
                 $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
+
+                if ($point < 500) {
+                    PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
+                    $point += 50;
+                    $product_reward = true;
+                }
             }
 
             if ($place_address && $place_title) {
@@ -165,6 +187,12 @@ class FeedController extends Controller
                     'lng' => $place_lng,
                 ]);
                 $feed->update(['place_id' => $place->id]);
+
+                if ($point < 500) {
+                    PointController::change_point($user_id, 50, 'feed_upload_place', 'feed', $feed->id);
+                    $point += 50;
+                    $place_reward = true;
+                }
             }
 
             /*$noti = Follow::where(['target_id' => $user_id, 'feed_notify' => true])
@@ -178,6 +206,8 @@ class FeedController extends Controller
                 'result' => true,
                 'feed' => $feed,
                 'completed_missions' => $completed_missions ?? null,
+                'product_reward' => $product_reward,
+                'place_reward' => $place_reward,
             ]);
         } catch (Exception $e) {
             DB::rollBack();
