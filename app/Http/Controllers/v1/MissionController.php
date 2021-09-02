@@ -1029,7 +1029,7 @@ class MissionController extends Controller
     public function certification_image(Request $request): array
     {
         $user_id = token()->uid;
-        $mission_stat_id = $request->get('$mission_stat_id');
+        $mission_stat_id = $request->get('mission_stat_id');
         $data = User::where('id', $user_id)->first();
 
         if (is_null($data) || !$request->file('file')) {
