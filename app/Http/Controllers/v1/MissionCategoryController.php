@@ -98,7 +98,7 @@ class MissionCategoryController extends Controller
         $user_total = $users->count();
         $users = $users->take(2)->get();
 
-        $banners = (new BannerController())->category_banner($category_id);
+        $banners = (new BannerController())->category_banner($request, $category_id);
         $mission_total = Mission::where('mission_category_id', $category_id)->count();
         $missions = $this->mission($request, $category_id, 3)['data']['missions'];
 
