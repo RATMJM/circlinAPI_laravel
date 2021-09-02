@@ -26,6 +26,8 @@ class PushController extends Controller
                 ->pluck('device_token', 'id')->toArray();
 
             if (count($users) > 0) {
+                $message = preg_replace('/{(.*?)}/', '$1', $message);
+
                 $res = self::send_gcm_notify_android(array_values($users), $title, $message, $type, $id, $image);
 
                 $data = [];

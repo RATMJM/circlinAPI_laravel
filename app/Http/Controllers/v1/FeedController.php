@@ -120,9 +120,8 @@ class FeedController extends Controller
             // 미션 적용
             if ($missions) {
                 foreach ($missions as $mission_id) {
-                    $stat = MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])
-                        ->orderBy('id', 'desc')
-                        ->firstOrCreate();
+                    $stat = MissionStat::orderBy('id', 'desc')
+                        ->firstOrCreate(['user_id' => $user_id, 'mission_id' => $mission_id]);
 
                     if (($mission = Mission::where('id', $mission_id)->first())?->success_count === 1 && FeedMission::where([
                             'feed_id' => $feed->id,
