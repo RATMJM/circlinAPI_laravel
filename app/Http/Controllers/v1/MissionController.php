@@ -695,10 +695,11 @@ class MissionController extends Controller
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
-
+ 
         try {
             DB::beginTransaction();
-            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, b.id as mission_id , 
+            $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, d.image as certification_image,
+             b.id as mission_id , 
              CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
              ifnull(c.RANK,0) as RANK, 
              round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , 
@@ -1040,8 +1041,8 @@ class MissionController extends Controller
         } 
  
 // echo '??';
-        // $file =  $request->file('file');
-        // if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
+        $file =  $request->file('file');
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
             if ($image->width() > $image->height()) {
@@ -1058,11 +1059,12 @@ class MissionController extends Controller
             $image->save($tmp_path);
 
             if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
+                $filename = image_url(2,$filename);
                 try {
                     DB::beginTransaction();
                     //인증서 사진 업로드 
                     $certification_image = DB::update('UPDATE mission_stats set image = ? where id = ? ;'
-                        , array(image_url(2, $filename),
+                        , array($filename,
                             $mission_stat_id)); 
                           
                     DB::commit();
@@ -1070,7 +1072,7 @@ class MissionController extends Controller
                     return success([
                         'success' => true,
                         'certification_image' => $certification_image,
-                        'filename' => image_url(2, $filename),
+                        'filename' => $filename,
                         'mission_stat_id' => $mission_stat_id
                     ]);
         
@@ -1082,9 +1084,9 @@ class MissionController extends Controller
             } else {
                 return success(['result' => false, 'reason' => 'upload failed']);
             }
-        // } else {
-        //     return success(['result' => false, 'reason' => 'not image']);
-        // }
+        } else {
+            return success(['result' => false, 'reason' => 'not image']);
+        }
     }
 
 }
