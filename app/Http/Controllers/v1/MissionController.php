@@ -1023,5 +1023,61 @@ class MissionController extends Controller
 
     }
 
+    public function certification_image(Request $request): array
+    {
+        $user_id = token()->uid;
+        $mission_stat_id = $mission_stat_id;
+        $data = User::where('id', $user_id)->first();
+
+        if (is_null($data) || !$request->file('file')) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+ 
+
+        $file = $request->file('file');
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
+            // 정사각형으로 자르기
+            $image = Image::make($file->getPathname());
+            if ($image->width() > $image->height()) {
+                $x = ($image->width() - $image->height()) / 2;
+                $y = 0;
+                $src = $image->height();
+            } else {
+                $x = 0;
+                $y = ($image->height() - $image->width()) / 2;
+                $src = $image->width();
+            }
+            $image->crop($src, $src, round($x), round($y));
+            $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
+            $image->save($tmp_path);
+
+            if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
+                try {
+                    DB::beginTransaction();
+                    //참가자 조회
+                    $certification_image = DB::update('update mission_stats set image = ? where id ? ;'
+                        , [$filename,
+                            $mission_stat_id]);
+        
+                    return success([
+                        'success' => true,
+                        'certification_image' => $certification_image,
+                    ]);
+        
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    return exceped($e);
+                }
+        
+            } else {
+                return success(['result' => false, 'reason' => 'upload failed']);
+            }
+        } else {
+            return success(['result' => false, 'reason' => 'not image']);
+        }
+    }
 
 }
