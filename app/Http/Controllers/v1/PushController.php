@@ -20,6 +20,9 @@ class PushController extends Controller
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)
                 ->whereNotNull('device_token')->where('device_token', '!=', '')
+                ->where(PushHistory::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
+                    ->where(['result' => true, 'type' => $type])
+                    ->where('created_at', '>=', date('Y-m-d H:i:s', time()-5)), 0)
                 ->pluck('device_token', 'id')->toArray();
 
             if (count($users) > 0) {

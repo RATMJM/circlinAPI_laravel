@@ -242,7 +242,8 @@ class ChatController extends Controller
                 ]);
             }
 
-            $room = $this->create_or_enter_room($request, $target_id)['data']['room'];
+            $room = $this->create_or_enter_room($request, $target_id);
+            $room = $room['success'] ? $room['data']['room'] : null;
 
             $target = ChatUser::firstOrCreate(['chat_room_id' => $room->id, 'user_id' => $target_id]);
 
