@@ -9,6 +9,7 @@ use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedProduct;
 use App\Models\Follow;
+use App\Models\User;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
