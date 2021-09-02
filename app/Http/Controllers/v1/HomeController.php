@@ -110,8 +110,9 @@ class HomeController extends Controller
             ->where('feeds.created_at', '>=', date('Y-m-d 08:00:00'))
             ->join('feeds', 'feeds.user_id', 'follows.target_id')
             ->select('feeds.id')
-            ->orderBy('feeds.id', 'desc')
-            ->skip($page * $limit)->take($limit);
+            ->orderBy('feeds.id', 'desc');
+        $feeds_count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit);
 
         $data = Feed::joinSub($data, 'f', function ($query) {
             $query->on('f.id', 'feeds.id');
@@ -196,6 +197,7 @@ class HomeController extends Controller
 
         return success([
             'result' => true,
+            'feeds_count' => $feeds_count,
             'feeds' => $data,
         ]);
     }
