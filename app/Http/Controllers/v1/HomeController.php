@@ -106,13 +106,13 @@ class HomeController extends Controller
 
         $data = Follow::where('follows.user_id', $user_id)
             ->where('feeds.is_hidden', false)
-            ->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
             ->where('feeds.created_at', '>=', date('Y-m-d 08:00:00'))
             ->join('feeds', 'feeds.user_id', 'follows.target_id')
             ->select('feeds.id')
             ->orderBy('feeds.id', 'desc');
         $feeds_count = $data->count();
-        $data = $data->skip($page * $limit)->take($limit);
+        $data = $data->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
+            ->skip($page * $limit)->take($limit);
 
         $data = Feed::joinSub($data, 'f', function ($query) {
             $query->on('f.id', 'feeds.id');
