@@ -14,6 +14,7 @@ use App\Models\Mission;
 use App\Models\MissionProduct;
 use App\Models\MissionStat;
 use App\Models\Place;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -103,14 +104,18 @@ class HomeController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 20);
 
-        $data = Feed::where('is_hidden', false)
-            ->whereHas('user', function ($query) use ($user_id) {
-                $query->whereHas('followers', function ($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
-                });
-            })
+        $data = Follow::where('follows.user_id', $user_id)
+            ->where('feeds.is_hidden', false)
             ->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
-            ->where('feeds.created_at', '>=', strtotime(date('Y-m-d 08:00:00', time())))
+            ->where(DB::raw("UNIX_TIMESTAMP(feeds.created_at)"), '>=', strtotime(date('Y-m-d 08:00:00')))
+            ->join('feeds', 'feeds.user_id', 'follows.target_id')
+            ->select('feeds.id')
+            ->orderBy('feeds.id', 'desc')
+            ->skip($page * $limit)->take($limit);
+
+        $data = Feed::joinSub($data, 'f', function ($query) {
+            $query->on('f.id', 'feeds.id');
+        })
             ->join('users', 'users.id', 'feeds.user_id')
             ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
@@ -154,9 +159,7 @@ class HomeController extends Controller
                             $query->whereColumn('user_id', 'feeds.user_id');
                         });
                     }), // 해당 피드로 이모지를 보낸 적이 있는가
-            ])
-            ->orderBy('feeds.id', 'desc')
-            ->skip($page * $limit)->take($limit)->get();
+            ])->get();
 
         foreach ($data as $i => $item) {
             $data[$i]->product = arr_group($data[$i], ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
