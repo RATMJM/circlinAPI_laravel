@@ -963,7 +963,7 @@ class MissionController extends Controller
             DB::beginTransaction();
             //미션   입력
             $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id)
-                                            values( ?, ? ,? ,? ,?) ;'
+                                            values( ?, ? ,? ,?) ;'
                 , [$time, $time,
                     $user_id,
                     $mission_id,
