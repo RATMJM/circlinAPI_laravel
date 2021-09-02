@@ -50,12 +50,12 @@ class UserController extends Controller
             ->get();
 
         $yesterday_point = PointHistory::where('user_id', $user_id)
-            ->where('created_at', '>=', today())
+            ->where('created_at', '>=', init_today())
             ->where('point', '>', 0)
             ->sum('point');
 
         $yesterday_check = Feed::where('feeds.user_id', $user_id)
-            ->where('feeds.created_at', '>=', today())
+            ->where('feeds.created_at', '>=', init_today())
             ->join('feed_likes', function ($query) {
                 $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('feed_likes.deleted_at');
             })
@@ -63,7 +63,7 @@ class UserController extends Controller
 
         $today_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
-            ->where('feed_likes.created_at', '>=', today())
+            ->where('feed_likes.created_at', '>=', init_today())
             ->count();
 
         $badge = Arr::except((new HomeController())->badge()['data'], 'result');
@@ -720,19 +720,19 @@ class UserController extends Controller
                     ->whereColumn('mission_id', 'missions.id'),
                 'today_upload' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', today())
+                    ->where('feeds.created_at', '>=', init_today())
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', today())
+                    ->where('feeds.created_at', '>=', init_today())
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', today())
+                    ->where('feeds.created_at', '>=', init_today())
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
                 DB::raw("COUNT(distinct feeds.id) as feeds_count"),
             ]);

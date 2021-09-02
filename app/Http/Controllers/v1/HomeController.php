@@ -106,7 +106,7 @@ class HomeController extends Controller
 
         $data = Follow::where('follows.user_id', $user_id)
             ->where('feeds.is_hidden', false)
-            ->where('feeds.created_at', '>=', today())
+            ->where('feeds.created_at', '>=', init_today())
             ->join('feeds', 'feeds.user_id', 'follows.target_id')
             ->select('feeds.id')
             ->orderBy('feeds.id', 'desc');
@@ -211,7 +211,7 @@ class HomeController extends Controller
             'feeds' => 0,
             'missions' => MissionStat::where('user_id', $user_id)
                 ->whereDoesntHave('feed_missions', function ($query) {
-                    $query->where('created_at', '>=', today());
+                    $query->where('created_at', '>=', init_today());
                 })->count(),
             'notifies' => (new Collection((new NotificationController())->index()['data']['notifies']))
                 ->where('is_read', false)->count(),

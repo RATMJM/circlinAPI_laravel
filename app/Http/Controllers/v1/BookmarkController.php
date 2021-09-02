@@ -42,12 +42,12 @@ class BookmarkController extends Controller
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', today())
+                    ->where('feeds.created_at', '>=', init_today())
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', today())
+                    ->where('feeds.created_at', '>=', init_today())
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
             ])
             ->withCount(['feeds' => function ($query) use ($user_id) {

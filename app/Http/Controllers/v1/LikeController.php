@@ -79,7 +79,7 @@ class LikeController extends Controller
             $take_point = false; // 10번 체크해서 포인트 받았는지
             $count = FeedLike::withTrashed()->where('user_id', $user_id)
                 ->where('point', '>', 0)
-                ->where('feed_likes.created_at', '>=', today())
+                ->where('feed_likes.created_at', '>=', init_today())
                 ->count();
             if ($type === 'feed') {
                 if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()

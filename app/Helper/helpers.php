@@ -213,7 +213,7 @@ function challenge_type()
     return DB::raw("CASE WHEN missions.id in (786,796,811,1610) THEN 1 WHEN missions.id in (1174) THEN 2 WHEN missions.id in (962,1027,1213) THEN 3 END as event_type");
 }
 
-function today()
+function init_today()
 {
-    return date('Y-m-d 08:00:00');
+    return date('Y-m-d 08:00:00', time());
 }
