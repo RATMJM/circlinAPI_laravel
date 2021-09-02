@@ -1028,20 +1028,20 @@ class MissionController extends Controller
 
     public function certification_image(Request $request): array
     {
-        $user_id = 1;//token()->uid;
-        $mission_stat_id = '1051759'; //$mission_stat_id;
+        $user_id =  token()->uid;
+        $mission_stat_id = $mission_stat_id;
         $data = User::where('id', $user_id)->first();
 
-        // if (is_null($data) || !$request->file('file')) {
-        //     return success([
-        //         'result' => false,
-        //         'reason' => 'not enough data',
-        //     ]);
-        // }
+        if (is_null($data) || !$request->file('file')) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
  
 // echo '??';
         $file =  $request->file('file');
-        // if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
             if ($image->width() > $image->height()) {
@@ -1061,7 +1061,7 @@ class MissionController extends Controller
                 try {
                     DB::beginTransaction();
                     //참가자 조회
-                    $certification_image = DB::update('update mission_stats set image = ? where id ? ;'
+                    $certification_image = DB::update('update mission_stats set image = ? where id = ? ;'
                         , [$filename,
                             $mission_stat_id]);
         
@@ -1078,9 +1078,9 @@ class MissionController extends Controller
             } else {
                 return success(['result' => false, 'reason' => 'upload failed']);
             }
-        // } else {
-        //     return success(['result' => false, 'reason' => 'not image']);
-        // }
+        } else {
+            return success(['result' => false, 'reason' => 'not image']);
+        }
     }
 
 }
