@@ -51,11 +51,13 @@ class NotificationController extends Controller
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
+            ->leftJoin('common_codes', function ($query) use ($q) {
+                $query->on('common_codes.ctg_sm', DB::raw("IF(type not in ($q) and count > 1, CONCAT(type,'_multi'), type)"))
+                    ->where('common_codes.ctg_lg', 'notifications');
+            })
             ->select([
-                'n.*', DB::raw("IF(type not in ($q) and count > 1, type, CONCAT(type,'_multi')) as type"),
-                'message' => CommonCode::selectRaw("IFNULL(content_ko, notifications.type)")
-                    ->where('common_codes.ctg_sm', DB::raw("IF(type not in ($q) and count > 1, type, CONCAT(type,'_multi'))"))
-                    ->where('common_codes.ctg_lg', 'notifications')->limit(1),
+                'n.*', DB::raw("IF(type not in ($q) and count > 1, CONCAT(type,'_multi'), type) as type"),
+                DB::raw("IFNULL(NULLIF(content_ko,''), type) as message"),
                 DB::raw("!ISNULL(read_at) as is_read"),
                 'users.nickname', 'users.profile_image', 'users.gender',
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
