@@ -146,9 +146,7 @@ class NotificationController extends Controller
                 default => false,
             };*/
 
-            $user = User::where('id', $user_id)->first();
-
-            if ($push && $user->agree_push) {
+            if ($push && isset($res)) {
                 $messages = CommonCode::where('ctg_lg', 'notifications')->pluck('content_ko', 'ctg_sm');
 
                 $item = Notification::where('notifications.id', $res->id)
