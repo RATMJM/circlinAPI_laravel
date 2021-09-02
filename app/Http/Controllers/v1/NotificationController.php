@@ -68,6 +68,7 @@ class NotificationController extends Controller
                 'missions.title as mission_title',
                 'missions.thumbnail_image as mission_image',
             ])
+            ->orderBy('id', 'desc')
             ->get();
 
         if (is_null($data)) {
@@ -110,18 +111,19 @@ class NotificationController extends Controller
 
             $user_id = token()->uid;
 
+            $parent_id = null;
             $data = match ($type) {
                 'follow' => ['user_id' => $user_id],
                 'feed_check' => ['user_id' => $user_id, 'feed_id' => $id],
                 'feed_comment', 'feed_reply' => [
                     'user_id' => $user_id,
-                    'feed_id' => FeedComment::where('id', $id)->value('feed_id'),
+                    'feed_id' => $parent_id = FeedComment::where('id', $id)->value('feed_id'),
                     'feed_comment_id' => $id,
                 ],
                 'mission_like', 'follow_bookmark' => ['user_id' => $user_id, 'mission_id' => $id],
                 'mission_comment', 'mission_reply' => [
                     'user_id' => $user_id,
-                    'mission_id' => MissionComment::where('id', $id)->value('mission_id'),
+                    'mission_id' => $parent_id = MissionComment::where('id', $id)->value('mission_id'),
                     'mission_comment_id' => $id,
                 ],
                 'bookmark_warning' => ['mission_id' => $id],
@@ -172,7 +174,8 @@ class NotificationController extends Controller
                 ];
                 $message = str_replace(array_keys($replaces), array_values($replaces), $messages[$type]);
 
-                $res = PushController::send_gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)), $type, $id);
+                $res = PushController::send_gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)),
+                    "$type.$parent_id", $id);
 
                 DB::commit();
 
