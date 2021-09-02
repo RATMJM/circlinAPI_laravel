@@ -50,12 +50,12 @@ class UserController extends Controller
             ->get();
 
         $yesterday_point = PointHistory::where('user_id', $user_id)
-            ->where('created_at', '>=', date('Y-m-d', time()))
+            ->where('created_at', '>=', date('Y-m-d 08:00:00'))
             ->where('point', '>', 0)
             ->sum('point');
 
         $yesterday_check = Feed::where('feeds.user_id', $user_id)
-            ->where('feeds.created_at', '>=', date('Y-m-d', time()))
+            ->where('feeds.created_at', '>=', date('Y-m-d 08:00:00'))
             ->join('feed_likes', function ($query) {
                 $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('feed_likes.deleted_at');
             })
@@ -63,7 +63,7 @@ class UserController extends Controller
 
         $today_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
-            ->where('feed_likes.created_at', '>=', date('Y-m-d'))
+            ->where('feed_likes.created_at', '>=', date('Y-m-d 08:00:00'))
             ->count();
 
         $badge = Arr::except((new HomeController())->badge()['data'], 'result');
