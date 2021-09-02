@@ -15,7 +15,7 @@ class PushController extends Controller
     /**
      * gcm push notice
      */
-    public static function send_gcm_notify($uid, $title, $message, $url, $type = null): array|null
+    public static function send_gcm_notify($uid, $title, $message, $type = null, $id = null): array|null
     {
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)
@@ -23,7 +23,7 @@ class PushController extends Controller
                 ->pluck('device_token', 'id')->toArray();
 
             if (count($users) > 0) {
-                $res = self::send_gcm_notify_android(array_values($users), $title, $message, $url, $type);
+                $res = self::send_gcm_notify_android(array_values($users), $title, $message, $type, $id);
 
                 $data = [];
                 $j = 0;
@@ -51,7 +51,7 @@ class PushController extends Controller
         }
     }
 
-    public static function send_gcm_notify_android($reg_id, $title, $message, $url, $tag): array
+    public static function send_gcm_notify_android($reg_id, $title, $message, $tag, $id): array
     {
         $action = CommonCode::where('ctg_lg', 'click_action')->pluck('content_ko', 'ctg_sm');
         //Creating the notification array.
@@ -61,12 +61,15 @@ class PushController extends Controller
             'title' => $title,
             'subtitle' => $title,
             'body' => $message,
-            'click_action' => $action[explode('.', $tag)[0]] ?? '',
         ];
-        $data = ['link' => $action[explode('.', $tag)[0]]] ?? '';
+
+        $replaces = [
+            '{%count}' => '{' . $id . '}',
+        ];
+        $link = str_replace(array_keys($replaces), array_values($replaces), $action[explode('.', $tag)[0]] ?? '');
 
         //This array contains, the token and the notification. The 'to' attribute stores the token.
-        $arrayToSend = ['registration_ids' => $reg_id, 'notification' => $notification, 'priority' => 'high', 'data' => $data];
+        $arrayToSend = ['registration_ids' => $reg_id, 'notification' => $notification, 'priority' => 'high', 'link' => $link];
 
         $headers = [
             'Authorization: key=AAAALKBQqQQ:APA91bHBUnrkt4QVKuO6FR0ZikkWMQ2zvr_2k7JCkIo4DVBUOB3HUZTK5pH-Rug8ygfgtjzb2lES3SaqQ9Iq8YhmU-HwdbADN5dvDdbq0IjrOPKzqNZ2tTFDWgMQ9ckPVQiBj63q9pGq',
