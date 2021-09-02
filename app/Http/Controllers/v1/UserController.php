@@ -61,6 +61,15 @@ class UserController extends Controller
             })
             ->count();
 
+        $yesterday_feeds_count = UserStat::where('user_id', $user_id)
+            ->value('yesterday_feeds_count');
+
+        $yesterday_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
+            ->where('point', '>', 0)
+            ->where('feed_likes.created_at', '>=', init_today(time()-86400))
+            ->where('feed_likes.created_at', '<', init_today())
+            ->count();
+
         $today_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
             ->where('feed_likes.created_at', '>=', init_today())
@@ -76,6 +85,8 @@ class UserController extends Controller
             'category' => $category,
             'yesterday_point' => $yesterday_point,
             'yesterday_check' => $yesterday_check,
+            'yesterday_feeds_count' => $yesterday_feeds_count,
+            'yesterday_paid_count' => $yesterday_paid_count,
             'today_paid_count' => $today_paid_count,
             'badge' => $badge,
             'wallpapers' => $wallpapers,
