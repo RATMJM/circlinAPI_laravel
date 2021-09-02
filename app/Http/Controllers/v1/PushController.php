@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\CommonCode;
 use App\Models\PushHistory;
 use App\Models\User;
 use Exception;
@@ -52,6 +53,7 @@ class PushController extends Controller
 
     public static function send_gcm_notify_android($reg_id, $title, $message, $url, $tag): array
     {
+        $action = CommonCode::where('ctg_lg', 'click_action')->pluck('content_ko', 'ctg_sm');
         //Creating the notification array.
         $notification = [
             'channel_id' => 'Circlin',
@@ -59,8 +61,9 @@ class PushController extends Controller
             'title' => $title,
             'subtitle' => $title,
             'body' => $message,
+            'click_action' => $action[explode('.', $tag)[0]] ?? '',
         ];
-        $data = ['link' => $url];
+        $data = ['link' => $action[explode('.', $tag)[0]]] ?? '';
 
         //This array contains, the token and the notification. The 'to' attribute stores the token.
         $arrayToSend = ['registration_ids' => $reg_id, 'notification' => $notification, 'priority' => 'high', 'data' => $data];
