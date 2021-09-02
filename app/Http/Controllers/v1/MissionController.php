@@ -1060,13 +1060,13 @@ class MissionController extends Controller
             if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
                 try {
                     DB::beginTransaction();
-                    //참가자 조회
-                    $certification_image = DB::update('update mission_stats set image = ? where id = ? ;'
-                        , [$filename,
-                            $mission_stat_id]);
-                    
+                    //인증서 사진 업로드 
+                    $certification_image = DB::update('UPDATE mission_stats set image = ? where id = ? ;'
+                        , array($filename,
+                            $mission_stat_id)); 
+                          
                     DB::commit();
-                    
+
                     return success([
                         'success' => true,
                         'certification_image' => $certification_image,
