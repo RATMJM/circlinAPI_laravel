@@ -101,7 +101,7 @@ class HomeController extends Controller
         $user_id = token()->uid;
 
         $page = $request->get('page', 0);
-        $limit = $request->get('limit', 5);
+        $limit = $request->get('limit', 20);
 
         $data = Feed::where('is_hidden', false)
             ->whereHas('user', function ($query) use ($user_id) {
@@ -109,6 +109,8 @@ class HomeController extends Controller
                     $query->where('user_id', $user_id);
                 });
             })
+            ->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
+            ->where('feeds.created_at', '>=', strtotime(date('Y-m-d 08:00:00', time())))
             ->join('users', 'users.id', 'feeds.user_id')
             ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
