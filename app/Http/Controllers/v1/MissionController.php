@@ -1040,8 +1040,8 @@ class MissionController extends Controller
         } 
  
 // echo '??';
-        // $file =  $request->file('file');
-        // if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
+        $file =  $request->file('file');
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
             if ($image->width() > $image->height()) {
@@ -1063,7 +1063,7 @@ class MissionController extends Controller
                     DB::beginTransaction();
                     //인증서 사진 업로드 
                     $certification_image = DB::update('UPDATE mission_stats set image = ? where id = ? ;'
-                        , array( $filename,
+                        , array($filename,
                             $mission_stat_id)); 
                           
                     DB::commit();
@@ -1083,9 +1083,9 @@ class MissionController extends Controller
             } else {
                 return success(['result' => false, 'reason' => 'upload failed']);
             }
-        // } else {
-        //     return success(['result' => false, 'reason' => 'not image']);
-        // }
+        } else {
+            return success(['result' => false, 'reason' => 'not image']);
+        }
     }
 
 }
