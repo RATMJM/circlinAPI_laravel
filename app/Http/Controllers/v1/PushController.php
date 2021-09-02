@@ -64,7 +64,7 @@ class PushController extends Controller
         ];
 
         $replaces = [
-            '{%count}' => $id,
+            '{%id}' => $id,
         ];
         $data = [
             'link' => str_replace(array_keys($replaces), array_values($replaces), $action[explode('.', $tag)[0]] ?? ''),
