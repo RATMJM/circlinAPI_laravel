@@ -41,13 +41,13 @@ class BaseController extends Controller
             })
             ->leftJoin('sort_users', 'sort_users.user_id', 'users.id')
             ->select([
-                'users.id', 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'users.id',
                 'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
                     ->whereHas('user_target_follow', function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
                     }),
             ])
-            ->orderBy(DB::raw('follower'), 'desc')
+            ->orderBy(DB::raw('`order`+(together_following*200)'), 'desc')
             // ->orderBy('users.id', 'desc')
             ->take($limit);
 
@@ -56,7 +56,8 @@ class BaseController extends Controller
         })
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
-                'follower', 'together_following',
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'together_following',
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
             ])
