@@ -86,7 +86,7 @@ class NotificationController extends Controller
                 '{%mission}' => $item->mission_title,
             ];
             $replaces = Arr::collapse([$replaces, $item->variables]);
-            $data[$i]->message = str_replace(array_keys($replaces), array_values($replaces), $item->message);
+            $data[$i]->message = preg_replace('/{%[^}].*?}/', '', str_replace(array_keys($replaces), array_values($replaces), $item->message));
         }
 
         Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
@@ -181,7 +181,7 @@ class NotificationController extends Controller
                     '{%mission}' => $item->mission_title,
                 ];
                 $replaces = Arr::collapse([$replaces, $var]);
-                $message = str_replace(array_keys($replaces), array_values($replaces), $messages[$type]);
+                $message = preg_replace('/{%[^}].*?}/', '', str_replace(array_keys($replaces), array_values($replaces), $messages[$type]));
 
                 $res = PushController::send_gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)),
                     $type.($parent_id?".$parent_id":''), $id);
