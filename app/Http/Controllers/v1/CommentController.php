@@ -57,6 +57,8 @@ class CommentController extends Controller
         try {
             DB::beginTransaction();
 
+            $user_id = token()->uid;
+
             if (!$comment) {
                 return success([
                     'result' => false,
@@ -75,7 +77,7 @@ class CommentController extends Controller
             $group = $group ?? ($max_group + 1);
 
             $data = $query->create([
-                "{$table}_id" => $id, 'user_id' => token()->uid,
+                "{$table}_id" => $id, 'user_id' => $user_id,
                 'group' => min($group, $max_group + 1),
                 'depth' => ($group >= $max_group + 1) ? 0 : 1,
                 'comment' => $comment,
@@ -85,12 +87,12 @@ class CommentController extends Controller
             $comment_target_id = null;
             if ($group <= $max_group) {
                 $comment_target_id = $query->where(['feed_id' => $id, 'group' => $group, 'depth' => 0])->value('user_id');
-                NotificationController::send($comment_target_id, true, "{$table}_reply", $data->id);
+                NotificationController::send($comment_target_id, "{$table}_reply", $user_id, $data->id, true);
             }
 
             // 글 주인한테 푸시
             if (($feed_target_id = Feed::where('id', $id)->value('user_id')) !== $comment_target_id) {
-                NotificationController::send($feed_target_id, false, "{$table}_comment", $data->id);
+                NotificationController::send($feed_target_id, "{$table}_comment", $user_id, $data->id);
             }
 
             DB::commit();

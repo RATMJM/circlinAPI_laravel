@@ -33,7 +33,7 @@ class BannerController extends Controller
                     ->where('common_codes.ctg_lg', 'click_action');
             })
             ->select([
-                'banners.image', 'common_codes.content_ko',
+                'banners.image', 'common_codes.content_ko as link',
                 DB::raw("CASE WHEN link_type='mission' THEN mission_id
                     WHEN link_type='product' THEN product_id
                     WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url'
@@ -44,10 +44,7 @@ class BannerController extends Controller
 
 
         foreach ($banners as $i => $banner) {
-            $replaces = [
-                '{%id}' => $banner->link_id,
-            ];
-            $banners[$i]->content_ko = code_replace($banner->content_ko, $replaces);
+            $banners[$i]->link = code_replace($banner->link, ['{%id}' => $banner->link_id]);
         }
 
         return success([

@@ -26,7 +26,7 @@ class MissionStat extends Model
 
     public function feed_missions()
     {
-        return $this->hasMany(FeedMission::class, 'mission_id', 'mission_id');
+        return $this->hasMany(FeedMission::class);
     }
 
     public function feeds()

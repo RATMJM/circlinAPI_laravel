@@ -41,7 +41,8 @@ class PushController extends Controller
                         'title' => $title,
                         'message' => $message,
                         'type' => $type,
-                        'result' => isset($res['results'][$j]?->message_id) ?? false,
+                        'result' => isset($res['res']['results'][$j]?->message_id) ?? false,
+                        'json' => $res['json'] ?? null,
                     ];
                     $j += 1;
                 }
@@ -69,11 +70,8 @@ class PushController extends Controller
             'image' => $image,
         ];
 
-        $replaces = [
-            '{%id}' => $id,
-        ];
         $data = [
-            'link' => code_replace($action[explode('.', $tag)[0]] ?? '', $replaces),
+            'link' => code_replace($action[explode('.', $tag)[0]] ?? '', ['id' => $id]),
             'image' => $image,
         ];
 
@@ -99,7 +97,7 @@ class PushController extends Controller
         if ($result === false) {
             return ['success' => 0];
         } else {
-            return (array)json_decode($result);
+            return ['res' => (array)json_decode($result), 'json' => $arrayToSend];
         }
     }
 }
