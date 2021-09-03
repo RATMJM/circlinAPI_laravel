@@ -264,12 +264,12 @@ function sort_user($con = null) {
             'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
             'user_id' => $user->id, 'order' => $user->r,
         ];
-        if ($i % 1000 === 0) {
+        if (($i+1) % 10000 === 0) {
             SortUser::insert($data);
-            $con && $con->comment("{$i}명 등록 완료");
+            $con && $con->comment($i+1 ."명 등록 완료");
             $data = [];
         }
     }
     SortUser::insert($data);
-    $con && $con->comment("{$i}명 등록 완료");
+    $con && $con->comment($i+1 ."명 등록 완료");
 }
