@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\Area;
+use App\Models\Follow;
+use App\Models\SortUser;
+use App\Models\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -233,4 +236,44 @@ function challenge_type()
 function init_today($time = null)
 {
     return date('Y-m-d 08:00:00', $time ?? time());
+}
+
+function sort_user($con = null) {
+    $con && $con->comment("유저 추출 시작");
+
+    $max = Follow::select('target_id', DB::raw("COUNT(distinct user_id) as c"))
+        ->groupBy('target_id')->orderBy('c', 'desc')->value('c');
+
+    $con && $con->comment("최대 팔로워 : $max");
+
+    $users = User::select('users.id', DB::raw("COUNT(distinct follows.user_id) + (RAND()*$max) r"))
+        ->leftJoin('follows', 'follows.target_id', 'users.id')
+        ->groupBy('users.id')
+        ->orderBy('users.id')
+        ->get();
+
+    $con && $con->comment("유저 불러오기 완료");
+
+    $j = 0;
+    $data = [];
+
+    SortUser::truncate();
+    $con && $con->comment("sort_users 초기화 완료");
+    foreach ($users as $i => $user) {
+        $data[] = [
+            'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
+            'user_id' => $user->id, 'order' => $user->r,
+        ];
+        if ($i % 1000 === 0) {
+            SortUser::insert($data);
+            $con && $con->comment("{$i}명 등록 완료");
+            $data = [];
+        }
+    }
+    SortUser::insert($data);
+    $con && $con->comment("{$i}명 등록 완료");
+
+    $con && $con->comment("정렬 완료");
+
+    return success(['result' => true, 'users' => $i]);
 }
