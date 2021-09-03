@@ -91,6 +91,23 @@ function arr_group(&$arr, $list, string $prefix = ''): array
     return $res;
 }
 
+function code_replace($message, $replaces)
+{
+    $pattern = '/{%([^}].*?)}/';
+
+    preg_match_all($pattern, $message, $res);
+
+    $res[0] = array_unique($res[0]);
+    $res[1] = array_unique($res[1]);
+
+    foreach ($res[1] as $i => $key) {
+        $message = str_replace($res[0][$i], $replaces[$key] ?? '', $message);
+    }
+    return $message;
+
+    // preg_replace('/{%[^}].*?}/', '', str_replace(array_keys($replaces), array_values($replaces), $messages[$type]))
+}
+
 /**
  * 사진 업로드
  */

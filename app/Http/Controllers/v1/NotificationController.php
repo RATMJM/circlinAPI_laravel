@@ -81,12 +81,12 @@ class NotificationController extends Controller
 
         foreach ($data as $i => $item) {
             $replaces = [
-                '{%count}' => $item->count - 1,
-                '{%nickname}' => $item->nickname,
-                '{%mission}' => $item->mission_title,
+                'count' => $item->count - 1,
+                'nickname' => $item->nickname,
+                'mission' => $item->mission_title,
             ];
             $replaces = Arr::collapse([$replaces, $item->variables]);
-            $data[$i]->message = preg_replace('/{%[^}].*?}/', '', str_replace(array_keys($replaces), array_values($replaces), $item->message));
+            $data[$i]->message = code_replace($item->message, $replaces);
         }
 
         Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
@@ -177,11 +177,11 @@ class NotificationController extends Controller
                     ->first();
 
                 $replaces = [
-                    '{%nickname}' => $item->nickname,
-                    '{%mission}' => $item->mission_title,
+                    'nickname' => $item->nickname,
+                    'mission' => $item->mission_title,
                 ];
                 $replaces = Arr::collapse([$replaces, $var]);
-                $message = preg_replace('/{%[^}].*?}/', '', str_replace(array_keys($replaces), array_values($replaces), $messages[$type]));
+                $message = code_replace($messages[$type], $replaces);
 
                 $res = PushController::send_gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)),
                     $type.($parent_id?".$parent_id":''), $id);
