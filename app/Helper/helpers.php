@@ -254,7 +254,7 @@ function sort_user($con = null) {
 
     $con && $con->comment("유저 불러오기 완료");
 
-    $j = 0;
+    $i = 0;
     $data = [];
 
     SortUser::truncate();
@@ -272,8 +272,4 @@ function sort_user($con = null) {
     }
     SortUser::insert($data);
     $con && $con->comment("{$i}명 등록 완료");
-
-    $con && $con->comment("정렬 완료");
-
-    return success(['result' => true, 'users' => $i]);
 }
