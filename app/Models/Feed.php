@@ -55,4 +55,14 @@ class Feed extends Model
     {
         return $this->belongsTo(Place::class);
     }
+
+    public function followings()
+    {
+        return $this->hasMany(Follow::class, 'user_id', 'user_id');
+    }
+
+    public function followers()
+    {
+        return $this->hasMany(Follow::class, 'target_id', 'user_id');
+    }
 }
