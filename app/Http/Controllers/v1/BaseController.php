@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Area;
+use App\Models\Feed;
 use App\Models\Follow;
 use App\Models\Place;
 use App\Models\User;
@@ -32,9 +33,26 @@ class BaseController extends Controller
     {
         $user_id = token()->uid;
 
-        $limit = max(min($request->get('limit', 50), 50), 1);
+        $limit = max($request->get('limit', 50), 1);
 
-        $user_ids = User::where('users.id', '!=', $user_id)
+        $users = User::where('feeds.created_at', '>=', init_today(time()-(86400*7)))
+            ->whereNotNull('users.nickname')
+            ->whereNotIn('users.id', Follow::select('target_id')->whereColumn('user_id', 'users.id'))
+            ->join('users', 'users.id', 'feeds.user_id')
+            ->leftJoin('sort_users', 'sort_users.user_id', 'users.id')
+            ->select([
+                'users.id',
+                'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
+                    ->whereHas('user_target_follow', function ($query) use ($user_id) {
+                        $query->where('user_id', $user_id);
+                    }),
+            ])
+            ->orderBy(DB::raw('`order`+(together_following*200)'), 'desc')
+            ->take($limit);
+
+        $users = User::where('users.id', '!=', $user_id)
+            ->where(Feed::select('created_at')->whereColumn('user_id', 'users.id')->orderBy('id', 'desc')->limit(1),
+                '>=', init_today(time()-(86400*7)))
             ->whereNotNull('users.nickname')
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
@@ -51,7 +69,7 @@ class BaseController extends Controller
             // ->orderBy('users.id', 'desc')
             ->take($limit);
 
-        $users = User::joinSub($user_ids, 'u', function ($query) {
+        $users = User::joinSub($users, 'u', function ($query) {
             $query->on('u.id', 'users.id');
         })
             ->select([

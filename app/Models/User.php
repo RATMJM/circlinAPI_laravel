@@ -52,4 +52,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(DeleteUser::class);
     }
+
+    public function feeds()
+    {
+        return $this->hasMany(Feed::class);
+    }
 }
