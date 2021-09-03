@@ -97,9 +97,7 @@ class LikeController extends Controller
                 }
             }
 
-            $data = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
-
-
+            $data_like = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
 
             $res = match ($type) {
                 'feed' => (function () use ($paid_point, $data, $id) {
@@ -116,7 +114,7 @@ class LikeController extends Controller
             DB::commit();
 
             return success([
-                'result' => (bool)$data, 'paid_point' => $paid_point,
+                'result' => (bool)$data_like, 'paid_point' => $paid_point,
                 'paid_count' => $count ?? 0, 'take_point' => $take_point,
             ]);
         } catch (Exception $e) {
