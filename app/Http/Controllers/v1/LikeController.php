@@ -102,7 +102,7 @@ class LikeController extends Controller
             $res = match ($type) {
                 'feed' => (function () use ($paid_point, $data, $id) {
                     if ($paid_point) {
-                        return NotificationController::send($data->user_id, true, 'feed_check', $id, ['{%point}' => 10]);
+                        return NotificationController::send($data->user_id, true, 'feed_check', $id, ['point' => 10]);
                     } else {
                         return success(['result' => false]);
                     }

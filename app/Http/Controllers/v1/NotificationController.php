@@ -140,13 +140,8 @@ class NotificationController extends Controller
                 ]);
             }
 
-            if (Arr::accessible($var)) {
-                $var_json = json_encode($var);
-            } else {
-                $var_json = null;
-            }
             foreach (Arr::wrap($target_ids) as $target_id) {
-                $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id, 'variables' => $var_json]]));
+                $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id, 'variables' => $var]]));
             }
 
             /*$push = match ($type) {
