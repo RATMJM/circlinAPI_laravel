@@ -24,11 +24,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(sort_user())->dailyAt('02:00');
-
         $schedule->call(function () {
-
-        })->everyMinute();
+            sort_user();
+        })->dailyAt('08:00');
     }
 
     /**
