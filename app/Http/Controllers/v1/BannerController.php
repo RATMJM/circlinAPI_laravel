@@ -47,7 +47,7 @@ class BannerController extends Controller
             $replaces = [
                 '{%id}' => $banner->link_id,
             ];
-            $banners[$i]->content_ko = str_replace(array_keys($replaces), array_values($replaces), $banner->content_ko);
+            $banners[$i]->content_ko = code_replace($banner->content_ko, $replaces);
         }
 
         return success([

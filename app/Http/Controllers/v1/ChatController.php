@@ -140,7 +140,7 @@ class ChatController extends Controller
             $replaces = [
                 '{%nickname}' => $user->nickname,
             ];
-            $latest_message = str_replace(array_keys($replaces), array_values($replaces), $latest_message);
+            $latest_message = code_replace($latest_message, $replaces);
 
             $prefix = $data['type'] === 'chat' ? "{$user->nickname}님이 메시지를 발송했습니다.\n" : '';
 
@@ -346,7 +346,7 @@ class ChatController extends Controller
                 '{%nickname}' => $item->latest_nickname,
             ];
 
-            $data[$i]->latest_message = str_replace(array_keys($replaces), array_values($replaces), $item->latest_message);
+            $data[$i]->latest_message = code_replace($item->latest_message, $replaces);
         }
 
         return success([
