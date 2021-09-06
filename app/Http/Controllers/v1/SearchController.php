@@ -167,7 +167,8 @@ class SearchController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
                 'places.image as place_image', 'places.url as place_url',
-                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
+                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id')
+                    ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
             ])
             ->withCount(['feeds' => function ($query) use ($user_id) {
