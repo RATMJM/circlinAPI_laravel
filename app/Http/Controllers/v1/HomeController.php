@@ -80,8 +80,7 @@ class HomeController extends Controller
                 'banners' => (new BannerController())->category_banner($request, $id),
                 'places' => $places ?? null,
                 'products' => $products ?? null,
-                'mission_total' => $missions['missions_count             
-                '],
+                'mission_total' => $missions['missions_count'],
                 'missions' => $missions['missions'],
             ];
             break; // 첫번째 탭만 가져오도록
