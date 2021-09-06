@@ -122,7 +122,8 @@ class MissionCategoryController extends Controller
         $sort = $sort ?? $request->get('sort', 'recent');
 
         $missions = Mission::when($id, function ($query, $id) {
-            $query->whereIn('missions.mission_category_id', Arr::wrap($id));
+            $query->whereIn('missions.mission_category_id', Arr::wrap($id))
+                ->where('event_order', 0);
         })
             ->when($id === 0, function ($query) {
                 $query->where('event_order', '>', 0);
