@@ -34,6 +34,8 @@ class Kernel extends ConsoleKernel
         // 미션 인증 알림
         $schedule->call([ScheduleController::class, 'mission_expire_warning_am'])->dailyAt('08:00')->name('1차 미션 인증 알림');
         $schedule->call([ScheduleController::class, 'mission_expire_warning_pm'])->dailyAt('20:00')->name('2차 미션 인증 알림');
+
+        $schedule->command('telescope:prune --hours=72')->daily();
     }
 
     /**
