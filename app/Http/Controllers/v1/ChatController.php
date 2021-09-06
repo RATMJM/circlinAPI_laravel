@@ -138,7 +138,7 @@ class ChatController extends Controller
             $latest_message = CommonCode::where('ctg_sm', $data['type'])
                     ->where('ctg_lg', 'chat')->value('content_ko') ?? $message;
             $replaces = [
-                '{%nickname}' => $user->nickname,
+                'nickname' => $user->nickname,
             ];
             $latest_message = code_replace($latest_message, $replaces);
 
@@ -149,7 +149,7 @@ class ChatController extends Controller
             }
 
             PushController::send_gcm_notify($ids, $user->nickname,
-                '"$latest_message"'.($res->type==='feed_emoji' ? '\n"$message"' : ''),
+                $latest_message.($res->type==='feed_emoji' ? "\n\"$message\"" : ''),
                 profile_image($user), 'chat.' . $room_id, $user_id);
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
@@ -344,7 +344,7 @@ class ChatController extends Controller
 
         foreach ($data as $i => $item) {
             $replaces = [
-                '{%nickname}' => $item->latest_nickname,
+                'nickname' => $item->latest_nickname,
             ];
 
             $data[$i]->latest_message = code_replace($item->latest_message, $replaces);
