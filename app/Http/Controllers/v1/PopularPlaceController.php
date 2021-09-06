@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Follow;
 use App\Models\Mission;
+use App\Models\MissionComment;
+use App\Models\MissionStat;
 use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -83,9 +86,49 @@ class PopularPlaceController extends Controller
                 'places.image', 'places.url', 'places.lat', 'places.lng',
             ])
             ->withCount('missions')
-            ->with('missions', function ($query) use ($page, $limit) {
-                $query->orderBy('id', 'desc')
-                    ->skip($page * $limit)->take($limit);
+            ->with('missions', function ($query) use ($page, $limit, $user_id) {
+                $query->join('users', 'users.id', 'missions.user_id')
+                    ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
+                    ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+                    ->leftJoin('products', 'products.id', 'mission_products.product_id')
+                    ->leftJoin('brands', 'brands.id', 'products.brand_id')
+                    ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+                    ->leftJoin('places', 'places.id', 'missions.place_id')
+                    ->select([
+                        'missions.place_id',
+                        'missions.id', 'missions.title', 'missions.description',
+                        DB::raw("missions.event_order > 0 as is_event"),
+                        DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                        'missions.started_at', 'missions.ended_at',
+                        'missions.thumbnail_image', 'missions.success_count',
+                        'mission_area' => area_md('mission_areas'),
+                        'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                            ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
+                        'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
+                        'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                        'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
+                            ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                        'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
+                            ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                        'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('follows.user_id', $user_id),
+                        'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
+                            ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                        'mission_products.type as product_type', //'mission_products.product_id', 'mission_products.outside_product_id',
+                        DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
+                        DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                        DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                        DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                        'outside_products.url as product_url',
+                        DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                        'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
+                        'places.image as place_image', 'places.url as place_url',
+                    ])
+                    ->withCount(['feeds' => function ($query) use ($user_id) {
+                        $query->where('user_id', $user_id);
+                    }])
+                    ->orderBy('id', 'desc')->skip($page * $limit)->take($limit);
             })
             ->first();
 
