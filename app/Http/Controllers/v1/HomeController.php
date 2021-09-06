@@ -215,7 +215,7 @@ class HomeController extends Controller
                 })->count(),
             'notifies' => (new Collection((new NotificationController())->index()['data']['notifies']))
                 ->where('is_read', false)->count(),
-            'messages' => random_int(0, 50),
+            'messages' => (new ChatController())->index(request())['data']['rooms']->sum('unread_total'),
         ]);
     }
 }

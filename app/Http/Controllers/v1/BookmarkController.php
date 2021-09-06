@@ -37,7 +37,7 @@ class BookmarkController extends Controller
             ->leftJoin('places', 'places.id', 'missions.place_id')
             ->select([
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
-                'missions.id', 'missions.title', DB::raw("COALESCE(missions.description, '') as description"),
+                'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
                 DB::raw("missions.event_order > 0 as is_event"),
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',

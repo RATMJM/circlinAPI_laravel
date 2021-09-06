@@ -24,8 +24,8 @@ class SearchController extends Controller
 
         $categories = MissionCategory::whereNotNull('mission_category_id')
             ->select([
-                'id', DB::raw("COALESCE(emoji, '') as emoji"), 'title',
-                DB::raw("COALESCE(description, '') as description")
+                'id', DB::raw("IFNULL(emoji, '') as emoji"), 'title',
+                DB::raw("IFNULL(description, '') as description")
             ])
             ->orderBy('id')->get();
 

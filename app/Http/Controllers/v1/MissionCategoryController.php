@@ -35,7 +35,7 @@ class MissionCategoryController extends Controller
                 })
                 ->orWhere('id', 0)
                 ->select([
-                    'id', DB::raw("CAST(id as CHAR(20)) as `key`"), DB::raw("COALESCE(emoji, '') as emoji"),
+                    'id', DB::raw("CAST(id as CHAR(20)) as `key`"), DB::raw("IFNULL(emoji, '') as emoji"),
                     'title',
                     'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->where('mission_stats.user_id', $user_id)
                         ->whereHas('mission', function ($query) use ($user_id) {
@@ -53,7 +53,7 @@ class MissionCategoryController extends Controller
                 ->select([
                     'mission_categories.id',
                     DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
-                    DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
+                    DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
                     'mission_categories.description',
                 ])->get();
@@ -79,9 +79,9 @@ class MissionCategoryController extends Controller
         $category = MissionCategory::where('id', $category_id)
             ->select([
                 'mission_categories.id',
-                DB::raw("COALESCE(mission_categories.emoji, '') as emoji"),
+                DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
                 'mission_categories.title',
-                DB::raw("COALESCE(mission_categories.description, '') as description"),
+                DB::raw("IFNULL(mission_categories.description, '') as description"),
             ])
             ->first();
 
