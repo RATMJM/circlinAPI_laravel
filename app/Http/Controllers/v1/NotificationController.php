@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
+use App\Models\Follow;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\Notification;
@@ -64,6 +65,8 @@ class NotificationController extends Controller
                 DB::raw("IFNULL(NULLIF(content_ko,''), type) as message"),
                 DB::raw("!ISNULL(read_at) as is_read"),
                 'users.nickname', 'users.profile_image', 'users.gender',
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
                 'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')
@@ -155,12 +158,13 @@ class NotificationController extends Controller
                     'user_id' => $user_id,
                     'feed_id' => $parent_id = $id,
                 ],
+                'feed_check_reward' => [],
                 'feed_comment', 'feed_reply' => [
                     'user_id' => $user_id,
                     'feed_id' => $parent_id = FeedComment::where('id', $id)->value('feed_id'),
                     'feed_comment_id' => $id,
                 ],
-                'mission_like', 'follow_bookmark', 'mission_expire' => [
+                'mission_like', 'follow_bookmark' => [
                     'user_id' => $user_id,
                     'mission_id' => $parent_id = $id,
                 ],
@@ -169,7 +173,11 @@ class NotificationController extends Controller
                     'mission_id' => $parent_id = MissionComment::where('id', $id)->value('mission_id'),
                     'mission_comment_id' => $id,
                 ],
-                'bookmark_warning' => ['mission_id' => $id],
+                'notice_reply' => [
+                    'user_id' => $user_id,
+                    'notice_id' => $parent_id = $id,
+                ],
+                'mission_expire', 'mission_expire_warning' => ['mission_id' => $id],
                 default => null,
             };
 
