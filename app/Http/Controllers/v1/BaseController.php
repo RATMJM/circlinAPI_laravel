@@ -39,6 +39,7 @@ class BaseController extends Controller
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
+            ->where('feeds.user_id', '!=', $user_id)
             ->leftJoin('sort_users', 'sort_users.user_id', 'feeds.user_id')
             ->select([
                 'feeds.user_id',
