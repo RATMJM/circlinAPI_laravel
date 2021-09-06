@@ -5,8 +5,11 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Models\FeedComment;
+use App\Models\Mission;
 use App\Models\MissionComment;
+use App\Models\Notice;
 use App\Models\NoticeComment;
+use App\Models\ProductReview;
 use App\Models\ProductReviewComment;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -16,14 +19,14 @@ class CommentController extends Controller
     public function index($table, $id): array
     {
         try {
-            $query = match ($table) {
+            $query_comment = match ($table) {
                 'feed' => new FeedComment(),
                 'mission' => new MissionComment(),
                 'notice' => new NoticeComment(),
                 'product_review' => new ProductReviewComment(),
             };
 
-            $query = $query->where("{$table}_id", $id)
+            $query_comment = $query_comment->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.depth",
@@ -38,9 +41,9 @@ class CommentController extends Controller
                 ])
                 ->orderBy('group', 'desc')->orderBy('depth')->orderBy('id');
 
-            $total = $query->count();
+            $total = $query_comment->count();
 
-            $comments = $query->withTrashed()->get();
+            $comments = $query_comment->withTrashed()->get();
 
             return success([
                 'result' => true,
@@ -67,16 +70,23 @@ class CommentController extends Controller
             }
 
             $query = match ($table) {
+                'feed' => new Feed(),
+                'mission' => new Mission(),
+                'notice' => new Notice(),
+                'product_review' => new ProductReview(),
+            };
+
+            $query_comment = match ($table) {
                 'feed' => new FeedComment(),
                 'mission' => new MissionComment(),
                 'notice' => new NoticeComment(),
                 'product_review' => new ProductReviewComment(),
             };
 
-            $max_group = $query->where("{$table}_id", $id)->max('group') ?? -1;
+            $max_group = $query_comment->where("{$table}_id", $id)->max('group') ?? -1;
             $group = $group ?? ($max_group + 1);
 
-            $data = $query->create([
+            $data = $query_comment->create([
                 "{$table}_id" => $id, 'user_id' => $user_id,
                 'group' => min($group, $max_group + 1),
                 'depth' => ($group >= $max_group + 1) ? 0 : 1,
@@ -86,12 +96,12 @@ class CommentController extends Controller
             // 답글인 경우 푸시
             $comment_target_id = null;
             if ($group <= $max_group) {
-                $comment_target_id = $query->where(['feed_id' => $id, 'group' => $group, 'depth' => 0])->value('user_id');
+                $comment_target_id = $query_comment->where(['feed_id' => $id, 'group' => $group, 'depth' => 0])->value('user_id');
                 NotificationController::send($comment_target_id, "{$table}_reply", $user_id, $data->id, true);
             }
 
             // 글 주인한테 푸시
-            if (($feed_target_id = Feed::where('id', $id)->value('user_id')) !== $comment_target_id) {
+            if ($table !== 'notice' && ($feed_target_id = $query->where('id', $id)->value('user_id')) !== $comment_target_id) {
                 NotificationController::send($feed_target_id, "{$table}_comment", $user_id, $data->id);
             }
 
