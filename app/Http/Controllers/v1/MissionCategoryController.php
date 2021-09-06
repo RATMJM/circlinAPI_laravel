@@ -45,7 +45,7 @@ class MissionCategoryController extends Controller
                         ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])
                 ->orderBy(DB::raw("id=0"), 'desc') // 이벤트 맨앞으로
-                ->orderBy(DB::raw("id=20")) // 기타 탭 맨 뒤로
+                ->orderBy(DB::raw("id=21")) // 기타 탭 맨 뒤로
                 ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('id')
                 ->get();
         } else {
