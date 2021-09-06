@@ -95,7 +95,8 @@ class NotificationController extends Controller
             $data[$i]->message = code_replace($item->message, $replaces);
             $data[$i]->link = match ($item->type) {
                 'feed_check', 'feed_check_multi' => code_replace($action['feed'], ['id' => $item->feed_id]),
-                // 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi' => code_replace($action['feed'],),
+                'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi'
+                    => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
                 default => null,
             };
         }
