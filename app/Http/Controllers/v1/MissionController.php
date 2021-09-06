@@ -228,7 +228,8 @@ class MissionController extends Controller
                 'places.image as place_image', 'places.url as place_url',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
             ->withCount(['feeds' => function ($query) use ($user_id) {

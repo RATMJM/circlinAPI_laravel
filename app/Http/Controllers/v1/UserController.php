@@ -824,7 +824,8 @@ class UserController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
                 'places.image as place_image', 'places.url as place_url',
-                'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
             ->orderBy('missions.id', 'desc')
