@@ -47,6 +47,7 @@ class BaseController extends Controller
                         $query->where('user_id', $user_id);
                     }),
             ])
+            ->groupBy('feeds.user_id', 'sort_users.order', 'together_following')
             ->orderBy(DB::raw('`order`+(together_following*200)'), 'desc')
             ->take($limit);
 
