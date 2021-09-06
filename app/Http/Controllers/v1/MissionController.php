@@ -9,7 +9,6 @@ use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedProduct;
 use App\Models\Follow;
-use App\Models\User;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
@@ -19,13 +18,12 @@ use App\Models\MissionStat;
 use App\Models\OutsideProduct;
 use App\Models\Place;
 use App\Models\Product;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -99,6 +97,13 @@ class MissionController extends Controller
                 'description' => $description,
                 'thumbnail_image' => image_url(3, $uploaded_thumbnail),
                 'success_count' => $success_count,
+            ]);
+
+            $user = User::find($user_id);
+
+            $data->areas()->create([
+                'mission_id' => $data->id,
+                'area_code' => $user->area_code,
             ]);
 
             if ($files) {
@@ -1042,7 +1047,7 @@ class MissionController extends Controller
         }
 
 // echo '??';
-        $file =  $request->file('file');
+        $file = $request->file('file');
         if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
             $image = Image::make($file->getPathname());
@@ -1060,13 +1065,13 @@ class MissionController extends Controller
             $image->save($tmp_path);
 
             if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
-                $filename = image_url(2,$filename);
+                $filename = image_url(2, $filename);
                 try {
                     DB::beginTransaction();
                     //인증서 사진 업로드
                     $certification_image = DB::update('UPDATE mission_stats set image = ? where id = ? ;'
-                        , array($filename,
-                            $mission_stat_id));
+                        , [$filename,
+                            $mission_stat_id]);
 
                     DB::commit();
 
@@ -1074,7 +1079,7 @@ class MissionController extends Controller
                         'success' => true,
                         'certification_image' => $certification_image,
                         'filename' => $filename,
-                        'mission_stat_id' => $mission_stat_id
+                        'mission_stat_id' => $mission_stat_id,
                     ]);
 
                 } catch (Exception $e) {
