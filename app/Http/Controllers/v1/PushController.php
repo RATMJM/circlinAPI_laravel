@@ -45,7 +45,7 @@ class PushController extends Controller
                         'message' => $message,
                         'type' => $type,
                         'result' => isset($res['res']['results'][$j]?->message_id) ?? false,
-                        'json' => $res['json'] ?? null,
+                        'json' => json_encode($res['json'] ?? null),
                     ];
                     $j += 1;
                 }
