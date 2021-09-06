@@ -44,7 +44,7 @@ class MissionCategoryController extends Controller
                     'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
                         ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])
-                ->orderBy(DB::raw("id=0"), 'desc') // 이벤트 맨앞으로
+                ->orderBy(DB::raw("id=0")) // 이벤트 탭 맨 뒤로
                 ->orderBy(DB::raw("id=21")) // 기타 탭 맨 뒤로
                 ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('id')
                 ->get();
@@ -121,7 +121,7 @@ class MissionCategoryController extends Controller
         $page = $page ?? $request->get('page', 0);
         $sort = $sort ?? $request->get('sort', 'recent');
 
-        $data = Mission::when($id, function ($query, $id) {
+        $missions = Mission::when($id, function ($query, $id) {
             $query->whereIn('missions.mission_category_id', Arr::wrap($id));
         })
             ->when($id === 0, function ($query) {
@@ -141,16 +141,18 @@ class MissionCategoryController extends Controller
             ->orderBy('event_order');
 
         if ($sort === 'popular') {
-            $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+            $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort === 'recent') {
-            $data->orderBy('missions.id', 'desc');
+            $missions->orderBy('missions.id', 'desc');
         } else {
-            $data->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+            $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         }
 
-        $data = $data->skip($page * $limit)->take($limit);
+        $missions_count = $missions->count();
 
-        $data = Mission::joinSub($data, 'm', function ($query) {
+        $missions = $missions->skip($page * $limit)->take($limit);
+
+        $missions = Mission::joinSub($missions, 'm', function ($query) {
             $query->on('m.id', 'missions.id');
         })->join('users', 'users.id', 'missions.user_id')
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
@@ -202,10 +204,10 @@ class MissionCategoryController extends Controller
                 ->take(2);
         }
 
-        if (count($data)) {
+        if (count($missions)) {
             $query = null;
-            foreach ($data as $i => $item) {
-                $data[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+            foreach ($missions as $i => $item) {
+                $missions[$i]->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
                     'area', 'followers', 'is_following']);
 
                 if ($query) {
@@ -215,15 +217,16 @@ class MissionCategoryController extends Controller
                 }
             }
             $query = $query->get();
-            $keys = $data->pluck('id')->toArray();
+            $keys = $missions->pluck('id')->toArray();
             foreach ($query->groupBy('mission_id') as $i => $item) {
-                $data[array_search($i, $keys)]->users = $item;
+                $missions[array_search($i, $keys)]->users = $item;
             }
         }
 
         return success([
             'result' => true,
-            'missions' => $data,
+            'missions_count' => $missions_count,
+            'missions' => $missions,
         ]);
     }
 
