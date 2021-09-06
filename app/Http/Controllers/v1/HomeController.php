@@ -74,18 +74,15 @@ class HomeController extends Controller
             }
 
             // $tmp = $id === 0 ? $category_id : $id;
+            $missions = (new MissionCategoryController())->mission($request, $id, 3)['data'];
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($request, $id),
                 'places' => $places ?? null,
                 'products' => $products ?? null,
-                'mission_total' => Mission::where(function ($query) {
-                    $query->whereNull('ended_at')->orWhere('ended_at', '>', date('Y-m-d H:i:s'));
-                })
-                    ->when($id, function ($query, $id) {
-                        $query->whereIn('mission_category_id', Arr::wrap($id));
-                    })->count(),
-                'missions' => (new MissionCategoryController())->mission($request, $id, 3)['data']['missions'],
+                'mission_total' => $missions['missions_count             
+                '],
+                'missions' => $missions['missions'],
             ];
             break; // 첫번째 탭만 가져오도록
         }
