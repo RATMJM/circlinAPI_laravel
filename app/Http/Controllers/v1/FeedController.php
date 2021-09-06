@@ -118,6 +118,7 @@ class FeedController extends Controller
             }
 
             // 미션 적용
+            $completed_missions = [];
             if ($missions) {
                 foreach ($missions as $mission_id) {
                     $stat = MissionStat::orderBy('id', 'desc')
@@ -135,6 +136,10 @@ class FeedController extends Controller
                         'mission_stat_id' => $stat->id,
                         'mission_id' => $mission_id,
                     ]);
+                }
+
+                foreach ($completed_missions as $mission_id) {
+                    NotificationController::send($user_id, 'mission_complete', null, $mission_id);
                 }
             }
 
