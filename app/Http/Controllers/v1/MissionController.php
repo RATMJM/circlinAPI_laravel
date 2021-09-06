@@ -103,7 +103,7 @@ class MissionController extends Controller
 
             $data->areas()->create([
                 'mission_id' => $data->id,
-                'area_code' => $user->area_code,
+                'area_code' => substr($user->area_code, 0, 5),
             ]);
 
             if ($files) {
