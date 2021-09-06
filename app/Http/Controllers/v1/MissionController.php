@@ -815,7 +815,7 @@ class MissionController extends Controller
              e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url
              from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
              where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-             and a.user_id=c.user_id and a.deleted_at is null
+             and a.user_id=c.user_id -- and a.deleted_at is null
              and a.user_id= ? 
              and b.mission_id= ? 
              and b.mission_stat_id = ?; ',
