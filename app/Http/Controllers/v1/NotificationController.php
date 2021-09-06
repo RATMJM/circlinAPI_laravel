@@ -21,7 +21,7 @@ class NotificationController extends Controller
         $user_id = $user_id ?? token()->uid;
 
         $group = [
-            'follow',
+            // 'follow',
             'feed_check', 'feed_comment', 'feed_reply',
             'mission_like', 'mission_comment', 'mission_reply',
         ];
@@ -41,7 +41,7 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
-            ->groupBy(DB::raw("IF(type in ($q), type, id)"),
+            ->groupBy(DB::raw("IF(type in ($q), type, user_id)"),
                 DB::raw("CONCAT(YEAR(notifications.created_at),'|',MONTH(notifications.created_at),'|',DAY(notifications.created_at))"),
                 'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
@@ -92,14 +92,34 @@ class NotificationController extends Controller
                 'mission' => $item->mission_emoji . ' ' . $item->mission_title,
             ];
             $replaces = Arr::collapse([$replaces, $item->variables]);
-            $data[$i]->message = code_replace($item->message, $replaces);
-            $data[$i]->link = match ($item->type) {
+            $item->message = code_replace($item->message, $replaces);
+            $item->link = match ($item->type) {
+                'follow' => code_replace($action['user'], ['id' => $item->user_id]),
                 'feed_check', 'feed_check_multi' => code_replace($action['feed'], ['id' => $item->feed_id]),
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi'
-                    => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
-                'mission_like', 'mission_like_multi' => code_replace($action['feed'], ['id' => $item->mission_id]),
+                => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
+
+                'mission_like', 'mission_like_multi' => code_replace($action['mission'], ['id' => $item->mission_id]),
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
-                    => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->mission_comment_id]),
+                => code_replace($action['mission'], ['id' => $item->feed_id, 'comment_id' => $item->mission_comment_id]),
+                default => null,
+            };
+            $item->link_left = match ($item->type) {
+                'follow',
+                'feed_check', 'feed_check_multi',
+                'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
+                'mission_like', 'mission_like_multi',
+                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
+                => code_replace($action['user'], ['id' => $item->user_id]),
+                default => null,
+            };
+            $item->link_right = match ($item->type) {
+                'follow',
+                'feed_check', 'feed_check_multi',
+                'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
+                'mission_like', 'mission_like_multi',
+                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
+                => code_replace($action['user'], ['id' => $item->user_id]),
                 default => null,
             };
         }
@@ -120,7 +140,7 @@ class NotificationController extends Controller
      * @param int|null $user_id 알림 보내는사람
      * @param int|null $id integer 연결될 테이블 id
      * @param bool $push 푸시 전송 여부
-     * @param null $var
+     * @param null $var 해당 알림에 고정으로 넣어둘 파라미터
      * @return array
      */
     public static function send(string|array $target_ids, string $type, int|null $user_id, int $id = null, bool $push = false, $var = null): array
