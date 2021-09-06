@@ -250,7 +250,7 @@ class MissionController extends Controller
         $data->images = $data->images()->orderBy('order')->pluck('image');
 
         $data->users = $data->mission_stats()
-            ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
+            ->whereColumn(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
             ->join('users', 'users.id', 'mission_stats.user_id')
             ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
             ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
@@ -695,7 +695,7 @@ class MissionController extends Controller
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
- 
+
         try {
             DB::beginTransaction();
             $event_mission_info = DB::select('SELECT  d.id as mission_stat_id, d.image as certification_image,
@@ -1038,8 +1038,8 @@ class MissionController extends Controller
                 'result' => false,
                 'reason' => 'not enough data',
             ]);
-        } 
- 
+        }
+
 // echo '??';
         $file =  $request->file('file');
         if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
@@ -1062,11 +1062,11 @@ class MissionController extends Controller
                 $filename = image_url(2,$filename);
                 try {
                     DB::beginTransaction();
-                    //인증서 사진 업로드 
+                    //인증서 사진 업로드
                     $certification_image = DB::update('UPDATE mission_stats set image = ? where id = ? ;'
                         , array($filename,
-                            $mission_stat_id)); 
-                          
+                            $mission_stat_id));
+
                     DB::commit();
 
                     return success([
@@ -1075,12 +1075,12 @@ class MissionController extends Controller
                         'filename' => $filename,
                         'mission_stat_id' => $mission_stat_id
                     ]);
-        
+
                 } catch (Exception $e) {
                     DB::rollBack();
                     return exceped($e);
                 }
-        
+
             } else {
                 return success(['result' => false, 'reason' => 'upload failed']);
             }
