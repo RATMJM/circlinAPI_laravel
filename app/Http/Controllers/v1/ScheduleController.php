@@ -80,7 +80,17 @@ class ScheduleController extends Controller
         }
     }
 
-    public static function mission_expire_warning()
+    public static function mission_expire_warning_am()
+    {
+        return self::mission_expire_warning('am');
+    }
+
+    public static function mission_expire_warning_pm()
+    {
+        return self::mission_expire_warning('pm');
+    }
+
+    public static function mission_expire_warning($type = 'am')
     {
         $deadline = init_today(time() - (86400 * 4));
 
@@ -99,9 +109,11 @@ class ScheduleController extends Controller
         $message = CommonCode::where('ctg_md', 'mission_upload')->pluck('content_ko', 'ctg_sm');
 
         $res[0] = PushController::send_gcm_notify(array_unique($data[0]->pluck('user_id')->toArray()),
-            '써클인', $message['mission_upload_am']);
-        $res[1] = PushController::send_gcm_notify(array_unique($data[1]->pluck('user_id')->toArray()),
-            '써클인', $message['mission_expire_warning']);
+            '써클인', $message['mission_upload_'.$type]);
+        if (count($data) > 1) {
+            $res[1] = PushController::send_gcm_notify(array_unique($data[1]->pluck('user_id')->toArray()),
+                '써클인', $message['mission_expire_warning']);
+        }
 
         return $res;
     }
