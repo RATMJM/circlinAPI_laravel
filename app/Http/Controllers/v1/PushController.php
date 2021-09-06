@@ -32,10 +32,13 @@ class PushController extends Controller
 
                 $data = [];
                 $j = 0;
+
+                $now = date('Y-m-d H:i:s');
+
                 foreach ($users as $i => $user) {
                     $data[] = [
-                        'created_at' => DB::raw("NOW()"),
-                        'updated_at' => DB::raw("NOW()"),
+                        'created_at' => $now,
+                        'updated_at' => $now,
                         'target_id' => $i,
                         'device_token' => $user,
                         'title' => $title,
