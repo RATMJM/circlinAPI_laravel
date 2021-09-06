@@ -67,8 +67,8 @@ return [
         ],
         'ftp3' => [ // 피드, 챌린지, 배너, 상품
             'driver' => 'ftp',
-            'host' => 'cyld20183.speedgabia.com',
-            'username' => 'cyld20183',  //아이디
+            'host' => 'cyld2018.speedgabia.com',
+            'username' => 'cyld2018',  //아이디
             'password' => 'teamcyld2018!', //암호
             // Optional FTP Settings...
             // 'port' => 21,
