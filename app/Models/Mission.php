@@ -16,6 +16,11 @@ class Mission extends Model
         'is_event' => 'bool',
     ];
 
+    public function areas()
+    {
+        return $this->hasMany(MissionArea::class);
+    }
+
     public function images()
     {
         return $this->hasMany(MissionImage::class);
