@@ -97,6 +97,9 @@ class NotificationController extends Controller
                 'feed_check', 'feed_check_multi' => code_replace($action['feed'], ['id' => $item->feed_id]),
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi'
                     => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
+                'mission_like', 'mission_like_multi' => code_replace($action['feed'], ['id' => $item->mission_id]),
+                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
+                    => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->mission_comment_id]),
                 default => null,
             };
         }
