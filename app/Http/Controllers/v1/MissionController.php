@@ -250,7 +250,7 @@ class MissionController extends Controller
         $data->images = $data->images()->orderBy('order')->pluck('image');
 
         $data->users = $data->mission_stats()
-            ->whereColumn(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
+            ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
             ->join('users', 'users.id', 'mission_stats.user_id')
             ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
             ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])

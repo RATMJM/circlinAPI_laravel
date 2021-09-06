@@ -53,7 +53,9 @@ function token(): object
             abort(403);
         }
 
-        return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+        $key = env('JWT_SECRET');
+
+        return JWT::decode($token, $key, ['HS256']);
     } catch (Exception $e) {
         abort(403);
     }

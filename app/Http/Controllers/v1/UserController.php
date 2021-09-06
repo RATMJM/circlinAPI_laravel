@@ -758,7 +758,7 @@ class UserController extends Controller
             function users($mission_id)
             {
                 return MissionStat::where('mission_id', $mission_id)
-                    ->whereColumn(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
+                    ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
                     ->join('users', 'users.id', 'mission_stats.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
                     ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
@@ -834,7 +834,7 @@ class UserController extends Controller
             function mission_user($mission_id)
             {
                 return MissionStat::where('mission_id', $mission_id)
-                    ->whereColumn(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', 'mission_stats.user_id')
+                    ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
                     ->join('users', 'users.id', 'mission_stats.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
                     ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
