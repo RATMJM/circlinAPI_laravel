@@ -10,6 +10,7 @@ use App\Models\MissionComment;
 use App\Models\MissionStat;
 use App\Models\SearchHistory;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -77,11 +78,14 @@ class SearchController extends Controller
                 ->select(['title as keyword', DB::raw("'mission' as type")]));
             // search_histories
             $data = $data->union(SearchHistory::where(DB::raw("REPLACE(keyword, ' ', '')"), 'like', "%$keyword2%")
-                ->select(['keyword', DB::raw("'keyword' as type")])
-                ->groupBy('keyword'))
-                ->orderBy(DB::raw("LENGTH(keyword)"))
-                ->take(10)
-                ->get();
+                ->select(['keyword', DB::raw("'keyword' as type")]))
+                ->orderBy(DB::raw("LENGTH(keyword)"));
+            $data = DB::table($data)
+                ->select([
+                    'keyword', DB::raw("SUBSTRING_INDEX(GROUP_CONCAT(`type` separator '|'), '|', 1) as `type`")
+                ])
+                ->groupBy('keyword')
+                ->take(10)->get();
 
             return success([
                 'result' => true,
