@@ -26,10 +26,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // 유저 추천 랜덤정렬
-        $schedule->call('sort_users')->dailyAt('08:00')->name('유저 추천 랜덤정렬');
+        $schedule->call([ScheduleController::class, 'sort_users'])->dailyAt('08:00')->name('유저 추천 랜덤정렬');
 
         // 일주일 지난 미션들 종료처리
-        $schedule->call('mission_expire')->dailyAt('08:00')->name('일주일 지난 미션들 종료처리');
+        $schedule->call([ScheduleController::class, 'mission_expire'])->dailyAt('08:00')->name('일주일 지난 미션들 종료처리');
     }
 
     /**
