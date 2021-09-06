@@ -97,32 +97,51 @@ class NotificationController extends Controller
             $replaces = Arr::collapse([$replaces, $item->variables]);
             $item->message = code_replace($item->message, $replaces);
             $item->link = match ($item->type) {
-                'follow' => code_replace($action['user'], ['id' => $item->user_id]),
-                'feed_check', 'feed_check_multi' => code_replace($action['feed'], ['id' => $item->feed_id]),
+                'follow', 'follow_multi' => code_replace($action['user'], ['id' => $item->user_id]),
+
+                'feed_check', 'feed_check_multi',
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi'
                 => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
 
-                'mission_like', 'mission_like_multi' => code_replace($action['mission'], ['id' => $item->mission_id]),
-                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
+                'mission_like', 'mission_like_multi',
+                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
+                'mission_complete', 'mission_invite', 'earn_badge'
                 => code_replace($action['mission'], ['id' => $item->feed_id, 'comment_id' => $item->mission_comment_id]),
+
+                'feed_check_reward' => code_replace($action['home'], []),
+
+                'feed_emoji' => code_replace($action['chat'], ['id' => $item->user_id]),
                 default => null,
             };
             $item->link_left = match ($item->type) {
-                'follow',
+                'follow', 'follow_multi',
                 'feed_check', 'feed_check_multi',
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
                 'mission_like', 'mission_like_multi',
-                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
+                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
+                'mission_invite'
                 => code_replace($action['user'], ['id' => $item->user_id]),
+
+                'feed_check_reward' => code_replace($action['home'], []),
+
+                'mission_complete', 'earn_badge', 'mission_expire_warning', 'mission_expire'
+                => code_replace($action['mission'], ['id' => $item->mission_id]),
                 default => null,
             };
             $item->link_right = match ($item->type) {
-                'follow',
+                'follow', 'follow_multi' => code_replace($action['user'], ['id' => $item->user_id]),
+
                 'feed_check', 'feed_check_multi',
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
+                'feed_emoji'
+                => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
+
                 'mission_like', 'mission_like_multi',
-                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi'
-                => code_replace($action['user'], ['id' => $item->user_id]),
+                'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
+                'mission_complete', 'mission_invite', 'mission_expire_warning', 'mission_expire'
+                => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
+
+                'earn_badge' => code_replace($action['badge'], []),
                 default => null,
             };
         }
