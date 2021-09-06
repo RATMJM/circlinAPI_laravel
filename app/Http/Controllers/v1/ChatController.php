@@ -148,7 +148,8 @@ class ChatController extends Controller
                 NotificationController::send($ids, 'feed_emoji', $user_id);
             }
 
-            PushController::send_gcm_notify($ids, $user->nickname, /*$prefix .*/ $latest_message."\n\"$message\"",
+            PushController::send_gcm_notify($ids, $user->nickname,
+                '"$latest_message"'.($res->type==='feed_emoji' ? '\n"$message"' : ''),
                 profile_image($user), 'chat.' . $room_id, $user_id);
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
