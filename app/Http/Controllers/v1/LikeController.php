@@ -84,7 +84,7 @@ class LikeController extends Controller
             if ($type === 'feed') {
                 if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
                     && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
-                    $res = PointController::change_point($target_id, $point+=10, 'feed_check', 'feed', $id);
+                    $res = PointController::change_point($target_id, $point += 10, 'feed_check', 'feed', $id);
                     $paid_point = $res['success'] && $res['data']['result'];
 
                     // 지금이 10번째 피드체크 && 100회까지만 지급
@@ -100,13 +100,9 @@ class LikeController extends Controller
             $data_like = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
 
             $res = match ($type) {
-                'feed' => (function () use ($paid_point, $data, $user_id, $id) {
-                    if ($paid_point) {
-                        return NotificationController::send($data->user_id, 'feed_check', $user_id, $id, false, ['point' => 10]);
-                    } else {
-                        return success(['result' => false]);
-                    }
-                })(),
+                'feed' => $paid_point ?
+                    NotificationController::send($data->user_id, 'feed_check', $user_id, $id, false, ['point' => 10])
+                    : null,
                 // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
                 default => null,
             };
