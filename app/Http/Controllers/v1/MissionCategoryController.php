@@ -134,7 +134,7 @@ class MissionCategoryController extends Controller
             ->select([
                 'missions.id',
                 // DB::raw("COUNT(distinct mission_stats.user_id) as bookmarks"),
-                // 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
             // ->groupBy('missions.id')
             ->orderBy(DB::raw("event_order=0"))
@@ -164,7 +164,8 @@ class MissionCategoryController extends Controller
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
-                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),//'m.bookmarks',
+                // 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'm.bookmarks',
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
