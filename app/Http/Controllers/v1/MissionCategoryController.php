@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\User;
 use App\Models\UserFavoriteCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -121,6 +122,8 @@ class MissionCategoryController extends Controller
         $page = $page ?? $request->get('page', 0);
         $sort = $sort ?? $request->get('sort', 'recent');
 
+        $local = $request->get('local');
+
         $missions = Mission::when($id, function ($query, $id) {
             $query->whereIn('missions.mission_category_id', Arr::wrap($id))
                 ->where('event_order', 0);
@@ -128,6 +131,11 @@ class MissionCategoryController extends Controller
             ->when($id === 0, function ($query) {
                 $query->where('event_order', '>', 0);
             })
+            ->when($local, function ($query) use ($user_id) {
+                $query//->whereNull('mission_areas.area_code')
+                    ->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+            })
+            ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
             ->select([
                 'missions.id',
                 'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
@@ -150,7 +158,9 @@ class MissionCategoryController extends Controller
 
         $missions = Mission::joinSub($missions, 'm', function ($query) {
             $query->on('m.id', 'missions.id');
-        })->join('users', 'users.id', 'missions.user_id')
+        })
+            ->join('users', 'users.id', 'missions.user_id')
+            ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
@@ -162,6 +172,7 @@ class MissionCategoryController extends Controller
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
+                'mission_area' => area_md('mission_areas'),
                 'm.bookmarks',
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),

@@ -229,6 +229,12 @@ function area($table = 'users')
         CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', "$table.area_code");
 }
 
+function area_md($table = 'users')
+{
+    return Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
+        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_md', "$table.area_code")->limit(1);
+}
+
 /**
  * 기존 챌린지 type
  */
