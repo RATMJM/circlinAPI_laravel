@@ -44,7 +44,7 @@ class BannerController extends Controller
 
 
         foreach ($banners as $i => $banner) {
-            $banners[$i]->link = code_replace($banner->link, ['{%id}' => $banner->link_id]);
+            $banners[$i]->link = code_replace($banner->link, ['id' => $banner->link_id]);
         }
 
         return success([
