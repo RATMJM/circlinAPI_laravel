@@ -1187,6 +1187,7 @@ class MissionController extends Controller
                 , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
+                and f.place_id not in (5, 174, 175, 176, 177, 178, 179)
                 and b.mission_id= ?  
                 and f.place_id = ? and a.id < ?
                 order by feed_id desc limit ?, 10;',
