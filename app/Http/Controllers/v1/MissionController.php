@@ -1189,7 +1189,7 @@ class MissionController extends Controller
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and f.place_id not in (5, 174, 175, 176, 177, 178, 179)
                 and b.mission_id= ?  
-                and f.place_id = ? and a.id < ?
+                and a.id < ?
                 order by feed_id desc limit ?, 10;',
                     [ $user_id, $user_id,$mission_id, $place_id,  $min_feed_id, $page]);
             } catch (Exception $e) {
