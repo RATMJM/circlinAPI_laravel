@@ -11,6 +11,7 @@ use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
 use App\Models\FeedProduct;
+use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
@@ -233,6 +234,8 @@ class FeedController extends Controller
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
                 'feed_products.type as product_type',
                 DB::raw("IF(feed_products.type='inside', feed_products.product_id, feed_products.outside_product_id) as product_id"),
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
