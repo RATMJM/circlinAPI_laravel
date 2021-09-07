@@ -117,7 +117,7 @@ class NotificationController extends Controller
                 default => null,
             };
             $item->link_left = match ($item->type) {
-                'follow', 'follow_multi',
+                'follow', 'follow_multi', 'feed_emoji',
                 'feed_check', 'feed_check_multi',
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
                 'mission_like', 'mission_like_multi',
@@ -175,8 +175,8 @@ class NotificationController extends Controller
 
             $parent_id = null;
             $data = match ($type) {
-                'follow', 'feed_emoji' => ['user_id' => $user_id],
-                'feed_check' => [
+                'follow' => ['user_id' => $user_id],
+                'feed_check', 'feed_emoji' => [
                     'user_id' => $user_id,
                     'feed_id' => $parent_id = $id,
                 ],
