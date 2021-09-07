@@ -241,19 +241,19 @@ class FeedController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                 'outside_products.url as product_url',
-                'place_address' => Place::select('address')->whereColumn('feed_places.feed_id', 'missions.id')
+                'place_address' => Place::select('address')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),
-                'place_title' => Place::select('title')->whereColumn('feed_places.feed_id', 'missions.id')
+                'place_title' => Place::select('title')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),
-                'place_description' => Place::select('description')->whereColumn('feed_places.feed_id', 'missions.id')
+                'place_description' => Place::select('description')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),
-                'place_image' => Place::select('image')->whereColumn('feed_places.feed_id', 'missions.id')
+                'place_image' => Place::select('image')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),
-                'place_url' => Place::select('url')->whereColumn('feed_places.feed_id', 'missions.id')
+                'place_url' => Place::select('url')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),
                 'places.image as place_image', 'places.url as place_url',
