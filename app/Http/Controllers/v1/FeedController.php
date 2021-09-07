@@ -129,7 +129,7 @@ class FeedController extends Controller
                             'feed_id' => $feed->id,
                             'mission_id' => $mission_id,
                         ])->doesntExist()) {
-                        $completed_missions[] = $mission;
+                        $completed_missions[] = $mission_id;
                     }
 
                     FeedMission::create([
