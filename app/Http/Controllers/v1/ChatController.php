@@ -398,6 +398,8 @@ class ChatController extends Controller
             $max = $messages->max('chat_messages.id');
             $messages = $messages->get();
 
+            $action = CommonCode::where('ctg_lg', 'click_action')->pluck('content_ko', 'ctg_sm');
+
             foreach ($messages as $i => $message) {
                 $message->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
                 [$message->image, $message->imaeg_type] = match ($message->type) {
@@ -406,6 +408,13 @@ class ChatController extends Controller
                     default => $message->image,
                 };
                 Arr::except($message, ['feed_image_type', 'feed_image', 'mission_image']);
+
+                [$type, $id] = match ($message->type) {
+                    'feed', 'feed_emoji' => ['feed', $message->feed_id],
+                    'mission', 'mission_invite' => ['mission', $message->mission_id],
+                    default => [null, null],
+                };
+                $message->link = code_replace($action[$type] ?? '', ['id' => $id]);
             }
 
             $user->update(['read_message_id' => max($user->read_message_id, $max)]);
