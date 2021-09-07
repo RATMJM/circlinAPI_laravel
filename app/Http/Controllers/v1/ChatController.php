@@ -404,14 +404,14 @@ class ChatController extends Controller
                 $message->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
                 [$message->image, $message->imaeg_type] = match ($message->type) {
                     'feed', 'feed_emoji' => [$message->feed_image, $message->feed_image_type],
-                    'mission', 'mission_invite' => [$message->mission_image, 'image'],
+                    'mission', 'mission_invite' => [$message->mission['thumbnail_image'], 'image'],
                     default => $message->image,
                 };
                 Arr::except($message, ['feed_image_type', 'feed_image', 'mission_image']);
 
                 [$type, $id] = match ($message->type) {
                     'feed', 'feed_emoji' => ['feed', $message->feed_id],
-                    'mission', 'mission_invite' => ['mission', $message->mission_id],
+                    'mission', 'mission_invite' => ['mission', $message->mission['id']],
                     default => [null, null],
                 };
                 $message->link = code_replace($action[$type] ?? '', ['id' => $id]);
