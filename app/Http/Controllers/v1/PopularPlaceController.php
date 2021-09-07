@@ -26,7 +26,7 @@ class PopularPlaceController extends Controller
         })
             ->join('mission_places', 'mission_places.mission_id', 'missions.id')
             ->join('missions', function ($query) {
-                $query->on('missions.place_id', 'mission_places.id')->whereNull('missions.deleted_at');
+                $query->on('missions.id', 'mission_places.mission_id')->whereNull('missions.deleted_at');
             })
             ->select([
                 'places.id', 'places.address', 'places.title', 'places.description',
