@@ -1122,7 +1122,7 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
         $type = $request->get('type');
-        $mission_id = $request->get('challId');
+        $mission_id = $request->get('mission_id');
         $place_id = $request->get('place_id');
         $page = $request->get('page');
         $time = date("Y-m-d H:i:s");
