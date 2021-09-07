@@ -109,7 +109,7 @@ class NotificationController extends Controller
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
                 'mission_complete', 'mission_invite', 'earn_badge'
-                => code_replace($action['mission'], ['id' => $item->feed_id, 'comment_id' => $item->mission_comment_id]),
+                => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
                 'feed_check_reward' => code_replace($action['home'], []),
 
