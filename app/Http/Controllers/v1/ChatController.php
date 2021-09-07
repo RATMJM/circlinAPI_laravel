@@ -277,8 +277,6 @@ class ChatController extends Controller
     public function send_direct_multiple(Request $request): array
     {
         try {
-            DB::beginTransaction();
-
             $users = Arr::wrap($request->get('user_id'));
             $users = array_unique($users);
             $success = [];
@@ -290,8 +288,6 @@ class ChatController extends Controller
                     $sockets = Arr::collapse([$sockets, $res['data']['sockets']]);
                 }
             }
-
-            DB::commit();
 
             return success(['result' => true, 'users' => $success, 'sockets' => $sockets]);
         } catch (Exception $e) {
