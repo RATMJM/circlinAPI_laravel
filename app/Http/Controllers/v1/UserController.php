@@ -756,7 +756,7 @@ class UserController extends Controller
             ->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
-            function users($mission_id)
+            function mission_user($mission_id)
             {
                 return MissionStat::where('mission_id', $mission_id)
                     ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
@@ -769,9 +769,9 @@ class UserController extends Controller
             $users = null;
             foreach ($missions as $i => $mission) {
                 if ($users) {
-                    $users = $users->union(users($mission->id));
+                    $users = $users->union(mission_user($mission->id));
                 } else {
-                    $users = users($mission->id);
+                    $users = mission_user($mission->id);
                 }
             }
             $users = $users->get();
