@@ -70,12 +70,12 @@ class PushController extends Controller
             'title' => $title,
             'subtitle' => $title,
             'body' => $message,
-            'image' => $image,
+            // 'image' => $image,
         ];
 
         $data = [
             'link' => code_replace($action[explode('.', $tag)[0]] ?? '', ['id' => $id]),
-            'image' => $image,
+            // 'image' => $image,
         ];
 
         //This array contains, the token and the notification. The 'to' attribute stores the token.

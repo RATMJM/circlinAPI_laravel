@@ -150,7 +150,7 @@ class ChatController extends Controller
                 NotificationController::send($ids, $res->type, $user_id, $mission_id);
             }
 
-            PushController::send_gcm_notify($ids, $user->nickname,
+            PushController::send_gcm_notify($ids, $user->nickname." 님의 메시지",
                 $latest_message . ($res->type === 'feed_emoji' ? "\n\"$message\"" : ''),
                 profile_image($user), 'chat.' . $room_id, $user_id);
 
