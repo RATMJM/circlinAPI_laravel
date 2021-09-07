@@ -835,9 +835,9 @@ class MissionController extends Controller
              (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
              b.distance, b.laptime, c.goal_distance,  
              e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url
-             from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+             from feeds a left join feed_places f on a.id=f.feed_id , places e, feed_missions b, mission_stats c, missions d
              where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-             and a.user_id=c.user_id and a.deleted_at is null
+             and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
              and a.user_id= ? 
              and b.mission_id= ? 
              and b.mission_stat_id = ?; ',
@@ -1137,7 +1137,7 @@ class MissionController extends Controller
         // $time = date("Y-m-d H:i:s");
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
-
+    
 
         if($type=='ALL'){
             try {
@@ -1146,19 +1146,19 @@ class MissionController extends Controller
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
                 (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
                 b.distance, b.laptime, c.goal_distance,  
-                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, a.place_id,
+                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
                 (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
                 (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
-                case when a.place_id is null then null else "1" end as has_place  ,
+                case when f.place_id is null then null else "1" end as has_place  ,
                 (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
-                from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+                from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null 
-                and b.mission_id= ?  and a.place_id= ?
-                order by feed_id desc limit ? , 20 ;',
-                    [ $user_id, $user_id,$mission_id, $place_id, $page]);
+                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
+                and b.mission_id= ?   
+                order by feed_id desc limit ?, 20;',
+                    [ $user_id, $user_id,$mission_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -1171,18 +1171,18 @@ class MissionController extends Controller
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
                 (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
                 b.distance, b.laptime, c.goal_distance,  
-                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, a.place_id,
+                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
                 (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
                 (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
-                case when a.place_id is null then null else "1" end as has_place  ,
+                case when f.place_id is null then null else "1" end as has_place  ,
                 (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
-                from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+                from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null 
-                and b.mission_id= ?  and a.place_id= ?
-                order by feed_id desc limit ? , 20 ;',
+                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
+                and b.mission_id= ?  and f.place_id= ?
+                order by feed_id desc limit ?, 20;',
                     [ $user_id, $user_id,$mission_id, $place_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
@@ -1193,22 +1193,22 @@ class MissionController extends Controller
         else{
             try {
                 DB::beginTransaction();
-                $double_zone_feed = DB::select('SELECT a.user_id, a.content, a.created_at, b.feed_id, 
+                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
                 (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
                 b.distance, b.laptime, c.goal_distance,  
-                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, a.place_id,
+                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
                 (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
                 (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
-                case when a.place_id is null then null else "1" end as has_place  ,
+                case when f.place_id is null then null else "1" end as has_place  ,
                 (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
-                from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+                from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null 
-                and b.mission_id= ?  and a.place_id= ?
-                order by feed_id desc limit ? , 20 ;',
+                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
+                and b.mission_id= ?  and f.place_id= ?
+                order by feed_id desc limit ?, 20;',
                     [ $user_id, $user_id,$mission_id, $place_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
@@ -1217,11 +1217,11 @@ class MissionController extends Controller
 
         }
 
-
+         
         return success([
             'success' => true,
             'double_zone_feed' => $double_zone_feed,
-
+             
 
         ]);
     }
