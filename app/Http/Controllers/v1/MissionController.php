@@ -17,7 +17,6 @@ use App\Models\MissionProduct;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
 use App\Models\Place;
-use App\Models\Product;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\File;
@@ -199,9 +198,11 @@ class MissionController extends Controller
     /**
      * 미션 상세
      */
-    public function show($mission_id): array
+    public function show(Request $request, $mission_id): array
     {
         $user_id = token()->uid;
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 10);
 
         $data = Mission::where('missions.id', $mission_id)
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
@@ -262,7 +263,7 @@ class MissionController extends Controller
             ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
             ->groupBy('users.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
 
-        $places = FeedMission::where('mission_id', $mission_id)
+        /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
                 $query->on('feeds.id', 'feed_missions.feed_id')
                     ->where(function ($query) use ($user_id) {
@@ -436,7 +437,25 @@ class MissionController extends Controller
             foreach ($query->groupBy('title') as $i => $item) {
                 $products[array_search($i, $keys)]->feeds = $item;
             }
-        }
+        }*/
+
+        $feeds = $this->feed($request, $mission_id)['data'];
+
+        return success([
+            'result' => true,
+            'mission' => $data,
+            // 'places' => $places,
+            // 'products' => $products,
+            'feeds_count' => $feeds['feeds_count'],
+            'feeds' => $feeds['feeds'],
+        ]);
+    }
+
+    public function feed(Request $request, $mission_id): array
+    {
+        $user_id = token()->uid;
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 10);
 
         $feeds = FeedMission::where('feed_missions.mission_id', $mission_id)
             ->whereNull('feeds.deleted_at')
@@ -462,15 +481,13 @@ class MissionController extends Controller
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
                     ->where('feed_comments.user_id', token()->uid),
             ])
-            ->orderBy('id', 'desc')
-            ->take(10)
-            ->get();
+            ->orderBy('id', 'desc');
+        $feeds_count = $feeds->count();
+        $feeds = $feeds->skip($page * $limit)->take($limit)->get();
 
         return success([
             'result' => true,
-            'mission' => $data,
-            'places' => $places,
-            'products' => $products,
+            'feeds_count' => $feeds_count,
             'feeds' => $feeds,
         ]);
     }
@@ -685,7 +702,7 @@ class MissionController extends Controller
         }
     }
 
-   //이벤트챌린지 룸(챌린지 신청한 상태) 데이터 조회
+    //이벤트챌린지 룸(챌린지 신청한 상태) 데이터 조회
     public function event_mission_info(Request $request): array
     {
         $user_id = token()->uid;
