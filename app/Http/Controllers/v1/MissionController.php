@@ -1117,4 +1117,50 @@ class MissionController extends Controller
         }
     }
 
+    //더블존탭
+    public function doublezone_feed_list(Request $request): array
+    {
+        $user_id = token()->uid;
+        $mission_stat_id = $request->get('challPk');
+        $mission_id = $request->get('challId');
+        $place_id = $request->get('place_id');
+        $time = date("Y-m-d H:i:s");
+        $today = date("Y-m-d");
+        $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
+        // $user_id =1;//token()->uid;
+        // $mission_stat_id = "1042518";//  $request->get('challPk');
+        // $mission_id = "962" ;//$request->get('challId');
+        // $place_id = $request->get('place_id');
+        // $time = date("Y-m-d H:i:s");
+        // $today = date("Y-m-d");
+        // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
+    
+
+        // 내 기록
+        try {
+            DB::beginTransaction();
+            $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+            (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
+            (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+            b.distance, b.laptime, c.goal_distance,  
+            e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url
+            from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+            where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
+            and a.user_id=c.user_id and a.deleted_at is null
+            
+            and b.mission_id= ? 
+            order by feed_id desc; ',
+                [$mission_id]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+         
+        return success([
+            'success' => true,
+            'double_zone_feed' => $double_zone_feed,
+             
+
+        ]);
+    }
 }
