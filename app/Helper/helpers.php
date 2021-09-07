@@ -225,7 +225,7 @@ function profile_image($user): string|null
  */
 function area($table = 'users')
 {
-    return Area::select('name')->whereColumn('code', "$table.area_code");
+    return Area::select('name')->whereColumn('code', "$table.area_code")->limit(1);
 }
 
 function area_like($table = 'users')
