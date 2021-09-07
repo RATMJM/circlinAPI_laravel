@@ -107,7 +107,7 @@ class HomeController extends Controller
             ->select('feeds.id')
             ->orderBy('feeds.id', 'desc');
         $feeds_count = $data->count();
-        $data = $data->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
+        $data = $data//->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
             ->skip($page * $limit)->take($limit);
 
         $data = Feed::joinSub($data, 'f', function ($query) {
@@ -156,7 +156,10 @@ class HomeController extends Controller
                             $query->whereColumn('user_id', 'feeds.user_id');
                         });
                     }), // 해당 피드로 이모지를 보낸 적이 있는가
-            ])->get();
+            ])
+            ->orderBy('has_check')
+            ->orderBy('feeds.id', 'desc')
+            ->get();
 
         foreach ($data as $i => $item) {
             $data[$i]->product = arr_group($data[$i], ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
