@@ -830,7 +830,7 @@ class MissionController extends Controller
             DB::beginTransaction();
             $myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
              (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-             (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+             (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
              b.distance, b.laptime, c.goal_distance,  
              e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url
              from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
