@@ -29,7 +29,7 @@ class CreateAreasTable extends Migration
             $table->string('lng_sm')->nullable();
         });
 
-        $comment = "읍면동 행정구역 전체 http://kssc.kostat.go.kr/ksscNew_web/kssc/common/CommonBoardList.do?gubun=1&strBbsId=kascrr";
+        $comment = "읍면동 행정구역 전체 http://kssc.kostat.go.kr/ksscNew_web/kssc/common/CommonBoardList.do?gubun=1&strCategoryNameCode=019&strBbsId=kascrr&categoryMenu=014";
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE areas comment '$comment'");
     }
 
