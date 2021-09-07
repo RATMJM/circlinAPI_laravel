@@ -256,7 +256,6 @@ class FeedController extends Controller
                 'place_url' => Place::select('url')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),
-                'places.image as place_image', 'places.url as place_url',
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'emoji_total' => ChatUser::selectRaw("COUNT(distinct chat_messages.chat_room_id)")->withTrashed()
