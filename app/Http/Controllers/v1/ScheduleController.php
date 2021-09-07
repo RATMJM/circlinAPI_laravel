@@ -8,6 +8,7 @@ use App\Models\Follow;
 use App\Models\MissionStat;
 use App\Models\SortUser;
 use App\Models\User;
+use App\Models\UserStat;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +50,39 @@ class ScheduleController extends Controller
         }
         SortUser::insert($data);
         $con ? $con->comment($i + 1 . "명 등록 완료") : print($i + 1 . "명 등록 완료\n");
+    }
+
+    public static function yesterday_feeds_count()
+    {
+        $yesterday = init_today(time() - 86400);
+
+        $users = Follow::where('feeds.created_at', '>=', $yesterday)
+            ->leftJoin('feeds', 'feeds.user_id', 'follows.target_id')
+            ->select([
+                'follows.user_id', DB::raw("COUNT(distinct feeds.id) as c")
+            ])
+            ->groupBy('follows.user_id')
+            ->orderBy('follows.user_id')
+            ->get();
+
+        echo "유저데이터 로드 완료\n";
+
+        $res = [];
+        foreach ($users->groupBy('c') as $i => $user) {
+            echo "$i\n";
+            foreach ($user as $j => $item) {
+                echo "\t$j";
+                $data[] = $item->user_id;
+                if (($j + 1) % 10000 === 0) {
+                    $res[] = UserStat::whereIn('user_id', $data)->update(['yesterday_feeds_count' => $i]);
+                    $data = [];
+                }
+            }
+            $res[] = UserStat::whereIn('user_id', $data)->update(['yesterday_feeds_count' => $i]);
+            $data = [];
+        }
+
+        return $res;
     }
 
     public static function mission_expire()

@@ -29,7 +29,7 @@ class Kernel extends ConsoleKernel
         $schedule->call([ScheduleController::class, 'sort_users'])->dailyAt('08:00')->name('유저 추천 랜덤정렬');
 
         // 전일 팔로워 피드 전체 수 기록
-        // $schedule->call([ScheduleController::class, 'yesterday_feeds_count'])->dailyAt('08:00')->name('전일 팔로워 피드 전체 수 기록');
+        $schedule->call([ScheduleController::class, 'yesterday_feeds_count'])->dailyAt('08:00')->name('전일 팔로워 피드 전체 수 기록');
 
         // 일주일 지난 미션들 종료처리
         $schedule->call([ScheduleController::class, 'mission_expire'])->dailyAt('08:00')->name('일주일 지난 미션들 종료처리');
