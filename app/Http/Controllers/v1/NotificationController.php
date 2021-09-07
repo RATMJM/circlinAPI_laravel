@@ -95,6 +95,9 @@ class NotificationController extends Controller
                 'mission' => $item->mission_emoji . ' ' . $item->mission_title,
             ];
             $replaces = Arr::collapse([$replaces, $item->variables]);
+            if (array_key_exists('point', $replaces)) {
+                $replaces['point'] = $replaces['point'] * $item->count;
+            }
             $item->message = code_replace($item->message, $replaces);
             $item->link = match ($item->type) {
                 'follow', 'follow_multi' => code_replace($action['user'], ['id' => $item->user_id]),
