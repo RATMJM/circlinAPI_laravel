@@ -310,29 +310,29 @@ class ChatController extends Controller
             ->selectRaw("MAX(id) as id")
             ->groupBy('user_id');
         $data = DB::table($data, 'cu')
-            ->join('chat_users', 'chat_users.id', 'cu.id')
+            ->join('chat_users as cu2', 'cu2.id', 'cu.id')
             ->join('users', function ($query) {
-                $query->on('users.id', 'chat_users.user_id')
+                $query->on('users.id', 'cu2.user_id')
                     ->whereNull('users.deleted_at');
             })
             ->select([
-                'chat_users.chat_room_id', 'chat_users.is_block',
+                'cu2.chat_room_id', 'cu2.is_block',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'latest_message' => ChatMessage::selectRaw("IFNULL(content_ko, chat_messages.message)")
-                    ->whereColumn('chat_room_id', 'chat_users.chat_room_id')
+                    ->whereColumn('chat_room_id', 'cu2.chat_room_id')
                     ->leftJoin('common_codes', function ($query) {
                         $query->on('common_codes.ctg_sm', 'chat_messages.type')
                             ->where('common_codes.ctg_lg', 'chat');
                     })->orderBy('chat_messages.id', 'desc')->limit(1),
-                'latest_nickname' => ChatMessage::select('nickname')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
+                'latest_nickname' => ChatMessage::select('nickname')->whereColumn('chat_room_id', 'cu2.chat_room_id')
                     ->join('users', 'users.id', 'chat_messages.user_id')
                     ->orderBy('chat_messages.id', 'desc')->limit(1),
-                'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'chat_users.chat_room_id')
+                'latest_at' => ChatMessage::select('created_at')->whereColumn('chat_room_id', 'cu2.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
-                'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'chat_users.chat_room_id')
-                    ->where(ChatUser::select('read_message_id')->where('user_id', $user_id)->orderby('id', 'desc')->limit(1),
-                        '>', DB::raw("chat_messages.id"))
-                    ->whereColumn('chat_messages.created_at', '>=', 'chat_users.created_at')
+                'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'cu2.chat_room_id')
+                    ->where(ChatUser::select('read_message_id')->whereColumn('chat_room_id', 'cu2.chat_room_id')
+                        ->where('user_id', $user_id), '<', DB::raw("chat_messages.id"))
+                    ->whereColumn('chat_messages.created_at', '>=', 'cu2.created_at')
                     ->where('user_id', '!=', $user_id),
             ])
             ->orderBy('is_block')->orderBy('latest_at', 'desc')
