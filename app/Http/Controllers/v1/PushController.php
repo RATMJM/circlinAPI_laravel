@@ -15,23 +15,25 @@ class PushController extends Controller
     /**
      * gcm push notice
      */
-    public static function send_gcm_notify($uid, $title, $message, $image = '', $type = null, $id = null): array|null
+    public static function gcm_notify($uid, $title, $message, $image = '', $type = null, $id = null): array|null
     {
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)
-                ->whereNotNull('device_token')->where('device_token', '!=', '')
+                ->where(DB::raw("IFNULL(device_token,'')"), '!=', '')
                 ->where(PushHistory::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
                     ->where(['result' => true, 'type' => $type])
-                    ->where('created_at', '>=', date('Y-m-d H:i:s', time()-5)), 0)
-                ->pluck('device_token', 'id')->toArray();
+                    ->where('created_at', '>=', date('Y-m-d H:i:s', time() - 5)), 0)
+                ->select(['device_token', 'id', 'device_type'])
+                ->get();
 
             if (count($users) > 0) {
                 $message = preg_replace('/{(.*?)}/', '$1', $message);
 
-                $res = self::send_gcm_notify_android(array_values($users), $title, $message, $type, $id, $image);
+                foreach ($users->groupBy('device_type') as $i => $ids) {
+                    $res = self::send_gcm_notify($i, $ids->pluck('device_token')->toArray(), $title, $message, $type, $id, $image);
+                }
 
                 $data = [];
-                $j = 0;
 
                 $now = date('Y-m-d H:i:s');
 
@@ -39,15 +41,14 @@ class PushController extends Controller
                     $data[] = [
                         'created_at' => $now,
                         'updated_at' => $now,
-                        'target_id' => $i,
-                        'device_token' => $user,
+                        'target_id' => $user->id,
+                        'device_token' => $user->device_token,
                         'title' => $title,
                         'message' => $message,
                         'type' => $type,
-                        'result' => isset($res['res']['results'][$j]?->message_id) ?? false,
+                        'result' => isset($res['res']['results'][$i]?->message_id) ?? false,
                         'json' => json_encode($res['json'] ?? null),
                     ];
-                    $j += 1;
                 }
                 PushHistory::insert($data);
 
@@ -60,15 +61,14 @@ class PushController extends Controller
         }
     }
 
-    public static function send_gcm_notify_android($reg_id, $title, $message, $tag, $id, $image = ''): array
+    public static function send_gcm_notify($type, $reg_id, $title, $message, $tag, $id, $image = ''): array
     {
         $action = CommonCode::where('ctg_lg', 'click_action')->pluck('content_ko', 'ctg_sm');
         //Creating the notification array.
         $notification = [
             'channel_id' => 'Circlin',
             'tag' => $tag,
-            'title' => $title,
-            'subtitle' => $title,
+            $type === 'android' ? 'title' : 'subtitle' => $title,
             'body' => $message,
             // 'image' => $image,
         ];

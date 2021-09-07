@@ -248,7 +248,7 @@ class NotificationController extends Controller
                 $replaces = Arr::collapse([$replaces, $var]);
                 $message = code_replace($messages[$type], $replaces);
 
-                $res = PushController::send_gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)),
+                $res = PushController::gcm_notify($target_ids, '써클인', $message, profile_image(User::find($user_id)),
                     $type . ($parent_id ? ".$parent_id" : ''), $id);
 
                 DB::commit();

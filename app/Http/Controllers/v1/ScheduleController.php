@@ -142,10 +142,10 @@ class ScheduleController extends Controller
 
         $message = CommonCode::where('ctg_md', 'mission_upload')->pluck('content_ko', 'ctg_sm');
 
-        $res[0] = PushController::send_gcm_notify(array_unique($data[0]->pluck('user_id')->toArray()),
+        $res[0] = PushController::gcm_notify(array_unique($data[0]->pluck('user_id')->toArray()),
             '써클인', $message['mission_upload_'.$type]);
         if (count($data) > 1) {
-            $res[1] = PushController::send_gcm_notify(array_unique($data[1]->pluck('user_id')->toArray()),
+            $res[1] = PushController::gcm_notify(array_unique($data[1]->pluck('user_id')->toArray()),
                 '써클인', $message['mission_expire_warning']);
         }
 
