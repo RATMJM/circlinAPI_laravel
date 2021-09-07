@@ -307,12 +307,10 @@ class ChatController extends Controller
         $data = ChatUser::withTrashed()
             ->whereIn('chat_room_id', ChatUser::select('chat_room_id')->where('user_id', $user_id))
             ->where('user_id', '!=', $user_id)
-            ->select([
-                'user_id', DB::raw("MAX(id) as id"),
-            ])
+            ->selectRaw("MAX(id) as id")
             ->groupBy('user_id');
-        $data = ChatUser::withTrashed()
-            ->joinSub($data, 'cu', 'chat_users.id', 'cu.id')
+        $data = DB::table($data, 'cu')
+            ->join('chat_users', 'chat_users.id', 'cu.id')
             ->join('users', function ($query) {
                 $query->on('users.id', 'chat_users.user_id')
                     ->whereNull('users.deleted_at');
