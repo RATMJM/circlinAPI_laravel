@@ -17,6 +17,7 @@ class KeywordController extends Controller
                 $query->where('area_code', $area_code)
                     ->orWhereNull('area_code');
             })
+            ->orderBy('order')
             ->orderBy('id', 'desc')
             ->pluck('keyword');
 
