@@ -90,6 +90,7 @@ Route::post('/mission_info', [v1\MissionController::class, 'mission_info']);
 Route::post('/start_event_mission', [v1\MissionController::class, 'start_event_mission']);
 Route::post('/participant_list', [v1\MissionController::class, 'participant_list']);
 Route::post('/certification_image', [v1\MissionController::class, 'certification_image']);
+Route::post('/doublezone_feed_list', [v1\MissionController::class, 'doublezone_feed_list']);
 
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1\MissionController::class, 'store'])->name('store');
