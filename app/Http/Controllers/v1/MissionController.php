@@ -1127,7 +1127,7 @@ class MissionController extends Controller
         $mission_id = $request->get('mission_id');
         $place_id = $request->get('place_id');
         $page = $request->get('page');
-        $last_feed_id = $request->get('last_feed_id');
+        $min_feed_id = $request->get('min_feed_id');
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
@@ -1162,7 +1162,7 @@ class MissionController extends Controller
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and b.mission_id= ?   and a.id < ?
                 order by feed_id desc limit ?, 10;',
-                    [ $user_id, $user_id,$mission_id, $last_feed_id, $page]);
+                    [ $user_id, $user_id,$mission_id, $min_feed_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -1190,7 +1190,7 @@ class MissionController extends Controller
                 and b.mission_id= ?  
                 and f.place_id = ? and a.id < ?
                 order by feed_id desc limit ?, 10;',
-                    [ $user_id, $user_id,$mission_id, $place_id,  $last_feed_id, $page]);
+                    [ $user_id, $user_id,$mission_id, $place_id,  $min_feed_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -1219,7 +1219,7 @@ class MissionController extends Controller
                 and b.mission_id= ?  
                 and f.place_id = ? and a.id < ?
                 order by feed_id desc limit ?, 10;',
-                    [ $user_id, $user_id,$mission_id, $place_id,  $last_feed_id, $page]);
+                    [ $user_id, $user_id,$mission_id, $place_id,  $min_feed_id , $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
