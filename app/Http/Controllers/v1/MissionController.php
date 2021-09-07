@@ -1144,7 +1144,8 @@ class MissionController extends Controller
                 DB::beginTransaction();
                 $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type, 
+                g.profile_image, g.nickname, a.id,
                 b.distance, b.laptime, c.goal_distance,  
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
@@ -1154,8 +1155,9 @@ class MissionController extends Controller
                 case when f.place_id is null then null else "1" end as has_place  ,
                 (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
                 from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
+                , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
+                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and b.mission_id= ?   
                 order by feed_id desc limit ?, 20;',
                     [ $user_id, $user_id,$mission_id, $page]);
@@ -1169,7 +1171,8 @@ class MissionController extends Controller
                 DB::beginTransaction();
                 $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type, 
+                g.profile_image, g.nickname, a.id,
                 b.distance, b.laptime, c.goal_distance,  
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
@@ -1179,9 +1182,11 @@ class MissionController extends Controller
                 case when f.place_id is null then null else "1" end as has_place  ,
                 (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
                 from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
+                , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
-                and b.mission_id= ?  and f.place_id= ?
+                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
+                and b.mission_id= ?  
+                and f.place_id = ?
                 order by feed_id desc limit ?, 20;',
                     [ $user_id, $user_id,$mission_id, $place_id, $page]);
             } catch (Exception $e) {
@@ -1195,7 +1200,8 @@ class MissionController extends Controller
                 DB::beginTransaction();
                 $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type, 
+                g.profile_image, g.nickname, a.id,
                 b.distance, b.laptime, c.goal_distance,  
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
@@ -1205,9 +1211,11 @@ class MissionController extends Controller
                 case when f.place_id is null then null else "1" end as has_place  ,
                 (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
                 from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
+                , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
-                and b.mission_id= ?  and f.place_id= ?
+                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
+                and b.mission_id= ?  
+                and f.place_id = ? 
                 order by feed_id desc limit ?, 20;',
                     [ $user_id, $user_id,$mission_id, $place_id, $page]);
             } catch (Exception $e) {
