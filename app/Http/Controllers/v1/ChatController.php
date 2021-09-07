@@ -75,7 +75,7 @@ class ChatController extends Controller
         $mission_id = $type === 'mission' && $id ? $id : $request->get('mission_id');
         $feed_id = $type === 'feed' && $id ? $id : $request->get('feed_id');
 
-        if ($message==='' && !$file && !$mission_id && !$feed_id) {
+        if ($message === '' && !$file && !$mission_id && !$feed_id) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
@@ -123,7 +123,7 @@ class ChatController extends Controller
                 'user_id' => token()->uid,
                 'type' => $feed_id ? ($message ? 'feed_emoji' : 'feed') :
                     ($mission_id ? ($message ? 'mission_invite' : 'mission') :
-                        (isset($file) && $message==='' ? 'chat_image' : 'chat')),
+                        (isset($file) && $message === '' ? 'chat_image' : 'chat')),
                 'message' => $message,
                 'image_type' => $image_type,
                 'image' => image_url(3, $uploaded_file),
@@ -149,7 +149,7 @@ class ChatController extends Controller
             }
 
             PushController::send_gcm_notify($ids, $user->nickname,
-                $latest_message.($res->type==='feed_emoji' ? "\n\"$message\"" : ''),
+                $latest_message . ($res->type === 'feed_emoji' ? "\n\"$message\"" : ''),
                 profile_image($user), 'chat.' . $room_id, $user_id);
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
@@ -304,25 +304,22 @@ class ChatController extends Controller
     {
         $user_id = token()->uid;
 
-        $data = ChatUser::where('chat_users.user_id', $user_id)
+        $data = ChatUser::withTrashed()
+            ->whereIn('chat_room_id', ChatUser::select('chat_room_id')->where('user_id', $user_id))
+            ->where('user_id', '!=', $user_id)
+            ->select([
+                'user_id', DB::raw("MAX(id) as id"),
+            ])
+            ->groupBy('user_id');
+        $data = ChatUser::withTrashed()
+            ->joinSub($data, 'cu', 'chat_users.id', 'cu.id')
+            ->join('users', function ($query) {
+                $query->on('users.id', 'chat_users.user_id')
+                    ->whereNull('users.deleted_at');
+            })
             ->select([
                 'chat_users.chat_room_id', 'chat_users.is_block',
-                'user_id' => DB::table('chat_users as cu')->select('users.id')
-                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
-                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
-                    ->join('users', 'users.id', 'user_id')->limit(1),
-                'nickname' => DB::table('chat_users as cu')->select('nickname')
-                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
-                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
-                    ->join('users', 'users.id', 'user_id')->limit(1),
-                'profile_image' => DB::table('chat_users as cu')->select('profile_image')
-                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
-                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
-                    ->join('users', 'users.id', 'user_id')->limit(1),
-                'gender' => DB::table('chat_users as cu')->select('gender')
-                    ->whereColumn('cu.chat_room_id', 'chat_users.chat_room_id')
-                    ->whereColumn('cu.user_id', '!=', 'chat_users.user_id')
-                    ->join('users', 'users.id', 'user_id')->limit(1),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'latest_message' => ChatMessage::selectRaw("IFNULL(content_ko, chat_messages.message)")
                     ->whereColumn('chat_room_id', 'chat_users.chat_room_id')
                     ->leftJoin('common_codes', function ($query) {
@@ -347,7 +344,7 @@ class ChatController extends Controller
                 'nickname' => $item->latest_nickname,
             ];
 
-            $data[$i]->latest_message = code_replace($item->latest_message, $replaces);
+            $item->latest_message = code_replace($item->latest_message, $replaces);
         }
 
         return success([
