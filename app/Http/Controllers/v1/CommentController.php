@@ -26,24 +26,24 @@ class CommentController extends Controller
                 'product_review' => new ProductReviewComment(),
             };
 
-            $query_comment = $query_comment->where("{$table}_id", $id)
+            $query_comment = $query_comment->withTrashed()->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.depth",
                     DB::raw("{$table}_comments.deleted_at is not null as is_delete"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.created_at, null) as created_at"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.id, null) as id"),
+                    "{$table}_comments.created_at",
+                    "{$table}_comments.id",
                     DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, users.id, null) as user_id"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, users.nickname, null) as nickname"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, users.profile_image, null) as profile_image"),
-                    DB::raw("IF({$table}_comments.deleted_at is null, users.gender, null) as gender"),
+                    'users.id',
+                    'users.nickname',
+                    'users.profile_image',
+                    'users.gender',
                 ])
                 ->orderBy('group', 'desc')->orderBy('depth')->orderBy('id');
 
             $total = $query_comment->count();
 
-            $comments = $query_comment->withTrashed()->get();
+            $comments = $query_comment->get();
 
             return success([
                 'result' => true,
