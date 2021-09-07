@@ -256,12 +256,15 @@ class MissionController extends Controller
 
         $data->images = $data->images()->orderBy('order')->pluck('image');
 
-        $data->users = $data->mission_stats()
-            ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
-            ->join('users', 'users.id', 'mission_stats.user_id')
-            ->leftJoin('follows', 'follows.target_id', 'mission_stats.user_id')
-            ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-            ->groupBy('users.id')->orderBy(DB::raw('COUNT(follows.id)'), 'desc')->take(2)->get();
+        $data->users = FeedMission::where('feed_missions.mission_id', $mission_id)
+            ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
+            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->join('users', 'users.id', 'feeds.user_id')
+            ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+            ->groupBy('users.id', 'mission_id')
+            ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
+            ->take(2)
+            ->get();
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {

@@ -758,11 +758,13 @@ class UserController extends Controller
         if (count($missions)) {
             function mission_user($mission_id)
             {
-                return MissionStat::where('mission_id', $mission_id)
-                    ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
-                    ->join('users', 'users.id', 'mission_stats.user_id')
+                return FeedMission::where('feed_missions.mission_id', $mission_id)
+                    ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('users', 'users.id', 'feeds.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-                    ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
+                    ->groupBy('users.id', 'mission_id')
+                    ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
                     ->take(2);
             }
 
@@ -835,11 +837,13 @@ class UserController extends Controller
         if (count($missions)) {
             function mission_user($mission_id)
             {
-                return MissionStat::where('mission_id', $mission_id)
-                    ->where(Mission::select('user_id')->whereColumn('id', 'mission_stats.mission_id')->limit(1), '!=', DB::raw('mission_stats.user_id'))
-                    ->join('users', 'users.id', 'mission_stats.user_id')
+                return FeedMission::where('feed_missions.mission_id', $mission_id)
+                    ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('users', 'users.id', 'feeds.user_id')
                     ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-                    ->orderBy(Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'), 'desc')
+                    ->groupBy('users.id', 'mission_id')
+                    ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
                     ->take(2);
             }
 
