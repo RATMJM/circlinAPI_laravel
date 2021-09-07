@@ -186,7 +186,7 @@ class NotificationController extends Controller
                     'feed_id' => $parent_id = FeedComment::where('id', $id)->value('feed_id'),
                     'feed_comment_id' => $id,
                 ],
-                'mission_like', 'follow_bookmark' => [
+                'mission_like', 'follow_bookmark', 'mission_invite' => [
                     'user_id' => $user_id,
                     'mission_id' => $parent_id = $id,
                 ],
@@ -199,7 +199,7 @@ class NotificationController extends Controller
                     'user_id' => $user_id,
                     'notice_id' => $parent_id = $id,
                 ],
-                'mission_invite', 'mission_complete', 'mission_expire', 'mission_expire_warning' => ['mission_id' => $id],
+                'mission_complete', 'mission_expire', 'mission_expire_warning' => ['mission_id' => $id],
                 default => null,
             };
 
