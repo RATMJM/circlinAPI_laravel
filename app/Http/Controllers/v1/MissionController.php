@@ -241,7 +241,9 @@ class MissionController extends Controller
             ->withCount(['feeds' => function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             }])
-            ->with('place')
+            ->with('place', function ($query) {
+                $query->select(['places.id', 'places.address', 'places.title', 'places.description', 'places.image', 'places.url']);
+            })
             ->first();
 
         if (is_null($data)) {
@@ -253,7 +255,6 @@ class MissionController extends Controller
 
         $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
-        $data->place = arr_group($data, ['address', 'title', 'description', 'image', 'url'], 'place_');
 
         $data->images = $data->images()->orderBy('order')->pluck('image');
 
