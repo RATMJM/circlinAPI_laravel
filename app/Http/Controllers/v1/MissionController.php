@@ -1191,7 +1191,7 @@ class MissionController extends Controller
                 and b.mission_id= ?  
                 and a.id < ?
                 order by feed_id desc limit ?, 10;',
-                    [ $user_id, $user_id,$mission_id, $place_id,  $min_feed_id, $page]);
+                    [ $user_id, $user_id,$mission_id, $min_feed_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
