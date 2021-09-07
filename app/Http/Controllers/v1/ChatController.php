@@ -385,6 +385,8 @@ class ChatController extends Controller
                     'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
                     'feed_id', 'mission_id',
                     'feed_content' => Feed::select('content')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
+                    'feed_image_type' => FeedImage::select('type')->whereColumn('feed_id', 'chat_messages.feed_id')
+                        ->orderBy('order')->limit(1),
                     'feed_image' => FeedImage::select('image')->whereColumn('feed_id', 'chat_messages.feed_id')
                         ->orderBy('order')->limit(1),
                     'feed_user_id' => Feed::select('user_id')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
@@ -397,13 +399,13 @@ class ChatController extends Controller
             $messages = $messages->get();
 
             foreach ($messages as $i => $message) {
-                $messages[$i]->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
-                $messages[$i]->image = match ($message->type) {
-                    'feed', 'feed_emoji' => $message->feed_image,
-                    'mission', 'mission_invite' => $message->mission_image,
+                $message->mission = arr_group($messages[$i], ['id', 'title', 'description', 'thumbnail_image'], 'mission_');
+                [$message->image, $message->imaeg_type] = match ($message->type) {
+                    'feed', 'feed_emoji' => [$message->feed_image, $message->feed_image_type],
+                    'mission', 'mission_invite' => [$message->mission_image, 'image'],
                     default => $message->image,
                 };
-                Arr::except($messages[$i], ['feed_image', 'mission_image']);
+                Arr::except($message, ['feed_image_type', 'feed_image', 'mission_image']);
             }
 
             $user->update(['read_message_id' => max($user->read_message_id, $max)]);
