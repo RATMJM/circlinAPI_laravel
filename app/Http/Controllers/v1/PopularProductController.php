@@ -8,6 +8,7 @@ use App\Models\MissionComment;
 use App\Models\MissionProduct;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
+use App\Models\Place;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -110,8 +111,6 @@ class PopularProductController extends Controller
                         ->leftJoin('products', 'products.id', 'mission_products.product_id')
                         ->leftJoin('brands', 'brands.id', 'products.brand_id')
                         ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-                        ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
-                        ->leftJoin('places', 'places.id', 'mission_places.place_id')
                         ->select([
                             'mission_places.place_id',
                             'missions.id', 'missions.title', 'missions.description',
@@ -140,8 +139,21 @@ class PopularProductController extends Controller
                             DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                             'outside_products.url as product_url',
                             DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
-                            'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
-                            'places.image as place_image', 'places.url as place_url',
+                            'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
+                                ->join('mission_places', 'mission_places.place_id', 'places.id')
+                                ->orderBy('mission_places.id')->limit(1),
+                            'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
+                                ->join('mission_places', 'mission_places.place_id', 'places.id')
+                                ->orderBy('mission_places.id')->limit(1),
+                            'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                                ->join('mission_places', 'mission_places.place_id', 'places.id')
+                                ->orderBy('mission_places.id')->limit(1),
+                            'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
+                                ->join('mission_places', 'mission_places.place_id', 'places.id')
+                                ->orderBy('mission_places.id')->limit(1),
+                            'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
+                                ->join('mission_places', 'mission_places.place_id', 'places.id')
+                                ->orderBy('mission_places.id')->limit(1),
                         ])
                         ->withCount(['feeds' => function ($query) use ($user_id) {
                             $query->where('user_id', $user_id);

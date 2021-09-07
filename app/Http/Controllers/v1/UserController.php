@@ -704,8 +704,6 @@ class UserController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            /*->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
-            ->leftJoin('places', 'places.id', 'mission_places.place_id')*/
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->leftJoin('mission_stats', function ($query) use ($user_id) {
@@ -824,8 +822,6 @@ class UserController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
-            ->leftJoin('places', 'places.id', 'mission_places.place_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.mission_category_id', 'missions.id', 'missions.title', 'missions.description',
@@ -845,8 +841,21 @@ class UserController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                 'outside_products.url as product_url',
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
-                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
-                'places.image as place_image', 'places.url as place_url',
+                'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                     ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),

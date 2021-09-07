@@ -232,8 +232,6 @@ class MissionController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                 'outside_products.url as product_url',
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
-                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
-                'places.image as place_image', 'places.url as place_url',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
@@ -243,6 +241,7 @@ class MissionController extends Controller
             ->withCount(['feeds' => function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             }])
+            ->with('place')
             ->first();
 
         if (is_null($data)) {
@@ -1131,7 +1130,7 @@ class MissionController extends Controller
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
-        
+
         // $user_id =1;//token()->uid;
         // $mission_stat_id = "1042518";//  $request->get('challPk');
         // $mission_id = "962" ;//$request->get('challId');
@@ -1139,7 +1138,7 @@ class MissionController extends Controller
         // $time = date("Y-m-d H:i:s");
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
-    
+
 
         if($type=='ALL'){
             try {
@@ -1230,11 +1229,11 @@ class MissionController extends Controller
 
         }
 
-         
+
         return success([
             'success' => true,
             'double_zone_feed' => $double_zone_feed,
-             
+
 
         ]);
     }

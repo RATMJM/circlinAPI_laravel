@@ -230,8 +230,6 @@ class FeedController extends Controller
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
-            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
-            ->leftJoin('places', 'places.id', 'feed_places.place_id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
@@ -243,8 +241,21 @@ class FeedController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                 'outside_products.url as product_url',
-                DB::raw("IF(feed_products.type='inside', products.price, outside_products.price) as product_price"),
-                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
+                'place_address' => Place::select('address')->whereColumn('feed_places.mission_id', 'missions.id')
+                    ->join('feed_places', 'feed_places.place_id', 'places.id')
+                    ->orderBy('feed_places.id')->limit(1),
+                'place_title' => Place::select('title')->whereColumn('feed_places.mission_id', 'missions.id')
+                    ->join('feed_places', 'feed_places.place_id', 'places.id')
+                    ->orderBy('feed_places.id')->limit(1),
+                'place_description' => Place::select('description')->whereColumn('feed_places.mission_id', 'missions.id')
+                    ->join('feed_places', 'feed_places.place_id', 'places.id')
+                    ->orderBy('feed_places.id')->limit(1),
+                'place_image' => Place::select('image')->whereColumn('feed_places.mission_id', 'missions.id')
+                    ->join('feed_places', 'feed_places.place_id', 'places.id')
+                    ->orderBy('feed_places.id')->limit(1),
+                'place_url' => Place::select('url')->whereColumn('feed_places.mission_id', 'missions.id')
+                    ->join('feed_places', 'feed_places.place_id', 'places.id')
+                    ->orderBy('feed_places.id')->limit(1),
                 'places.image as place_image', 'places.url as place_url',
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),

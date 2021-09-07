@@ -7,6 +7,7 @@ use App\Models\FeedMission;
 use App\Models\Mission;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -34,8 +35,6 @@ class BookmarkController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
-            ->leftJoin('places', 'places.id', 'mission_places.place_id')
             ->select([
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
@@ -57,8 +56,21 @@ class BookmarkController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                 'outside_products.url as product_url',
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
-                'places.address as place_address', 'places.title as place_title', 'places.description as place_description',
-                'places.image as place_image', 'places.url as place_url',
+                'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
+                'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
+                    ->orderBy('mission_places.id')->limit(1),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_id', 'missions.id'),
                 'today_upload' => FeedMission::selectRaw("COUNT(1) > 0")
