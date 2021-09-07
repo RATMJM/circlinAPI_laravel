@@ -147,6 +147,8 @@ class HomeController extends Controller
                     })->whereNotNull('message'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('user_id', token()->uid), // 해당 피드에 체크를 남겼는가
+                'has_paid_check' => FeedLike::withTrashed()->selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                    ->where('user_id', token()->uid), // 해당 피드에 체크를 남겼던적 있는가
                 'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
                     ->where('user_id', token()->uid), // 해당 피드에 댓글을 남겼는가
                 'has_emoji' => ChatMessage::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
