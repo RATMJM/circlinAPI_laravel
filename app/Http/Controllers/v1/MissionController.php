@@ -1127,9 +1127,11 @@ class MissionController extends Controller
         $mission_id = $request->get('mission_id');
         $place_id = $request->get('place_id');
         $page = $request->get('page');
+        $last_feed_id = $request->get('last_feed_id');
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
+        
         // $user_id =1;//token()->uid;
         // $mission_stat_id = "1042518";//  $request->get('challPk');
         // $mission_id = "962" ;//$request->get('challId');
@@ -1158,9 +1160,9 @@ class MissionController extends Controller
                 , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
-                and b.mission_id= ?   
-                order by feed_id desc limit ?, 20;',
-                    [ $user_id, $user_id,$mission_id, $page]);
+                and b.mission_id= ?   and a.id < ?
+                order by feed_id desc limit ?, 10;',
+                    [ $user_id, $user_id,$mission_id, $last_feed_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -1186,9 +1188,9 @@ class MissionController extends Controller
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and b.mission_id= ?  
-                and f.place_id = ?
-                order by feed_id desc limit ?, 20;',
-                    [ $user_id, $user_id,$mission_id, $place_id, $page]);
+                and f.place_id = ? and a.id < ?
+                order by feed_id desc limit ?, 10;',
+                    [ $user_id, $user_id,$mission_id, $place_id,  $last_feed_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -1215,9 +1217,9 @@ class MissionController extends Controller
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and b.mission_id= ?  
-                and f.place_id = ? 
-                order by feed_id desc limit ?, 20;',
-                    [ $user_id, $user_id,$mission_id, $place_id, $page]);
+                and f.place_id = ? and a.id < ?
+                order by feed_id desc limit ?, 10;',
+                    [ $user_id, $user_id,$mission_id, $place_id,  $last_feed_id, $page]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
