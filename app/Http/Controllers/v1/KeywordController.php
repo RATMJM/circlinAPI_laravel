@@ -10,7 +10,7 @@ class KeywordController extends Controller
 {
     public function index(Request $request, $type): array
     {
-        $area_code = substr($request->get('area_code'), 0, 4);
+        $area_code = substr($request->get('area_code'), 0, 5);
 
         $keywords = Keyword::where('type', $type)
             ->where('area_code', $area_code)
