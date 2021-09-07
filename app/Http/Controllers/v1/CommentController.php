@@ -93,7 +93,6 @@ class CommentController extends Controller
                 'comment' => $comment,
             ]);
 
-            $feed_target_id = $query->where('id', $id)->value('user_id');
             // 답글인 경우 푸시
             $comment_target_id = $query_comment->where(["{$table}_id" => $id, 'group' => $group, 'depth' => 0])->value('user_id');
             if ($group <= $max_group && $comment_target_id !== $user_id) {
@@ -101,7 +100,7 @@ class CommentController extends Controller
             }
 
             // 글 주인한테 푸시
-            if ($table !== 'notice' && $feed_target_id !== $user_id) {
+            if ($table !== 'notice' && ($feed_target_id = $query->where('id', $id)->value('user_id')) !== $user_id) {
                 NotificationController::send($feed_target_id, "{$table}_comment", $user_id, $data->id);
             }
 
