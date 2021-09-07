@@ -34,7 +34,7 @@ class CommentController extends Controller
                     "{$table}_comments.created_at",
                     "{$table}_comments.id",
                     DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
-                    'users.id',
+                    'users.id as user_id',
                     'users.nickname',
                     'users.profile_image',
                     'users.gender',
