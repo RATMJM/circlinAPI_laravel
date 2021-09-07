@@ -20,7 +20,7 @@ class BaseController extends Controller
 
         $areas = Area::select(['code as ctg', 'name'])
             ->where('name', 'like', "%$text%")
-            ->where(DB::raw("code % 10000"), '>', 0)
+            ->where(DB::raw("code % 100000"), '>', 0)
             ->take(10)->get();
 
         return success([
