@@ -225,14 +225,12 @@ function profile_image($user): string|null
  */
 function area($table = 'users')
 {
-    return Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
-        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_sm', "$table.area_code");
+    return Area::select('name')->whereColumn('code', "$table.area_code");
 }
 
-function area_md($table = 'users')
+function area_like($table = 'users')
 {
-    return Area::selectRaw("IF(areas.name_lg=areas.name_md, CONCAT_WS(' ', areas.name_md, areas.name_sm),
-        CONCAT_WS(' ', areas.name_lg, areas.name_md, areas.name_sm))")->whereColumn('ctg_md', "$table.area_code")->limit(1);
+    return Area::select('name')->where('code', 'like', DB::raw("CONCAT($table.area_code, '%')"))->limit(1);
 }
 
 /**
