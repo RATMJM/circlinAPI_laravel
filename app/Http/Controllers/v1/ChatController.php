@@ -145,7 +145,9 @@ class ChatController extends Controller
             $prefix = $data['type'] === 'chat' ? "{$user->nickname}님이 메시지를 발송했습니다.\n" : '';
 
             if ($res->type === 'feed_emoji') {
-                NotificationController::send($ids, 'feed_emoji', $user_id);
+                NotificationController::send($ids, $res->type, $user_id, $feed_id);
+            } elseif ($res->type === 'mission_invite') {
+                NotificationController::send($ids, $res->type, $user_id, $mission_id);
             }
 
             PushController::send_gcm_notify($ids, $user->nickname,
