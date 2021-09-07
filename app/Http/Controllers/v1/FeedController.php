@@ -191,7 +191,7 @@ class FeedController extends Controller
                     'lat' => $place_lat,
                     'lng' => $place_lng,
                 ]);
-                $feed->update(['place_id' => $place->id]);
+                $feed->feed_places()->create(['place_id' => $place->id]);
 
                 if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_place', 'feed', $feed->id);
@@ -230,7 +230,8 @@ class FeedController extends Controller
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
-            ->leftJoin('places', 'places.id', 'feeds.place_id')
+            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
+            ->leftJoin('places', 'places.id', 'feed_places.place_id')
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
@@ -402,7 +403,6 @@ class FeedController extends Controller
                 $feed->update($update_data);
             }
 
-
             if ($product_delete) {
                 $feed->product()->delete();
             } elseif ($product_id) {
@@ -423,7 +423,7 @@ class FeedController extends Controller
 
 
             if ($place_delete) {
-                $feed->place()->delete();
+                $feed->feed_place()->delete();
             } elseif ($place_address && $place_title) {
                 $place = Place::updateOrCreate(['title' => $place_title], [
                     'address' => $place_address,
@@ -433,7 +433,7 @@ class FeedController extends Controller
                     'lat' => $place_lat,
                     'lng' => $place_lng,
                 ]);
-                $feed->update(['place_id' => $place->id]);
+                $feed->feed_places()->updateOrCreate([], ['place_id' => $place->id]);
             }
 
             DB::commit();

@@ -34,7 +34,8 @@ class BookmarkController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->leftJoin('places', 'places.id', 'missions.place_id')
+            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+            ->leftJoin('places', 'places.id', 'mission_places.place_id')
             ->select([
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),

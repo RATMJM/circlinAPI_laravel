@@ -35,8 +35,9 @@ class HomeController extends Controller
                 $places = Place::when($id, function ($query, $id) {
                     $query->where('missions.mission_category_id', $id);
                 })
+                    ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->join('missions', function ($query) {
-                        $query->on('missions.place_id', 'places.id')->whereNull('deleted_at');
+                        $query->on('missions.place_id', 'mission_places.place_id')->whereNull('deleted_at');
                     })
                     ->select([
                         'places.id', 'places.address', 'places.title', 'places.description',
@@ -118,7 +119,8 @@ class HomeController extends Controller
             ->leftJoin('products', 'products.id', 'feed_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
-            ->leftJoin('places', 'places.id', 'feeds.place_id')
+            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
+            ->leftJoin('places', 'places.id', 'feed_places.place_id')
             ->select([
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),

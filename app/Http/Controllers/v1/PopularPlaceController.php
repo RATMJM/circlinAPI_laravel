@@ -24,8 +24,9 @@ class PopularPlaceController extends Controller
         $data = Place::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
+            ->join('mission_places', 'mission_places.mission_id', 'missions.id')
             ->join('missions', function ($query) {
-                $query->on('missions.place_id', 'places.id')->whereNull('missions.deleted_at');
+                $query->on('missions.place_id', 'mission_places.id')->whereNull('missions.deleted_at');
             })
             ->select([
                 'places.id', 'places.address', 'places.title', 'places.description',
@@ -40,13 +41,14 @@ class PopularPlaceController extends Controller
         if (count($data)) {
             function missions($place_id, $category_id = null)
             {
-                return Mission::where('place_id', $place_id)
+                return Mission::where('mission_places.place_id', $place_id)
                     ->when($category_id, function ($query, $category_id) {
                         $query->where('missions.mission_category_id', $category_id);
                     })
+                    ->join('mission_places', 'mission_places.mission_id', 'missions.id')
                     ->join('users', 'users.id', 'missions.user_id')
                     ->select([
-                        'missions.place_id', 'missions.id', 'missions.title', 'missions.description', 'missions.thumbnail_image',
+                        'mission_places.place_id', 'missions.id', 'missions.title', 'missions.description', 'missions.thumbnail_image',
                         'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                     ])
                     ->take(4);
@@ -93,9 +95,10 @@ class PopularPlaceController extends Controller
                     ->leftJoin('products', 'products.id', 'mission_products.product_id')
                     ->leftJoin('brands', 'brands.id', 'products.brand_id')
                     ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-                    ->leftJoin('places', 'places.id', 'missions.place_id')
+                    ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+                    ->leftJoin('places', 'places.id', 'mission_places.place_id')
                     ->select([
-                        'missions.place_id',
+                        'mission_places.place_id',
                         'missions.id', 'missions.title', 'missions.description',
                         DB::raw("missions.event_order > 0 as is_event"),
                         DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),

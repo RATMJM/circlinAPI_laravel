@@ -17,6 +17,6 @@ class Place extends Model
 
     public function missions()
     {
-        return $this->hasMany(Mission::class);
+        return $this->hasManyThrough(Mission::class, MissionPlace::class);
     }
 }

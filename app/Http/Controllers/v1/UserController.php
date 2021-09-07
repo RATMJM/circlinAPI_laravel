@@ -10,6 +10,7 @@ use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
+use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
@@ -600,10 +601,10 @@ class UserController extends Controller
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
+                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
-                'missions' => Place::selectRaw("COUNT(1)")->whereColumn('id', 'feeds.place_id'),
+                'missions' => FeedPlace::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
                     ->orderBy('id')->limit(1),
                 'mission' => Mission::select('title')
@@ -651,7 +652,7 @@ class UserController extends Controller
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
+                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
@@ -703,7 +704,8 @@ class UserController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->leftJoin('places', 'places.id', 'missions.place_id')
+            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+            ->leftJoin('places', 'places.id', 'mission_places.place_id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
             ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->leftJoin('mission_stats', function ($query) use ($user_id) {
@@ -809,7 +811,8 @@ class UserController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->leftJoin('places', 'places.id', 'missions.place_id')
+            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+            ->leftJoin('places', 'places.id', 'mission_places.place_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.mission_category_id', 'missions.id', 'missions.title', 'missions.description',

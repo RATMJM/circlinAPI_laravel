@@ -7,6 +7,7 @@ use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
+use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
@@ -179,7 +180,7 @@ class MissionController extends Controller
                     'lat' => $place_lat,
                     'lng' => $place_lng,
                 ]);
-                $data->update(['place_id' => $place->id]);
+                $data->mission_place()->create(['place_id' => $place->id]);
             }
 
             (new BookmarkController())->store($request, $data->id);
@@ -210,7 +211,8 @@ class MissionController extends Controller
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->leftJoin('places', 'places.id', 'missions.place_id')
+            ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+            ->leftJoin('places', 'places.id', 'mission_places.place_id')
             ->select([
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
                 'missions.title', 'missions.description',
@@ -474,7 +476,7 @@ class MissionController extends Controller
                 'feeds.id', 'feeds.created_at', 'feeds.content',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => Place::selectRaw("COUNT(1) > 0")->whereColumn('id', 'feeds.place_id'), // 위치 있는지
+                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
@@ -603,7 +605,7 @@ class MissionController extends Controller
 
 
             if ($place_delete) {
-                $mission->place()->delete();
+                $mission->mission_place()->delete();
             } elseif ($place_address && $place_title) {
                 $place = Place::updateOrCreate(['title' => $place_title], [
                     'address' => $place_address,
@@ -613,7 +615,7 @@ class MissionController extends Controller
                     'lat' => $place_lat,
                     'lng' => $place_lng,
                 ]);
-                $mission->update(['place_id' => $place->id]);
+                $mission->mission_place()->updateOrCreate([], ['place_id' => $place->id]);
             }
 
             DB::commit();
@@ -1134,7 +1136,7 @@ class MissionController extends Controller
         // $time = date("Y-m-d H:i:s");
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
-    
+
 
         // 내 기록
         try {
@@ -1155,11 +1157,11 @@ class MissionController extends Controller
             DB::rollBack();
             return exceped($e);
         }
-         
+
         return success([
             'success' => true,
             'double_zone_feed' => $double_zone_feed,
-             
+
 
         ]);
     }

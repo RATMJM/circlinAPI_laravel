@@ -26,14 +26,19 @@ class Mission extends Model
         return $this->hasMany(MissionImage::class);
     }
 
-    public function place()
-    {
-        return $this->belongsTo(Place::class);
-    }
-
     public function product()
     {
         return $this->hasOne(MissionProduct::class);
+    }
+
+    public function mission_place()
+    {
+        return $this->hasMany(MissionPlace::class);
+    }
+
+    public function place()
+    {
+        return $this->hasManyThrough(Place::class, MissionPlace::class);
     }
 
     public function mission_stats()

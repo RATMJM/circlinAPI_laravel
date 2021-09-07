@@ -51,9 +51,14 @@ class Feed extends Model
         return $this->hasOne(FeedProduct::class);
     }
 
+    public function feed_places()
+    {
+        return $this->hasMany(FeedPlace::class);
+    }
+
     public function place()
     {
-        return $this->belongsTo(Place::class);
+        return $this->hasManyThrough(Place::class, FeedPlace::class);
     }
 
     public function followings()
