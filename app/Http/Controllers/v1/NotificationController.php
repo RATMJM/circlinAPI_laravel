@@ -199,7 +199,7 @@ class NotificationController extends Controller
                     'user_id' => $user_id,
                     'notice_id' => $parent_id = $id,
                 ],
-                'mission_complete', 'mission_expire', 'mission_expire_warning' => ['mission_id' => $id],
+                'mission_invite', 'mission_complete', 'mission_expire', 'mission_expire_warning' => ['mission_id' => $id],
                 default => null,
             };
 
