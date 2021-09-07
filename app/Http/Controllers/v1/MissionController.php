@@ -1123,9 +1123,10 @@ class MissionController extends Controller
     public function doublezone_feed_list(Request $request): array
     {
         $user_id = token()->uid;
-        $mission_stat_id = $request->get('challPk');
-        $mission_id = $request->get('challId');
+        $type = $request->get('type');
+        $mission_id = $request->get('mission_id');
         $place_id = $request->get('place_id');
+        $page = $request->get('page');
         $time = date("Y-m-d H:i:s");
         $today = date("Y-m-d");
         $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 86400);
@@ -1138,25 +1139,84 @@ class MissionController extends Controller
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
 
-        // 내 기록
-        try {
-            DB::beginTransaction();
-            $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
-            (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-            (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
-            b.distance, b.laptime, c.goal_distance,  
-            e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url
-            from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
-            where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-            and a.user_id=c.user_id and a.deleted_at is null
-            
-            and b.mission_id= ? 
-            order by feed_id desc; ',
-                [$mission_id]);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
+        if($type=='ALL'){
+            try {
+                DB::beginTransaction();
+                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+                (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+                b.distance, b.laptime, c.goal_distance,  
+                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, a.place_id,
+                (select count(1) from feed_likes where feed_id=a.id ) as check_total,
+                (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
+                (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
+                (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
+                case when a.place_id is null then null else "1" end as has_place  ,
+                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
+                from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+                where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
+                and a.user_id=c.user_id and a.deleted_at is null 
+                and b.mission_id= ?  and a.place_id= ?
+                order by feed_id desc limit ? , 20 ;',
+                    [ $user_id, $user_id,$mission_id, $place_id, $page]);
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+
+        }else if($type=='ETC'){
+            try {
+                DB::beginTransaction();
+                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+                (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+                b.distance, b.laptime, c.goal_distance,  
+                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, a.place_id,
+                (select count(1) from feed_likes where feed_id=a.id ) as check_total,
+                (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
+                (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
+                (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
+                case when a.place_id is null then null else "1" end as has_place  ,
+                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
+                from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+                where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
+                and a.user_id=c.user_id and a.deleted_at is null 
+                and b.mission_id= ?  and a.place_id= ?
+                order by feed_id desc limit ? , 20 ;',
+                    [ $user_id, $user_id,$mission_id, $place_id, $page]);
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+
         }
+        else{
+            try {
+                DB::beginTransaction();
+                $double_zone_feed = DB::select('SELECT a.user_id, a.content, a.created_at, b.feed_id, 
+                (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
+                b.distance, b.laptime, c.goal_distance,  
+                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, a.place_id,
+                (select count(1) from feed_likes where feed_id=a.id ) as check_total,
+                (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
+                (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
+                (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
+                case when a.place_id is null then null else "1" end as has_place  ,
+                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
+                from feeds a left join places e on a.place_id = e.id, feed_missions b, mission_stats c, missions d
+                where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
+                and a.user_id=c.user_id and a.deleted_at is null 
+                and b.mission_id= ?  and a.place_id= ?
+                order by feed_id desc limit ? , 20 ;',
+                    [ $user_id, $user_id,$mission_id, $place_id, $page]);
+            } catch (Exception $e) {
+                DB::rollBack();
+                return exceped($e);
+            }
+
+        }
+
 
         return success([
             'success' => true,
