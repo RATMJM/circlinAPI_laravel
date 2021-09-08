@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
@@ -107,8 +108,9 @@ class SearchController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 20);
         $keyword = $request->get('keyword');
+        $keyword2 = str_replace([' ', '%'], '', $keyword);
 
-        $data = User::where('users.nickname', 'like', "%$keyword%")
+        $data = User::where(DB::raw("REPLACE(users.nickname,' ','')"), 'like', "%$keyword2%")
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
@@ -135,8 +137,9 @@ class SearchController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 20);
         $keyword = $request->get('keyword');
+        $keyword2 = str_replace([' ', '%'], '', $keyword);
 
-        $data = Mission::where('missions.title', 'like', "%$keyword%")
+        $data = Mission::where(DB::raw("REPLACE(missions.title,' ','')"), 'like', "%$keyword2%")
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
@@ -195,6 +198,34 @@ class SearchController extends Controller
         foreach ($data as $i => $item) {
             $data[$i]->owner = arr_group($data[$i],
                 ['id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following'], 'owner_');
+        }
+
+        if (count($data)) {
+            function mission_user($mission_id)
+            {
+                return FeedMission::where('feed_missions.mission_id', $mission_id)
+                    ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('users', 'users.id', 'feeds.user_id')
+                    ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                    ->groupBy('users.id', 'mission_id')
+                    ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
+                    ->take(2);
+            }
+
+            $users = null;
+            foreach ($data as $i => $mission) {
+                if ($users) {
+                    $users = $users->union(mission_user($mission->id));
+                } else {
+                    $users = mission_user($mission->id);
+                }
+            }
+            $users = $users->get();
+            $keys = $data->pluck('id')->toArray();
+            foreach ($users->groupBy('mission_id') as $j => $item) {
+                $data[array_search($j, $keys)]->users = $item;
+            }
         }
 
         return success([
