@@ -622,7 +622,7 @@ class UserController extends Controller
                 'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
                 'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
                 'image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
-                'missions' => FeedPlace::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'missions' => FeedMission::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
                     ->orderBy('id')->limit(1),
                 'mission' => Mission::select('title')
