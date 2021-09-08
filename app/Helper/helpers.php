@@ -243,5 +243,5 @@ function challenge_type()
 
 function init_today($time = null)
 {
-    return date('Y-m-d 08:00:00', ($time ?? time()));
+    return date('Y-m-d 00:00:00', ($time ?? time()));
 }
