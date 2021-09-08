@@ -184,8 +184,9 @@ class SearchController extends Controller
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id')
-                    ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
+                'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->whereColumn('user_id', '!=', 'missions.user_id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
             ])
             ->withCount(['feeds' => function ($query) use ($user_id) {

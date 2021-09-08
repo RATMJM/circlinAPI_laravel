@@ -140,8 +140,9 @@ class MissionCategoryController extends Controller
             ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
             ->select([
                 'missions.id',
-                'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
+                'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->whereColumn('user_id', '!=', 'missions.user_id'),
             ])
             ->orderBy(DB::raw("event_order=0"))
             ->orderBy('event_order');
