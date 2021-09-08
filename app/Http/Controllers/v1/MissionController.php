@@ -713,7 +713,8 @@ class MissionController extends Controller
     //이벤트챌린지 룸(챌린지 신청한 상태) 데이터 조회
     public function event_mission_info(Request $request): array
     {
-        $user_id = token()->uid;
+        $user_id = token()->uid;//안씀, 내정보뿐만아니라 타 유저의 내역도 봐야함
+        $user_id = $request->get('uid');
         $mission_stat_id = $request->get('challPk');
         $mission_id = $request->get('challId');
         $time = date("Y-m-d H:i:s");
