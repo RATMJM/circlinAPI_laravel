@@ -104,12 +104,14 @@ class HomeController extends Controller
         $data = Follow::where('follows.user_id', $user_id)
             ->where('feeds.is_hidden', false)
             ->where('feeds.created_at', '>=', init_today())
-            ->join('feeds', 'feeds.user_id', 'follows.target_id')
+            ->join('feeds', function ($query) {
+                $query->on('feeds.user_id', 'follows.target_id')
+                    ->whereNull('feeds.deleted_at');
+            })
             ->select('feeds.id')
             ->orderBy('feeds.id', 'desc');
-        $feeds_count = $data->count();
-        $data = $data//->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
-            ->skip($page * $limit)->take($limit);
+        // $data = $data//->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
+        //     ->skip($page * $limit)->take($limit);
 
         $data = Feed::joinSub($data, 'f', function ($query) {
             $query->on('f.id', 'feeds.id');
@@ -173,7 +175,9 @@ class HomeController extends Controller
                     }), // 해당 피드로 이모지를 보낸 적이 있는가
             ])
             ->orderBy('has_check')
-            ->orderBy('feeds.id', 'desc')
+            ->orderBy('feeds.id', 'desc');
+        $feeds_count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit)
             ->get();
 
         foreach ($data as $i => $item) {
