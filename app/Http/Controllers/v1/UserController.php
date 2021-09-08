@@ -835,7 +835,10 @@ class UserController extends Controller
         $page = $request->get('page', 0);
 
         $missions = MissionCategory::where('missions.user_id', $user_id)
-            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+            ->join('missions', function ($query) {
+                $query->on('missions.mission_category_id', 'mission_categories.id')
+                    ->whereNull('missions.deleted_at');
+            })
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
