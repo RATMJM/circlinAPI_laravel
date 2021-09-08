@@ -103,7 +103,7 @@ class HomeController extends Controller
 
         $data = Follow::where('follows.user_id', $user_id)
             ->where('feeds.is_hidden', false)
-            ->where('feeds.created_at', '>=', init_today())
+            ->where('feeds.created_at', '>=', date('Y-m-d H:i:s', time()-86400))
             ->join('feeds', function ($query) {
                 $query->on('feeds.user_id', 'follows.target_id')
                     ->whereNull('feeds.deleted_at');
