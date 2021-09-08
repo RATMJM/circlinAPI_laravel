@@ -176,7 +176,7 @@ class NotificationController extends Controller
             $parent_id = null;
             $data = match ($type) {
                 'follow' => ['user_id' => $user_id],
-                'feed_check', 'feed_emoji' => [
+                'feed_check', 'feed_emoji', 'feed_upload_place', 'feed_upload_product' => [
                     'user_id' => $user_id,
                     'feed_id' => $parent_id = $id,
                 ],
