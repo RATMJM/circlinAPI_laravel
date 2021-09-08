@@ -10,14 +10,17 @@ use App\Models\Mission;
 use App\Models\MissionLike;
 use App\Models\PointHistory;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LikeController extends Controller
 {
-    public function index($table, $id): array
+    public function index(Request $request, $table, $id): array
     {
         try {
             $user_id = token()->uid;
+            $page = $request->get('page', 0);
+            $limit = $request->get('limit', 20);
 
             $query = match ($table) {
                 'feed' => new FeedLike(),
