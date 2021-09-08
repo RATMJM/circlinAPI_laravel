@@ -595,7 +595,8 @@ class UserController extends Controller
                     ->whereNull('missions.deleted_at');
             })
             ->select(['missions.id', 'missions.title'])
-            ->distinct()
+            ->groupBy('missions.id')
+            ->orderBy(DB::raw("MAX(feeds.id)"), 'desc')
             ->get();
 
 
