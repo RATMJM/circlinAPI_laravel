@@ -36,7 +36,7 @@ class LikeController extends Controller
                         ->where('user_id', $user_id),
                 ])
                 ->orderBy("{$table}_id", 'desc')
-                ->get();
+                ->skip($page * $limit)->take($limit)->get();
 
             return success([
                 'result' => true,
