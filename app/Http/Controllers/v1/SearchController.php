@@ -86,6 +86,7 @@ class SearchController extends Controller
                     'keyword', DB::raw("SUBSTRING_INDEX(GROUP_CONCAT(`type` separator '|'), '|', 1) as `type`")
                 ])
                 ->groupBy('keyword')
+                ->orderBy(DB::raw("LENGTH(keyword)"))
                 ->take(10)->get();
 
             return success([
