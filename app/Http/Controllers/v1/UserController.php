@@ -605,16 +605,16 @@ class UserController extends Controller
             ->when(token()->uid != $user_id, function ($query) {
                 $query->where('is_hidden', false);
             })
-            /*->when($category_id, function ($query, $category_id) {
+            ->when($category_id, function ($query, $category_id) {
                 $query->whereHas('missions', function ($query) use ($category_id) {
                     $query->whereIn('missions.mission_category_id', Arr::wrap($category_id));
                 });
-            })*/
-            ->when($mission_id, function ($query, $mission_id) {
+            })
+            /*->when($mission_id, function ($query, $mission_id) {
                 $query->whereHas('feed_missions', function ($query) use ($mission_id) {
                     $query->whereIn('feed_missions.mission_id', Arr::wrap($mission_id));
                 });
-            })
+            })*/
             ->select([
                 'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
