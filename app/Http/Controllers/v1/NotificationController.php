@@ -34,7 +34,7 @@ class NotificationController extends Controller
             ->select([
                 DB::raw("MAX(id) as id"),
                 DB::raw("MAX(created_at) as created_at"),
-                DB::raw("COUNT(distinct user_id) as count"),
+                DB::raw("COUNT(distinct IFNULL(user_id,0)) as count"),
                 'user_id' => DB::table('notifications as n')->select('user_id')
                     ->where('id', DB::raw("MAX(notifications.id)")),
                 DB::raw("MAX(feed_id) as feed_id"),
@@ -51,7 +51,7 @@ class NotificationController extends Controller
         $data = Notification::joinSub($data, 'n', function ($query) {
             $query->on('n.id', 'notifications.id');
         })
-            ->join('users', 'users.id', 'n.user_id')
+            ->leftJoin('users', 'users.id', 'n.user_id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
