@@ -21,7 +21,7 @@ class LikeController extends Controller
                 'mission' => new MissionLike(),
             };
 
-            $likes = $query->where("{$table}_id", $id)
+            $users = $query->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_likes.user_id")
                 ->select(['users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender'])
                 ->orderBy("{$table}_id", 'desc')
@@ -29,7 +29,7 @@ class LikeController extends Controller
 
             return success([
                 'result' => true,
-                'likes' => $likes,
+                'users' => $users,
             ]);
         } catch (Exception $e) {
             return success([
