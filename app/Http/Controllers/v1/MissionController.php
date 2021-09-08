@@ -859,13 +859,15 @@ class MissionController extends Controller
            ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
             sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
             ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count            
-           from feeds a, feed_missions b , mission_stats c
-         where a.id=b.feed_id and b.mission_id=c.mission_id and b.mission_stat_id=c.id
-         and a.user_id= ?
+           from feeds a 
+           left join feed_missions b on a.id=b.feed_id
+           left join mission_stats c on b.mission_id=c.mission_id and b.mission_stat_id=c.id  and b.mission_stat_id= ?   
+         where  
+           a.user_id= ?
          and b.mission_id= ?
-         and b.mission_stat_id= ?
+         
          GROUP BY  b.distance, c.goal_distance',
-                [$mission_id, $user_id, $mission_id, $mission_stat_id]);
+                [$mission_id, $mission_stat_id, $user_id, $mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
