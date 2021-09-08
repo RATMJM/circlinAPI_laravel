@@ -638,7 +638,7 @@ class ShopController extends Controller
         $shipping_fee = $request->get('shipFee');
         $price = $request->get('amount');
         $totalPrice = $request->get('amountTotal'); //구매총액
-        $used_point = $request->get('used_point');// 사용한 포인트
+        $use_point = $request->get('used_point');// 사용한 포인트
         $items = $request->get('items');  //option_id, price, product_id , qty
         $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
         $merchant_id = $request->get('merchantuid');
@@ -651,7 +651,7 @@ class ShopController extends Controller
         // $shipping_fee = '3000'; //$request->get('shipFee');
         // $price ='99999' ;// $request->get('amount');
         // $totalPrice = '333';//$request->get('amountTotal'); //구매총액
-        // $used_point = '11';// $request->get('used_point');// 사용한 포인트
+        // $use_point = '11';// $request->get('used_point');// 사용한 포인트
         // // $items = 11;//$request->get('items');  //option_id, price, product_id , qty
         // $imp_id = 'ㅇㄹ3';//$request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
         // $merchant_id = 'ㄹㄷ14';//$request->get('merchantuid');
@@ -721,8 +721,8 @@ class ShopController extends Controller
             DB::beginTransaction();
 
             $order = DB::insert(' 
-                INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id )
-                                        values(?, ?, ?, ?, ?, ?, ? ); ', [$time, $time, $orderNo, $user_id, $totalPrice, $imp_id, $merchant_id]);
+                INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id, use_point )
+                                        values(?, ?, ?, ?, ?, ?, ?, ? ); ', [$time, $time, $orderNo, $user_id, $totalPrice, $imp_id, $merchant_id, $use_point]);
 
             DB::commit();
 
