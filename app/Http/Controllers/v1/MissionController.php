@@ -870,7 +870,7 @@ class MissionController extends Controller
                 [$mission_id, $mission_stat_id, $user_id, $mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
-            return exceped($e);
+            return exceped($e); 
         }
 
         // $state = $data[0]->STATE;
