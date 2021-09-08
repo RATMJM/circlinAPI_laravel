@@ -195,7 +195,7 @@ class FeedController extends Controller
                     'lat' => $place_lat,
                     'lng' => $place_lng,
                 ]);
-                $feed->feed_places()->create(['place_id' => $place->id]);
+                $feed->feed_place()->create(['place_id' => $place->id]);
 
                 if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_place', 'feed', $feed->id);
