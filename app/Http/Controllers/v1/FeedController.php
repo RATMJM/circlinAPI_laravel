@@ -162,6 +162,8 @@ class FeedController extends Controller
 
                 if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
+                    NotificationController::send($user_id, 'feed_upload_product', null, $feed->id, false,
+                        ['point' => 50, 'point2' => 500 - $point + 50]);
                     $point += 50;
                     $product_reward = true;
                 }
@@ -177,6 +179,8 @@ class FeedController extends Controller
 
                 if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
+                    NotificationController::send($user_id, 'feed_upload_place', null, $feed->id, false,
+                        ['point' => 50, 'point2' => 500 - $point + 50]);
                     $point += 50;
                     $product_reward = true;
                 }
