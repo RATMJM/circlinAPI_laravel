@@ -103,7 +103,8 @@ class NotificationController extends Controller
                 'follow', 'follow_multi' => code_replace($action['user'], ['id' => $item->user_id]),
 
                 'feed_check', 'feed_check_multi',
-                'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi'
+                'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
+                'feed_upload_place', 'feed_upload_product'
                 => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
 
                 'mission_like', 'mission_like_multi',
@@ -125,6 +126,9 @@ class NotificationController extends Controller
                 'mission_invite'
                 => code_replace($action['user'], ['id' => $item->user_id]),
 
+                'feed_upload_place', 'feed_upload_product'
+                => code_replace($action['user'], ['id' => $user_id]),
+
                 'feed_check_reward' => code_replace($action['home'], []),
 
                 'mission_complete', 'earn_badge', 'mission_expire_warning', 'mission_expire'
@@ -136,7 +140,7 @@ class NotificationController extends Controller
 
                 'feed_check', 'feed_check_multi',
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
-                'feed_emoji'
+                'feed_emoji', 'feed_upload_place', 'feed_upload_product'
                 => code_replace($action['feed'], ['id' => $item->feed_id, 'comment_id' => $item->feed_comment_id]),
 
                 'mission_like', 'mission_like_multi',
