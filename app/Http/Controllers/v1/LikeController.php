@@ -24,6 +24,7 @@ class LikeController extends Controller
             $likes = $query->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_likes.user_id")
                 ->select(['users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                ->orderBy("{$table}_id", 'desc')
                 ->get();
 
             return success([
