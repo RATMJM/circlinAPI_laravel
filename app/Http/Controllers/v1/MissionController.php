@@ -633,17 +633,20 @@ class MissionController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $users = MissionStat::where('mission_stats.mission_id', $mission_id)
-            ->join('users', 'users.id', 'mission_stats.user_id')
+        $users = FeedMission::where('feed_missions.mission_id', $mission_id)
+            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->join('users', 'users.id', 'feeds.user_id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                DB::raw("COUNT(distinct feed_missions.id) as mission_feeds"),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'mission_feeds' => FeedMission::selectRaw("COUNT(1)")
-                    ->whereColumn('mission_id', 'mission_stats.mission_id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
             ])
-            ->orderBy('mission_feeds')->orderBy('follower', 'desc')->orderBy('id', 'desc')
+            ->groupBy('users.id')
+            ->orderBy('mission_feeds', 'desc')
+            ->orderBy('follower', 'desc')
+            ->orderBy('id', 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
         return success([
