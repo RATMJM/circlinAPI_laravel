@@ -221,3 +221,17 @@ Route::get('/show_construction', function () {
         'show' => false,
     ]);
 });
+
+Route::get('/feed_upload_point', function () {
+    return success([
+        'result' => true,
+        'show' => true,
+    ]);
+});
+
+Route::get('/mission_upload_point', function () {
+    return success([
+        'result' => true,
+        'show' => true,
+    ]);
+});
