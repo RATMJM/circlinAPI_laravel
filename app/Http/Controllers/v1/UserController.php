@@ -47,7 +47,7 @@ class UserController extends Controller
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
             ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
-            ->select(['mission_categories.title'])
+            ->select(['mission_categories.id', 'mission_categories.title'])
             ->get();
 
         $yesterday_point = PointHistory::where('user_id', $user_id)
