@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class MissionLikeController extends Controller
 {
-    public function index($id): array
+    public function index(Request $request, $id): array
     {
-        return (new LikeController())->index('mission', $id);
+        return (new LikeController())->index($request, 'mission', $id);
     }
 
     public function store($id): array
