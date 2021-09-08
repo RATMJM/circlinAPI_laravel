@@ -41,6 +41,11 @@ class Feed extends Model
         return $this->hasMany(FeedLike::class);
     }
 
+    public function users()
+    {
+        return $this->likes();
+    }
+
     public function comments()
     {
         return $this->hasMany(FeedComment::class);

@@ -277,6 +277,12 @@ class FeedController extends Controller
                         });
                     }), // 해당 피드로 이모지를 보낸 적이 있는가
             ])
+            ->with('users', function ($query) {
+                $query->join('users', 'users.id', 'feed_likes.user_id')
+                    ->select(['feed_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                    ->orderBy('feed_likes.id', 'desc')
+                    ->take(2);
+            })
             ->first();
 
         if (is_null($feed)) {
