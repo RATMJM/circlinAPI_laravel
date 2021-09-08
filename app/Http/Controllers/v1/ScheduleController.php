@@ -68,6 +68,7 @@ class ScheduleController extends Controller
         echo "유저데이터 로드 완료\n";
 
         $res = [];
+        $data = [];
         foreach ($users->groupBy('c') as $i => $user) {
             echo "$i\n";
             foreach ($user as $j => $item) {
@@ -110,6 +111,7 @@ class ScheduleController extends Controller
 
             return $data;
         } catch (Exception $e) {
+            DB::rollBack();
             return exceped($e);
         }
     }
