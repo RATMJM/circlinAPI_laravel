@@ -56,7 +56,7 @@ class Feed extends Model
         return $this->hasOne(FeedProduct::class);
     }
 
-    public function feed_places()
+    public function feed_place()
     {
         return $this->hasMany(FeedPlace::class);
     }

@@ -449,7 +449,7 @@ class FeedController extends Controller
                     'lat' => $place_lat,
                     'lng' => $place_lng,
                 ]);
-                $feed->feed_places()->updateOrCreate([], ['place_id' => $place->id]);
+                $feed->feed_place()->updateOrCreate([], ['place_id' => $place->id]);
             }
 
             DB::commit();
