@@ -588,6 +588,17 @@ class UserController extends Controller
             ->groupBy('mission_categories.id')
             ->get();
 
+        $missions = Feed::where('feeds.user_id', $user_id)
+            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+            ->join('missions', function ($query) {
+                $query->on('missions.id', 'feed_missions.mission_id')
+                    ->whereNull('missions.deleted_at');
+            })
+            ->select(['missions.id', 'missions.title'])
+            ->distinct()
+            ->get();
+
+
         $feeds = Feed::where('feeds.user_id', $user_id)
             ->when(token()->uid != $user_id, function ($query) {
                 $query->where('is_hidden', false);
@@ -631,6 +642,7 @@ class UserController extends Controller
         return success([
             'result' => true,
             'categories' => $categories,
+            'missions' => $missions,
             'feeds_count' => $feeds_count,
             'feeds' => $feeds,
         ]);
