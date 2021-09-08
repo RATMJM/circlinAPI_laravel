@@ -570,6 +570,7 @@ class UserController extends Controller
     public function feed(Request $request, $user_id): array
     {
         $category_id = $request->get('category_id');
+        $mission_id = $request->get('mission_id');
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
@@ -604,9 +605,14 @@ class UserController extends Controller
             ->when(token()->uid != $user_id, function ($query) {
                 $query->where('is_hidden', false);
             })
-            ->when($category_id, function ($query, $category_id) {
+            /*->when($category_id, function ($query, $category_id) {
                 $query->whereHas('missions', function ($query) use ($category_id) {
                     $query->whereIn('missions.mission_category_id', Arr::wrap($category_id));
+                });
+            })*/
+            ->when($mission_id, function ($query, $mission_id) {
+                $query->whereHas('feed_missions', function ($query) use ($mission_id) {
+                    $query->whereIn('feed_missions.mission_id', Arr::wrap($mission_id));
                 });
             })
             ->select([
@@ -724,7 +730,7 @@ class UserController extends Controller
                     ->whereNull('mission_stats.ended_at');
             })
             ->select([
-                'mission_categories.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
+                'missions.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
                 DB::raw("missions.event_order > 0 as is_event"),
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
