@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class FeedLikeController extends Controller
 {
-    public function index($id): array
+    public function index(Request $request, $id): array
     {
-        return (new LikeController())->index('feed', $id);
+        return (new LikeController())->index($request, 'feed', $id);
     }
 
     public function store($id): array

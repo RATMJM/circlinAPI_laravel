@@ -43,10 +43,7 @@ class LikeController extends Controller
                 'users' => $users,
             ]);
         } catch (Exception $e) {
-            return success([
-                'result' => false,
-                'reason' => $e,
-            ]);
+            return exceped($e);
         }
     }
 
