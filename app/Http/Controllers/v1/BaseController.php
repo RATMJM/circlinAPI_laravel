@@ -21,6 +21,8 @@ class BaseController extends Controller
         $areas = Area::select(['code as ctg', 'name'])
             ->where('name', 'like', "%$text%")
             ->where(DB::raw("code % 100000"), '>', 0)
+            ->distinct()
+            ->orderBy('code')
             ->take(10)->get();
 
         return success([
