@@ -33,7 +33,7 @@ class BaseController extends Controller
     {
         $user_id = token()->uid;
 
-        $limit = max($request->get('limit', 50), 1);
+        $limit = max($request->get('limit', 30), 1);
 
         $users = Feed::where('feeds.created_at', '>=', init_today(time()-(86400*7)))
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
