@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Feed;
 use App\Models\FeedLike;
+use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionLike;
 use App\Models\PointHistory;
@@ -16,6 +17,8 @@ class LikeController extends Controller
     public function index($table, $id): array
     {
         try {
+            $user_id = token()->uid;
+
             $query = match ($table) {
                 'feed' => new FeedLike(),
                 'mission' => new MissionLike(),
@@ -23,7 +26,12 @@ class LikeController extends Controller
 
             $users = $query->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_likes.user_id")
-                ->select(['users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender'])
+                ->select([
+                    'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                    'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                        ->where('user_id', $user_id),
+                ])
                 ->orderBy("{$table}_id", 'desc')
                 ->get();
 
