@@ -895,18 +895,31 @@ class UserController extends Controller
             ->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
-            $query = null;
+            [$users, $areas] = null;
             foreach ($missions as $i => $item) {
-                if ($query) {
-                    $query = $query->union(mission_users($item->id));
+                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
+
+                if ($users) {
+                    $users = $users->union(mission_users($item->id));
                 } else {
-                    $query = mission_users($item->id);
+                    $users = mission_users($item->id);
+                }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($item->id));
+                } else {
+                    $areas = mission_areas($item->id);
                 }
             }
-            $query = $query->get();
             $keys = $missions->pluck('id')->toArray();
-            foreach ($query->groupBy('mission_id') as $i => $item) {
+            $users = $users->get();
+            foreach ($users->groupBy('mission_id') as $i => $item) {
                 $missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
             }
         }
 

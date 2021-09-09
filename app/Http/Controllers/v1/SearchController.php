@@ -139,7 +139,7 @@ class SearchController extends Controller
         $keyword = $request->get('keyword');
         $keyword2 = str_replace([' ', '%'], '', $keyword);
 
-        $data = Mission::where(DB::raw("REPLACE(missions.title,' ','')"), 'like', "%$keyword2%")
+        $missions = Mission::where(DB::raw("REPLACE(missions.title,' ','')"), 'like', "%$keyword2%")
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
@@ -196,30 +196,38 @@ class SearchController extends Controller
             ->skip($page * $limit)->take($limit)
             ->get();
 
-        foreach ($data as $i => $item) {
-            $data[$i]->owner = arr_group($data[$i],
-                ['id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following'], 'owner_');
-        }
+        if (count($missions)) {
+            [$users, $areas] = null;
+            foreach ($missions as $i => $mission) {
+                $mission->owner = arr_group($mission, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
 
-        if (count($data)) {
-            $users = null;
-            foreach ($data as $i => $mission) {
                 if ($users) {
                     $users = $users->union(mission_users($mission->id));
                 } else {
                     $users = mission_users($mission->id);
                 }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($mission->id));
+                } else {
+                    $areas = mission_areas($mission->id);
+                }
             }
+            $keys = $missions->pluck('id')->toArray();
             $users = $users->get();
-            $keys = $data->pluck('id')->toArray();
-            foreach ($users->groupBy('mission_id') as $j => $item) {
-                $data[array_search($j, $keys)]->users = $item;
+            foreach ($users->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
             }
         }
 
         return success([
             'success' => true,
-            'missions' => $data,
+            'missions' => $missions,
         ]);
     }
 }
