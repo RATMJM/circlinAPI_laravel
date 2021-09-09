@@ -702,10 +702,15 @@ class UserController extends Controller
         $page = $request->get('page', 0);
 
         $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
-            ->where('feeds.user_id', $user_id)
+            ->where(function ($query) use ($user_id) {
+                $query->whereNull('mission_stats.ended_at')
+                    ->where('mission_stats.user_id', $user_id)
+                    ->orWhere('feeds.user_id', $user_id);
+            })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
-            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
-            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
+            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+            ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 DB::raw('COUNT(distinct feeds.id) as feeds'),
@@ -713,22 +718,23 @@ class UserController extends Controller
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions = MissionCategory::where('feeds.user_id', $user_id)
-            ->when($category_id, function ($query, $category_id) {
+        $missions = MissionCategory::when($category_id, function ($query, $category_id) {
                 $query->whereIn('mission_categories.id', Arr::wrap($category_id));
             })
+            ->where(function ($query) use ($user_id) {
+                $query->whereNull('mission_stats.ended_at')
+                    ->where('mission_stats.user_id', $user_id)
+                    ->orWhere('feeds.user_id', $user_id);
+            })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+            ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
+            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+            ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id')
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
-            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
-            ->leftJoin('mission_stats', function ($query) use ($user_id) {
-                $query->on('mission_stats.id', 'feed_missions.mission_stat_id')
-                    ->whereNull('mission_stats.ended_at');
-            })
             ->select([
                 'missions.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
