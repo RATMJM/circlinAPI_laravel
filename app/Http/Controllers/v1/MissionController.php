@@ -865,9 +865,14 @@ class MissionController extends Controller
          where  
            a.user_id= ?
          and b.mission_id= ?
+         and a.deleted_at is null
+         GROUP BY  b.distance, c.goal_distance
+         union 
+         select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,  
+         ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count
          
-         GROUP BY  b.distance, c.goal_distance',
-                [$mission_id, $mission_stat_id, $user_id, $mission_id]);
+         limit 1',
+                [$mission_id, $mission_stat_id, $user_id, $mission_id , $mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e); 
@@ -930,14 +935,13 @@ class MissionController extends Controller
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
-                            , d.name_ko as product_name
+                            , d.title as product_name
                             , d.id as product_id
-                            , d.thumbnail_image as product_image
+                            , d.image as product_image
                              
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
-					LEFT JOIN mission_products b on b.mission_id=a.id
-                    LEFT JOIN products d on b.product_id = d.id,  `users` as owner 
+					LEFT JOIN mission_rewards d on a.id = d.mission_id,  `users` as owner 
             where a.user_id=owner.id and a.id=? and a.deleted_at is null;'
                 , [$mission_id,
                     $mission_id,
