@@ -102,7 +102,7 @@ class PopularPlaceController extends Controller
                     ->select([
                         'mission_places.place_id',
                         'missions.id', 'missions.title', 'missions.description',
-                        DB::raw("missions.event_order > 0 as is_event"),
+                        'missions.is_event',
                         DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                         'missions.started_at', 'missions.ended_at',
                         'missions.thumbnail_image', 'missions.success_count',

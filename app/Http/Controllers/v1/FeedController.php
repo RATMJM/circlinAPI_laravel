@@ -308,7 +308,7 @@ class FeedController extends Controller
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
                 'missions.id', 'mission_categories.emoji', 'missions.title',
-                DB::raw("missions.event_order > 0 as is_event"),
+                'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',

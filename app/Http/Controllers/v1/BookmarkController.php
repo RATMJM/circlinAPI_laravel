@@ -38,7 +38,7 @@ class BookmarkController extends Controller
             ->select([
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
-                DB::raw("missions.event_order > 0 as is_event"),
+                'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 DB::raw("(missions.started_at is null or missions.started_at<=now()) and
