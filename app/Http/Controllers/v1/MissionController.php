@@ -101,7 +101,7 @@ class MissionController extends Controller
 
             $user = User::find($user_id);
 
-            $data->areas()->create([
+            $data->mission_areas()->create([
                 'mission_id' => $data->id,
                 'area_code' => substr($user->area_code, 0, 5),
             ]);
@@ -160,13 +160,13 @@ class MissionController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
-                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
+            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate(['url' => $product_url], [
+                    'product_id' => $outside_product_id,
                     'image' => $product_image,
                     'brand' => $product_brand,
                     'title' => $product_title,
                     'price' => $product_price,
-                    'url' => $product_url,
                 ]);
                 $data->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
@@ -258,16 +258,9 @@ class MissionController extends Controller
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
 
         $data->images = $data->images()->orderBy('order')->pluck('image');
+        $data->areas = mission_areas($data->id)->pluck('name');
 
-        $data->users = FeedMission::where('feed_missions.mission_id', $mission_id)
-            ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
-            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
-            ->join('users', 'users.id', 'feeds.user_id')
-            ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-            ->groupBy('users.id', 'mission_id')
-            ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
-            ->take(2)
-            ->get();
+        $data->users = mission_user($mission_id)->get();
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
@@ -593,13 +586,13 @@ class MissionController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($outside_product_id && $product_brand && $product_title && $product_price && $product_url) {
-                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
+            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+                $product = OutsideProduct::updateOrCreate(['url' => $product_url], [
+                    'product_id' => $outside_product_id,
                     'image' => $product_image,
                     'brand' => $product_brand,
                     'title' => $product_title,
                     'price' => $product_price,
-                    'url' => $product_url,
                 ]);
                 $mission->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
@@ -875,7 +868,7 @@ class MissionController extends Controller
                 [$mission_id, $mission_stat_id, $user_id, $mission_id , $mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
-            return exceped($e); 
+            return exceped($e);
         }
 
         try {
@@ -885,10 +878,10 @@ class MissionController extends Controller
                 [$mission_id ]);
         } catch (Exception $e) {
             DB::rollBack();
-            return exceped($e); 
+            return exceped($e);
         }
 
-        
+
 
 
         return success([
