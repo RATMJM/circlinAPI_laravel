@@ -878,14 +878,18 @@ class MissionController extends Controller
             return exceped($e); 
         }
 
-        // $state = $data[0]->STATE;
-        // $sex = $data[0]->SEX;
-        // $challId = $data[0]->CHALL_ID;
-        // $score = $data[0]->SCORE;
-        // $bonusFlag = $data[0]->BONUS_FLAG;
-        // $rank = $data[0]->RANK;
-        // $certToday = $data[0]->CERT_TODAY;
-        // $finCnt = $data[0]->FINISH;
+        try {
+            DB::beginTransaction();
+            $place_info = DB::select('select mission_id, place_id, b.address, b.title, b.description, b.image, b.url from mission_places a, places b 
+            where a.mission_id = ? and a.place_id=b.id',
+                [$mission_id ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e); 
+        }
+
+        
+
 
         return success([
             'success' => true,
@@ -894,6 +898,7 @@ class MissionController extends Controller
             'total_km' => $total_km,
             'myRecord' => $myRecord,
             'mission_stat' => $mission_stat,
+            'place_info' => $place_info,
 
         ]);
     }
@@ -935,9 +940,9 @@ class MissionController extends Controller
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
-                            , d.title as product_name
-                            , d.id as product_id
-                            , d.image as product_image
+                            , d.title as reward_name
+                            , d.id as reward_id
+                            , d.image as reward_image 
                              
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
