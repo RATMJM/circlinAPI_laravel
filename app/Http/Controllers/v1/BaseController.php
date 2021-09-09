@@ -44,13 +44,13 @@ class BaseController extends Controller
             ->where('feeds.user_id', '!=', $user_id)
             ->leftJoin('sort_users', 'sort_users.user_id', 'feeds.user_id')
             ->select([
-                'feeds.user_id',
+                'sort_users.user_id',
                 'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'feeds.user_id')
                     ->whereHas('user_target_follow', function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
                     }),
             ])
-            ->groupBy('feeds.user_id', 'sort_users.order', 'together_following')
+            ->groupBy('sort_users.id', 'together_following')
             ->orderBy(DB::raw('`order`+(together_following*200)'), 'desc')
             ->take($limit);
 
