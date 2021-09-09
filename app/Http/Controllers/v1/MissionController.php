@@ -865,9 +865,14 @@ class MissionController extends Controller
          where  
            a.user_id= ?
          and b.mission_id= ?
+         and a.deleted_at is null
+         GROUP BY  b.distance, c.goal_distance
+         union 
+         select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,  
+         ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count
          
-         GROUP BY  b.distance, c.goal_distance',
-                [$mission_id, $mission_stat_id, $user_id, $mission_id]);
+         limit 1',
+                [$mission_id, $mission_stat_id, $user_id, $mission_id , $mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e); 
