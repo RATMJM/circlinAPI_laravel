@@ -802,9 +802,9 @@ class UserController extends Controller
             $users = null;
             foreach ($missions as $i => $mission) {
                 if ($users) {
-                    $users = $users->union(mission_user($mission->id));
+                    $users = $users->union(mission_users($mission->id));
                 } else {
-                    $users = mission_user($mission->id);
+                    $users = mission_users($mission->id);
                 }
             }
             $users = $users->get();
@@ -885,9 +885,9 @@ class UserController extends Controller
             $query = null;
             foreach ($missions as $i => $item) {
                 if ($query) {
-                    $query = $query->union(mission_user($item->id));
+                    $query = $query->union(mission_users($item->id));
                 } else {
-                    $query = mission_user($item->id);
+                    $query = mission_users($item->id);
                 }
             }
             $query = $query->get();

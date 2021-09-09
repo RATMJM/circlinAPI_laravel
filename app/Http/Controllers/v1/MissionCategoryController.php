@@ -143,8 +143,8 @@ class MissionCategoryController extends Controller
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
                     ->whereColumn('user_id', '!=', 'missions.user_id'),
             ])
-            ->orderBy(DB::raw("event_order=0"))
-            ->orderBy('event_order');
+            ->groupBy('missions.id')
+            ->orderBy('missions.event_order');
 
         if ($sort === 'popular') {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
@@ -213,22 +213,32 @@ class MissionCategoryController extends Controller
             ->get();
 
         if (count($missions)) {
-            $query = null;
+            [$users, $areas] = null;
             foreach ($missions as $i => $item) {
                 $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
                     'area', 'followers', 'is_following']);
-                $item->areas = mission_areas($item->id)->pluck('name');
+                // $item->areas = mission_areas($item->id)->pluck('name');
 
-                if ($query) {
-                    $query = $query->union(mission_user($item->id));
+                if ($users) {
+                    $users = $users->union(mission_users($item->id));
                 } else {
-                    $query = mission_user($item->id);
+                    $users = mission_users($item->id);
+                }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($item->id));
+                } else {
+                    $areas = mission_areas($item->id);
                 }
             }
-            $query = $query->get();
             $keys = $missions->pluck('id')->toArray();
-            foreach ($query->groupBy('mission_id') as $i => $item) {
+            $users = $users->get();
+            foreach ($users->groupBy('mission_id') as $i => $item) {
                 $missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
             }
         }
 

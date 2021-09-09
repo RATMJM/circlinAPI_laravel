@@ -24,7 +24,7 @@ class PopularProductController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 8);
 
-        $data = MissionProduct::when($category_id, function ($query, $category_id) {
+        $missions = MissionProduct::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
             ->where(function ($query) {
@@ -56,7 +56,7 @@ class PopularProductController extends Controller
             ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
-        if (count($data)) {
+        if (count($missions)) {
             function missions($type, $product_id, $category_id = null)
             {
                 return MissionProduct::where(function ($query) use ($type, $product_id) {
@@ -77,7 +77,7 @@ class PopularProductController extends Controller
             }
 
             $query = null;
-            foreach ($data as $i => $item) {
+            foreach ($missions as $i => $item) {
                 $id = $item->type === 'inside' ? 'product_id' : 'outside_product_id';
                 if ($query) {
                     $query = $query->union(missions($id, $item->product_id, $category_id));
@@ -86,15 +86,15 @@ class PopularProductController extends Controller
                 }
             }
             $query = $query->get();
-            $keys = $data->pluck('product_id')->toArray();
+            $keys = $missions->pluck('product_id')->toArray();
             foreach ($query->groupBy('product_id') as $i => $item) {
-                $data[array_search($i, $keys)]->missions = $item;
+                $missions[array_search($i, $keys)]->missions = $item;
             }
         }
 
         return success([
             'result' => true,
-            'products' => $data,
+            'products' => $missions,
         ]);
     }
 
@@ -107,7 +107,7 @@ class PopularProductController extends Controller
         $local = $request->get('local');
 
         if ($type === 'inside') {
-            $data = Product::where('products.id', $id)
+            $missions = Product::where('products.id', $id)
                 ->leftJoin('brands', 'brands.id', 'products.brand_id')
                 ->select([
                     'products.id', 'brands.name_ko as brand', 'products.name_ko as title',
@@ -173,7 +173,7 @@ class PopularProductController extends Controller
                 })
                 ->first();
         } else {
-            $data = OutsideProduct::where('outside_products.id', $id)
+            $missions = OutsideProduct::where('outside_products.id', $id)
                 ->select([
                     'id', 'brand', 'title', 'image', 'url', 'price',
                 ])
@@ -189,13 +189,39 @@ class PopularProductController extends Controller
                 ->first();
         }
 
-        foreach ($data->missions as $item) {
-            $item->areas = mission_areas($item->id)->pluck('name');
+        if (count($missions->missions)) {
+            [$users, $areas] = null;
+            foreach ($missions->missions as $i => $item) {
+                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
+                // $item->areas = mission_areas($item->id)->pluck('name');
+
+                if ($users) {
+                    $users = $users->union(mission_users($item->id));
+                } else {
+                    $users = mission_users($item->id);
+                }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($item->id));
+                } else {
+                    $areas = mission_areas($item->id);
+                }
+            }
+            $keys = $missions->missions->pluck('id')->toArray();
+            $users = $users->get();
+            foreach ($users->groupBy('mission_id') as $i => $item) {
+                $missions->missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $missions->missions[array_search($i, $keys)]->areas = $item->pluck('name');
+            }
         }
 
         return success([
             'result' => true,
-            'missions' => $data,
+            'missions' => $missions,
         ]);
     }
 }

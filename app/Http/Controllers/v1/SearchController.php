@@ -205,9 +205,9 @@ class SearchController extends Controller
             $users = null;
             foreach ($data as $i => $mission) {
                 if ($users) {
-                    $users = $users->union(mission_user($mission->id));
+                    $users = $users->union(mission_users($mission->id));
                 } else {
-                    $users = mission_user($mission->id);
+                    $users = mission_users($mission->id);
                 }
             }
             $users = $users->get();

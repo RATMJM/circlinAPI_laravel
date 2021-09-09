@@ -22,7 +22,7 @@ class PopularPlaceController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 8);
 
-        $data = Place::when($category_id, function ($query, $category_id) {
+        $missions = Place::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
             ->join('mission_places', 'mission_places.mission_id', 'missions.id')
@@ -39,7 +39,7 @@ class PopularPlaceController extends Controller
             ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
-        if (count($data)) {
+        if (count($missions)) {
             function missions($place_id, $category_id = null)
             {
                 return Mission::where('mission_places.place_id', $place_id)
@@ -56,7 +56,7 @@ class PopularPlaceController extends Controller
             }
 
             $query = null;
-            foreach ($data as $i => $item) {
+            foreach ($missions as $i => $item) {
                 if ($query) {
                     $query = $query->union(missions($item->id, $category_id));
                 } else {
@@ -64,15 +64,15 @@ class PopularPlaceController extends Controller
                 }
             }
             $query = $query->get();
-            $keys = $data->pluck('id')->toArray();
+            $keys = $missions->pluck('id')->toArray();
             foreach ($query->groupBy('place_id') as $i => $item) {
-                $data[array_search($i, $keys)]->missions = $item;
+                $missions[array_search($i, $keys)]->missions = $item;
             }
         }
 
         return success([
             'result' => true,
-            'places' => $data,
+            'places' => $missions,
         ]);
     }
 
@@ -84,7 +84,7 @@ class PopularPlaceController extends Controller
         $limit = $request->get('limit', 8);
         $local = $request->get('local');
 
-        $data = Place::where('places.id', $id)
+        $missions = Place::where('places.id', $id)
             ->when($local, function ($query) use ($user_id) {
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
             })
@@ -149,13 +149,39 @@ class PopularPlaceController extends Controller
             })
             ->first();
 
-        foreach ($data->missions as $item) {
-            $item->areas = mission_areas($item->id)->pluck('name');
+        if (count($missions->missions)) {
+            [$users, $areas] = null;
+            foreach ($missions->missions as $i => $item) {
+                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
+                // $item->areas = mission_areas($item->id)->pluck('name');
+
+                if ($users) {
+                    $users = $users->union(mission_users($item->id));
+                } else {
+                    $users = mission_users($item->id);
+                }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($item->id));
+                } else {
+                    $areas = mission_areas($item->id);
+                }
+            }
+            $keys = $missions->missions->pluck('id')->toArray();
+            $users = $users->get();
+            foreach ($users->groupBy('mission_id') as $i => $item) {
+                $missions->missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $missions->missions[array_search($i, $keys)]->areas = $item->pluck('name');
+            }
         }
 
         return success([
             'result' => true,
-            'missions' => $data,
+            'missions' => $missions,
         ]);
     }
 }

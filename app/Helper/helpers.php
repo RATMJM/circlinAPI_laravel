@@ -252,7 +252,7 @@ function init_today($time = null)
 /**
  * 미션 참여자 목록
  */
-function mission_user($mission_id)
+function mission_users($mission_id)
 {
     return FeedMission::where('feed_missions.mission_id', $mission_id)
         ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
@@ -268,5 +268,6 @@ function mission_areas($mission_id)
 {
     return MissionArea::where('mission_areas.mission_id', $mission_id)
         ->join('areas', 'areas.code', DB::raw("CONCAT(mission_areas.area_code,'00000')"))
+        ->select(['mission_id', 'areas.name'])
         ->orderBy('areas.code');
 }
