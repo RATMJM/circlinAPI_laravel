@@ -123,7 +123,7 @@ class MissionCategoryController extends Controller
 
         $limit = $limit ?? $request->get('limit', 20);
         $page = $page ?? $request->get('page', 0);
-        $sort = $sort ?? $request->get('sort', 'recent');
+        $sort = $sort ?? $request->get('sort', SORT_POPULAR);
 
         $local = $request->get('local');
 
@@ -151,12 +151,14 @@ class MissionCategoryController extends Controller
                 ->whereColumn('user_id', '!=', 'missions.user_id'),
         ]);
 
-        if ($sort === 'popular') {
+        if ($sort == SORT_POPULAR) {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
-        } elseif ($sort === 'recent') {
+        } elseif ($sort == SORT_RECENT) {
             $missions->orderBy('missions.id', 'desc');
-        } else {
+        } elseif ($sort == SORT_USER) {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+        } elseif ($sort == SORT_COMMENT) {
+            $missions->orderBy(MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'), 'desc');
         }
 
         $missions = $missions->skip($page * $limit)->take($limit);

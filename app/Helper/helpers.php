@@ -28,6 +28,11 @@ const ALLOW_IP = [
     '124.5.120.66',
 ];
 
+const SORT_POPULAR = 0;
+const SORT_RECENT = 1;
+const SORT_USER = 2;
+const SORT_COMMENT = 3;
+
 /* 결과 정상 전달 */
 function success($data): array
 {
