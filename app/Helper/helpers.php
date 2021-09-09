@@ -4,7 +4,10 @@ use App\Http\Controllers\v1\NotificationController;
 use App\Http\Controllers\v1\PushController;
 use App\Models\Area;
 use App\Models\CommonCode;
+use App\Models\FeedMission;
 use App\Models\Follow;
+use App\Models\Mission;
+use App\Models\MissionArea;
 use App\Models\MissionStat;
 use App\Models\SortUser;
 use App\Models\User;
@@ -244,4 +247,26 @@ function challenge_type()
 function init_today($time = null)
 {
     return date('Y-m-d 00:00:00', ($time ?? time()));
+}
+
+/**
+ * 미션 참여자 목록
+ */
+function mission_user($mission_id)
+{
+    return FeedMission::where('feed_missions.mission_id', $mission_id)
+        ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
+        ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+        ->join('users', 'users.id', 'feeds.user_id')
+        ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+        ->groupBy('users.id', 'mission_id')
+        ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
+        ->take(2);
+}
+
+function mission_areas($mission_id)
+{
+    return MissionArea::where('mission_areas.mission_id', $mission_id)
+        ->join('areas', 'areas.code', DB::raw("CONCAT(mission_areas.area_code,'00000')"))
+        ->orderBy('areas.code');
 }
