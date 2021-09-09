@@ -845,7 +845,7 @@ class MissionController extends Controller
             return exceped($e);
         }
         // 내 미션 상태
-        try {
+        try { 
             DB::beginTransaction();
             $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
          ifnull(sum(b.distance),0) total_distance, 
