@@ -137,7 +137,10 @@ class MissionCategoryController extends Controller
                 $query//->whereNull('mission_areas.area_code')
                     ->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
             })
-            ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
+            ->leftJoin('mission_areas', function ($query) use ($user_id) {
+                $query->on('mission_areas.mission_id', 'missions.id')
+                    ->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+            })
             ->select([
                 'missions.id',
                 'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
@@ -163,7 +166,10 @@ class MissionCategoryController extends Controller
             $query->on('m.id', 'missions.id');
         })
             ->join('users', 'users.id', 'missions.user_id')
-            ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
+            ->leftJoin('mission_areas', function ($query) use ($user_id) {
+                $query->on('mission_areas.mission_id', 'missions.id')
+                    ->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+            })
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')

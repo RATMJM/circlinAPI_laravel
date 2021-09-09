@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
 use App\Models\Place;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -90,7 +91,10 @@ class PopularPlaceController extends Controller
             ->withCount('missions')
             ->with('missions', function ($query) use ($page, $limit, $user_id) {
                 $query->join('users', 'users.id', 'missions.user_id')
-                    ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
+                    ->leftJoin('mission_areas', function ($query) use ($user_id) {
+                        $query->on('mission_areas.mission_id', 'missions.id')
+                            ->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+                    })
                     ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
                     ->leftJoin('products', 'products.id', 'mission_products.product_id')
                     ->leftJoin('brands', 'brands.id', 'products.brand_id')

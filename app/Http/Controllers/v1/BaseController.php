@@ -51,7 +51,8 @@ class BaseController extends Controller
                     }),
             ])
             ->groupBy('sort_users.id', 'together_following')
-            ->orderBy(DB::raw('`order`+(together_following*200)'), 'desc')
+            ->orderBy(DB::raw("`order`+(together_following*200)+
+                IF((select gender from users where id=$user_id)=(select gender from users where id=sort_users.user_id),0,500)"), 'desc')
             ->take($limit);
 
         $users = User::joinSub($users, 'u', function ($query) {
