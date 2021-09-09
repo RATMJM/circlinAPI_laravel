@@ -935,9 +935,9 @@ class MissionController extends Controller
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
-                            , d.title as product_name
-                            , d.id as product_id
-                            , d.image as product_image
+                            , d.title as reward_name
+                            , d.id as reward_id
+                            , d.image as reward_image 
                              
             from   missions a 
 					LEFT JOIN mission_etc c on  a.id=c.mission_id 
