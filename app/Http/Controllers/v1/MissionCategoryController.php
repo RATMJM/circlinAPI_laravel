@@ -128,10 +128,10 @@ class MissionCategoryController extends Controller
 
         $missions = Mission::when($id, function ($query, $id) {
             $query->whereIn('missions.mission_category_id', Arr::wrap($id))
-                ->where('event_order', 0);
+                ->where('is_event', 0);
         })
             ->when($id == 0, function ($query) {
-                $query->where('event_order', '>', 0);
+                $query->where('is_event', 1);
             })
             ->when($local, function ($query) use ($user_id) {
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
@@ -169,7 +169,7 @@ class MissionCategoryController extends Controller
             ->select([
                 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'm.bookmarks',
@@ -217,7 +217,6 @@ class MissionCategoryController extends Controller
             foreach ($missions as $i => $item) {
                 $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
                     'area', 'followers', 'is_following']);
-                // $item->areas = mission_areas($item->id)->pluck('name');
 
                 if ($users) {
                     $users = $users->union(mission_users($item->id));

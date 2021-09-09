@@ -739,7 +739,7 @@ class UserController extends Controller
                 'missions.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
@@ -799,18 +799,31 @@ class UserController extends Controller
             ->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
-            $users = null;
-            foreach ($missions as $i => $mission) {
+            [$users, $areas] = null;
+            foreach ($missions as $i => $item) {
+                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
+
                 if ($users) {
-                    $users = $users->union(mission_users($mission->id));
+                    $users = $users->union(mission_users($item->id));
                 } else {
-                    $users = mission_users($mission->id);
+                    $users = mission_users($item->id);
+                }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($item->id));
+                } else {
+                    $areas = mission_areas($item->id);
                 }
             }
-            $users = $users->get();
             $keys = $missions->pluck('id')->toArray();
-            foreach ($users->groupBy('mission_id') as $j => $item) {
-                $missions[array_search($j, $keys)]->users = $item;
+            $users = $users->get();
+            foreach ($users->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
             }
         }
 
@@ -842,8 +855,8 @@ class UserController extends Controller
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.mission_category_id', 'missions.id', 'missions.title', 'missions.description',
-                DB::raw("missions.event_order > 0 as is_event"),
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                'missions.is_event',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')

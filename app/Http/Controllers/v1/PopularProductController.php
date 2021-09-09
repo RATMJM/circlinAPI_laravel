@@ -127,7 +127,7 @@ class PopularProductController extends Controller
                             'mission_places.place_id',
                             'missions.id', 'missions.title', 'missions.description',
                             'missions.is_event',
-                            DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                            DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                             'missions.started_at', 'missions.ended_at',
                             'missions.thumbnail_image', 'missions.success_count',
                             'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
@@ -194,7 +194,6 @@ class PopularProductController extends Controller
             foreach ($missions->missions as $i => $item) {
                 $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
                     'area', 'followers', 'is_following']);
-                // $item->areas = mission_areas($item->id)->pluck('name');
 
                 if ($users) {
                     $users = $users->union(mission_users($item->id));

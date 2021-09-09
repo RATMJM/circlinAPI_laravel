@@ -25,7 +25,7 @@ class BookmarkController extends Controller
             $query->where('missions.mission_category_id', $category_id);
         })
             ->when($category_id === 0, function ($query) {
-                $query->where('event_order', '>', 0);
+                $query->where('is_event', 1);
             })
             ->where('mission_stats.user_id', $user_id)
             ->join('missions', 'missions.id', 'mission_stats.mission_id')
@@ -39,7 +39,7 @@ class BookmarkController extends Controller
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 DB::raw("(missions.started_at is null or missions.started_at<=now()) and
                     (missions.ended_at is null or missions.ended_at>now()) as is_available"),
@@ -96,7 +96,7 @@ class BookmarkController extends Controller
                 $query->where('user_id', $user_id);
             }])
             ->orderBy('has_check')
-            ->orderBy(DB::raw("event_order=0"))
+            ->orderBy('is_event')
             ->orderBy('event_order')
             ->orderBy('id', 'desc')
             ->when($limit, function ($query, $limit) {

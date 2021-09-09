@@ -217,7 +217,7 @@ class MissionController extends Controller
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
                 'missions.title', 'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),

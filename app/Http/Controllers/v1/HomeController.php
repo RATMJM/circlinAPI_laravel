@@ -193,7 +193,7 @@ class HomeController extends Controller
             ->select([
                 'feed_missions.feed_id', 'missions.id', 'missions.title', 'mission_categories.emoji',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
