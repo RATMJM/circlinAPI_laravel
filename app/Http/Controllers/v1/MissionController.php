@@ -474,7 +474,7 @@ class MissionController extends Controller
             ->join('users', 'users.id', 'feeds.user_id')
             ->select([
                 'users.id as user_id', 'users.nickname', 'users.profile_image',
-                'feeds.id', 'feeds.created_at', 'feeds.content',
+                'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
                 'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
