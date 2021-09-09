@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Feed;
 use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
@@ -137,14 +138,18 @@ class MissionCategoryController extends Controller
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
             })
             ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
-            ->select([
-                'missions.id',
-                'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
-                    ->whereColumn('user_id', '!=', 'missions.user_id'),
-            ])
+            ->select('missions.id')
             ->groupBy('missions.id')
             ->orderBy('missions.event_order');
+
+        $missions_count = DB::table($missions)->count();
+
+        $missions->select([
+            'missions.id',
+            'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                ->whereColumn('user_id', '!=', 'missions.user_id'),
+        ]);
 
         if ($sort === 'popular') {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
@@ -153,8 +158,6 @@ class MissionCategoryController extends Controller
         } else {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         }
-
-        $missions_count = $missions->count();
 
         $missions = $missions->skip($page * $limit)->take($limit);
 
@@ -206,10 +209,8 @@ class MissionCategoryController extends Controller
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
+                'feeds_count' => Feed::selectRaw("COUNT(1)")->where('user_id', $user_id),
             ])
-            ->withCount(['feeds' => function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            }])
             ->get();
 
         if (count($missions)) {
