@@ -12,13 +12,17 @@ use App\Models\NoticeComment;
 use App\Models\ProductReview;
 use App\Models\ProductReviewComment;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
-    public function index($table, $id): array
+    public function index(Request $request, $table, $id): array
     {
         try {
+            $page = $request->get('page', 0);
+            $limit = $request->get('limit', 50);
+
             $query_comment = match ($table) {
                 'feed' => new FeedComment(),
                 'mission' => new MissionComment(),
@@ -43,7 +47,7 @@ class CommentController extends Controller
 
             $total = $query_comment->count();
 
-            $comments = $query_comment->get();
+            $comments = $query_comment->skip($page * $limit)->take($limit)->get();
 
             return success([
                 'result' => true,

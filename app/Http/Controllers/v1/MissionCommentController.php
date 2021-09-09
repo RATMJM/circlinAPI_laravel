@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class MissionCommentController extends Controller
 {
-    public function index($id)
+    public function index(Request $request, $id)
     {
-        return (new CommentController())->index('mission', $id);
+        return (new CommentController())->index($request, 'mission', $id);
     }
 
     public function store(Request $request, $id)

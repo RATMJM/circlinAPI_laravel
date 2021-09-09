@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class FeedCommentController extends Controller
 {
-    public function index($id)
+    public function index(Request $request, $id)
     {
-        return (new CommentController())->index('feed', $id);
+        return (new CommentController())->index($request, 'feed', $id);
     }
 
     public function store(Request $request, $id)
