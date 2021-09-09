@@ -82,19 +82,19 @@ class PopularPlaceController extends Controller
 
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 8);
+        $local = $request->get('local');
 
         $data = Place::where('places.id', $id)
-            ->select([
-                'places.id', 'places.address', 'places.title', 'places.description',
-                'places.image', 'places.url', 'places.lat', 'places.lng',
-            ])
+            ->when($local, function ($query) use ($user_id) {
+                $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+            })
             ->withCount('missions')
-            ->with('missions', function ($query) use ($page, $limit, $user_id) {
-                $query->join('users', 'users.id', 'missions.user_id')
-                    ->leftJoin('mission_areas', function ($query) use ($user_id) {
-                        $query->on('mission_areas.mission_id', 'missions.id')
-                            ->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
-                    })
+            ->with('missions', function ($query) use ($page, $limit, $local, $user_id) {
+                $query->when($local, function ($query) use ($user_id) {
+                    $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+                })
+                    ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
+                    ->join('users', 'users.id', 'missions.user_id')
                     ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
                     ->leftJoin('products', 'products.id', 'mission_products.product_id')
                     ->leftJoin('brands', 'brands.id', 'products.brand_id')
@@ -106,7 +106,6 @@ class PopularPlaceController extends Controller
                         DB::raw("missions.id <= 1213 and missions.event_order > 0 as is_old_event"), challenge_type(),
                         'missions.started_at', 'missions.ended_at',
                         'missions.thumbnail_image', 'missions.success_count',
-                        'mission_area' => area_like('mission_areas'),
                         'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                             ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
                         'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
@@ -149,6 +148,10 @@ class PopularPlaceController extends Controller
                     ->orderBy('id', 'desc')->skip($page * $limit)->take($limit);
             })
             ->first();
+
+        foreach ($data->missions as $item) {
+            $item->areas = mission_areas($item->id)->pluck('name');
+        }
 
         return success([
             'result' => true,
