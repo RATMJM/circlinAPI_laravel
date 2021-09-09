@@ -26,7 +26,15 @@ class PopularProductController extends Controller
         $data = MissionProduct::when($category_id, function ($query, $category_id) {
             $query->where('missions.mission_category_id', $category_id);
         })
-            ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            ->where(function ($query) {
+                $query->where('mission_products.type', 'inside')
+                    ->whereNotNull('products.id')
+                    ->orWhere('mission_products.type', 'outside');
+            })
+            ->leftJoin('products', function ($query) {
+                $query->on('products.id', 'mission_products.product_id')
+                    ->where('is_skin', false)->whereNull('deleted_at');
+            })
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->join('missions', function ($query) {
@@ -85,7 +93,7 @@ class PopularProductController extends Controller
 
         return success([
             'result' => true,
-            'places' => $data,
+            'products' => $data,
         ]);
     }
 
