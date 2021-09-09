@@ -130,7 +130,7 @@ class MissionCategoryController extends Controller
             $query->whereIn('missions.mission_category_id', Arr::wrap($id))
                 ->where('event_order', 0);
         })
-            ->when($id === 0, function ($query) {
+            ->when($id == 0, function ($query) {
                 $query->where('event_order', '>', 0);
             })
             ->when($local, function ($query) use ($user_id) {
