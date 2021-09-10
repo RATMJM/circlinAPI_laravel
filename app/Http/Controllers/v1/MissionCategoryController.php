@@ -211,7 +211,9 @@ class MissionCategoryController extends Controller
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'feeds_count' => Feed::selectRaw("COUNT(1)")->where('user_id', $user_id),
+                'feeds_count' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->where('user_id', $user_id),
             ])
             ->get();
 
