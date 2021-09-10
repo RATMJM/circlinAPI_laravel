@@ -47,6 +47,16 @@ class Mission extends Model
         return $this->belongsToMany(Place::class, MissionPlace::class);
     }
 
+    public function mission_content()
+    {
+        return $this->hasOne(MissionContent::class);
+    }
+
+    public function content()
+    {
+        return $this->hasOneThrough(Content::class, MissionContent::class);
+    }
+
     public function mission_stats()
     {
         return $this->hasMany(MissionStat::class);

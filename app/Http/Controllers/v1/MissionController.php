@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Content;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
@@ -60,6 +61,12 @@ class MissionController extends Controller
             $place_url = $request->get('place_url');
             $place_lat = $request->get('place_lat');
             $place_lng = $request->get('place_lng');
+
+            $content_code = $request->get('content_code');
+            $content_title = $request->get('content_title');
+            $content_description = $request->get('content_description');
+            $content_channel = $request->get('content_channel_title');
+            $content_thumbnail_image = $request->get('content_thumbnail_image');
 
             if (!$title && !$files) {
                 return success([
@@ -181,6 +188,17 @@ class MissionController extends Controller
                     'lng' => $place_lng,
                 ]);
                 $data->mission_place()->create(['place_id' => $place->id]);
+            }
+
+            if ($content_code && $content_title && $content_channel) {
+                $content = Content::updateOrCreate(['code' => $content_code], [
+                    'type' => 'youtube',
+                    'title' => $content_title,
+                    'description' => $content_description,
+                    'channel' => $content_channel,
+                    'thumbnail_image' => $content_thumbnail_image,
+                ]);
+                $data->mission_content()->create(['content_id' => $content->id]);
             }
 
             (new BookmarkController())->store($request, $data->id);
@@ -575,6 +593,12 @@ class MissionController extends Controller
             $place_lat = $request->get('place_lat');
             $place_lng = $request->get('place_lng');
 
+            $content_code = $request->get('content_code');
+            $content_title = $request->get('content_title');
+            $content_description = $request->get('content_description');
+            $content_channel = $request->get('content_channel_title');
+            $content_thumbnail_image = $request->get('content_thumbnail_image');
+
             if (isset($description) && $description !== '') {
                 $mission->update(['description' => $description]);
             }
@@ -610,6 +634,17 @@ class MissionController extends Controller
                     'lng' => $place_lng,
                 ]);
                 $mission->mission_place()->updateOrCreate([], ['place_id' => $place->id]);
+            }
+
+            if ($content_code && $content_title && $content_channel) {
+                $content = Content::updateOrCreate(['code' => $content_code], [
+                    'type' => 'youtube',
+                    'title' => $content_title,
+                    'description' => $content_description,
+                    'channel' => $content_channel,
+                    'thumbnail_image' => $content_thumbnail_image,
+                ]);
+                $mission->mission_content()->updateOrCreate([], ['content_id' => $content->id]);
             }
 
             DB::commit();
