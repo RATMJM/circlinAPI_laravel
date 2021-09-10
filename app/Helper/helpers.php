@@ -263,9 +263,9 @@ function mission_users($mission_id, $user_id)
         ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
         ->join('feeds', function ($query) use ($user_id) {
             $query->on('feeds.id', 'feed_missions.feed_id')
-                ->whereNull('deleted_at')
+                ->whereNull('feeds.deleted_at')
                 ->where(function ($query) use ($user_id) {
-                    $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                    $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
                 });
         })
         ->join('users', 'users.id', 'feeds.user_id')

@@ -37,7 +37,7 @@ class HomeController extends Controller
                 })
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->join('missions', function ($query) {
-                        $query->on('missions.id', 'mission_places.mission_id')->whereNull('deleted_at');
+                        $query->on('missions.id', 'mission_places.mission_id')->whereNull('missions.deleted_at');
                     })
                     ->select([
                         'places.id', 'places.address', 'places.title', 'places.description',

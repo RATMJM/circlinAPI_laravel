@@ -132,7 +132,8 @@ class MissionCategoryController extends Controller
                 ->where('is_event', 0);
         })
             ->when($id == 0, function ($query) {
-                $query->where('is_event', 1);
+                $query->where('is_event', 1)
+                    ->orderBy('event_order', 'desc');
             })
             ->when($local, function ($query) use ($user_id) {
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
@@ -148,9 +149,9 @@ class MissionCategoryController extends Controller
             'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                 ->join('feeds', function ($query) use ($user_id) {
                     $query->on('feeds.id', 'feed_missions.feed_id')
-                        ->whereNull('deleted_at')
+                        ->whereNull('feeds.deleted_at')
                         ->where(function ($query) use ($user_id) {
-                            $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                            $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
                         });
                 })
                 ->whereColumn('user_id', '!=', 'missions.user_id'),
@@ -219,9 +220,9 @@ class MissionCategoryController extends Controller
                 'feeds_count' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
-                            ->whereNull('deleted_at')
+                            ->whereNull('feeds.deleted_at')
                             ->where(function ($query) use ($user_id) {
-                                $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                                $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
                             });
                     })
                     ->where('user_id', $user_id),

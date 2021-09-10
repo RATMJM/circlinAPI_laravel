@@ -375,7 +375,7 @@ class ChatController extends Controller
                 ->where('chat_messages.created_at', '>=', function ($query) use ($room_id, $user_id) {
                     $query->select('created_at')->from('chat_users')
                         ->where('chat_room_id', $room_id)->where('user_id', $user_id)
-                        ->whereNull('deleted_at')
+                        ->whereNull('feeds.deleted_at')
                         ->limit(1);
                 })
                 ->join('users', 'users.id', 'chat_messages.user_id')

@@ -34,7 +34,7 @@ class PopularProductController extends Controller
             })
             ->leftJoin('products', function ($query) {
                 $query->on('products.id', 'mission_products.product_id')
-                    ->where('is_skin', false)->whereNull('deleted_at');
+                    ->where('is_skin', false)->whereNull('products.deleted_at');
             })
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
