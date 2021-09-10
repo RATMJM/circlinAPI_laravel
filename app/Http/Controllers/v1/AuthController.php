@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -94,6 +95,10 @@ class AuthController extends Controller
             } else {
                 DB::beginTransaction();
 
+                while (User::where('invite_code', ($code = Str::random(6)))->exists()) {
+                    //
+                }
+
                 /* 유저 기본 데이터 생성 */
                 $user = User::create([
                     'email' => $email,
@@ -113,6 +118,7 @@ class AuthController extends Controller
                     'access_token' => $access_token,
                     'refresh_token' => $refresh_token,
                     'refresh_token_expire_in' => $refresh_token_expire_in,
+                    'invite_code' => $code,
                 ]);
 
                 UserStat::create(['user_id' => $user->id]);
