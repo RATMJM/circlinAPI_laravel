@@ -266,7 +266,7 @@ class UserController extends Controller
                     DB::rollBack();
                     return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
                 }
-                (new ChatController())->send_direct($request, $recommend_user, null, null,
+                (new ChatController())->send_direct($request, $recommend_user->id, null, null,
                     "{$recommend_user->nickname}님을 추천인으로 등록했어요! 감사합니다! 😆");
             } else {
                 $data = User::where('id', $user_id)->update([
