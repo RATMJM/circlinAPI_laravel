@@ -242,25 +242,32 @@ class UserController extends Controller
                     ]);
                 }
 
-                $data = User::where('id', $user_id)->update([
+                $user = User::find($user_id);
+
+                if (isset($user->recommend_updated_at)) {
+                    return success([
+                        'result' => false,
+                        'reason' => 'already push recommend user',
+                    ]);
+                }
+
+                $data = $user->update([
                     'recommend_user_id' => $recommend_user_id->id,
                     'recommend_updated_at' => DB::raw("NOW()"),
                 ]);
 
-                if (isset($recommend_user_id)) {
-                    $res = PointController::change_point($user_id, 500, 'recommended_reward');
-                    if (!$res['success']) {
-                        DB::rollBack();
-                        return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
-                    }
-                    $res = PointController::change_point($recommend_user_id, 500, 'invite_reward');
-                    if (!$res['success']) {
-                        DB::rollBack();
-                        return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
-                    }
-                    (new ChatController())->send_direct($request, $recommend_user_id, null, null,
-                        "{$recommend_user_id->nickname}님을 추천인으로 등록했어요! 감사합니다! 😆");
+                $res = PointController::change_point($user_id, 500, 'recommended_reward');
+                if (!$res['success']) {
+                    DB::rollBack();
+                    return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
                 }
+                $res = PointController::change_point($recommend_user_id, 500, 'invite_reward');
+                if (!$res['success']) {
+                    DB::rollBack();
+                    return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
+                }
+                (new ChatController())->send_direct($request, $recommend_user_id, null, null,
+                    "{$recommend_user_id->nickname}님을 추천인으로 등록했어요! 감사합니다! 😆");
             } else {
                 $data = User::where('id', $user_id)->update([
                     'recommend_updated_at' => DB::raw("NOW()"),
