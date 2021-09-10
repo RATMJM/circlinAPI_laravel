@@ -170,6 +170,7 @@ Route::get('/explore/search/simple', [v1\SearchController::class, 'simple'])->na
 Route::get('/explore/search/invite_code', [v1\SearchController::class, 'invite_code'])->name('explore.search.invite_code');
 Route::get('/explore/search/user', [v1\SearchController::class, 'user'])->name('explore.search.user');
 Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->name('explore.search.mission');
+Route::get('/explore/search/product', [v1\SearchController::class, 'product'])->name('explore.search.product');
 
 /* 채팅 관련 */
 Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
@@ -10,6 +11,7 @@ use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
 use App\Models\Place;
+use App\Models\Product;
 use App\Models\SearchHistory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -255,6 +257,24 @@ class SearchController extends Controller
 
     public function product(Request $request): array
     {
+        $user_id = token()->uid;
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 20);
+        $keyword = $request->get('keyword');
+        $keyword2 = str_replace([' ', '%'], '', $keyword);
 
+        $data = Product::where('name_ko', 'like', "%$keyword2%")
+            ->select([
+                'id', 'name_ko as title', 'thumbnail_image',
+                'brand' => Brand::select('name_ko')->whereColumn('id', 'products.brand_id'),
+            ])
+            ->orderBy('id', 'desc')
+            ->skip($page * $limit)->take($limit)
+            ->get();
+
+        return success([
+            'success' => true,
+            'products' => $data,
+        ]);
     }
 }
