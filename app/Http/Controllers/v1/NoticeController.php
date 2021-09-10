@@ -27,7 +27,7 @@ class NoticeController extends Controller
         ]);
     }
 
-    public function show($id): array
+    public function show(Request $request, $id): array
     {
         $user_id = token()->uid;
 
@@ -43,7 +43,7 @@ class NoticeController extends Controller
             })
             ->first();
 
-        $comments = (new NoticeCommentController())->index($id)['data']['comments'];
+        $comments = (new NoticeCommentController())->index($request, $id)['data']['comments'];
 
         return success([
             'result' => true,
