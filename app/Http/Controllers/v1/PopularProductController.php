@@ -118,13 +118,14 @@ class PopularProductController extends Controller
                     $query->when($local, function ($query) use ($user_id) {
                         $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
                     })
+                        ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
                         ->join('users', 'users.id', 'missions.user_id')
-                        ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+                        // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
                         ->leftJoin('products', 'products.id', 'mission_products.product_id')
                         ->leftJoin('brands', 'brands.id', 'products.brand_id')
                         ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
                         ->select([
-                            'mission_places.place_id',
+                            'mission_products.product_id',
                             'missions.id', 'missions.title', 'missions.description',
                             'missions.is_event',
                             DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
@@ -169,6 +170,7 @@ class PopularProductController extends Controller
                         ->withCount(['feeds' => function ($query) use ($user_id) {
                             $query->where('user_id', $user_id);
                         }])
+                        ->groupBy('missions.id', 'mission_products.id')
                         ->orderBy('missions.id', 'desc')->skip($page * $limit)->take($limit);
                 })
                 ->first();
@@ -189,7 +191,7 @@ class PopularProductController extends Controller
                 ->first();
         }
 
-        if (count($missions->missions)) {
+        if (isset($missions) && count($missions->missions)) {
             [$users, $areas] = null;
             foreach ($missions->missions as $i => $item) {
                 $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',

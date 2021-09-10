@@ -85,9 +85,6 @@ class PopularPlaceController extends Controller
         $local = $request->get('local');
 
         $missions = Place::where('places.id', $id)
-            ->when($local, function ($query) use ($user_id) {
-                $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
-            })
             ->withCount('missions')
             ->with('missions', function ($query) use ($page, $limit, $local, $user_id) {
                 $query->when($local, function ($query) use ($user_id) {
@@ -145,6 +142,7 @@ class PopularPlaceController extends Controller
                     ->withCount(['feeds' => function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
                     }])
+                    ->groupBy('missions.id', 'mission_products.id')
                     ->orderBy('id', 'desc')->skip($page * $limit)->take($limit);
             })
             ->first();

@@ -13,6 +13,7 @@ class Product extends Model
 
     public function missions()
     {
-        return $this->belongsToMany(Mission::class, MissionProduct::class);
+        return $this->belongsToMany(Mission::class, MissionProduct::class)
+            ->where('mission_products.type', 'inside');
     }
 }
