@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\UserFavoriteCategory;
 use Exception;
@@ -31,6 +32,7 @@ class UserFavoriteCategoryController extends Controller
     {
         try {
             $user_id = token()->uid;
+            $intro = $request->get('intro');
             $category_id = $request->get('category_id');
 
             if (is_null($category_id)) {
@@ -44,6 +46,13 @@ class UserFavoriteCategoryController extends Controller
                 return success(['result' => false, 'reason' => 'already following']);
             } else {
                 $data = UserFavoriteCategory::create(['user_id' => $user_id, 'mission_category_id' => $category_id]);
+
+                if ($intro) {
+                    foreach (Mission::where(['mission_category_id' => $category_id, 'is_tutorial' => true])->pluck('id') as $mission) {
+                        (new BookmarkController())->store($request, $mission);
+                    }
+                }
+
                 if ($data) {
                     return success(['result' => true]);
                 } else {
@@ -70,10 +79,11 @@ class UserFavoriteCategoryController extends Controller
         //
     }
 
-    public function destroy($id): array
+    public function destroy(Request $request, $id): array
     {
         try {
             $user_id = token()->uid;
+            $intro = $request->get('intro');
 
             if (is_null($id)) {
                 return success([
@@ -83,6 +93,13 @@ class UserFavoriteCategoryController extends Controller
             }
 
             $data = UserFavoriteCategory::where(['user_id' => $user_id, 'mission_category_id' => $id])->first();
+
+            if ($intro) {
+                foreach (Mission::where(['mission_category_id' => $id, 'is_tutorial' => true])->pluck('id') as $mission) {
+                    (new BookmarkController())->destroy($mission);
+                }
+            }
+
             if ($data) {
                 $result = $data->delete();
                 return success(['result' => $result > 0]);
