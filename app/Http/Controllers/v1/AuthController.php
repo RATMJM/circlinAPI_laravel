@@ -108,6 +108,7 @@ class AuthController extends Controller
                     'agree3' => $agree3,
                     'agree4' => $agree4,
                     'agree5' => $agree5,
+                    'invite_code' => $code,
                     // SNS 한정 미리 받을 수도 있음
                     'nickname' => $nickname,
                     'name' => $name,
@@ -118,7 +119,6 @@ class AuthController extends Controller
                     'access_token' => $access_token,
                     'refresh_token' => $refresh_token,
                     'refresh_token_expire_in' => $refresh_token_expire_in,
-                    'invite_code' => $code,
                 ]);
 
                 UserStat::create(['user_id' => $user->id]);
