@@ -95,7 +95,7 @@ class AuthController extends Controller
             } else {
                 DB::beginTransaction();
 
-                while (User::where('invite_code', ($code = Str::random(6)))->exists()) {
+                while (User::where('invite_code', ($code = Str::random(8)))->exists()) {
                     //
                 }
 
