@@ -202,7 +202,7 @@ class SearchController extends Controller
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                'bookmarks' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')

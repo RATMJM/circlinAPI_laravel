@@ -255,7 +255,7 @@ class MissionController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'bookmark_total' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                'bookmark_total' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')

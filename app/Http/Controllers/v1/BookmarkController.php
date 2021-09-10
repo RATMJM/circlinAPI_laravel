@@ -78,7 +78,7 @@ class BookmarkController extends Controller
                     ->where('feeds.created_at', '>=', init_today())
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
-                'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                'bookmarks' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')
