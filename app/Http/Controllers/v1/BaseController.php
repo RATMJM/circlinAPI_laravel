@@ -45,13 +45,13 @@ class BaseController extends Controller
             ->leftJoin('sort_users', 'sort_users.user_id', 'feeds.user_id')
             ->select([
                 'sort_users.user_id',
-                'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'feeds.user_id')
+                /*'together_following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'sort_users.user_id')
                     ->whereHas('user_target_follow', function ($query) use ($user_id) {
                         $query->where('user_id', $user_id);
-                    }),
+                    }),*/
             ])
-            ->groupBy('sort_users.id', 'together_following')
-            ->orderBy(DB::raw("`order`+(together_following*200)+
+            ->groupBy('sort_users.id')
+            ->orderBy(DB::raw("`order`+#(together_following*200)+
                 IF((select gender from users where id=$user_id)=(select gender from users where id=sort_users.user_id),0,500)"), 'desc')
             ->take($limit);
 
@@ -61,7 +61,7 @@ class BaseController extends Controller
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'together_following',
+                // 'together_following',
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
             ])
