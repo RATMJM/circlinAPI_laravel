@@ -43,6 +43,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     Route::get('/', [v1\UserController::class, 'index'])->name('index');
     Route::group(['prefix' => 'profile', 'as' => 'profile.'], function () {
         Route::patch('/', [v1\UserController::class, 'update'])->name('update');
+        Route::post('/recommend', [v1\UserController::class, 'push_recommend'])->name('push_recommend');
         Route::post('/image', [v1\UserController::class, 'change_profile_image'])->name('update.image');
         Route::delete('/image', [v1\UserController::class, 'remove_profile_image'])->name('delete.image');
         Route::post('/token', [v1\UserController::class, 'update_token'])->name('update.token');
@@ -166,6 +167,7 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 Route::get('/explore', [v1\SearchController::class, 'index'])->name('explore');
 Route::get('/explore/search', [v1\SearchController::class, 'search'])->name('explore.search');
 Route::get('/explore/search/simple', [v1\SearchController::class, 'simple'])->name('explore.search.simple');
+Route::get('/explore/search/invite_code', [v1\SearchController::class, 'invite_code'])->name('explore.search.invite_code');
 Route::get('/explore/search/user', [v1\SearchController::class, 'user'])->name('explore.search.user');
 Route::get('/explore/search/mission', [v1\SearchController::class, 'mission'])->name('explore.search.mission');
 

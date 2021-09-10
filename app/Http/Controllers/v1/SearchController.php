@@ -102,6 +102,22 @@ class SearchController extends Controller
         }
     }
 
+    public function invite_code(Request $request): array
+    {
+        $code = $request->get('code');
+
+        $user = User::where(DB::raw("BINARY invite_code"), $code)
+            ->select([
+                'id', 'nickname', 'profile_image', 'gender', 'area' => area(),
+            ])
+            ->first();
+
+        return success([
+            'result' => true,
+            'user' => $user,
+        ]);
+    }
+
     public function user(Request $request): array
     {
         $user_id = token()->uid;

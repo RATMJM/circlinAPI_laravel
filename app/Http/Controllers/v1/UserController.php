@@ -224,6 +224,60 @@ class UserController extends Controller
         }
     }
 
+    public function push_recommend(Request $request): array
+    {
+        $user_id = token()->uid;
+        $code = $request->get('code');
+
+        try {
+            DB::beginTransaction();
+
+            if ($code) {
+                $recommend_user_id = User::where('invite_code', $code)->select(['id', 'nickname'])->first();
+
+                if (!$recommend_user_id) {
+                    return success([
+                        'result' => false,
+                        'reason' => 'not found user',
+                    ]);
+                }
+
+                $data = User::where('id', $user_id)->update([
+                    'recommend_user_id' => $recommend_user_id->id,
+                    'recommend_updated_at' => DB::raw("NOW()"),
+                ]);
+
+                if (isset($recommend_user_id)) {
+                    $res = PointController::change_point($user_id, 500, 'recommended_reward');
+                    if (!$res['success']) {
+                        DB::rollBack();
+                        return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
+                    }
+                    $res = PointController::change_point($recommend_user_id, 500, 'invite_reward');
+                    if (!$res['success']) {
+                        DB::rollBack();
+                        return ['success' => false, 'reason' => 'error', 'message' => $res['message']];
+                    }
+                    (new ChatController())->send_direct($request, $recommend_user_id, null, null,
+                        "{$recommend_user_id->nickname}님을 추천인으로 등록했어요! 감사합니다! 😆");
+                }
+            } else {
+                $data = User::where('id', $user_id)->update([
+                    'recommend_updated_at' => DB::raw("NOW()"),
+                ]);
+            }
+
+            DB::commit();
+
+            return success([
+                'result' => $data,
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     public function change_profile_image(Request $request): array
     {
         $user_id = token()->uid;
