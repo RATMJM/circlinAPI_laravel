@@ -255,15 +255,8 @@ class MissionController extends Controller
                 DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'bookmark_total' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', function ($query) use ($user_id) {
-                        $query->on('feeds.id', 'feed_missions.feed_id')
-                            ->whereNull('feeds.deleted_at')
-                            ->where(function ($query) use ($user_id) {
-                                $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
-                            });
-                    })
-                    ->whereColumn('user_id', '!=', 'missions.user_id'),
+                'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                    ->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
             ->withCount(['feeds' => function ($query) use ($user_id) {
@@ -675,7 +668,7 @@ class MissionController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $users = FeedMission::where('feed_missions.mission_id', $mission_id)
+        /*$users = FeedMission::where('feed_missions.mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
                 $query->on('feeds.id', 'feed_missions.feed_id')
                     ->whereNull('feeds.deleted_at')
@@ -684,6 +677,22 @@ class MissionController extends Controller
                     });
             })
             ->join('users', 'users.id', 'feeds.user_id')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                DB::raw("COUNT(distinct feed_missions.id) as mission_feeds"),
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                    ->where('user_id', $user_id),
+            ])
+            ->groupBy('users.id')
+            ->orderBy('mission_feeds', 'desc')
+            ->orderBy('follower', 'desc')
+            ->orderBy('id', 'desc')
+            ->skip($page * $limit)->take($limit)->get();*/
+
+        $users = MissionStat::withTrashed()->where('mission_stats.mission_id', $mission_id)
+            ->join('users', 'users.id', 'mission_stats.user_id')
+            ->leftJoin('feed_missions', 'feed_missions.mission_id', 'mission_stats.mission_id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
                 DB::raw("COUNT(distinct feed_missions.id) as mission_feeds"),

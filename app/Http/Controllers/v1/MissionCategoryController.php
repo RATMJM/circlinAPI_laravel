@@ -41,10 +41,8 @@ class MissionCategoryController extends Controller
                 ->select([
                     'id', DB::raw("CAST(id as CHAR(20)) as `key`"), DB::raw("IFNULL(emoji, '') as emoji"),
                     'title',
-                    'bookmark_total' => MissionStat::selectRaw("COUNT(1)")->where('mission_stats.user_id', $user_id)
-                        ->whereHas('mission', function ($query) use ($user_id) {
-                            $query->whereColumn('missions.mission_category_id', 'mission_categories.id');
-                        }),
+                    'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                        ->whereColumn('mission_id', 'missions.id'),
                     'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
                         ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])
@@ -145,15 +143,8 @@ class MissionCategoryController extends Controller
 
         $missions->select([
             'missions.id',
-            'bookmarks' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
-                ->join('feeds', function ($query) use ($user_id) {
-                    $query->on('feeds.id', 'feed_missions.feed_id')
-                        ->whereNull('feeds.deleted_at')
-                        ->where(function ($query) use ($user_id) {
-                            $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
-                        });
-                })
-                ->whereColumn('user_id', '!=', 'missions.user_id'),
+            'bookmarks' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                ->whereColumn('mission_id', 'missions.id'),
         ]);
 
         if ($sort == SORT_POPULAR) {

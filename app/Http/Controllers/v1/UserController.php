@@ -846,15 +846,8 @@ class UserController extends Controller
                     ->where('feeds.created_at', '>=', init_today())
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
-                'bookmarks' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', function ($query) use ($user_id) {
-                        $query->on('feeds.id', 'feed_missions.feed_id')
-                            ->whereNull('feeds.deleted_at')
-                            ->where(function ($query) use ($user_id) {
-                                $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
-                            });
-                    })
-                    ->whereColumn('user_id', '!=', 'missions.user_id'),
+                'bookmarks' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                    ->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
@@ -968,9 +961,8 @@ class UserController extends Controller
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'bookmark_total' => FeedMission::selectRaw("COUNT(distinct feeds.user_id)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
-                    ->whereColumn('user_id', '!=', 'missions.user_id'),
+                'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                    ->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
             ->orderBy('missions.id', 'desc')
