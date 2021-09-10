@@ -287,7 +287,7 @@ class MissionController extends Controller
         $data->images = $data->images()->orderBy('order')->pluck('image');
         $data->areas = mission_areas($data->id)->pluck('name');
 
-        $data->users = mission_users($mission_id, $user_id)->get();
+        $data->users = mission_users($mission_id, $user_id, true)->get();
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {

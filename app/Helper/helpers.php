@@ -257,10 +257,12 @@ function init_today($time = null)
 /**
  * 미션 참여자 목록
  */
-function mission_users($mission_id, $user_id)
+function mission_users($mission_id, $user_id, $has_owner = false)
 {
     return FeedMission::where('feed_missions.mission_id', $mission_id)
-        ->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'))
+        ->when(!$has_owner, function ($query) {
+            $query->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'));
+        })
         ->join('feeds', function ($query) use ($user_id) {
             $query->on('feeds.id', 'feed_missions.feed_id')
                 ->whereNull('feeds.deleted_at')
