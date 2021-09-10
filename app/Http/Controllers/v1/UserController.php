@@ -630,6 +630,8 @@ class UserController extends Controller
      */
     public function feed(Request $request, $user_id): array
     {
+        $uid = token()->uid;
+
         $category_id = $request->get('category_id');
         $mission_id = $request->get('mission_id');
         $limit = $request->get('limit', 20);
@@ -642,7 +644,13 @@ class UserController extends Controller
             ->where('feeds.user_id', $user_id)
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('feed_missions', 'feed_missions.mission_id', 'missions.id')
-            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->join('feeds', function ($query) use ($uid) {
+                $query->on('feeds.id', 'feed_missions.feed_id')
+                    ->whereNull('deleted_at')
+                    ->where(function ($query) use ($uid) {
+                        $query->where('is_hidden', 0)->orWhere('user_id', $uid);
+                    });
+            })
             ->select([
                 'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
                 DB::raw('COUNT(distinct feeds.id) as feeds'),
@@ -651,6 +659,7 @@ class UserController extends Controller
             ->get();
 
         $missions = Feed::where('feeds.user_id', $user_id)
+            ->where('feeds.is_hidden', false)
             ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
             ->join('missions', function ($query) {
                 $query->on('missions.id', 'feed_missions.mission_id')
@@ -838,7 +847,13 @@ class UserController extends Controller
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('feeds', function ($query) use ($user_id) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('deleted_at')
+                            ->where(function ($query) use ($user_id) {
+                                $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                            });
+                    })
                     ->whereColumn('user_id', '!=', 'missions.user_id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
@@ -849,7 +864,13 @@ class UserController extends Controller
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', init_today())
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
+                    ->join('feeds', function ($query) use ($uid) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('deleted_at')
+                            ->where(function ($query) use ($uid) {
+                                $query->where('is_hidden', 0)->orWhere('user_id', $uid);
+                            });
+                    })->limit(1),
                 DB::raw("COUNT(distinct feeds.id) as feeds_count"),
             ]);
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
@@ -866,9 +887,9 @@ class UserController extends Controller
                     'area', 'followers', 'is_following']);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id));
+                    $users = $users->union(mission_users($item->id, $uid));
                 } else {
-                    $users = mission_users($item->id);
+                    $users = mission_users($item->id, $uid);
                 }
 
                 if ($areas) {
@@ -962,9 +983,9 @@ class UserController extends Controller
                     'area', 'followers', 'is_following']);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id));
+                    $users = $users->union(mission_users($item->id, $user_id));
                 } else {
-                    $users = mission_users($item->id);
+                    $users = mission_users($item->id, $user_id);
                 }
 
                 if ($areas) {

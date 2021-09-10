@@ -154,9 +154,9 @@ class PopularPlaceController extends Controller
                     'area', 'followers', 'is_following']);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id));
+                    $users = $users->union(mission_users($item->id, $user_id));
                 } else {
-                    $users = mission_users($item->id);
+                    $users = mission_users($item->id, $user_id);
                 }
 
                 if ($areas) {

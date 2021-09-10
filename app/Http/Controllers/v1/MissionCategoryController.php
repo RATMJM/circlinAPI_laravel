@@ -139,15 +139,20 @@ class MissionCategoryController extends Controller
             })
             ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
             ->select('missions.id')
-            ->groupBy('missions.id')
-            ->orderBy('missions.event_order');
+            ->groupBy('missions.id');
 
         $missions_count = DB::table($missions)->count();
 
         $missions->select([
             'missions.id',
             'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                ->join('feeds', function ($query) use ($user_id) {
+                    $query->on('feeds.id', 'feed_missions.feed_id')
+                        ->whereNull('deleted_at')
+                        ->where(function ($query) use ($user_id) {
+                            $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                        });
+                })
                 ->whereColumn('user_id', '!=', 'missions.user_id'),
         ]);
 
@@ -212,7 +217,13 @@ class MissionCategoryController extends Controller
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
                 'feeds_count' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('feeds', function ($query) use ($user_id) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('deleted_at')
+                            ->where(function ($query) use ($user_id) {
+                                $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                            });
+                    })
                     ->where('user_id', $user_id),
             ])
             ->get();
@@ -224,9 +235,9 @@ class MissionCategoryController extends Controller
                     'area', 'followers', 'is_following']);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id));
+                    $users = $users->union(mission_users($item->id, $user_id));
                 } else {
-                    $users = mission_users($item->id);
+                    $users = mission_users($item->id, $user_id);
                 }
 
                 if ($areas) {

@@ -79,7 +79,13 @@ class BookmarkController extends Controller
                     ->whereNull('feeds.deleted_at')
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('feeds', function ($query) use ($user_id) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('deleted_at')
+                            ->where(function ($query) use ($user_id) {
+                                $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                            });
+                    })
                     ->whereColumn('user_id', '!=', 'missions.user_id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
                 'has_check' => FeedMission::selectRaw("COUNT(1) > 0")

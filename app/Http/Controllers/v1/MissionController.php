@@ -256,7 +256,13 @@ class MissionController extends Controller
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 'bookmark_total' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('feeds', function ($query) use ($user_id) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('deleted_at')
+                            ->where(function ($query) use ($user_id) {
+                                $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                            });
+                    })
                     ->whereColumn('user_id', '!=', 'missions.user_id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ])
@@ -281,7 +287,7 @@ class MissionController extends Controller
         $data->images = $data->images()->orderBy('order')->pluck('image');
         $data->areas = mission_areas($data->id)->pluck('name');
 
-        $data->users = mission_users($mission_id)->get();
+        $data->users = mission_users($mission_id, $user_id)->get();
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
@@ -666,7 +672,13 @@ class MissionController extends Controller
         $page = $request->get('page', 0);
 
         $users = FeedMission::where('feed_missions.mission_id', $mission_id)
-            ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+            ->join('feeds', function ($query) use ($user_id) {
+                $query->on('feeds.id', 'feed_missions.feed_id')
+                    ->whereNull('deleted_at')
+                    ->where(function ($query) use ($user_id) {
+                        $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                    });
+            })
             ->join('users', 'users.id', 'feeds.user_id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),

@@ -201,7 +201,13 @@ class SearchController extends Controller
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
                 'bookmarks' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')
+                    ->join('feeds', function ($query) use ($user_id) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('deleted_at')
+                            ->where(function ($query) use ($user_id) {
+                                $query->where('is_hidden', 0)->orWhere('user_id', $user_id);
+                            });
+                    })
                     ->whereColumn('user_id', '!=', 'missions.user_id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
             ])
@@ -219,9 +225,9 @@ class SearchController extends Controller
                     'area', 'followers', 'is_following']);
 
                 if ($users) {
-                    $users = $users->union(mission_users($mission->id));
+                    $users = $users->union(mission_users($mission->id, $user_id));
                 } else {
-                    $users = mission_users($mission->id);
+                    $users = mission_users($mission->id, $user_id);
                 }
 
                 if ($areas) {
