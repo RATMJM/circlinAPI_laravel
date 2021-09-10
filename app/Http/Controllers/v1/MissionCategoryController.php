@@ -132,8 +132,7 @@ class MissionCategoryController extends Controller
                 ->where('is_event', 0);
         })
             ->when($id == 0, function ($query) {
-                $query->where('is_event', 1)
-                    ->orderBy('event_order', 'desc');
+                $query->where('is_event', 1)->orderBy('missions.id', 'desc');
             })
             ->when($local, function ($query) use ($user_id) {
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
@@ -158,7 +157,7 @@ class MissionCategoryController extends Controller
         ]);
 
         if ($sort == SORT_POPULAR) {
-            $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+            $missions->orderBy('event_order', 'desc')->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_RECENT) {
             $missions->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_USER) {
