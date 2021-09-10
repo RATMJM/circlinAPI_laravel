@@ -47,7 +47,7 @@ class HomeController extends Controller
                     ->groupBy('places.id')
                     ->orderBy('missions_count', 'desc')
                     ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
-                    ->take(2)
+                    // ->take(2)
                     ->get();
 
                 $products = MissionProduct::when($id, function ($query, $id) {
@@ -70,7 +70,7 @@ class HomeController extends Controller
                     ->groupBy('mission_products.id')
                     ->orderBy('missions_count', 'desc')
                     ->orderBy(DB::raw("MAX(missions.id)"), 'desc')
-                    ->take(2)
+                    // ->take(2)
                     ->get();
             }
 
