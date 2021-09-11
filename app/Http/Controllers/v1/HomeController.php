@@ -24,10 +24,14 @@ class HomeController extends Controller
 {
     public function town(Request $request, $category_id = null): array
     {
+        $user_id = token()->uid;
+
         $category_id = $category_id ?? $request->get('category_id');
 
         $category_id = Arr::wrap($category_id ??
             Arr::pluck(($categories = (new MissionCategoryController())->index('town')['data']['categories']), 'id'));
+
+        $local = $request->get('local');
 
         $tabs = [];
         foreach ($category_id as $id) {
@@ -35,10 +39,14 @@ class HomeController extends Controller
                 $places = Place::when($id, function ($query, $id) {
                     $query->where('missions.mission_category_id', $id);
                 })
+                    ->when($local, function ($query) use ($user_id) {
+                        $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+                    })
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->join('missions', function ($query) {
                         $query->on('missions.id', 'mission_places.mission_id')->whereNull('missions.deleted_at');
                     })
+                    ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
                     ->select([
                         'places.id', 'places.address', 'places.title', 'places.description',
                         'places.image', 'places.url',
@@ -53,7 +61,11 @@ class HomeController extends Controller
                 $products = MissionProduct::when($id, function ($query, $id) {
                     $query->where('missions.mission_category_id', $id);
                 })
+                    ->when($local, function ($query) use ($user_id) {
+                        $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+                    })
                     ->join('missions', 'missions.id', 'mission_products.mission_id')
+                    ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
                     ->leftJoin('products', 'products.id', 'mission_products.product_id')
                     ->leftJoin('brands', 'brands.id', 'products.brand_id')
                     ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
