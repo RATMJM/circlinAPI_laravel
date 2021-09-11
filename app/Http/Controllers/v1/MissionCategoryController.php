@@ -37,15 +37,19 @@ class MissionCategoryController extends Controller
                         });
                     });
                 })
-                ->leftJoin('missions', 'missions.mission_category_id', 'mission_categories.id')
                 ->select([
                     'mission_categories.id', DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"), DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
-                    'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
-                        ->whereColumn('mission_id', 'missions.id'),
+                    'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct mission_stats.user_id)")
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->join('missions', function ($query) {
+                            $query->on('missions.id', 'mission_stats.mission_id')
+                                ->whereNull('missions.deleted_at');
+                        }),
                     'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
                         ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])
+                ->groupBy('mission_categories.id')
                 ->orWhere('mission_categories.id', 0)
                 ->orderBy(DB::raw("mission_categories.id=0")) // 이벤트 탭 맨 뒤로
                 ->orderBy(DB::raw("mission_categories.id=21")) // 기타 탭 맨 뒤로
