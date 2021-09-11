@@ -916,6 +916,7 @@ class UserController extends Controller
 
         $limit = $limit ?? $request->get('limit', 20);
         $page = $request->get('page', 0);
+        $sort = $sort ?? $request->get('sort', SORT_POPULAR);
 
         $missions = MissionCategory::where('missions.user_id', $user_id)
             ->join('missions', function ($query) {
@@ -964,9 +965,19 @@ class UserController extends Controller
                 'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
                     ->whereColumn('mission_id', 'missions.id'),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-            ])
-            ->orderBy('missions.id', 'desc')
-            ->skip($page * $limit)->take($limit)->get();
+            ]);
+
+        if ($sort == SORT_POPULAR) {
+            $missions->orderBy('event_order', 'desc')->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+        } elseif ($sort == SORT_RECENT) {
+            $missions->orderBy('missions.id', 'desc');
+        } elseif ($sort == SORT_USER) {
+            $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
+        } elseif ($sort == SORT_COMMENT) {
+            $missions->orderBy(MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'), 'desc');
+        }
+
+        $missions = $missions->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
             [$users, $areas] = null;
