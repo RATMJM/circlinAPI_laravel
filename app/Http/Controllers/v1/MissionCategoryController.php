@@ -24,7 +24,7 @@ class MissionCategoryController extends Controller
         if ($town === 'town') {
             $user_id = token()->uid;
 
-            $data = MissionCategory::whereNotNull('mission_category_id')
+            $data = MissionCategory::whereNotNull('mission_categories.mission_category_id')
                 ->where(function ($query) use ($user_id) {
                     // 관심카테고리
                     $query->whereHas('favorite_category', function ($query) use ($user_id) {
@@ -37,18 +37,19 @@ class MissionCategoryController extends Controller
                         });
                     });
                 })
-                ->orWhere('id', 0)
+                ->leftJoin('missions', 'missions.mission_category_id', 'mission_categories.id')
                 ->select([
-                    'id', DB::raw("CAST(id as CHAR(20)) as `key`"), DB::raw("IFNULL(emoji, '') as emoji"),
-                    'title',
+                    'mission_categories.id', DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"), DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
+                    'mission_categories.title',
                     'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
                         ->whereColumn('mission_id', 'missions.id'),
                     'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
                         ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])
-                ->orderBy(DB::raw("id=0")) // 이벤트 탭 맨 뒤로
-                ->orderBy(DB::raw("id=21")) // 기타 탭 맨 뒤로
-                ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('id')
+                ->orWhere('mission_categories.id', 0)
+                ->orderBy(DB::raw("mission_categories.id=0")) // 이벤트 탭 맨 뒤로
+                ->orderBy(DB::raw("mission_categories.id=21")) // 기타 탭 맨 뒤로
+                ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('mission_categories.id')
                 ->get();
         } else {
             $data = MissionCategory::whereNotNull('mission_category_id')
@@ -78,7 +79,7 @@ class MissionCategoryController extends Controller
             ]);
         }
 
-        $category = MissionCategory::where('id', $category_id)
+        $category = MissionCategory::where('mission_categories.id', $category_id)
             ->select([
                 'mission_categories.id',
                 DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
@@ -95,7 +96,7 @@ class MissionCategoryController extends Controller
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
             ])
-            ->orderBy('follower', 'desc')->orderBy('id', 'desc');
+            ->orderBy('follower', 'desc')->orderBy('mission_categories.id', 'desc');
 
         $user_total = $users->count();
         $users = $users->take(2)->get();
