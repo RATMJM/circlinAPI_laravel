@@ -968,7 +968,7 @@ class UserController extends Controller
             ]);
 
         if ($sort == SORT_POPULAR) {
-            $missions->orderBy('event_order', 'desc')->orderBy('bookmark_total', 'desc')->orderBy('missions.id', 'desc');
+            $missions->orderBy('bookmark_total', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_RECENT) {
             $missions->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_USER) {
