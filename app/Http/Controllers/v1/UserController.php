@@ -389,7 +389,7 @@ class UserController extends Controller
         try {
             $user_id = token()->uid;
 
-            $old_password = $request->get('old');
+            $old_password = $request->get('old_password');
             $password = $request->get('password');
             $password_confirm = $request->get('password_confirm');
 
