@@ -31,13 +31,16 @@ class CommentController extends Controller
             };
 
             $query_comment = $query_comment->withTrashed()->where("{$table}_id", $id)
+                ->whereRaw("({$table}_comments.deleted_at is null or
+                    (depth=0 and (select COUNT(1) from {$table}_comments c where c.{$table}_id={$table}_comments.{$table}_id and c.depth>0 and c.group={$table}_comments.group)>0))")
                 ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.depth",
                     DB::raw("{$table}_comments.deleted_at is not null as is_delete"),
                     "{$table}_comments.created_at",
                     "{$table}_comments.id",
-                    DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
+                    // DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
+                    "{$table}_comments.comment",
                     'users.id as user_id',
                     'users.nickname',
                     'users.profile_image',
@@ -88,7 +91,7 @@ class CommentController extends Controller
                 'product_review' => new ProductReviewComment(),
             };
 
-            $max_group = $query_comment->where("{$table}_id", $id)->max('group') ?? -1;
+            $max_group = $query_comment->withTrashed()->where("{$table}_id", $id)->max('group') ?? -1;
             $group = $group ?? ($max_group + 1);
 
             $data = $query_comment->create([
