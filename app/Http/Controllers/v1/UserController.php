@@ -67,7 +67,7 @@ class UserController extends Controller
 
         $yesterday_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
-            ->where('feed_likes.created_at', '>=', init_today(time()-86400))
+            ->where('feed_likes.created_at', '>=', init_today(time() - 86400))
             ->where('feed_likes.created_at', '<', init_today())
             ->count();
 
@@ -607,10 +607,21 @@ class UserController extends Controller
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
-                'feeds' => Feed::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
+                'feeds' => Feed::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id')
+                    ->where(function ($query) use ($user_id) {
+                        $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
+                    }),
                 'checks' => FeedLike::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
-                'missions' => FeedMission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id')
-                    ->join('feeds', 'feeds.id', 'feed_id'),
+                'missions' => MissionCategory::selectRaw("COUNT(distinct missions.id)")
+                    ->where(function ($query) use ($user_id) {
+                        $query->whereNull('mission_stats.ended_at')
+                            ->where('mission_stats.user_id', $user_id)
+                            ->orWhere('feeds.user_id', $user_id);
+                    })
+                    ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
+                    ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
+                    ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+                    ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', token()->uid),
             ])
@@ -789,8 +800,8 @@ class UserController extends Controller
             ->get();
 
         $missions = MissionCategory::when($category_id, function ($query, $category_id) {
-                $query->whereIn('mission_categories.id', Arr::wrap($category_id));
-            })
+            $query->whereIn('mission_categories.id', Arr::wrap($category_id));
+        })
             ->where(function ($query) use ($user_id) {
                 $query->whereNull('mission_stats.ended_at')
                     ->where('mission_stats.user_id', $user_id)
