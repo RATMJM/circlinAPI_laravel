@@ -52,7 +52,7 @@ function exceped(Exception $e): array
     ];
 }
 
-function token(): object
+function token()
 {
     try {
         $token = request()->header('token');
@@ -121,6 +121,19 @@ function code_replace($message, $replaces)
         $message = str_replace($res[0][$i], $replaces[$key] ?? $res[3][$i], $message);
     }
     return $message;
+}
+
+function random_password($length = 8): string
+{
+    $chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()";
+    $str = '';
+
+    while ($length--)
+    {
+        $str .= $chars[mt_rand(0, strlen($chars) - 1)];
+    }
+
+    return $str;
 }
 
 /**

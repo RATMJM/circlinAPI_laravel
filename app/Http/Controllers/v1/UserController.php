@@ -425,7 +425,7 @@ class UserController extends Controller
             $user = User::where('email', $request->get('email'))->first();
 
             if (isset($user)) {
-                $temp_password = Str::random(8);
+                $temp_password = random_password(8);
 
                 $user->update(['password' => Hash::make($temp_password)]);
 
