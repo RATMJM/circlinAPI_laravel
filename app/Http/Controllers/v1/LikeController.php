@@ -97,7 +97,7 @@ class LikeController extends Controller
                     $paid_point = $res['success'] && $res['data']['result'];
 
                     // 지금이 10번째 피드체크 && 100회까지만 지급
-                    if ($count % 10 === 9 && $count < 10) {
+                    if ($count % 10 === 9 && $count < 100) {
                         $res = PointController::change_point($user_id, 10, 'feed_check_reward');
                         NotificationController::send($user_id, 'feed_check_reward', null, null, false,
                             ['point' => 10, 'point2' => 100 - ($count * 10)]);
