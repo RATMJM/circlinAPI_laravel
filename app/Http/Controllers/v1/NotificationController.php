@@ -174,6 +174,8 @@ class NotificationController extends Controller
      */
     public static function send(string|array $target_ids, string $type, int|null $user_id, int $id = null, bool $push = false, $var = null): array
     {
+        $except_ids = [2];
+
         try {
             DB::beginTransaction();
 
@@ -215,7 +217,9 @@ class NotificationController extends Controller
             }
 
             foreach (Arr::wrap($target_ids) as $target_id) {
-                $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id, 'variables' => $var]]));
+                if (!in_array($target_id, $except_ids)) {
+                    $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id, 'variables' => $var]]));
+                }
             }
 
             /*$push = match ($type) {
