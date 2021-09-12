@@ -36,7 +36,7 @@ class ShopController extends Controller
                 WHERE  
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id  
-                order by status ;', ['1']);
+                order by `order` desc, status ;', ['1']);
 
                 } elseif ($type == "high") {
 
@@ -52,7 +52,7 @@ class ShopController extends Controller
                 WHERE  
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id
-                order by sale_price desc;', ['1']);
+                order by `order` desc, sale_price desc;', ['1']);
                 } elseif ($type == "low") {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -67,7 +67,7 @@ class ShopController extends Controller
                 WHERE  
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id
-                order by sale_price ;', ['1']);
+                order by `order` desc, sale_price ;', ['1']);
                 } else {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -82,7 +82,7 @@ class ShopController extends Controller
                 WHERE  
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id
-                order by status;', ['1']);
+                order by `order` desc, status;', ['1']);
                 }
             } else {// ㅋㅏ테고리 눌렀을떄
                 if ($type == "hot") {
@@ -117,7 +117,7 @@ class ShopController extends Controller
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by sale_price desc;', ['1', $category]);
+                order by `order` desc, sale_price desc;', ['1', $category]);
                 } elseif ($type == "low") {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -133,7 +133,7 @@ class ShopController extends Controller
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by sale_price  ;', ['1', $category]);
+                order by `order` desc, sale_price  ;', ['1', $category]);
                 } else {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -149,7 +149,7 @@ class ShopController extends Controller
                 is_show= ? and a.skin="N"
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by status;', ['1', $category]);
+                order by `order` desc, status;', ['1', $category]);
                 }
             }
 
