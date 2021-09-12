@@ -112,7 +112,7 @@ class NotificationController extends Controller
                 'mission_complete', 'mission_invite', 'earn_badge'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
-                'feed_check_reward' => code_replace($action['home'], []),
+                'feed_check_reward' => code_replace($action['point'], []),
 
                 'feed_emoji' => code_replace($action['chat'], ['id' => $item->user_id]),
                 default => null,
@@ -129,7 +129,7 @@ class NotificationController extends Controller
                 'feed_upload_place', 'feed_upload_product'
                 => code_replace($action['user'], ['id' => $user_id]),
 
-                'feed_check_reward' => code_replace($action['home'], []),
+                'feed_check_reward' => code_replace($action['point'], []),
 
                 'mission_complete', 'earn_badge', 'mission_expire_warning', 'mission_expire'
                 => code_replace($action['mission'], ['id' => $item->mission_id]),
