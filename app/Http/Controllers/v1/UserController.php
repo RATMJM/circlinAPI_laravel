@@ -72,10 +72,10 @@ class UserController extends Controller
             ->count();
 
         $today_paid_count = FeedLike::withTrashed()->where('feed_likes.user_id', $user_id)
-            ->join('feeds', 'feeds.id', 'feed_likes.feed_id')
-            ->whereIn('feeds.user_id', function ($query) {
+            /*->whereIn('feeds.user_id', function ($query) {
                 $query->select('target_id')->from('follows')->whereColumn('user_id', 'feed_likes.user_id');
-            })
+            })*/
+            ->join('feeds', 'feeds.id', 'feed_likes.feed_id')
             ->where('point', '>', 0)
             ->where('feed_likes.created_at', '>=', init_today())
             ->count();
