@@ -52,6 +52,7 @@ class CommentController extends Controller
             return success([
                 'result' => true,
                 'total' => $total,
+                'comment_total' => $total,
                 'comments' => $comments,
             ]);
         } catch (Exception $e) {
