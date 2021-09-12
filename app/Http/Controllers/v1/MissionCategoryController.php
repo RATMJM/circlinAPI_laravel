@@ -100,7 +100,7 @@ class MissionCategoryController extends Controller
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
             ])
-            ->orderBy('follower', 'desc')->orderBy('mission_categories.id', 'desc');
+            ->orderBy('follower', 'desc')->orderBy('user_favorite_categories.mission_category_id', 'desc');
 
         $user_total = $users->count();
         $users = $users->take(2)->get();
