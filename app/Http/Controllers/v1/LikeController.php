@@ -100,7 +100,7 @@ class LikeController extends Controller
                     if ($count % 10 === 9 && $count < 100) {
                         $res = PointController::change_point($user_id, 10, 'feed_check_reward');
                         NotificationController::send($user_id, 'feed_check_reward', null, null, false,
-                            ['point' => 10, 'point2' => (100 - ($count+1)) * 10]);
+                            ['point' => 10, 'point2' => 100 - ($count+1)]);
                         $take_point = $res['success'] && $res['data']['result'];
                     }
 
