@@ -437,7 +437,7 @@ class ChatController extends Controller
         $users = ChatUser::where('chat_room_id', $room_id)
             ->where('user_id', '!=', token()->uid)
             ->join('users', 'users.id', 'user_id')
-            ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area()])
+            ->select(['users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like()])
             ->get();
 
         return success([

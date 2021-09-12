@@ -110,7 +110,7 @@ class SearchController extends Controller
 
         $user = User::where(DB::raw("BINARY invite_code"), $code)
             ->select([
-                'id', 'nickname', 'profile_image', 'gender', 'area' => area(),
+                'id', 'nickname', 'profile_image', 'gender', 'area' => area_like(),
             ])
             ->first();
 
@@ -130,7 +130,7 @@ class SearchController extends Controller
 
         $data = User::where(DB::raw("REPLACE(users.nickname,' ','')"), 'like', "%$keyword2%")
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
@@ -175,7 +175,7 @@ class SearchController extends Controller
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'users.id as owner_id', 'users.nickname as owner_nickname',
                 'users.profile_image as owner_profile_image', 'users.gender as owner_gender',
-                'owner_area' => area(),
+                'owner_area' => area_like(),
                 'owner_followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'owner_is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),

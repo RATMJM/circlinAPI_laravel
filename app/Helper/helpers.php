@@ -238,7 +238,7 @@ function area($table = 'users')
 
 function area_like($table = 'users')
 {
-    return Area::select('name')->where('code', 'like', DB::raw("CONCAT($table.area_code, '%')"))->limit(1);
+    return Area::select('name')->where('code', 'like', DB::raw("CONCAT(SUBSTRING($table.area_code,1,5),'%')"))->orderBy('code')->limit(1);
 }
 
 /**

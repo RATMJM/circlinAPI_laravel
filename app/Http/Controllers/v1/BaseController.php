@@ -59,7 +59,7 @@ class BaseController extends Controller
             $query->on('users.id', 'u.user_id');
         })
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 // 'together_following',
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')

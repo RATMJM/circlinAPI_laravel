@@ -43,7 +43,7 @@ class UserController extends Controller
 
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
+            ->select(['users.*', 'area' => area_like(), 'user_stats.birthday'])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
             ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
@@ -557,7 +557,7 @@ class UserController extends Controller
         $users = Follow::where('follows.target_id', $user_id)
             ->join('users', 'users.id', 'follows.user_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $uid),
@@ -581,7 +581,7 @@ class UserController extends Controller
         $users = Follow::where('follows.user_id', $user_id)
             ->join('users', 'users.id', 'follows.target_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $uid),
@@ -603,7 +603,7 @@ class UserController extends Controller
     {
         $data = User::where('users.id', $user_id)
             ->select([
-                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => area(),
+                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => area_like(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
@@ -827,7 +827,7 @@ class UserController extends Controller
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'mission_products.type as product_type', //'mission_products.product_id',
                 DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),

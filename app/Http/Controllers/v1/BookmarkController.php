@@ -48,7 +48,7 @@ class BookmarkController extends Controller
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'mission_products.type as product_type', //'mission_products.product_id',
                 DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),

@@ -242,7 +242,7 @@ class MissionController extends Controller
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
-                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
@@ -694,7 +694,7 @@ class MissionController extends Controller
             ->join('users', 'users.id', 'mission_stats.user_id')
             ->leftJoin('feed_missions', 'feed_missions.mission_id', 'mission_stats.mission_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 DB::raw("COUNT(distinct feed_missions.id) as mission_feeds"),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')

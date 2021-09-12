@@ -143,7 +143,7 @@ class AuthController extends Controller
         try {
             $data = User::where('users.id', $user->id)
                 ->join('user_stats', 'user_stats.user_id', 'users.id')
-                ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
+                ->select(['users.*', 'area' => area_like(), 'user_stats.birthday'])->first();
 
             $user_stat = UserStat::firstOrCreate(['user_id' => $user->id]);
 
@@ -208,7 +208,7 @@ class AuthController extends Controller
             ->join('user_stats', 'user_stats.user_id', 'users.id')
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender',
-                'user_stats.birthday', 'area' => area(),
+                'user_stats.birthday', 'area' => area_like(),
             ])
             ->first();
 

@@ -50,7 +50,7 @@ class PopularPlaceController extends Controller
                     ->join('users', 'users.id', 'missions.user_id')
                     ->select([
                         'mission_places.place_id', 'missions.id', 'missions.title', 'missions.description', 'missions.thumbnail_image',
-                        'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                        'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                     ])
                     ->take(4);
             }
@@ -106,7 +106,7 @@ class PopularPlaceController extends Controller
                         'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                             ->whereColumn('mission_stats.user_id', '!=', 'missions.user_id'),
                         'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
-                        'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                        'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                         'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                             ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                         'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')

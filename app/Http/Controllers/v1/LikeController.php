@@ -30,7 +30,7 @@ class LikeController extends Controller
             $users = $query->where("{$table}_id", $id)
                 ->join('users', 'users.id', "{$table}_likes.user_id")
                 ->select([
-                    'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area(),
+                    'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                     'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                     'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                         ->where('user_id', $user_id),
