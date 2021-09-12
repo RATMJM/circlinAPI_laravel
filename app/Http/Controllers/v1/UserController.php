@@ -43,7 +43,7 @@ class UserController extends Controller
 
         $user = User::where('users.id', $user_id)
             ->join('user_stats', 'user_stats.user_id', 'users.id')
-            ->select(['users.*', 'area' => area_like(), 'user_stats.birthday'])->first();
+            ->select(['users.*', 'area' => area(), 'user_stats.birthday'])->first();
 
         $category = UserFavoriteCategory::where('user_id', $user_id)
             ->join('mission_categories', 'mission_categories.id', 'user_favorite_categories.mission_category_id')
