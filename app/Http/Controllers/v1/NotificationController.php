@@ -53,9 +53,9 @@ class NotificationController extends Controller
         })
             ->leftJoin('users', 'users.id', 'n.user_id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
-            ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
+            // ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
-            ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
+            // ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->leftJoin('common_codes', function ($query) use ($q) {
                 $query->on('common_codes.ctg_sm', DB::raw("IF(type in ($q) and count > 1, CONCAT(type,'_multi'), type)"))
                     ->where('common_codes.ctg_lg', 'notifications');
