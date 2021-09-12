@@ -601,9 +601,11 @@ class UserController extends Controller
      */
     public function show($user_id): array
     {
+        $uid = token()->uid;
+
         $data = User::where('users.id', $user_id)
             ->select([
-                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => area_like(),
+                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => ($user_id==$uid ? area() : area_like()),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
