@@ -673,6 +673,7 @@ class MissionController extends Controller
             ->select([
                 'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
                 'mission_feeds' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'mission_stats.mission_id')
+                    ->whereColumn('feeds.user_id', 'users.id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')
