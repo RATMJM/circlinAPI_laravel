@@ -60,7 +60,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'ad
         ];
         $deleted_old_users_count = DeleteUser::whereNull('users.id')
             ->leftJoin('users', 'users.id', 'delete_users.user_id')
-            ->count();
+            ->distinct()
+            ->count('user_id');
         $deleted_users_count = User::onlyTrashed()->count();
 
         $users = $date[$filter]->select([
