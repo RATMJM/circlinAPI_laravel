@@ -797,12 +797,12 @@ class UserController extends Controller
             })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
-            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'missions.id')
-            ->leftJoin('feeds', function ($query) use ($user_id) {
+            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+            ->leftJoin('feeds', function ($query) use ($uid) {
                 $query->on('feeds.id', 'feed_missions.feed_id')
                     ->whereNull('feeds.deleted_at')
-                    ->where(function ($query) use ($user_id) {
-                        $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
+                    ->where(function ($query) use ($uid) {
+                        $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
                     });
             });
 
