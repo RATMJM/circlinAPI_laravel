@@ -1,0 +1,91 @@
+* {
+    box-sizing: border-box;
+    font-size: 12px;
+    color: #333;
+    text-decoration: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    margin: 0;
+}
+
+table {
+    max-width: 100%;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 2px solid #000;
+}
+
+table tr > th,
+table tr > td {
+    padding: 5px 10px;
+    border: 1px solid #000;
+    word-wrap: break-word;
+}
+
+table > thead > tr > th {
+    border-bottom: 2px solid #000;
+}
+
+table > thead > tr:nth-child(2n-1) > th,
+table > tbody > tr:nth-child(2n) > td {
+    background-color: #ccc;
+}
+
+#header {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 20px;
+}
+
+.container {
+    margin: 0 auto;
+    width: 1200px;
+}
+
+ul.pagination {
+    position: relative;
+    margin: 10px auto;
+    list-style: none;
+    text-align: center;
+    overflow: hidden;
+}
+
+ul.pagination > li {
+    display: inline-block;
+    margin: 0 5px;
+    width: 30px;
+    height: 30px;
+}
+
+ul.pagination > li > a {
+    display: block;
+    width: 30px;
+    background-color: #2d2d9b;
+    border-radius: 15px;
+    line-height: 30px;
+    text-align: center;
+    color: #fff;
+}
+ul.pagination > li > span {
+    display: block;
+    width: 30px;
+    background-color: #000;
+    border-radius: 15px;
+    line-height: 30px;
+    text-align: center;
+    color: #fff;
+}
+
+.btn {
+    padding: 5px 10px;
+    background-color: #000;
+    border-radius: 15px;
+    color: #fff;
+}

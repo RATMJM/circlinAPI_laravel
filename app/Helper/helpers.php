@@ -33,6 +33,8 @@ const SORT_RECENT = 1;
 const SORT_USER = 2;
 const SORT_COMMENT = 3;
 
+const DAY_OF_WEEK = ['일','월','화','수','목','금','토'];
+
 /* 결과 정상 전달 */
 function success($data): array
 {
