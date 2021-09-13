@@ -605,7 +605,7 @@ class UserController extends Controller
 
         $data = User::where('users.id', $user_id)
             ->select([
-                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => ($user_id==$uid ? area() : area_like()),
+                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => ($user_id == $uid ? area() : area_like()),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
@@ -784,7 +784,7 @@ class UserController extends Controller
         $limit = $limit ?? $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $categories = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+        $missions = MissionCategory::whereNotNull('mission_categories.mission_category_id')
             ->where(function ($query) use ($user_id) {
                 $query->whereNull('mission_stats.ended_at')
                     ->where('mission_stats.user_id', $user_id)
@@ -792,33 +792,22 @@ class UserController extends Controller
             })
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
-            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
-            ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id')
-            ->select([
-                'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
-                DB::raw('COUNT(distinct feeds.id) as feeds'),
-            ])
+            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'missions.id')
+            ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id');
+
+        $categories = $missions->select([
+            'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
+        ])
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions = MissionCategory::when($category_id, function ($query, $category_id) {
-            $query->whereIn('mission_categories.id', Arr::wrap($category_id));
-        })
-            ->where(function ($query) use ($user_id) {
-                $query->whereNull('mission_stats.ended_at')
-                    ->where('mission_stats.user_id', $user_id)
-                    ->orWhere('feeds.user_id', $user_id);
-            })
-            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
-            ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
-            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
-            ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id')
-            ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
+        $missions_count = $missions->count(DB::raw("distinct missions.id"));
+
+        $missions = $missions->join('users', 'users.id', 'missions.user_id')
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
-            ->select([
+            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')->select([
                 'missions.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
@@ -878,11 +867,10 @@ class UserController extends Controller
                             });
                     })->limit(1),
                 DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-            ]);
-        $missions_count = $missions->count(DB::raw("distinct missions.id"));
-        $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id',
-            'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
-            ->when($user_id==$uid, function ($query) {
+            ])
+            ->groupBy('mission_categories.id', 'missions.id', 'users.id',
+                'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
+            ->when($user_id == $uid, function ($query) {
                 $query->orderBy('is_bookmark', 'desc');
             })
             ->orderBy(DB::raw("MAX(mission_stats.id)"), 'desc')
