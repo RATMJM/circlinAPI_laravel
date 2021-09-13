@@ -33,7 +33,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ? 
                 and b.id=a.brand_id  
                 order by `order` desc, status ;', ['1']);
@@ -49,7 +49,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
                 order by `order` desc, sale_price desc;', ['1']);
@@ -64,7 +64,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
                 order by `order` desc, sale_price ;', ['1']);
@@ -79,7 +79,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
                 order by `order` desc, status;', ['1']);
@@ -96,7 +96,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b 
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ? 
                 and  a.product_category_id=?
                 and b.id=a.brand_id;', ['1', $category]);
@@ -113,7 +113,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
@@ -129,7 +129,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
@@ -145,7 +145,7 @@ class ShopController extends Controller
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
                 FROM products a, brands b  
-                WHERE  
+                WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
