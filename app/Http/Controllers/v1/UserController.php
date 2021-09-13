@@ -610,20 +610,25 @@ class UserController extends Controller
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
                 'feeds' => Feed::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id')
-                    ->where(function ($query) use ($user_id) {
-                        $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
+                    ->where(function ($query) use ($uid) {
+                        $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
                     }),
                 'checks' => FeedLike::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
-                'missions' => MissionCategory::selectRaw("COUNT(distinct missions.id)")
+                'missions' => Mission::selectRaw("COUNT(distinct missions.id)")
                     ->where(function ($query) use ($user_id) {
                         $query->whereNull('mission_stats.ended_at')
-                            ->where('mission_stats.user_id', $user_id)
-                            ->orWhere('feeds.user_id', $user_id);
+                            ->whereColumn('mission_stats.user_id', 'users.id')
+                            ->orWhereColumn('feeds.user_id', 'users.id');
                     })
-                    ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
                     ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
                     ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
-                    ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id'),
+                    ->leftJoin('feeds', function ($query) use ($uid) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')
+                            ->whereNull('feeds.deleted_at')
+                            ->where(function ($query) use ($uid) {
+                                $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
+                            });
+                    }),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', token()->uid),
             ])
