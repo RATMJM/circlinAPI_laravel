@@ -54,7 +54,7 @@ class BaseController extends Controller
             ->orderBy(DB::raw("`order` + ".
                 // 같은 구
                 "IF((select SUBSTRING(area_code,1,5) from users where id=$user_id)=
-                    (select SUBSTRING(area_code,1,5) from users where id=sort_users.user_id),500,0) + ".
+                    (select SUBSTRING(area_code,1,5) from users where id=sort_users.user_id),300,0) + ".
                 // 다른 성별
                 "IF((select gender from users where id=$user_id)!=(select gender from users where id=sort_users.user_id),300,0)"), 'desc')
             ->take($limit);
