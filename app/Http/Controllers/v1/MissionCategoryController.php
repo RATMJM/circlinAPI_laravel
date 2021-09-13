@@ -135,7 +135,10 @@ class MissionCategoryController extends Controller
                 ->where('is_event', 0);
         })
             ->when($id == 0, function ($query) {
-                $query->where('is_event', 1)->orderBy('missions.id', 'desc');
+                $query->where('is_event', 1)
+                    ->orderBy(DB::raw("(missions.started_at is null or missions.started_at<=now()) and
+                    (missions.ended_at is null or missions.ended_at>now())"), 'desc')
+                    ->orderBy('missions.id', 'desc');
             })
             ->when($local, function ($query) use ($user_id) {
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
