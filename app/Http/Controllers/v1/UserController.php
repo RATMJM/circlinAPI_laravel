@@ -801,13 +801,15 @@ class UserController extends Controller
                     });
             });
 
-        $categories = $missions->getQuery()->select([
+        $categories = $missions->select([
             'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
         ])
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions_count = $missions->getQuery()->count(DB::raw("distinct missions.id"));
+        $missions->getQuery()->groups = null;
+
+        $missions_count = $missions->count(DB::raw("distinct missions.id"));
 
         $missions = $missions->join('users', 'users.id', 'missions.user_id')
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
