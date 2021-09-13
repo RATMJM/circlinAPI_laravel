@@ -630,7 +630,7 @@ class UserController extends Controller
                             });
                     }),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                    ->where('user_id', token()->uid),
+                    ->where('user_id', $uid),
             ])
             ->first();
 
