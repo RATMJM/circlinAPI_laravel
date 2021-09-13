@@ -34,7 +34,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ? 
                 and b.id=a.brand_id  
                 order by `order` desc, status ;', ['1']);
 
@@ -50,7 +50,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ?  
                 and b.id=a.brand_id
                 order by `order` desc, sale_price desc;', ['1']);
                 } elseif ($type == "low") {
@@ -65,7 +65,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ?  
                 and b.id=a.brand_id
                 order by `order` desc, sale_price ;', ['1']);
                 } else {
@@ -80,7 +80,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ?  
                 and b.id=a.brand_id
                 order by `order` desc, status;', ['1']);
                 }
@@ -97,7 +97,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b 
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ? 
                 and  a.product_category_id=?
                 and b.id=a.brand_id;', ['1', $category]);
 
@@ -114,7 +114,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
                 order by `order` desc, sale_price desc;', ['1', $category]);
@@ -130,7 +130,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
                 order by `order` desc, sale_price  ;', ['1', $category]);
@@ -146,7 +146,7 @@ class ShopController extends Controller
                 a.status
                 FROM products a, brands b  
                 WHERE  
-                is_show= ? and a.skin="N"
+                is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
                 order by `order` desc, status;', ['1', $category]);

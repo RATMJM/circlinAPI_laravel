@@ -793,7 +793,7 @@ class MissionController extends Controller
              ifnull(c.RANK,0) as RANK, 
              round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , 
              e.distance, e.laptime, e.laptime_origin, e.distance_origin,
-               (select count(user_id) from mission_stats where mission_id=1213 and user_id=a.id) as SCORE ,
+               (select count(user_id) from mission_stats where mission_id=? and user_id=a.id) as SCORE ,
               case when d.completed_at is null then "" else "1" end as BONUS_FLAG,   
               CASE when date_add(SYSDATE() , interval + 9 hour ) between b.reserve_started_at and b.reserve_ended_at then "R"
               when date_add(SYSDATE() , interval + 9 hour ) between b.started_at and b.ended_at then "Y"
@@ -846,7 +846,7 @@ class MissionController extends Controller
              -- and b.id=e.mission_id
              -- and e.mission_stat_id=d.id 
              and a.id= ?    and d.id=? and b.id =?
-              ; ', [$mission_id,
+              ; ', [$mission_id,$mission_id,
                 $user_id,
                 $mission_id,
                 $mission_stat_id, $mission_id, $today, $mission_id,
