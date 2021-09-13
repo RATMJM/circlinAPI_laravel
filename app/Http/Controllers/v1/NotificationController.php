@@ -17,7 +17,21 @@ use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
-    public function index($user_id = null): array
+    public function index(): array
+    {
+        $user_id = token()->uid;
+
+        $data = $this->get($user_id);
+
+        Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
+
+        return success([
+            'result' => false,
+            'notifies' => $data,
+        ]);
+    }
+
+    public function get($user_id = null)
     {
         $user_id = $user_id ?? token()->uid;
 
@@ -153,12 +167,7 @@ class NotificationController extends Controller
             };
         }
 
-        Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
-
-        return success([
-            'result' => false,
-            'notifies' => $data,
-        ]);
+        return $data;
     }
 
     /**

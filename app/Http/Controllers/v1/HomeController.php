@@ -243,7 +243,7 @@ class HomeController extends Controller
                 ->whereDoesntHave('feed_missions', function ($query) {
                     $query->where('created_at', '>=', init_today());
                 })->count(),
-            'notifies' => (new Collection((new NotificationController())->index()['data']['notifies']))
+            'notifies' => (new Collection((new NotificationController())->get()))
                 ->where('is_read', false)->count(),
             'messages' => (new ChatController())->index(request())['data']['rooms']->sum('unread_total'),
         ]);
