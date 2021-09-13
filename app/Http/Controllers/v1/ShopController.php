@@ -861,11 +861,11 @@ class ShopController extends Controller
                             where product_id= ? ; ', [$product_id]);
 
 
-            $optionList1 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=1 ; ', [$product_id]);
-            $optionList2 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=2 ; ', [$product_id]);
-            $optionList3 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=3 ; ', [$product_id]);
-            $optionList4 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=4 ; ', [$product_id]);
-            $optionList5 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=5 ; ', [$product_id]);
+            $optionList1 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=1 and deleted_at is null; ', [$product_id]);
+            $optionList2 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=2 and deleted_at is null; ', [$product_id]);
+            $optionList3 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=3 and deleted_at is null; ', [$product_id]);
+            $optionList4 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=4 and deleted_at is null; ', [$product_id]);
+            $optionList5 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=5 and deleted_at is null; ', [$product_id]);
 
 
             return success([
