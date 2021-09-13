@@ -214,7 +214,7 @@ class ShopController extends Controller
 
             $shopBannerList = DB::select('select b.image, b.product_id, b.link_url  From products a , banners b
                 where   date_add(sysdate(), interval 9 hour) between  b.started_at and b.ended_at
-                and b.product_id=a.id and b.deleted_at is null and a.skin="N"
+                and b.product_id=a.id and b.deleted_at is null  
                 order by sort_num;;');
 
             return success([
@@ -322,7 +322,7 @@ class ShopController extends Controller
                 products f LEFT JOIN feed_products h ON f.id=h.product_id,
                 brands g
                 where
-                a.id=b.order_id and f.skin="N"
+                a.id=b.order_id  
                 and a.id=d.order_id 
                 and f.id=b.product_id
                 
@@ -399,7 +399,7 @@ class ShopController extends Controller
                brands d, 
                users e  
 
-               where a.user_id=?    and c.skin="N"
+               where a.user_id=? 
                and a.product_id=c.id
                and d.user_id=e.id
                and c.brand_id=d.id; ', [$user_id]);
@@ -855,7 +855,7 @@ class ShopController extends Controller
                 (select CASE WHEN count(product_id) >0 THEN "Y" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN 
                 from products a  left join  brands d on a.brand_id=d.id 
                 where   
-                  a.id=? and a.skin="N" ; ', [$user_id, $product_id, $product_id]);
+                  a.id=?  ; ', [$user_id, $product_id, $product_id]);
 
             $product_image = DB::select('select product_id, `order`, type, image  from product_images 
                             where product_id= ? ; ', [$product_id]);
