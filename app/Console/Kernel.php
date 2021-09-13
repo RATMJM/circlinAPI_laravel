@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // 유저 추천 랜덤정렬
-        $schedule->call([ScheduleController::class, 'sort_users'])->dailyAt('00:00')->name('유저 추천 랜덤정렬');
+        $schedule->call([ScheduleController::class, 'sort_users'])->hourly()->name('유저 추천 랜덤정렬');
 
         // 전일 팔로워 피드 전체 수 기록
         $schedule->call([ScheduleController::class, 'yesterday_feeds_count'])->dailyAt('00:00')->name('전일 팔로워 피드 전체 수 기록');
