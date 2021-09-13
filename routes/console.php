@@ -19,5 +19,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('user:sort', function () {
-    \App\Http\Controllers\v1\ScheduleController::sort_users();
+    \App\Http\Controllers\v1\ScheduleController::sort_users($this);
 })->describe('유저 추천 로직 갱신');

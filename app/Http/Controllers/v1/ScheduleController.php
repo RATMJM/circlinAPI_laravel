@@ -19,8 +19,8 @@ class ScheduleController extends Controller
     {
         $con ? $con->comment("유저 추출 시작") : print("유저 추출 시작\n");
 
-        $max = Follow::select('target_id', DB::raw("COUNT(distinct user_id) as c"))
-            ->groupBy('target_id')->orderBy('c', 'desc')->value('c');
+        $max = round(Follow::select('target_id', DB::raw("COUNT(distinct user_id) as c"))
+            ->groupBy('target_id')->orderBy('c', 'desc')->value('c') / 2);
 
         $con ? $con->comment("최대 팔로워 : $max") : print("최대 팔로워 : $max\n");
 
