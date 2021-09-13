@@ -793,15 +793,21 @@ class UserController extends Controller
             ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
             ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
             ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'missions.id')
-            ->leftJoin('feeds', 'feeds.id', 'feed_missions.feed_id');
+            ->leftJoin('feeds', function ($query) use ($user_id) {
+                $query->on('feeds.id', 'feed_missions.feed_id')
+                    ->whereNull('feeds.deleted_at')
+                    ->where(function ($query) use ($user_id) {
+                        $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
+                    });
+            });
 
-        $categories = $missions->select([
+        $categories = $missions->getQuery()->select([
             'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
         ])
             ->groupBy('mission_categories.id')
             ->get();
 
-        $missions_count = $missions->count(DB::raw("distinct missions.id"));
+        $missions_count = $missions->getQuery()->count(DB::raw("distinct missions.id"));
 
         $missions = $missions->join('users', 'users.id', 'missions.user_id')
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
@@ -878,30 +884,30 @@ class UserController extends Controller
 
         if (count($missions)) {
             [$users, $areas] = null;
-            foreach ($missions as $i => $item) {
-                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+            foreach ($missions as $i => $mission) {
+                $mission->owner = arr_group($mission, ['user_id', 'nickname', 'profile_image', 'gender',
                     'area', 'followers', 'is_following']);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id, $uid));
+                    $users = $users->union(mission_users($mission->id, $uid));
                 } else {
-                    $users = mission_users($item->id, $uid);
+                    $users = mission_users($mission->id, $uid);
                 }
 
                 if ($areas) {
-                    $areas = $areas->union(mission_areas($item->id));
+                    $areas = $areas->union(mission_areas($mission->id));
                 } else {
-                    $areas = mission_areas($item->id);
+                    $areas = mission_areas($mission->id);
                 }
             }
             $keys = $missions->pluck('id')->toArray();
             $users = $users->get();
-            foreach ($users->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->users = $item;
+            foreach ($users->groupBy('mission_id') as $i => $mission) {
+                $missions[array_search($i, $keys)]->users = $mission;
             }
             $areas = $areas->get();
-            foreach ($areas->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
+            foreach ($areas->groupBy('mission_id') as $i => $mission) {
+                $missions[array_search($i, $keys)]->areas = $mission->pluck('name');
             }
         }
 
