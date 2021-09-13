@@ -882,7 +882,9 @@ class UserController extends Controller
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
         $missions = $missions->groupBy('mission_categories.id', 'missions.id', 'users.id',
             'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
-            ->orderBy('is_bookmark', 'desc')
+            ->when($user_id==$uid, function ($query) {
+                $query->orderBy('is_bookmark', 'desc');
+            })
             ->orderBy(DB::raw("MAX(mission_stats.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 
