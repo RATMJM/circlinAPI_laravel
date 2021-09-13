@@ -605,7 +605,6 @@ class UserController extends Controller
 
         $data = User::where('users.id', $user_id)
             ->select([
-                'users.id',
                 'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => ($user_id==$uid ? area() : area_like()),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
