@@ -669,11 +669,10 @@ class MissionController extends Controller
         $page = $request->get('page', 0);
 
         $users = MissionStat::withTrashed()->where('mission_stats.mission_id', $mission_id)
-            ->join('users', 'users.id', 'mission_stats.user_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'mission_stats.user_id',
                 'mission_feeds' => FeedMission::selectRaw("COUNT(1)")->whereColumn('mission_id', 'mission_stats.mission_id')
-                    ->whereColumn('feeds.user_id', 'users.id')
+                    ->whereColumn('feeds.user_id', 'mission_stats.user_id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')
@@ -681,15 +680,23 @@ class MissionController extends Controller
                                 $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
                             });
                     }),
-                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'mission_stats.user_id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'mission_stats.user_id')
                     ->where('user_id', $user_id),
             ])
-            ->groupBy('users.id', 'mission_stats.mission_id')
+            ->groupBy('mission_stats.user_id', 'mission_stats.mission_id')
             ->orderBy('mission_feeds', 'desc')
             ->orderBy('follower', 'desc')
-            ->orderBy('id', 'desc')
-            ->skip($page * $limit)->take($limit)->get();
+            ->skip($page * $limit)->take($limit);
+
+        $users = User::joinSub($users, 'u', 'u.user_id', 'users.id')
+            ->select([
+                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'u.mission_feeds', 'u.follower', 'u.is_following',
+            ])
+            ->orderBy('mission_feeds', 'desc')
+            ->orderBy('follower', 'desc')
+            ->orderBy('id', 'desc')->get();
 
         return success([
             'success' => true,
