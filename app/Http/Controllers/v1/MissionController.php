@@ -1224,7 +1224,7 @@ class MissionController extends Controller
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
         $double_zone_feed = Feed::where('missions.id', $mission_id)
-            ->when($type, function ($query, $type) use ($mission_id, $place_id) {
+            ->when(1, function ($query) use ($type, $mission_id, $place_id) {
                 if ($type == 'ALL') {
                     //$query->whereNotIn('places.id', MissionPlace::select('place_id')->where('mission_id', $mission_id));
                 } elseif ($type == 'ETC') {
