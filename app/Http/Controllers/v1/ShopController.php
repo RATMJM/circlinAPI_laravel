@@ -729,6 +729,8 @@ class ShopController extends Controller
             $orderId = DB::select('select id from orders
                                         where user_id=? and order_no=? order by id desc limit 1; ', [$user_id, $orderNo]);
 
+            PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId);
+
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
