@@ -1124,7 +1124,8 @@ class MissionController extends Controller
             From mission_stats a, users b 
             where a.mission_id= ? and a.completed_at is null 
             and b.id=a.user_id and b.deleted_at is null
-            order by a.created_at desc;'
+            group by a.user_id, b.id
+            order by MAX(a.created_at) desc;'
                 , [$user_id,
                     $mission_id,]);
 
