@@ -300,7 +300,7 @@ class ChatController extends Controller
 
     public function index(Request $request): array
     {
-        $user_id = 4090;//token()->uid;
+        $user_id = token()->uid;
 
         $data = ChatUser::withTrashed()
             ->whereIn('chat_room_id', ChatUser::select('chat_room_id')->where('user_id', $user_id))
