@@ -1233,6 +1233,10 @@ class MissionController extends Controller
                     $query->where('places.id', $place_id);
                 }
             })
+            ->where(function ($query) use ($mission_id) {
+                $query->whereNull('places.id')
+                    ->orWhereIn('places.id', MissionPlace::select('place_id')->where('mission_id', $mission_id));
+            })
             ->where(function ($query) use ($user_id) {
                 $query->where('is_hidden', 0)
                     ->orWhere('feeds.user_id', $user_id);
