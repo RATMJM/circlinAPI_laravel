@@ -22,7 +22,11 @@ table {
     border: 2px solid #000;
 }
 
-table tr > th,
+table tr > th {
+    padding: 5px 10px;
+    border: 1px solid #fff;
+    word-wrap: break-word;
+}
 table tr > td {
     padding: 5px 10px;
     border: 1px solid #000;
@@ -33,7 +37,10 @@ table > thead > tr > th {
     border-bottom: 2px solid #000;
 }
 
-table > thead > tr:nth-child(2n-1) > th,
+table > thead > tr:nth-child(2n-1) > th {
+    background-color: #000;
+    color: #fff;
+}
 table > tbody > tr:nth-child(2n) > td {
     background-color: #ccc;
 }
