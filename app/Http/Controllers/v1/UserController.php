@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Mail\FindPassword;
 use App\Models\Area;
+use App\Models\ChatUser;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
@@ -634,11 +635,22 @@ class UserController extends Controller
             ])
             ->first();
 
+        $is_chat_block = ChatUser::where('chat_users.user_id', $uid)
+            ->where('chat_rooms.is_group', false)
+            ->join('chat_rooms', 'chat_rooms.id', 'chat_users.chat_room_id')
+            ->join('chat_users as cu2', function ($query) use ($user_id) {
+                $query->on('cu2.chat_room_id', 'chat_users.chat_room_id')
+                    ->where('cu2.user_id', $user_id);
+            })
+            ->value('chat_users.is_block');
+
+
         $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
 
         return success([
             'success' => true,
             'user' => $data,
+            'is_chat_block' => $is_chat_block,
             'wallpapers' => $wallpapers,
         ]);
     }
