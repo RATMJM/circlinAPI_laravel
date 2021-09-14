@@ -300,7 +300,7 @@ class ChatController extends Controller
 
     public function index(Request $request): array
     {
-        $user_id = token()->uid;
+        $user_id = 4090;//token()->uid;
 
         $data = ChatUser::withTrashed()
             ->whereIn('chat_room_id', ChatUser::select('chat_room_id')->where('user_id', $user_id))
@@ -309,12 +309,16 @@ class ChatController extends Controller
             ->groupBy('user_id');
         $data = DB::table($data, 'cu')
             ->join('chat_users as cu2', 'cu2.id', 'cu.id')
+            ->join('chat_users as cu_me', function ($query) use ($user_id) {
+                $query->on('cu_me.chat_room_id', 'cu2.chat_room_id')
+                    ->where('cu_me.user_id', $user_id);
+            })
             ->join('users', function ($query) {
                 $query->on('users.id', 'cu2.user_id')
                     ->whereNull('users.deleted_at');
             })
             ->select([
-                'cu2.chat_room_id', 'cu2.is_block',
+                'cu_me.chat_room_id', 'cu_me.is_block',
                 'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                 'latest_message' => ChatMessage::selectRaw("IFNULL(content_ko, chat_messages.message)")
                     ->whereColumn('chat_room_id', 'cu2.chat_room_id')
