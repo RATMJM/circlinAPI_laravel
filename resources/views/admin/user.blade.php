@@ -65,6 +65,6 @@
         @endforelse
         </tbody>
     </table>
-
+    <br>
     <div style="text-align: center">{{ $users->withQUeryString()->links() }}</div>
 @endsection
