@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Content;
+use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
@@ -15,6 +16,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionImage;
+use App\Models\MissionPlace;
 use App\Models\MissionProduct;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
@@ -838,7 +840,7 @@ class MissionController extends Controller
              -- and b.id=e.mission_id
              -- and e.mission_stat_id=d.id 
              and a.id= ?    and d.id=? and b.id =?
-              ; ', [$mission_id,$mission_id,
+              ; ', [$mission_id, $mission_id,
                 $user_id,
                 $mission_id,
                 $mission_stat_id, $mission_id, $today, $mission_id,
@@ -883,18 +885,36 @@ class MissionController extends Controller
         // 내 기록
         try {
             DB::beginTransaction();
-            $myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+            $myRecord = Feed::where('mission_stats.id', $mission_stat_id)
+                ->where('missions.id', $mission_id)
+                ->where('users.id', $user_id)
+                ->join('users', 'users.id', 'feeds.user_id')
+                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('missions', 'missions.id', 'feed_missions.mission_id')
+                ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+                ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
+                ->leftJoin('places', 'places.id', 'feed_places.place_id')
+                ->select([
+                    'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id',
+                    'image' => FeedImage::select('image')->where('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                    'type' => FeedImage::select('type')->where('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                    'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
+                    'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url',
+                ])
+                ->orderBy('feeds.id', 'desc')
+                ->get();
+            /*$myRecord = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
              (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-             (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type, 
-             b.distance, b.laptime, c.goal_distance,  
+             (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as type,
+             b.distance, b.laptime, c.goal_distance,
              e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url
              from feeds a left join feed_places f on a.id=f.feed_id , places e, feed_missions b, mission_stats c, missions d
              where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-             and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id             
-             and a.user_id= ? 
-             and b.mission_id= ? 
+             and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id
+             and a.user_id= ?
+             and b.mission_id= ?
              and b.mission_stat_id = ?; ',
-                [$user_id, $mission_id, $mission_stat_id]);
+                [$user_id, $mission_id, $mission_stat_id]);*/
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -920,7 +940,7 @@ class MissionController extends Controller
          ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count
          
          limit 1',
-                [$mission_id, $mission_stat_id, $user_id, $mission_id , $mission_id]);
+                [$mission_id, $mission_stat_id, $user_id, $mission_id, $mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -930,13 +950,11 @@ class MissionController extends Controller
             DB::beginTransaction();
             $place_info = DB::select('select mission_id, place_id, b.address, b.title, b.description, b.image, b.url from mission_places a, places b 
             where a.mission_id = ? and a.place_id=b.id',
-                [$mission_id ]);
+                [$mission_id]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
-
-
 
 
         return success([
@@ -1134,7 +1152,6 @@ class MissionController extends Controller
             ]);
         }
 
-// echo '??';
         $file = $request->file('file');
         if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
             // 정사각형으로 자르기
@@ -1204,8 +1221,47 @@ class MissionController extends Controller
         // $today = date("Y-m-d");
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
+        $double_zone_feed = Feed::where('missions.id', $mission_id)
+            ->when($type, function ($query, $type) use ($mission_id, $place_id) {
+                if ($type == 'ETC') {
+                    $query->whereNotIn('places.id', MissionPlace::select('place_id')->where('mission_id', $mission_id));
+                } else {
+                    $query->where('places.id', $place_id);
+                }
+            })
+            ->where(function ($query) use ($user_id) {
+                $query->where('is_hidden', 0)
+                    ->orWhere('feeds.user_id', $user_id);
+            })
+            ->join('users', 'users.id', 'feeds.user_id')
+            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+            ->join('missions', 'missions.id', 'feed_missions.mission_id')
+            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
+            ->leftJoin('places', 'places.id', 'feed_places.place_id')
+            ->select([
+                'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id',
+                'image' => FeedImage::select('image')->where('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                'type' => FeedImage::select('type')->where('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                'users.profile_image', 'users.nickname', 'feeds.id',
+                'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
+                'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url', 'places.id as place_id',
+                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', $user_id),
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', $user_id),
+                DB::raw("case when feed_places.place_id is null then null else '1' end as has_place"),
+                'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'),
+            ])
+            ->orderBy('feeds.id', 'desc')
+            ->get();
 
-        if($type=='ALL'){
+        return success([
+            'success' => true,
+            'double_zone_feed' => $double_zone_feed,
+        ]);
+
+        if ($type == 'ALL') {
             try {
                 DB::beginTransaction();
                 $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
@@ -1227,14 +1283,14 @@ class MissionController extends Controller
                 and a.is_hidden = 0
                 and b.mission_id= ?   
                 order by feed_id desc ;',
-                // order by feed_id desc limit ?, 10;',
-                    [ $user_id, $user_id,$mission_id ]);
+                    // order by feed_id desc limit ?, 10;',
+                    [$user_id, $user_id, $mission_id]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
             }
 
-        }else if($type=='ETC'){
+        } elseif ($type == 'ETC') {
             try {
                 DB::beginTransaction();
                 $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
@@ -1257,15 +1313,14 @@ class MissionController extends Controller
                 and f.place_id not in (66, 67, 68, 69, 70, 71, 72)
                 and b.mission_id= ?   
                 order by feed_id desc ;',
-                // order by feed_id desc limit ?, 10;',
-                    [ $user_id, $user_id,$mission_id ]);
+                    // order by feed_id desc limit ?, 10;',
+                    [$user_id, $user_id, $mission_id]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
             }
 
-        }
-        else{
+        } else {
             try {
                 DB::beginTransaction();
                 $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
@@ -1288,8 +1343,8 @@ class MissionController extends Controller
                 and b.mission_id= ?  
                 and f.place_id = ? 
                 order by feed_id desc ;',
-                // order by feed_id desc limit ?, 10; , $page',
-                    [ $user_id, $user_id,$mission_id, $place_id ]);
+                    // order by feed_id desc limit ?, 10; , $page',
+                    [$user_id, $user_id, $mission_id, $place_id]);
             } catch (Exception $e) {
                 DB::rollBack();
                 return exceped($e);
@@ -1301,8 +1356,6 @@ class MissionController extends Controller
         return success([
             'success' => true,
             'double_zone_feed' => $double_zone_feed,
-
-
         ]);
     }
 }
