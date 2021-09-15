@@ -35,7 +35,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'ad
         if (Auth::attempt($user, true)) {
             return redirect()->route('admin.user');
         } else {
-            echo "<script>alert('로그인에 실패했습니다.');</script>";
+            return "<script>alert('로그인에 실패했습니다.');</script>";
         }
     })->name('login');
     Route::get('/logout', function () {
@@ -44,7 +44,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'ad
     })->name('logout');
 
     Route::get('/user', function (Request $request) {
-        $filter = $request->get('filter', 'day');
+        $filter = $request->get('filter', 'all');
+        $type = $request->get('type', 'all');
+        $keyword = $request->get('keyword');
 
         $date = [
             'all' => User::withoutTrashed(),
@@ -64,7 +66,15 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'ad
             ->count('user_id');
         $deleted_users_count = User::onlyTrashed()->count();
 
-        $users = $date[$filter]->select([
+        $users = match ($type) {
+            'all' => $date[$filter]->where(function ($query) use ($keyword) {
+                $query->where('nickname', 'like', "%$keyword%")
+                    ->orWhere('email', 'like', "%$keyword%");
+            }),
+            default => $date[$filter],
+        };
+
+        $users = $users->select([
             'users.*', 'area' => area(),
             'following' => \App\Models\Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
         ])

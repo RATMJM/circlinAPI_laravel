@@ -35,6 +35,17 @@
     <br>
     <br>
     <br>
+    <form action="{{ route('admin.user') }}">
+        <input type="hidden" name="filter" value="{{ request()->get('filter') }}">
+        <select name="type">
+            <option value="all" selected>전체 (닉네임, 이메일)</option>
+        </select>
+        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요.">
+        <button>검색</button>
+    </form>
+    <br>
+    <p style="font-size: 20px">검색 결과 : <b>{{ number_format($users->total()) }}</b> 명</p>
+    <br>
     <table>
         <thead>
         <tr>
@@ -60,7 +71,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="5" style="text-align: center">유저가 없습니다.</td>
+                <td colspan="7" style="text-align: center">유저가 없습니다.</td>
             </tr>
         @endforelse
         </tbody>
