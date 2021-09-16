@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin;
 use App\Models\DeleteUser;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,66 +26,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'ad
         return $request->ip();
     });
 
-    Route::get('/login', function () {
-        return view('admin.login');
-    })->name('login.index');
-    Route::post('/login', function (Request $request) {
-        $user = $request->only('email', 'password');
+    Route::get('/login', [Admin\AuthController::class, 'loginForm'])->name('login');
+    Route::post('/login', [Admin\AuthController::class, 'login']);
+    Route::get('/logout', [Admin\AuthController::class, 'logout'])->name('logout');
 
-        if (Auth::attempt($user, true)) {
-            return redirect()->route('admin.user');
-        } else {
-            return "<script>alert('로그인에 실패했습니다.');</script>";
-        }
-    })->name('login');
-    Route::get('/logout', function () {
-        Auth::logout();
-        return redirect(request()->headers->get('referer'));
-    })->name('logout');
-
-    Route::get('/user', function (Request $request) {
-        $filter = $request->get('filter', 'all');
-        $type = $request->get('type', 'all');
-        $keyword = $request->get('keyword');
-
-        $date = [
-            'all' => User::withoutTrashed(),
-            'day' => User::where('created_at', '>=', date('Y-m-d')),
-            'week' => User::where('created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
-            'month' => User::where('created_at', '>=', date('Y-m')),
-        ];
-        $users_count = [
-            'all' => $date['all']->count(),
-            'day' => $date['day']->count(),
-            'week' => $date['week']->count(),
-            'month' => $date['month']->count(),
-        ];
-        $deleted_old_users_count = DeleteUser::whereNull('users.id')
-            ->leftJoin('users', 'users.id', 'delete_users.user_id')
-            ->distinct()
-            ->count('user_id');
-        $deleted_users_count = User::onlyTrashed()->count();
-
-        $users = match ($type) {
-            'all' => $date[$filter]->where(function ($query) use ($keyword) {
-                $query->where('nickname', 'like', "%$keyword%")
-                    ->orWhere('email', 'like', "%$keyword%");
-            }),
-            default => $date[$filter],
-        };
-
-        $users = $users->select([
-            'users.*', 'area' => area(),
-            'following' => \App\Models\Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
-        ])
-            ->orderBy('id', 'desc')
-            ->paginate(50);
-
-        return view('admin.user', [
-            'users_count' => $users_count,
-            'deleted_old_users_count' => $deleted_old_users_count,
-            'deleted_users_count' => $deleted_users_count,
-            'users' => $users,
-        ]);
-    })->name('user');
+    Route::get('/user', [Admin\UserController::class, 'index'])->name('user');
 });
