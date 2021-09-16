@@ -28,10 +28,10 @@
     <br>
     <br>
     <br>
-    <a href="{{ route('admin.user', Arr::collapse([request()->all(), ['filter' => 'all']])) }}" class="btn">전체</a>
-    <a href="{{ route('admin.user', Arr::collapse([request()->all(), ['filter' => 'day']])) }}" class="btn">금일</a>
-    <a href="{{ route('admin.user', Arr::collapse([request()->all(), ['filter' => 'week']])) }}" class="btn">금주</a>
-    <a href="{{ route('admin.user', Arr::collapse([request()->all(), ['filter' => 'month']])) }}" class="btn">금월</a>
+    <a href="{{ route('admin.user.index', Arr::collapse([request()->all(), ['filter' => 'all']])) }}" class="btn">전체</a>
+    <a href="{{ route('admin.user.index', Arr::collapse([request()->all(), ['filter' => 'day']])) }}" class="btn">금일</a>
+    <a href="{{ route('admin.user.index', Arr::collapse([request()->all(), ['filter' => 'week']])) }}" class="btn">금주</a>
+    <a href="{{ route('admin.user.index', Arr::collapse([request()->all(), ['filter' => 'month']])) }}" class="btn">금월</a>
     <br>
     <br>
     <br>
