@@ -35,7 +35,7 @@
     <br>
     <br>
     <br>
-    <form action="{{ route('admin.user') }}">
+    <form action="{{ route('admin.user.index') }}">
         <input type="hidden" name="filter" value="{{ request()->get('filter') }}">
         <select name="type">
             <option value="all" selected>전체 (닉네임, 이메일)</option>
