@@ -21,7 +21,7 @@ Route::get('/', function (Request $request) {
     return $request->ip();
 });
 
-Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'admin.'], function () {
+Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('/', function (Request $request) {
         return $request->ip();
     });
@@ -30,6 +30,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin'], 'as' => 'ad
     Route::post('/login', [Admin\AuthController::class, 'login']);
     Route::get('/logout', [Admin\AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/user', [Admin\UserController::class, 'index'])->name('user.index');
-    Route::get('/order', [Admin\OrderController::class, 'index'])->name('order.index');
+    Route::group(['middleware' => ['web', 'admin']], function () {
+        Route::get('/user', [Admin\UserController::class, 'index'])->name('user.index');
+        Route::get('/order', [Admin\OrderController::class, 'index'])->name('order.index');
+    });
 });
