@@ -54,6 +54,7 @@
             <th style="width: auto">이메일</th>
             <th style="width: 200px">닉네임</th>
             <th style="width: 50px">성별</th>
+            <th style="width: 150px">생년월일</th>
             <th style="width: 200px">사는 동네</th>
             <th style="width: 80px">팔로잉</th>
             <th style="width: 150px">가입일</th>
@@ -86,6 +87,7 @@
                         <span style="color:red">여</span>
                     @endif
                 </td>
+                <td style="text-align: center">{{ date('Y년 m월 d일', strtotime($user->birthday)) }}</td>
                 <td>{{ $user->area }}</td>
                 <td style="text-align: center">{{ $user->following }}</td>
                 <td style="text-align: center">{{ $user->created_at }}</td>
