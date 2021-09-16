@@ -126,8 +126,8 @@ class NotificationController extends Controller
                 'mission_complete', 'mission_invite', 'earn_badge'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
-                'mission_over', 'mission_expire'
-                => code_replace($action['event_mission'], ['id' => $item->mission_id, 'user_id' => $user_id]),
+                /*'mission_over', 'mission_expire'
+                => code_replace($action['event_mission'], ['id' => $item->mission_id, 'user_id' => $user_id]),*/
 
                 'feed_check_reward' => code_replace($action['point'], []),
 
@@ -165,8 +165,8 @@ class NotificationController extends Controller
                 'mission_complete', 'mission_invite', 'mission_expire_warning'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
-                'mission_over', 'mission_expire'
-                => code_replace($action['event_mission'], ['id' => $item->mission_id, 'user_id' => $user_id]),
+                /*'mission_over', 'mission_expire'
+                => code_replace($action['event_mission'], ['id' => $item->mission_id, 'user_id' => $user_id]),*/
 
                 'earn_badge' => code_replace($action['badge'], []),
                 default => null,
