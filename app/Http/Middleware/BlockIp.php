@@ -23,7 +23,8 @@ class BlockIp
             Admin::where(['type' => 'user', 'user_id' => Auth::id()])->exists()) {
             return $next($request);
         } else {
-            abort(403);
+            Auth::logout();
+            return redirect('admin.login');
         }
     }
 }
