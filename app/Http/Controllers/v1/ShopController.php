@@ -473,49 +473,31 @@ class ShopController extends Controller
         //         'price'=> 34
         //       ]);
 
-
         try {
             DB::beginTransaction();
-            //카트 입력
-            $cart = DB::insert('INSERT into carts(created_at, updated_at, user_id, product_id,  qty)
-                                        VALUES(?, ?, ?, ?, ? ); ', [$time, $time, $user_id, $product_id, $qty]);
+
+            $cart = Cart::create([
+                'user_id' => $user_id,
+                'product_id' => $product_id,
+                'qty' => $qty,
+            ]);
+
+            //옵션입력
+            $option = [];
+            foreach ($options as $key => $value) {
+                if ($value['option_id']) {
+                    $option[] = ['product_option_id' => $value['option_id'], 'price' => $value['price']];
+                }
+            }
+            $option = $cart->cart_options()->createMany($option);
 
             DB::commit();
 
+            return success(['result' => true]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
         }
-
-
-        try {
-            DB::beginTransaction();
-            //카트아이디 구하기
-            $cartId = DB::select('select id from carts
-                                        where user_id=? order by id desc  limit 0,1 ; ', [$user_id]);
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
-        }
-
-        //옵션입력
-        foreach ($options as $key => $value) {
-            if ($value['option_id']) {
-
-                $option = DB::insert('INSERT into cart_options(created_at, updated_at, cart_id, product_option_id, price)
-                            
-                                VALUES(?, ?, ?, ?, ? ); ', [$time, $time, $cartId[0]->id, $value['option_id'], $value['price']]);
-                //  VALUES(?, ?, ?, ?, ? ); ', array($time, $time, $cartId[0]->id , $options[$key]->option_id, $options[$key]->price)) ;
-                DB::commit();
-
-            }
-        }
-
-        return success([
-            'result' => true,]);
-
-
     }
 
     // //상품주문
