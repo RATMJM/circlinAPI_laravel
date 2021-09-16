@@ -24,7 +24,7 @@ class BlockIp
             return $next($request);
         } else {
             Auth::logout();
-            return redirect('admin.login');
+            return redirect()->route('admin.login');
         }
     }
 }
