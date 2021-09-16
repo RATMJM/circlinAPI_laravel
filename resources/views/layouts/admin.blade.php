@@ -12,22 +12,20 @@
 <body>
 <div id="header">
     <div class="container">
-        <div>
-            <ul id="nav">
-                <li><a href="{{ route('admin.user.index') }}">유저 통계</a></li>
-                <li><a href="{{ route('admin.order.index') }}">주문 통계</a></li>
-                <li><a href="{{ route('admin.mission.index') }}">미션 통계</a></li>
-            </ul>
-        </div>
-
-        <p style="float: right">
+        <ul id="nav">
+            <li><a href="{{ route('admin.user.index') }}">유저 통계</a></li>
+            <li><a href="{{ route('admin.order.index') }}">주문 통계</a></li>
+            <li><a href="{{ route('admin.mission.index') }}">미션 통계</a></li>
+        </ul>
+        <div style="padding: 10px">
             @auth
-                <span>{{ Auth::user()->nickname }} ({{ Auth::user()->email }}) 님 안녕하세요!　</span>
                 <a href="{{ route('admin.logout') }}">로그아웃</a>
+                <br>
+                <span>{{ Auth::user()->nickname }} ({{ Auth::user()->email }}) 님 안녕하세요!</span>
             @else
                 <a href="{{ route('admin.login') }}">로그인</a>
             @endauth
-        </p>
+        </div>
     </div>
 </div>
 <div class="container">
