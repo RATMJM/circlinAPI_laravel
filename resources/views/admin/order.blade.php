@@ -54,38 +54,48 @@
         </tr>
         </thead>
         <tbody>
-        @forelse($orders->groupBy('order_no') as $order)
+        @forelse($orders->groupBy('id') as $order)
             <tr>
-                <td rowspan="{{ count($order) }}">{{ $order[0]->order_no }}</td>
-                <td rowspan="{{ count($order) }}">
+                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">{{ $order[0]->order_no }}</td>
+                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">
                     {{ $order[0]->nickname }}
                     <br>({{ $order[0]->email }})
                 </td>
-                <td rowspan="{{ count($order) }}">({{ $order[0]->post_code }}) {{ $order[0]->address }} {{ $order[0]->address_detail }}</td>
-                <td rowspan="{{ count($order) }}">
+                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">({{ $order[0]->post_code }}) {{ $order[0]->address }} {{ $order[0]->address_detail }}</td>
+                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">
                     {{ $order[0]->recipient_name }}
                     <br>({{ $order[0]->phone }})
                 </td>
-                <td rowspan="{{ count($order) }}">{{ $order[0]->comment }}</td>
-                @foreach($order->groupBy('product_name') as $products)
-                    <td>
-                        <b>{{ $products[0]->product_name }}</b>
-                        <br>({{ $products[0]->qty }})
-                    </td>
-                    <td>
-                        @foreach($products as $option)
-                            {{ $option->option_name }}{{ $loop->last ? '' : ' / ' }}
+                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">{{ $order[0]->comment }}</td>
+                <td style="padding:0" colspan="4">
+                    <table style="border: 0">
+                        <tbody>
+                        @foreach($order->groupBy('product_id') as $products)
+                            <tr style="{{ $loop->first ? '' : 'border-top: 1px solid #000' }}">
+                                <td style="width: 400px; background: inherit; border: 0;">
+                                    <b>{{ $order[0]->product_name }}</b>
+                                    <br>({{ $order[0]->qty }})
+                                </td>
+                                <td style="width: 150px; background: inherit; border-top: 0; border-bottom: 0; border-right: 0;">
+                                    @foreach($products as $option)
+                                        {{ $option->option_name }}{{ $loop->last ? '' : ' / ' }}
+                                    @endforeach
+                                </td>
+                                <td style="width: 120px; background: inherit; border-top: 0; border-bottom: 0; border-right: 0;">@if($products[0]->company){{ $products[0]->company }}<br>{{ $products[0]->tracking_no }}<br>({{ $products[0]->delivery_qty }})@endif</td>
+                                <td style="width: 80px; background: inherit; border-top: 0; border-bottom: 0; border-right: 0; text-align: center">
+                                    @if($products[0]->company)
+                                        @if($products[0]->completed_at)
+                                            <span style="color:red">배송완료</span>
+                                        @else
+                                            <span style="color:blue">배송중</span>
+                                        @endif
+                                    @endif
+                                </td>
+                            </tr>
                         @endforeach
-                    </td>
-                    <td>@if($products[0]->company){{ $products[0]->company }}<br>{{ $products[0]->tracking_no }}<br>({{ $products[0]->delivery_qty }})@endif</td>
-                    <td style="text-align: center">
-                        @if($products[0]->company)
-                            {!! $products[0]->completed_at ? '<span style="color:red">배송완료</span>' : '<span style="color:blue">배송중</span>' !!}
-                        @endif
-                    </td>
-                </tr>
-                <tr>
-                @endforeach
+                        </tbody>
+                    </table>
+                </td>
             </tr>
         @empty
             <tr>
