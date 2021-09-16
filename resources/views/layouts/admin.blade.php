@@ -22,6 +22,7 @@
 
         <p style="float: right">
             @auth
+                <span>{{ Auth::user()->nickname }} ({{ Auth::user()->email }}) 님 안녕하세요!　</span>
                 <a href="{{ route('admin.logout') }}">로그아웃</a>
             @else
                 <a href="{{ route('admin.login') }}">로그인</a>
