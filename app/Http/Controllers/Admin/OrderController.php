@@ -14,7 +14,16 @@ class OrderController extends Controller
         $type = $request->get('type', 'all');
         $keyword = $request->get('keyword');
 
-        $orders = Order::join('users', 'users.id', 'orders.user_id')
+        $orders = Order::when($type, function ($query, $type) use ($keyword) {
+            match ($type) {
+                'all' => $query->where(function ($query) use ($keyword) {
+                    $query->where('users.nickname', 'like', "%$keyword%")
+                        ->orWhere('users.email', 'like', "%$keyword%");
+                }),
+                default => null,
+            };
+        })
+            ->join('users', 'users.id', 'orders.user_id')
             ->join('order_destinations', 'order_destinations.order_id', 'orders.id')
             ->join('order_products', 'order_products.order_id', 'orders.id')
             ->join('products', 'products.id', 'order_products.product_id')

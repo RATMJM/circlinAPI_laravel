@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '유저 통계')
+@section('title', '주문 통계')
 
 @section('content')
     {{--<table>
@@ -43,11 +43,11 @@
         <thead>
         <tr>
             <th style="width: 160px">주문번호</th>
-            <th style="width: 100px">닉네임<br>(이메일)</th>
-            <th style="width: 150px">제품명<br>옵션명<br>(주문수량)</th>
+            <th style="width: 200px">닉네임<br>(이메일)</th>
+            <th style="width: 400px">제품명<br>옵션명<br>(주문수량)</th>
             <th style="width: auto">주소</th>
             <th style="width: 115px">수령인<br>(수령인 번호)</th>
-            <th style="width: auto">요청사항</th>
+            <th style="width: 250px">요청사항</th>
             <th style="width: 120px">택배사<br>송장번호<br>(발송수량)</th>
             <th style="width: 80px">배송여부</th>
         </tr>
@@ -66,7 +66,9 @@
                 <td>{{ $order->comment }}</td>
                 <td>@if($order->company){{ $order->company }}<br>{{ $order->tracking_no }}<br>({{ $order->delivery_qty }})@endif</td>
                 <td style="text-align: center">
-                    {!! $order->completed_at ? '<span style="color:red">배송완료</span>' : '<span style="color:blue">배송중</span>' !!}
+                    @if($order->company)
+                        {!! $order->completed_at ? '<span style="color:red">배송완료</span>' : '<span style="color:blue">배송중</span>' !!}
+                    @endif
                 </td>
             </tr>
         @empty
