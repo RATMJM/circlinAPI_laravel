@@ -31,8 +31,8 @@ class Kernel extends ConsoleKernel
         // 전일 팔로워 피드 전체 수 기록
         $schedule->call([ScheduleController::class, 'yesterday_feeds_count'])->dailyAt('00:00')->name('전일 팔로워 피드 전체 수 기록');
 
-        // 일주일 지난 미션들 종료처리
-        // $schedule->call([ScheduleController::class, 'mission_expire'])->dailyAt('08:00')->name('일주일 지난 미션들 종료처리');
+        // 기간 끝난 미션들 종료처리
+        $schedule->call([ScheduleController::class, 'mission_over'])->dailyAt('00:00')->name('기간 끝난 미션들 종료처리');
 
         // 미션 인증 알림
         $schedule->call([ScheduleController::class, 'mission_expire_warning_am'])->dailyAt('08:00')->name('1차 미션 인증 알림');

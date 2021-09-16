@@ -90,6 +90,7 @@ class ScheduleController extends Controller
     {
         $deadline = init_today(time() - (86400 * 7));
 
+        // 미션 참가하고 피드 올린지 일주일이 넘어간 미션
         $data = MissionStat::where('mission_stats.created_at', '<', $deadline)
             ->whereDoesntHave('feed_missions', function ($query) use ($deadline) {
                 $query->where('created_at', '>=', $deadline);
@@ -105,6 +106,36 @@ class ScheduleController extends Controller
             $res = [];
             foreach ($data->groupBy('mission_id') as $i => $item) {
                 $res[] = NotificationController::send($item->pluck('user_id')->toArray(), 'mission_expire', null, $i);
+            }
+
+            DB::commit();
+
+            return $data;
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
+    public static function mission_over()
+    {
+        $deadline = init_today(time() - (86400 * 7));
+
+        // 기간이 종료됐거나 삭제된 미션
+        $data = MissionStat::whereNotNull('missions.deleted_at')
+            ->orWhere('missions.ended_at', '<=', date('Y-m-d H:i:s'))
+            ->join('missions', 'missions.id', 'mission_stats.mission_id')
+            ->select(['mission_stats.id', 'mission_stats.user_id', 'mission_id'])
+            ->get();
+
+        try {
+            DB::beginTransaction();
+
+            MissionStat::whereIn('id', $data->pluck('id'))->delete();
+
+            $res = [];
+            foreach ($data->groupBy('mission_id') as $i => $item) {
+                $res[] = NotificationController::send($item->pluck('user_id')->toArray(), 'mission_over', null, $i);
             }
 
             DB::commit();
