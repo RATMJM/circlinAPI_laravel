@@ -79,7 +79,13 @@
                 </td>
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->nickname }}</td>
-                <td style="text-align: center">{{ $user->gender }}</td>
+                <td style="text-align: center">
+                    @if($user->gender === 'M')
+                        <span style="color:blue">남</span>
+                    @elseif($user->gender === 'W')
+                        <span style="color:red">여</span>
+                    @endif
+                </td>
                 <td>{{ $user->area }}</td>
                 <td style="text-align: center">{{ $user->following }}</td>
                 <td style="text-align: center">{{ $user->created_at }}</td>
