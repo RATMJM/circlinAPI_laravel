@@ -10,9 +10,9 @@ class AuthController extends Controller
 {
     public function loginForm(Request $request)
     {
-        if (Auth::check()) {
-            return redirect()->route('admin.user');
-        }
+        /*if (Auth::check()) {
+            return redirect()->route('admin.user.index');
+        }*/
 
         return view('admin.login');
     }
