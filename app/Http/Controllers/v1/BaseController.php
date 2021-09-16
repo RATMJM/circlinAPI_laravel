@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\Feed;
 use App\Models\Follow;
+use App\Models\Version;
 use App\Models\Place;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class BaseController extends Controller
 
         $limit = max($request->get('limit', 30), 1);
 
-        $users = Feed::where('feeds.created_at', '>=', init_today(time()-(86400*7)))
+        $users = Feed::where('feeds.created_at', '>=', init_today(time() - (86400 * 7)))
             ->whereDoesntHave('followers', function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })
@@ -51,10 +52,10 @@ class BaseController extends Controller
                     }),*/
             ])
             ->groupBy('sort_users.id')
-            ->orderBy(DB::raw("`order` + ".
+            ->orderBy(DB::raw("`order` + " .
                 // 같은 구
                 "IF((select SUBSTRING(area_code,1,5) from users where id=$user_id)=
-                    (select SUBSTRING(area_code,1,5) from users where id=sort_users.user_id),300,0) + ".
+                    (select SUBSTRING(area_code,1,5) from users where id=sort_users.user_id),300,0) + " .
                 // 다른 성별
                 "IF((select gender from users where id=$user_id)!=(select gender from users where id=sort_users.user_id),300,0)"), 'desc')
             ->take($limit);
@@ -87,6 +88,19 @@ class BaseController extends Controller
         return success([
             'result' => isset($data),
             'title' => $data,
+        ]);
+    }
+
+    public function latest_version(Request $request): array
+    {
+        $version = $request->get('version');
+
+        $is_force = Version::where(Version::select('id')->where('version', $version), '<', DB::raw('id'))
+            ->where('is_force', true)->exists();
+
+        return success([
+            'result' => true,
+            'is_force' => $is_force,
         ]);
     }
 }
