@@ -1250,7 +1250,7 @@ class MissionController extends Controller
             ->select([
                 'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id',
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
-                'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+                'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'users.profile_image', 'users.nickname', 'feeds.id',
                 'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
                 'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url', 'places.id as place_id',
