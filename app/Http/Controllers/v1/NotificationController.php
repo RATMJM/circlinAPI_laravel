@@ -148,8 +148,11 @@ class NotificationController extends Controller
 
                 'feed_check_reward' => code_replace($action['point'], []),
 
-                'mission_complete', 'earn_badge', 'mission_expire_warning', 'mission_expire'
+                'mission_complete', 'earn_badge', 'mission_expire_warning'
                 => code_replace($action['mission'], ['id' => $item->mission_id]),
+
+                /*'mission_over', 'mission_expire'
+                => code_replace($action['event_mission'], ['id' => $item->mission_id, 'user_id' => $user_id]),*/
                 default => null,
             };
             $item->link_right = match ($item->type) {
