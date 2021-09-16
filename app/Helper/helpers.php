@@ -263,7 +263,7 @@ function init_today($time = null)
  */
 function mission_users($mission_id, $user_id, $has_owner = false)
 {
-    return MissionStat::where('mission_stats.mission_id', $mission_id)
+    return MissionStat::withTrashed()->where('mission_stats.mission_id', $mission_id)
         ->when(!$has_owner, function ($query) {
             $query->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'));
         })
