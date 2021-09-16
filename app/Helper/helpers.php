@@ -276,6 +276,24 @@ function init_today($time = null)
  */
 function mission_users($mission_id, $user_id, $has_owner = false)
 {
+    return MissionStat::where('mission_stats.mission_id', $mission_id)
+        ->when(!$has_owner, function ($query) {
+            $query->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'));
+        })
+        ->leftJoin('users', 'users.id', 'mission_stats.user_id')
+        ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+        ->leftJoin('feeds', function ($query) use ($user_id) {
+            $query->on('feeds.id', 'feed_missions.feed_id')
+                ->whereNull('feeds.deleted_at')
+                ->where(function ($query) use ($user_id) {
+                    $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
+                });
+        })
+        ->select(['mission_stats.mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
+        ->groupBy('users.id', 'mission_stats.mission_id')
+        ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
+        ->take(2);
+
     return FeedMission::where('feed_missions.mission_id', $mission_id)
         ->when(!$has_owner, function ($query) {
             $query->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'));
