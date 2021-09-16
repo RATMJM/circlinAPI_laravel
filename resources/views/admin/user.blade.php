@@ -50,6 +50,7 @@
         <thead>
         <tr>
             <th style="width: 100px">ID</th>
+            <th style="width: 100px">가입 경로</th>
             <th style="width: auto">이메일</th>
             <th style="width: 200px">닉네임</th>
             <th style="width: 50px">성별</th>
@@ -62,6 +63,20 @@
         @forelse($users as $user)
             <tr>
                 <td style="text-align: center">{{ $user->id }}</td>
+                <td>
+                    @php(preg_match('/@(.+)$/', $user->email, $at) && $at = $at[1])
+                    @if($at === 'K')
+                        카카오
+                    @elseif($at === 'N')
+                        네이버
+                    @elseif($at === 'F')
+                        페이스북
+                    @elseif($at === 'A')
+                        애플
+                    @else
+                        이메일
+                    @endif
+                </td>
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->nickname }}</td>
                 <td style="text-align: center">{{ $user->gender }}</td>
