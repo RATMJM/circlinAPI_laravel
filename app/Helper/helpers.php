@@ -17,19 +17,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-const ALLOW_IP = [
-    // 테스트
-    '::1', '127.0.0.1',
-    // 서버
-    '34.64.248.255', '34.85.2.191',
-    // 사내
-    '112.169.13.48',
-    // 개인
-    '124.5.120.66',
-    // 연규님
-    '14.52.57.84',
-];
-
 const SORT_POPULAR = 0;
 const SORT_RECENT = 1;
 const SORT_USER = 2;
