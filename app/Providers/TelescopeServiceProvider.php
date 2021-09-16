@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\BlockIp;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\Telescope;
@@ -64,9 +67,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate()
     {
         Gate::define('viewTelescope', function ($user) {
-            return in_array($user->email, [
-                //
-            ]);
+            return Admin::where(['type' => 'user', 'user_id' => $user->id])->exists();
         });
     }
 }
