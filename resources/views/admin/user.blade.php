@@ -36,11 +36,11 @@
     <br>
     <br>
     <form action="{{ route('admin.user.index') }}">
-        <input type="hidden" name="filter" value="{{ request()->get('filter') }}">
+        <input type="hidden" name="filter" value="{{ $filter }}">
         <select name="type">
             <option value="all" selected>전체 (닉네임, 이메일)</option>
         </select>
-        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요.">
+        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요." value="{{ $keyword }}">
         <button>검색</button>
     </form>
     <br>

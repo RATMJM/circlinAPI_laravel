@@ -54,6 +54,9 @@ class MissionController extends Controller
         return view('admin.mission', [
             'missions_count' => $missions_count,
             'missions' => $missions,
+            'filter' => $filter,
+            'type' => $type,
+            'keyword' => $keyword,
         ]);
     }
 }

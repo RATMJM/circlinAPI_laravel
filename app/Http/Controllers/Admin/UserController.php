@@ -52,6 +52,9 @@ class UserController extends Controller
             'deleted_old_users_count' => $deleted_old_users_count,
             'deleted_users_count' => $deleted_users_count,
             'users' => $users,
+            'filter' => $filter,
+            'type' => $type,
+            'keyword' => $keyword,
         ]);
     }
 }

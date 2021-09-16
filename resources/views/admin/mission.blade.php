@@ -32,11 +32,11 @@
     <br>
     <br>
     <form action="{{ route('admin.mission.index') }}">
-        <input type="hidden" name="filter" value="{{ request()->get('filter') }}">
+        <input type="hidden" name="filter" value="{{ $filter }}">
         <select name="type">
-            <option value="all" selected>전체 (닉네임, 이메일, 미션명)</option>
+            <option value="all" {{ $type === 'all' ? 'selected' : '' }}>전체 (닉네임, 이메일, 미션명)</option>
         </select>
-        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요.">
+        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요." value="{{ $keyword }}">
         <button>검색</button>
     </form>
     <br>
@@ -73,7 +73,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" style="text-align: center">유저가 없습니다.</td>
+                <td colspan="9" style="text-align: center">미션이 없습니다.</td>
             </tr>
         @endforelse
         </tbody>
