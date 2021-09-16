@@ -169,7 +169,7 @@ class MissionController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+            } elseif ($outside_product_id && $product_title && $product_price && $product_url) {
                 $product = OutsideProduct::updateOrCreate(['url' => $product_url], [
                     'product_id' => $outside_product_id,
                     'image' => $product_image,
@@ -618,7 +618,7 @@ class MissionController extends Controller
                     'type' => 'inside',
                     'product_id' => $product_id,
                 ]);
-            } elseif ($product_brand && $product_title && $product_price && $product_url) {
+            } elseif ($outside_product_id && $product_title && $product_price && $product_url) {
                 $product = OutsideProduct::updateOrCreate(['url' => $product_url], [
                     'product_id' => $outside_product_id,
                     'image' => $product_image,
