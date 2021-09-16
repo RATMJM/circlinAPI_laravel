@@ -212,9 +212,13 @@ Route::post('/shop/cart', [v1\ShopController::class, 'cart']);
 Route::post('/shop/update_cart', [v1\ShopController::class, 'update_cart']);
 
 Route::get('/latest_version', function () {
+    $latest_version = \App\Models\LatestVersion::orderBy('id', 'desc')->first();
+
     return success([
         'result' => true,
-        'version' => '5.5',
+        'android' => $latest_version->android,
+        'ios' => $latest_version->ios,
+        'description' => $latest_version->description,
     ]);
 });
 
