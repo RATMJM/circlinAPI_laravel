@@ -67,7 +67,7 @@
                 <td>{{ $mission->title }}</td>
                 <td>{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $mission->description) !!}</td>
                 <td>{{ $mission->area }}</td>
-                <td>{{ $mission->success_count ? '1회성' : '일반' }}</td>
+                <td style="text-align: center">{{ $mission->success_count ? '1회성' : '일반' }}</td>
                 <td>{{ $mission->nickname }}<br>({{ $mission->email }})</td>
                 <td style="text-align: center">{{ $mission->created_at }}</td>
             </tr>
