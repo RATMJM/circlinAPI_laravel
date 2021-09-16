@@ -44,32 +44,48 @@
         <tr>
             <th style="width: 160px">주문번호</th>
             <th style="width: 200px">닉네임<br>(이메일)</th>
-            <th style="width: 400px">제품명<br>옵션명<br>(주문수량)</th>
             <th style="width: auto">주소</th>
             <th style="width: 115px">수령인<br>(수령인 번호)</th>
             <th style="width: 250px">요청사항</th>
+            <th style="width: 400px">제품명<br>(주문수량)</th>
+            <th style="width: 150px">옵션명</th>
             <th style="width: 120px">택배사<br>송장번호<br>(발송수량)</th>
             <th style="width: 80px">배송여부</th>
         </tr>
         </thead>
         <tbody>
-        @forelse($orders as $order)
+        @forelse($orders->groupBy('order_no') as $order)
             <tr>
-                <td>{{ $order->order_no }}</td>
-                <td>
-                    {{ $order->nickname }}
-                    <br>({{ $order->email }})
+                <td rowspan="{{ count($order) }}">{{ $order[0]->order_no }}</td>
+                <td rowspan="{{ count($order) }}">
+                    {{ $order[0]->nickname }}
+                    <br>({{ $order[0]->email }})
                 </td>
-                <td><b>{{ $order->product_name }}</b><br>{{ $order->option_name }}<br>({{ $order->qty }})</td>
-                <td>({{ $order->post_code }}) {{ $order->address }} {{ $order->address_detail }}</td>
-                <td>{{ $order->recipient_name }}<br>({{ $order->phone }})</td>
-                <td>{{ $order->comment }}</td>
-                <td>@if($order->company){{ $order->company }}<br>{{ $order->tracking_no }}<br>({{ $order->delivery_qty }})@endif</td>
-                <td style="text-align: center">
-                    @if($order->company)
-                        {!! $order->completed_at ? '<span style="color:red">배송완료</span>' : '<span style="color:blue">배송중</span>' !!}
-                    @endif
+                <td rowspan="{{ count($order) }}">({{ $order[0]->post_code }}) {{ $order[0]->address }} {{ $order[0]->address_detail }}</td>
+                <td rowspan="{{ count($order) }}">
+                    {{ $order[0]->recipient_name }}
+                    <br>({{ $order[0]->phone }})
                 </td>
+                <td rowspan="{{ count($order) }}">{{ $order[0]->comment }}</td>
+                @foreach($order->groupBy('product_name') as $products)
+                    <td>
+                        <b>{{ $products[0]->product_name }}</b>
+                        <br>({{ $products[0]->qty }})
+                    </td>
+                    <td>
+                        @foreach($products as $option)
+                            {{ $option->option_name }}{{ $loop->last ? '' : ' / ' }}
+                        @endforeach
+                    </td>
+                    <td>@if($products[0]->company){{ $products[0]->company }}<br>{{ $products[0]->tracking_no }}<br>({{ $products[0]->delivery_qty }})@endif</td>
+                    <td style="text-align: center">
+                        @if($products[0]->company)
+                            {!! $products[0]->completed_at ? '<span style="color:red">배송완료</span>' : '<span style="color:blue">배송중</span>' !!}
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                @endforeach
             </tr>
         @empty
             <tr>
