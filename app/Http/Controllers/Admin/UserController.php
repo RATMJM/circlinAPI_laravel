@@ -13,7 +13,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $filter = $request->get('filter', 'all');
-        $type = $request->get('type', 'all');
+        $type = $request->get('type');
         $keyword = $request->get('keyword');
 
         $date = [
@@ -22,12 +22,10 @@ class UserController extends Controller
             'week' => User::where('created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
             'month' => User::where('created_at', '>=', date('Y-m')),
         ];
-        $users_count = [
-            'all' => $date['all']->count(),
-            'day' => $date['day']->count(),
-            'week' => $date['week']->count(),
-            'month' => $date['month']->count(),
-        ];
+        $users_count = [];
+        foreach ($date as $i => $item) {
+            $users_count[$i] = $item->count();
+        }
         $deleted_old_users_count = DeleteUser::whereNull('users.id')
             ->leftJoin('users', 'users.id', 'delete_users.user_id')
             ->distinct()
