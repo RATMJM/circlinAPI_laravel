@@ -485,7 +485,7 @@ class ShopController extends Controller
                         });
                     }
                 })
-                ->get();
+                ->first();
 
             if ($cart) {
                 $cart = $cart->increment('qty', $qty);
