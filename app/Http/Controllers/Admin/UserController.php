@@ -40,8 +40,9 @@ class UserController extends Controller
             default => $date[$filter],
         };
 
-        $users = $users->select([
-            'users.*', 'area' => area(),
+        $users = $users->join('user_stats', 'user_stats.user_id', 'users.id')
+            ->select([
+            'users.*', 'area' => area(), 'user_stats.birthday',
             'following' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
         ])
             ->orderBy('id', 'desc')
