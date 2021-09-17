@@ -182,6 +182,7 @@ Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
         Route::post('/leave', [v1\ChatController::class, 'leave_room'])->name('leave');
         Route::post('/unblock', [v1\ChatController::class, 'show_room'])->name('show');
         Route::post('/block', [v1\ChatController::class, 'hide_room'])->name('hide');
+        Route::delete('/{id}', [v1\ChatController::class, 'destroy'])->name('message.destroy');
     });
     Route::post('/direct/enter/{target_id}', [v1\ChatController::class, 'enter_direct'])->name('direct.enter');
     Route::post('/direct/send/multiple', [v1\ChatController::class, 'send_direct_multiple'])->name('direct.send.multiple');

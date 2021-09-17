@@ -298,6 +298,37 @@ class ChatController extends Controller
         }
     }
 
+    public function destroy($room_id, $id): array
+    {
+        $user_id = token()->uid;
+
+        $message = ChatMessage::where([
+            'id' => $id,
+            'chat_room_id' => $room_id,
+            'user_id' => $user_id,
+        ])->first();
+
+        if (is_null($message)) {
+            return success([
+                'result' => false,
+                'reason' => 'not enough data',
+            ]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $res = $message->delete();
+
+            DB::commit();
+
+            return success(['result' => (bool)$res]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     public function index(Request $request): array
     {
         $user_id = token()->uid;
@@ -399,7 +430,7 @@ class ChatController extends Controller
                     'missions.thumbnail_image as mission_thumbnail_image',
                 ])
                 ->orderBy('chat_messages.id', 'desc')
-                ->take(20);
+                ->take(100);
             $max = $messages->max('chat_messages.id');
             $messages = $messages->get();
 
