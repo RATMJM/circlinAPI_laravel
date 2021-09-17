@@ -87,7 +87,7 @@
                         <span style="color:red">여</span>
                     @endif
                 </td>
-                <td style="text-align: center">{{ date('Y년 m월 d일', strtotime($user->birthday)) }}</td>
+                <td style="text-align: center">@if($user->birthday){{ date('Y년 m월 d일', strtotime($user->birthday)) }}@endif</td>
                 <td>{{ $user->area }}</td>
                 <td style="text-align: center">{{ $user->following }}</td>
                 <td style="text-align: center">{{ $user->created_at }}</td>
