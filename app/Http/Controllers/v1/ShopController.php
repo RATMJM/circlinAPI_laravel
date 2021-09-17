@@ -477,7 +477,7 @@ class ShopController extends Controller
             DB::beginTransaction();
 
             $cart = Cart::where(['user_id' => $user_id, 'product_id' => $product_id])
-                ->where(CartOption::selectRaw("COUNT(1)")->whereColumn('cart_id', 'carts.id'), count($options))
+                // ->where(CartOption::selectRaw("COUNT(1)")->whereColumn('cart_id', 'carts.id'), count($options))
                 ->where(function ($query) use ($options) {
                     foreach ($options as $option) {
                         $query->whereHas('cart_options', function ($query) use ($option) {
