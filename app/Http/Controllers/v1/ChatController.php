@@ -385,6 +385,7 @@ class ChatController extends Controller
                 ->join('users', 'users.id', 'chat_messages.user_id')
                 ->leftJoin('missions', 'missions.id', 'chat_messages.mission_id')
                 ->select([
+                    'chat_messages.id',
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
                     'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
                     'feed_id', 'mission_id',
