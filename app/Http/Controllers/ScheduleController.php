@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\v1_1;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
@@ -30,6 +30,103 @@ class ScheduleController extends Controller
             ->groupBy('users.id')
             ->orderBy('users.id')
             ->get();
+
+        $con ? $con->comment("유저 불러오기 완료") : print("유저 불러오기 완료\n");
+
+        $i = 0;
+        $data = [];
+
+        SortUser::truncate();
+        $con ? $con->comment("sort_users 초기화 완료") : print("sort_users 초기화 완료\n");
+        foreach ($users as $i => $user) {
+            $data[] = [
+                'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
+                'user_id' => $user->id, 'order' => $user->r,
+            ];
+            if (($i + 1) % 10000 === 0) {
+                SortUser::insert($data);
+                $con ? $con->comment($i + 1 . "명 등록 완료") : print($i + 1 . "명 등록 완료\n");
+                $data = [];
+            }
+        }
+        SortUser::insert($data);
+        $con ? $con->comment($i + 1 . "명 등록 완료") : print($i + 1 . "명 등록 완료\n");
+    }
+
+    public static function suggest_user($con = null)
+    {
+        $con ? $con->comment("유저 추출 시작") : print("유저 추출 시작\n");
+
+        $max = Follow::select('target_id', DB::raw("COUNT(distinct user_id) as c"))
+            ->groupBy('target_id')->orderBy('c', 'desc')->value('c');
+
+        $con ? $con->comment("최대 팔로워 : $max") : print("최대 팔로워 : $max\n");
+
+        $init = init_today(time()-(86400*7));
+
+        $users = User::select([
+            'users.id',
+            DB::raw("(
+                select GROUP_CONCAT(t.id separator '|') from users u
+                left join (
+                    select distinct u2.id from feeds
+                    left join users u2 on u2.id = feeds.user_id
+                    where feeds.created_at >= '$init'
+                        and u2.id not in (select target_id from follows where follows.user_id = u2.id)
+                        and feeds.user_id != u2.id and feeds.deleted_at is null
+                    order by (select COUNT(distinct user_id) from follows where target_id=u2.id) + IF(u2.gender=u.gender,0,500) desc
+                    limit 50
+                ) t on t.id = u.id
+                where u.id = users.id
+            ) as suggest_users")
+        ])
+            ->groupBy('users.id')
+            ->take(10)
+            ->get();
+
+        return $users;
+
+        function suggest($user_id, $max)
+        {
+            return Feed::where('feeds.created_at', '>=', init_today(time()-(86400*7)))
+                ->whereDoesntHave('followers', function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                })
+                ->where('feeds.user_id', '!=', $user_id)
+                ->leftJoin('sort_users', 'sort_users.user_id', 'feeds.user_id')
+                ->select([
+                    'sort_users.user_id',
+                ])
+                ->groupBy('sort_users.id')
+                ->orderBy(DB::raw("`order`+
+                IF((select gender from users where id=$user_id)=(select gender from users where id=sort_users.user_id),0,500)"), 'desc')
+                ->take(50)->dd();
+        }
+
+        $users = User::pluck('id');
+
+        $suggest = null;
+        foreach ($users as $user) {
+            if ($suggest) {
+                $suggest->union(suggest($user, $max));
+            } else {
+                $suggest = suggest($user, $max);
+            }
+        }
+
+        return $users;
+
+        /*$users = User::joinSub($users, 'u', 'u.id', 'users.id')
+            ->select([
+                'u.id',
+                DB::raw("(select GROUP_CONCAT(user_id) from follows where target_id=u.id group by target_id order by COUNT(distinct user_id) desc) as suggest_users")
+            ])
+            ->groupBy('u.id')
+            ->get();*/
+
+
+
+        return $users;
 
         $con ? $con->comment("유저 불러오기 완료") : print("유저 불러오기 완료\n");
 
