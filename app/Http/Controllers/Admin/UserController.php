@@ -18,9 +18,9 @@ class UserController extends Controller
 
         $date = [
             'all' => User::withoutTrashed(),
-            'day' => User::where('created_at', '>=', date('Y-m-d')),
-            'week' => User::where('created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
-            'month' => User::where('created_at', '>=', date('Y-m')),
+            'day' => User::where('users.created_at', '>=', date('Y-m-d')),
+            'week' => User::where('users.created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
+            'month' => User::where('users.created_at', '>=', date('Y-m')),
         ];
         $users_count = [];
         foreach ($date as $i => $item) {

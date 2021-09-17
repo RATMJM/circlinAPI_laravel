@@ -17,9 +17,9 @@ class MissionController extends Controller
 
         $date = [
             'all' => Mission::where('user_id', '!=', 2)->where('is_event', false),
-            'day' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('created_at', '>=', date('Y-m-d')),
-            'week' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
-            'month' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('created_at', '>=', date('Y-m')),
+            'day' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d')),
+            'week' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
+            'month' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('missions.created_at', '>=', date('Y-m')),
         ];
         $missions_count = [];
         foreach ($date as $i => $item) {
