@@ -74,7 +74,7 @@ class PushController extends Controller
         ];
 
         $data = [
-            'link' => code_replace($action[explode('.', $tag)[0]] ?? '', ['id' => $id]),
+            'link' => code_replace($action[explode('_', $tag)[0]] ?? '', ['id' => $id]),
             // 'image' => $image,
         ];
 
