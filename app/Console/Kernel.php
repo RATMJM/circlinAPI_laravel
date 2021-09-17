@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\v1_1\ScheduleController;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
