@@ -476,8 +476,16 @@ class ShopController extends Controller
         try {
             DB::beginTransaction();
 
+            $tmp = [];
+            foreach ($options as $option) {
+                if ($option['option_id']) {
+                    $tmp[] = $option;
+                }
+            }
+            $options = $tmp;
+
             $cart = Cart::where(['user_id' => $user_id, 'product_id' => $product_id])
-                // ->where(CartOption::selectRaw("COUNT(1)")->whereColumn('cart_id', 'carts.id'), count($options))
+                ->where(CartOption::selectRaw("COUNT(1)")->whereColumn('cart_id', 'carts.id'), count($options))
                 ->where(function ($query) use ($options) {
                     foreach ($options as $option) {
                         $query->whereHas('cart_options', function ($query) use ($option) {
@@ -499,9 +507,7 @@ class ShopController extends Controller
                 //옵션입력
                 $option = [];
                 foreach ($options as $key => $value) {
-                    if ($value['option_id']) {
-                        $option[] = ['product_option_id' => $value['option_id'], 'price' => $value['price']];
-                    }
+                    $option[] = ['product_option_id' => $value['option_id'], 'price' => $value['price']];
                 }
                 $option = $cart->cart_options()->createMany($option);
             }
