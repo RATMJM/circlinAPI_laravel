@@ -476,20 +476,35 @@ class ShopController extends Controller
         try {
             DB::beginTransaction();
 
-            $cart = Cart::create([
-                'user_id' => $user_id,
-                'product_id' => $product_id,
-                'qty' => $qty,
-            ]);
+            $cart = Cart::where(['user_id' => $user_id, 'product_id' => $product_id])
+                ->where(CartOption::selectRaw("COUNT(1)")->where('cart_id', 'carts.id'), count($options))
+                ->where(function ($query) use ($options) {
+                    foreach ($options as $option) {
+                        $query->whereHas('cart_options', function ($query) use ($option) {
+                            $query->where('id', $option['option_id']);
+                        });
+                    }
+                })
+                ->get();
 
-            //옵션입력
-            $option = [];
-            foreach ($options as $key => $value) {
-                if ($value['option_id']) {
-                    $option[] = ['product_option_id' => $value['option_id'], 'price' => $value['price']];
+            if ($cart) {
+                $cart = $cart->increment('qty', $qty);
+            } else {
+                $cart = Cart::create([
+                    'user_id' => $user_id,
+                    'product_id' => $product_id,
+                    'qty' => $qty,
+                ]);
+
+                //옵션입력
+                $option = [];
+                foreach ($options as $key => $value) {
+                    if ($value['option_id']) {
+                        $option[] = ['product_option_id' => $value['option_id'], 'price' => $value['price']];
+                    }
                 }
+                $option = $cart->cart_options()->createMany($option);
             }
-            $option = $cart->cart_options()->createMany($option);
 
             DB::commit();
 
