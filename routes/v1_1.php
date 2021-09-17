@@ -52,7 +52,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::post('/withdraw', [v1_1\UserController::class, 'withdraw'])->name('withdraw');
     });
 
-    Route::resource('favorite_category', v1\UserFavoriteCategoryController::class);
+    Route::resource('favorite_category', v1_1\UserFavoriteCategoryController::class);
     Route::post('/follow', [v1_1\UserController::class, 'follow'])->name('follow.create');
     Route::delete('/follow/{id}', [v1_1\UserController::class, 'unfollow'])->name('follow.destroy');
 
