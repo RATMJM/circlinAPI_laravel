@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Notice extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $guarded = [];
 
@@ -23,5 +24,15 @@ class Notice extends Model
     public function comments()
     {
         return $this->hasMany(NoticeComment::class);
+    }
+
+    public function notice_missions()
+    {
+        return $this->hasMany(NoticeMission::class);
+    }
+
+    public function missions()
+    {
+        return $this->belongsToMany(Mission::class, NoticeMission::class);
     }
 }
