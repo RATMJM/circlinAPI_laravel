@@ -289,6 +289,7 @@ class ScheduleController extends Controller
                 $tmp = [];
             }
         }
+        $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_'.$type]);
 
         return $res;
     }
