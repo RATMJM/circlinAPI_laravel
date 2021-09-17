@@ -228,8 +228,8 @@ function uploadVideoResizing($uid, $ftp_server, $ftp_user_name, $ftp_user_pass, 
 
 function profile_image($user): string|null
 {
-    return $user->profile_image ?: ($user->gender === 'M' ? 'https://www.circlin.co.kr/SNS/assets/img/man.png' :
-        ($user->gender === 'W' ? 'https://www.circlin.co.kr/SNS/assets/img/woman.png' : 'https://www.circlin.co.kr/SNS/assets/img/x.png'));
+    return $user?->profile_image ?: ($user?->gender === 'M' ? 'https://www.circlin.co.kr/SNS/assets/img/man.png' :
+        ($user?->gender === 'W' ? 'https://www.circlin.co.kr/SNS/assets/img/woman.png' : 'https://www.circlin.co.kr/SNS/assets/img/x.png'));
 }
 
 /**

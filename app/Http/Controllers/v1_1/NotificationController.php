@@ -195,8 +195,6 @@ class NotificationController extends Controller
         $except_ids = [2];
 
         try {
-            DB::beginTransaction();
-
             $parent_id = null;
             $data = match ($type) {
                 'follow' => ['user_id' => $user_id],
@@ -210,7 +208,7 @@ class NotificationController extends Controller
                     'feed_id' => $parent_id = FeedComment::where('id', $id)->value('feed_id'),
                     'feed_comment_id' => $id,
                 ],
-                'mission_like', 'follow_bookmark', 'mission_invite' => [
+                'mission_like', 'follow_bookmark', 'mission_invite', 'mission_promotion' => [
                     'user_id' => $user_id,
                     'mission_id' => $parent_id = $id,
                 ],
@@ -233,6 +231,8 @@ class NotificationController extends Controller
                     'reason' => 'not enough data',
                 ]);
             }
+
+            DB::beginTransaction();
 
             foreach (Arr::wrap($target_ids) as $target_id) {
                 if (!in_array($target_id, $except_ids)) {
