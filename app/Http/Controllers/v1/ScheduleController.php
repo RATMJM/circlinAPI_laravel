@@ -185,7 +185,7 @@ class ScheduleController extends Controller
         $res = [];
         $tmp = [];
         foreach ($data as $i => $item) {
-            $tmp[] = $item->user_id;
+            $tmp[] = $item;
             if (count($tmp) === 10000) {
                 $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_'.$type]);
                 $tmp = [];
