@@ -11,6 +11,10 @@ class FeedProduct extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
     public function product()
     {
         return $this->hasOne(Product::class);

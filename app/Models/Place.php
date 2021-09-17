@@ -12,6 +12,10 @@ class Place extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
+    protected $casts = [
         'is_important' => 'bool',
     ];
 

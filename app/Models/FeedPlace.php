@@ -11,6 +11,10 @@ class FeedPlace extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
     public function feed()
     {
         return $this->belongsTo(Feed::class);

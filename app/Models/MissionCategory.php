@@ -11,6 +11,10 @@ class MissionCategory extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
     public function favorite_category()
     {
         return $this->hasOne('App\Models\UserFavoriteCategory');

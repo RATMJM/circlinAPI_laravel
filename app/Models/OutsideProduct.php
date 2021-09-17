@@ -11,6 +11,10 @@ class OutsideProduct extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
     public function missions()
     {
         return $this->belongsToMany(Mission::class, MissionProduct::class);

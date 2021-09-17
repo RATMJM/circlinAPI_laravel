@@ -12,6 +12,10 @@ class MissionStat extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
     const DELETED_AT = 'ended_at';
 
     public function user()

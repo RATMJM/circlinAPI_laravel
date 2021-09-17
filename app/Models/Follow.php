@@ -11,6 +11,10 @@ class Follow extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
+
     public function target()
     {
         return $this->belongsTo(User::class, 'target_id');

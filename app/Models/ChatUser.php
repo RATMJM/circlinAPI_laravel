@@ -15,5 +15,6 @@ class ChatUser extends Model
     protected $casts = [
         'is_hidden' => 'bool',
         'is_block' => 'bool',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 }

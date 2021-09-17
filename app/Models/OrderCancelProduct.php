@@ -10,4 +10,8 @@ class OrderCancelProduct extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'created_at' => 'date:Y-m-d H:i:s',
+    ];
 }

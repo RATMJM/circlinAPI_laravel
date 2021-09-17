@@ -14,6 +14,7 @@ class Notice extends Model
 
     protected $casts = [
         'is_new' => 'bool',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 
     public function images()

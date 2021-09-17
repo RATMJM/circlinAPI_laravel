@@ -14,6 +14,7 @@ class Feed extends Model
 
     protected $casts = [
         'is_hidden' => 'bool',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 
     public function user()

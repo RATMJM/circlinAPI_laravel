@@ -21,6 +21,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'birthday' => 'date:Ymd',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 
     public function stat()

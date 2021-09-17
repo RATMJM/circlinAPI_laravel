@@ -14,6 +14,7 @@ class ChatRoom extends Model
 
     protected $casts = [
         'is_group' => 'bool',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 
     public function users()

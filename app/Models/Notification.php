@@ -14,6 +14,7 @@ class Notification extends Model
     protected $casts = [
         'is_read' => 'bool',
         'variables' => 'array',
+        'created_at' => 'date:Y-m-d H:i:s',
     ];
 
     public function user()
