@@ -114,6 +114,9 @@ class NoticeController extends Controller
         if (count($notice->missions)) {
             [$users, $areas] = null;
             foreach ($notice->missions as $i => $item) {
+                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
+                    'area', 'followers', 'is_following']);
+
                 if ($users) {
                     $users = $users->union(mission_users($item->id, $user_id));
                 } else {
