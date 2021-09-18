@@ -37,7 +37,7 @@ class NoticeController extends Controller
 
         $latest_date = date('Y-m-d', time()-(86400 * 7));
 
-        $data = Notice::where('id', $id)
+        $notice = Notice::where('id', $id)
             ->select([
                 'id', 'created_at', 'title', 'content', 'link_text', 'link_url',
                 DB::raw("created_at >= '$latest_date' as is_new"),
@@ -111,11 +111,37 @@ class NoticeController extends Controller
             })
             ->first();
 
+        if (count($notice->missions)) {
+            [$users, $areas] = null;
+            foreach ($notice->missions as $i => $item) {
+                if ($users) {
+                    $users = $users->union(mission_users($item->id, $user_id));
+                } else {
+                    $users = mission_users($item->id, $user_id);
+                }
+
+                if ($areas) {
+                    $areas = $areas->union(mission_areas($item->id));
+                } else {
+                    $areas = mission_areas($item->id);
+                }
+            }
+            $keys = $notice->missions->pluck('id')->toArray();
+            $users = $users->get();
+            foreach ($users->groupBy('mission_id') as $i => $item) {
+                $notice->missions[array_search($i, $keys)]->users = $item;
+            }
+            $areas = $areas->get();
+            foreach ($areas->groupBy('mission_id') as $i => $item) {
+                $notice->missions[array_search($i, $keys)]->areas = $item->pluck('name');
+            }
+        }
+
         $comments = (new NoticeCommentController())->index($request, $id)['data']['comments'];
 
         return success([
             'result' => true,
-            'notice' => $data,
+            'notice' => $notice,
             'comments' => $comments,
         ]);
     }
