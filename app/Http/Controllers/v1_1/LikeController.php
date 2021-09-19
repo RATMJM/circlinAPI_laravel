@@ -50,8 +50,6 @@ class LikeController extends Controller
     public function store($type, $id)
     {
         try {
-            DB::beginTransaction();
-
             $user_id = token()->uid;
 
             [$table, $table_like] = match ($type) {
@@ -90,6 +88,9 @@ class LikeController extends Controller
                 ->where('point', '>', 0)
                 ->where('feed_likes.created_at', '>=', init_today())
                 ->count();
+
+            DB::beginTransaction();
+
             if ($type === 'feed') {
                 if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
                     && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
