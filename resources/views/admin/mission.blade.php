@@ -40,7 +40,7 @@
         <button>검색</button>
     </form>
     <br>
-    <p style="font-size: 20px">검색 결과 : <b>{{ number_format($missions->total()) }}</b> 명</p>
+    <p style="font-size: 20px">검색 결과 : <b>{{ number_format($missions->total()) }}</b> 개</p>
     <br>
     <table>
         <thead>

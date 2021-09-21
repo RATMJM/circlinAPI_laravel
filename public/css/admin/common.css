@@ -45,12 +45,6 @@ table > thead > tr:nth-child(2n-1) > th {
     background-color: #000;
     color: #fff;
 }
-table > tbody > tr:nth-child(2n+1) > td {
-    background-color: #fff;
-}
-table > tbody > tr:nth-child(2n) > td {
-    background-color: #ccc;
-}
 
 #header {
     width: 100%;

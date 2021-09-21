@@ -34,5 +34,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::get('/user', [Admin\UserController::class, 'index'])->name('user.index');
         Route::get('/order', [Admin\OrderController::class, 'index'])->name('order.index');
         Route::get('/mission', [Admin\MissionController::class, 'index'])->name('mission.index');
+        Route::get('/feed', [Admin\FeedController::class, 'index'])->name('feed.index');
     });
 });
