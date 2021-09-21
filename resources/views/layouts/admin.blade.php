@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ asset('css/admin/common.css?202109161600') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/common.css?202109211830') }}">
 
     <title>써클인 - @yield('title')</title>
 </head>
@@ -16,6 +16,7 @@
             <li><a href="{{ route('admin.user.index') }}">유저 통계</a></li>
             <li><a href="{{ route('admin.order.index') }}">주문 통계</a></li>
             <li><a href="{{ route('admin.mission.index') }}">미션 통계</a></li>
+            <li><a href="{{ route('admin.feed.index') }}">피드 통계</a></li>
         </ul>
         <div style="padding: 10px">
             @auth
