@@ -46,8 +46,8 @@
         <thead>
         <tr>
             <th style="width: 100px" rowspan="2">ID</th>
-            <th style="width: auto" rowspan="2">내용</th>
             <th style="width: 300px" rowspan="2">이미지</th>
+            <th style="width: auto" rowspan="2">내용</th>
             <th style="width: 120px" rowspan="2">카테고리</th>
             <th style="width: 300px">미션명</th>
             <th style="width: 200px">작성자</th>
@@ -58,7 +58,6 @@
         @forelse($feeds as $feed)
             <tr>
                 <td rowspan="{{ max(count($feed->missions), 1) }}" style="text-align: center">{{ $feed->id }}</td>
-                <td rowspan="{{ max(count($feed->missions), 1) }}">{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}</td>
                 <td rowspan="{{ max(count($feed->missions), 1) }}">
                     @foreach($feed->images as $image)
                         @if($image->type === 'image')
@@ -68,6 +67,7 @@
                         @endif
                     @endforeach
                 </td>
+                <td rowspan="{{ max(count($feed->missions), 1) }}">{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}</td>
                 @if(count($feed->missions) > 0)
                     <td>{{ $feed->missions[0]->emoji }} {{ $feed->missions[0]->category }}</td>
                     <td>{{ $feed->missions[0]->title }}</td>
