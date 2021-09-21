@@ -22,7 +22,7 @@
             @auth
                 <a href="{{ route('admin.logout') }}">로그아웃</a>
                 <br>
-                <span>{{ Auth::user()->nickname }} ({{ Auth::user()->email }}) 님 안녕하세요!</span>
+                <span>{{ auth()->user()->nickname ?? '' }} ({{ auth()->user()->email ?? '' }}) 님 안녕하세요!</span>
             @else
                 <a href="{{ route('admin.login') }}">로그인</a>
             @endauth
