@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '제작한 피드 통계')
+@section('title', '피드 통계')
 
 @section('content')
     <table>
