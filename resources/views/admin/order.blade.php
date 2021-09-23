@@ -47,7 +47,8 @@
             <th style="width: auto">주소</th>
             <th style="width: 115px">수령인<br>(수령인 번호)</th>
             <th style="width: 250px">요청사항</th>
-            <th style="width: 400px">제품명<br>(주문수량)</th>
+            <th style="width: 80px">결제금액<br>(포인트)</th>
+            <th style="width: 300px">[브랜드] 제품명<br>단품금액 (주문수량)</th>
             <th style="width: 150px">옵션명</th>
             <th style="width: 120px">택배사<br>송장번호<br>(발송수량)</th>
             <th style="width: 80px">배송여부</th>
@@ -55,53 +56,61 @@
         </thead>
         <tbody>
         @forelse($orders->groupBy('id') as $order)
-            <tr>
-                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">{{ $order[0]->order_no }}</td>
-                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">
+            @php($rowspan = count($order->whereNotNull('product_id')->pluck('product_id')->unique()) +
+                    count($order->whereNotNull('ship_brand_id')->pluck('ship_brand_id')->unique()))
+            <tr style="border-top: 2px solid #000">
+                <td rowspan="{{ $rowspan }}">{{ $order[0]->order_no }}</td>
+                <td rowspan="{{ $rowspan }}">
                     {{ $order[0]->nickname }}
                     <br>({{ $order[0]->email }})
                 </td>
-                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">({{ $order[0]->post_code }}) {{ $order[0]->address }} {{ $order[0]->address_detail }}</td>
-                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">
+                <td rowspan="{{ $rowspan }}">({{ $order[0]->post_code }}) {{ $order[0]->address }} {{ $order[0]->address_detail }}</td>
+                <td rowspan="{{ $rowspan }}">
                     {{ $order[0]->recipient_name }}
                     <br>({{ $order[0]->phone }})
                 </td>
-                <td rowspan="{{ 1 && count($order->pluck('product_id')->unique()) }}">{{ $order[0]->comment }}</td>
-                <td style="padding:0" colspan="4">
-                    <table style="border: 0">
-                        <tbody>
-                        @foreach($order->groupBy('product_id') as $products)
-                            <tr style="{{ $loop->first ? '' : 'border-top: 1px solid #000' }}">
-                                <td style="width: 400px; background: inherit; border: 0;">
-                                    <b>{{ $order[0]->product_name }}</b>
-                                    <br>({{ $order[0]->qty }})
-                                </td>
-                                <td style="width: 150px; background: inherit; border-top: 0; border-bottom: 0; border-right: 0;">
-                                    @foreach($products as $option)
-                                        {{ $option->option_name }}{{ $loop->last ? '' : ' / ' }}
-                                    @endforeach
-                                </td>
-                                <td style="width: 120px; background: inherit; border-top: 0; border-bottom: 0; border-right: 0;">@if($products[0]->company){{ $products[0]->company }}<br>{{ $products[0]->tracking_no }}<br>({{ $products[0]->delivery_qty }})@endif</td>
-                                <td style="width: 80px; background: inherit; border-top: 0; border-bottom: 0; border-right: 0; text-align: center">
-                                    @if($products[0]->company)
-                                        @if($products[0]->completed_at)
-                                            <span style="color:red">배송완료</span>
-                                        @else
-                                            <span style="color:blue">배송중</span>
-                                        @endif
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                        </tbody>
-                    </table>
+                <td rowspan="{{ $rowspan }}">{{ $order[0]->comment }}</td>
+                <td rowspan="{{ $rowspan }}" style="text-align: center">
+                    {{ number_format($order[0]->total_price) }}<br>({{ number_format($order[0]->use_point) }})
                 </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="7" style="text-align: center">유저가 없습니다.</td>
-            </tr>
-        @endforelse
+                @foreach($order->whereNotNull('ship_brand_id') as $ship_brand)
+                    <td>
+                        <b>[{{ $ship_brand->ship_brand_name }}]</b> 배송비
+                        <br>{{ number_format($ship_brand->product_price) }}
+                    </td>
+                    <td style="text-align: center"></td>
+                    <td style="text-align: center"></td>
+                    <td style="text-align: center"></td>
+                    {!! ($loop->last && count($order->whereNotNull('product_id')->groupBy('product_id')) == 0) ? '' : '</tr></tr>' !!}
+                @endforeach
+                @foreach($order->whereNotNull('product_id')->groupBy('product_id') as $products)
+                        <td>
+                            <b>[{{ $products[0]->brand_name }}]</b> {{ $products[0]->product_name }}
+                            <br>{{ number_format($products[0]->product_price) }} ({{ $products[0]->qty }})
+                        </td>
+                        <td>
+                            @foreach($products as $option)
+                                {{ $option->option_name }}{{ $loop->last ? '' : ' / ' }}
+                            @endforeach
+                        </td>
+                        <td>@if($products[0]->company){{ $products[0]->company }}<br>{{ $products[0]->tracking_no }}<br>({{ $products[0]->delivery_qty }})@endif</td>
+                        <td style="text-align: center">
+                            @if($products[0]->company)
+                                @if($products[0]->completed_at)
+                                    <span style="color:red">배송완료</span>
+                                @else
+                                    <span style="color:blue">배송중</span>
+                                @endif
+                            @endif
+                        </td>
+                    {!! $loop->last ? '' : '</tr></tr>' !!}
+                @endforeach
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="0" style="text-align: center">주문이 없습니다.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
     <br>
