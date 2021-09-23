@@ -113,7 +113,7 @@ class LikeController extends Controller
 
             $res = match ($type) {
                 'feed' => $paid_point ?
-                    NotificationController::send($data->user_id, 'feed_check', $user_id, $id, false, ['point' => 10])
+                    NotificationController::send($data->user_id, 'feed_check', $user_id, $id, true, ['point' => 10])
                     : null,
                 // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
                 default => null,
