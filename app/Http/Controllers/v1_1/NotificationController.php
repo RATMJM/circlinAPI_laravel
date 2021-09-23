@@ -123,7 +123,7 @@ class NotificationController extends Controller
 
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
-                'mission_complete', 'mission_invite', 'earn_badge'
+                'challenge_reward_point', 'mission_complete', 'mission_invite', 'earn_badge'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
                 /*'mission_over', 'mission_expire'
@@ -148,7 +148,7 @@ class NotificationController extends Controller
 
                 'feed_check_reward' => code_replace($action['point'], []),
 
-                'mission_complete', 'earn_badge', 'mission_expire_warning'
+                'challenge_reward_point', 'mission_complete', 'earn_badge', 'mission_expire_warning'
                 => code_replace($action['mission'], ['id' => $item->mission_id]),
 
                 /*'mission_over', 'mission_expire'
@@ -165,7 +165,7 @@ class NotificationController extends Controller
 
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
-                'mission_complete', 'mission_invite', 'mission_expire_warning'
+                'challenge_reward_point', 'mission_complete', 'mission_invite', 'mission_expire_warning'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
                 /*'mission_over', 'mission_expire'
@@ -221,7 +221,8 @@ class NotificationController extends Controller
                     'user_id' => $user_id,
                     'notice_id' => $parent_id = $id,
                 ],
-                'mission_complete', 'mission_over', 'mission_expire', 'mission_expire_warning' => ['mission_id' => $id],
+                'challenge_reward_point', 'mission_complete', 'mission_over', 'mission_expire', 'mission_expire_warning'
+                => ['mission_id' => $parent_id = $id],
                 default => null,
             };
 
