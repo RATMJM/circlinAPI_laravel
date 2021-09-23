@@ -135,7 +135,10 @@ class MissionCategoryController extends Controller
                 ->where('is_event', 0);
         })
             ->when($id == 0, function ($query) {
-                $query->where('is_event', 1)
+                $query->where(function ($query) {
+                    $query->where('is_event', 1)
+                        ->orWhereIn('missions.id', [1701]);
+                })
                     ->orderBy(DB::raw("(missions.started_at is null or missions.started_at<=now()) and
                     (missions.ended_at is null or missions.ended_at>now())"), 'desc')
                     ->orderBy('missions.id', 'desc');
