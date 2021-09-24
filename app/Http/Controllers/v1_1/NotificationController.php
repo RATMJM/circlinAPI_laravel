@@ -123,7 +123,7 @@ class NotificationController extends Controller
 
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
-                'challenge_reward_point', 'mission_complete', 'mission_invite', 'earn_badge',
+                'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'earn_badge',
                 'mission_over', 'mission_expire'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
@@ -146,7 +146,7 @@ class NotificationController extends Controller
 
                 'feed_check_reward' => code_replace($action['point'], []),
 
-                'challenge_reward_point', 'mission_complete', 'earn_badge', 'mission_expire_warning',
+                'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'earn_badge', 'mission_expire_warning',
                 'mission_over', 'mission_expire'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
                 default => null,
@@ -161,7 +161,7 @@ class NotificationController extends Controller
 
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
-                'challenge_reward_point', 'mission_complete', 'mission_invite', 'mission_expire_warning',
+                'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'mission_expire_warning',
                 'mission_over', 'mission_expire'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
@@ -192,6 +192,7 @@ class NotificationController extends Controller
             $parent_id = null;
             $data = match ($type) {
                 'follow' => ['user_id' => $user_id],
+
                 'feed_check', 'feed_emoji', 'feed_upload_place', 'feed_upload_product' => [
                     'user_id' => $user_id,
                     'feed_id' => $parent_id = $id,
@@ -202,6 +203,10 @@ class NotificationController extends Controller
                     'feed_id' => $parent_id = FeedComment::where('id', $id)->value('feed_id'),
                     'feed_comment_id' => $id,
                 ],
+
+                'challenge_reward_point', 'challenge_reward_point_old',
+                'mission_complete', 'mission_over', 'mission_expire', 'mission_expire_warning'
+                => ['mission_id' => $parent_id = $id],
                 'mission_like', 'follow_bookmark', 'mission_invite', 'mission_promotion' => [
                     'user_id' => $user_id,
                     'mission_id' => $parent_id = $id,
@@ -211,12 +216,11 @@ class NotificationController extends Controller
                     'mission_id' => $parent_id = MissionComment::where('id', $id)->value('mission_id'),
                     'mission_comment_id' => $id,
                 ],
+
                 'notice_reply' => [
                     'user_id' => $user_id,
                     'notice_id' => $parent_id = $id,
                 ],
-                'challenge_reward_point', 'mission_complete', 'mission_over', 'mission_expire', 'mission_expire_warning'
-                => ['mission_id' => $parent_id = $id],
                 default => null,
             };
 
