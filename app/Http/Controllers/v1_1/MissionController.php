@@ -279,7 +279,7 @@ class MissionController extends Controller
         $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
 
-        $data->images = $data->images()->orderBy('order')->pluck('image');
+        $data->images = $data->images()->orderBy('order')->orderBy('id')->pluck('image');
         $data->areas = mission_areas($data->id)->pluck('name');
 
         $data->users = mission_users($mission_id, $user_id, true)->get();
