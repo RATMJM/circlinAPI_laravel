@@ -782,7 +782,7 @@ class ShopController extends Controller
 
                 if ($value['shipping_fee'] > 0) {
                     $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, brand_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['brand_id'], $value['qty']]);
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['brand_id'], 1]);
                 }
 
 
