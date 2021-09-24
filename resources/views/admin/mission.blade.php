@@ -59,17 +59,21 @@
         </tr>
         </thead>
         <tbody>
-        @forelse($missions as $mission)
+        @forelse($missions->groupBy('id') as $mission)
             <tr>
-                <td style="text-align: center">{{ $mission->id }}</td>
-                <td style="text-align: center">{{ $mission->category }}</td>
-                <td><img src="{{ $mission->thumbnail_image }}" alt="" width="100%"></td>
-                <td>{{ $mission->title }}</td>
-                <td>{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $mission->description) !!}</td>
-                <td>{{ $mission->area }}</td>
-                <td style="text-align: center">{{ $mission->success_count ? '1회성' : '일반' }}</td>
-                <td>{{ $mission->nickname }}<br>({{ $mission->email }})</td>
-                <td style="text-align: center">{{ $mission->created_at }}</td>
+                <td style="text-align: center">{{ $mission[0]->id }}</td>
+                <td style="text-align: center">{{ $mission[0]->category }}</td>
+                <td><img src="{{ $mission[0]->thumbnail_image }}" alt="" width="100%"></td>
+                <td>{{ $mission[0]->title }}</td>
+                <td>{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $mission[0]->description) !!}</td>
+                <td>
+                    @foreach($mission->pluck('area') as $area)
+                        {{ $area }} {!! $loop->last ? '' : '<br>' !!}
+                    @endforeach
+                </td>
+                <td style="text-align: center">{{ $mission[0]->success_count ? '1회성' : '일반' }}</td>
+                <td>{{ $mission[0]->nickname }}<br>({{ $mission[0]->email }})</td>
+                <td style="text-align: center">{{ $mission[0]->created_at }}</td>
             </tr>
         @empty
             <tr>

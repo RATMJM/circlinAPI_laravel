@@ -16,10 +16,10 @@ class MissionController extends Controller
         $keyword = $request->get('keyword');
 
         $date = [
-            'all' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false),
-            'day' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d')),
-            'week' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
-            'month' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false)->where('missions.created_at', '>=', date('Y-m')),
+            'all' => Mission::withoutTrashed(),
+            'day' => Mission::where('missions.created_at', '>=', date('Y-m-d')),
+            'week' => Mission::where('missions.created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
+            'month' => Mission::where('missions.created_at', '>=', date('Y-m')),
         ];
         $missions_count = [];
         foreach ($date as $i => $item) {
@@ -37,18 +37,15 @@ class MissionController extends Controller
 
         $missions = $missions->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->join('users', 'users.id', 'missions.user_id')
-            ->leftJoin('mission_images', 'mission_images.mission_id', 'missions.id')
             ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
-            ->leftJoin('areas', 'areas.code', DB::raw("CONCAT(mission_areas.area_code,'00000')"))
             // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->select([
                 'mission_categories.title as category', 'missions.id',
-                'missions.title', 'missions.description', 'missions.thumbnail_image', 'areas.name as area',
+                'missions.title', 'missions.description', 'missions.thumbnail_image', 'area' => area_like('mission_areas'),
                 'missions.success_count', 'missions.created_at',
                 'users.nickname', 'users.email', 'users.gender',
             ])
             ->orderBy('missions.id', 'desc')
-            ->orderBy('mission_images.order')
             ->paginate(50);
 
         return view('admin.mission', [
