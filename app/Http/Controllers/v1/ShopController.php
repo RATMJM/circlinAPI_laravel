@@ -758,13 +758,13 @@ class ShopController extends Controller
             $order = DB::insert(' 
                 INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id, use_point )
                                         values(?, ?, ?, ?, ?, ?, ?, ? ); ', [$time, $time, $orderNo, $user_id, $totalPrice, $imp_id, $merchant_id, $use_point]);
-
+            DB::commit();
             $orderId = DB::select('select id from orders
                                         where user_id=? and order_no=? order by id desc limit 1; ', [$user_id, $orderNo]);
 
-            PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId);
+            // PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId);
 
-            DB::commit();
+           
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -774,17 +774,19 @@ class ShopController extends Controller
             try {
 
                 DB::beginTransaction();
+                 
+                // $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
 
-                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['sale_price'], $value['product_id'], $value['qty']]);
-
+                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id,  qty)
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['sale_price'], '107', $value['qty']]);
+             
                 if ($value['shipping_fee'] > 0) {
-                    $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, brand_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['brand_id'], $value['qty']]);
+                    $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, qty)
+                                                    VALUES(?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['qty']]);
                 }
-
-
                 DB::commit();
+
+                // DB::commit();
 
             } catch (Exception $e) {
                 DB::rollBack();
