@@ -16,10 +16,10 @@ class MissionController extends Controller
         $keyword = $request->get('keyword');
 
         $date = [
-            'all' => Mission::where('user_id', '!=', 2)->where('is_event', false),
-            'day' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d')),
-            'week' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
-            'month' => Mission::where('user_id', '!=', 2)->where('is_event', false)->where('missions.created_at', '>=', date('Y-m')),
+            'all' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false),
+            'day' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d')),
+            'week' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false)->where('missions.created_at', '>=', date('Y-m-d', time() - (86400 * date('w')))),
+            'month' => Mission::/*where('user_id', '!=', 2)->*/where('is_event', false)->where('missions.created_at', '>=', date('Y-m')),
         ];
         $missions_count = [];
         foreach ($date as $i => $item) {
