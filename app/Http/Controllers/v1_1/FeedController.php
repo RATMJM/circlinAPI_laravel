@@ -328,6 +328,7 @@ class FeedController extends Controller
 
                     if ($mission->treasure_started_at <= date('Y-m-d H:i:s') &&
                         $mission->treasure_ended_at > date('Y-m-d H:i:s') &&
+                        !$is_hidden &&
                         FeedMission::where('mission_id', $mission_id)
                             ->where(Feed::select('user_id')->whereColumn('feeds.id', 'feed_missions.feed_id'), $user_id)
                             ->where('created_at', '>=', date('Y-m-d'))->doesntExist()) {
