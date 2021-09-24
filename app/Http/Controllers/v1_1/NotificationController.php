@@ -127,7 +127,7 @@ class NotificationController extends Controller
                 'mission_over', 'mission_expire'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
 
-                'feed_check_reward' => code_replace($action['point'], []),
+                'feed_check_reward', 'mission_bomul' => code_replace($action['point'], []),
 
                 'feed_emoji' => code_replace($action['chat'], ['id' => $item->user_id]),
                 default => null,
@@ -144,7 +144,7 @@ class NotificationController extends Controller
                 'feed_upload_place', 'feed_upload_product'
                 => code_replace($action['user'], ['id' => $user_id]),
 
-                'feed_check_reward' => code_replace($action['point'], []),
+                'feed_check_reward', 'mission_bomul' => code_replace($action['point'], []),
 
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'earn_badge', 'mission_expire_warning',
                 'mission_over', 'mission_expire'
@@ -164,6 +164,8 @@ class NotificationController extends Controller
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'mission_expire_warning',
                 'mission_over', 'mission_expire'
                 => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
+
+                'feed_check_reward', 'mission_bomul' => code_replace($action['point'], []),
 
                 'earn_badge' => code_replace($action['badge'], []),
                 default => null,
@@ -205,9 +207,8 @@ class NotificationController extends Controller
                 ],
 
                 'challenge_reward_point', 'challenge_reward_point_old',
-                'mission_complete', 'mission_over', 'mission_expire', 'mission_expire_warning'
-                => ['mission_id' => $parent_id = $id],
-                'mission_like', 'follow_bookmark', 'mission_invite', 'mission_promotion' => [
+                'mission_complete', 'mission_over', 'mission_expire', 'mission_expire_warning',
+                'mission_like', 'follow_bookmark', 'mission_invite', 'mission_promotion', 'mission_bomul' => [
                     'user_id' => $user_id,
                     'mission_id' => $parent_id = $id,
                 ],

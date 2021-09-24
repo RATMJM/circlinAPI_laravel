@@ -133,6 +133,7 @@ Route::get('/keyword/{type}', [v1_1\KeywordController::class, 'index'])
 
 Route::group(['prefix' => 'feed', 'feed.'], function () {
     Route::post('/', [v1_1\FeedController::class, 'store'])->name('store');
+    Route::post('/test', [v1_1\FeedController::class, 'store_test'])->name('store_test');
     Route::group(['prefix' => '{feed_id}'], function () {
         Route::get('/', [v1_1\FeedController::class, 'show'])->name('show');
         Route::get('/edit', [v1_1\FeedController::class, 'edit'])->name('edit');
