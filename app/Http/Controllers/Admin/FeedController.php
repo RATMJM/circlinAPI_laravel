@@ -46,8 +46,8 @@ class FeedController extends Controller
             ->with('missions', function ($query) {
                 $query->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
                     ->join('users', 'users.id', 'missions.user_id')
-                    ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
-                    ->leftJoin('areas', 'areas.code', DB::raw("CONCAT(mission_areas.area_code,'00000')"))
+                    // ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
+                    // ->leftJoin('areas', 'areas.code', DB::raw("CONCAT(mission_areas.area_code,'00000')"))
                     ->select(['mission_categories.emoji', 'mission_categories.title as category', 'missions.title']);
             })
             ->orderBy('feeds.id', 'desc')
