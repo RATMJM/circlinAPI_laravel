@@ -770,30 +770,37 @@ class ShopController extends Controller
             return exceped($e);
         }
 
-        foreach ($items as $key => $value) {   // order_products , order_product_options
-            try {
-
-                DB::beginTransaction();
+        DB::beginTransaction();
                  
-                // $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
+        // $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
 
-                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id,  qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, 198, 22500, 107, 0]);
-                //  DB::commit();
-                // if ($value['shipping_fee'] > 0) {
-                //     $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, qty)
-                //                                     VALUES(?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['qty']]);
-                // }
+        $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id,  qty)
+                                            VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, 198, 22500, 107, 0]);
+                DB::commit();                              
+        // foreach ($items as $key => $value) {   // order_products , order_product_options
+        //     try {
+
+        //         DB::beginTransaction();
+                 
+        //         // $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
+
+        //         $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id,  qty)
+        //                                             VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, 198, 22500, 107, 0]);
+        //         //  DB::commit();
+        //         // if ($value['shipping_fee'] > 0) {
+        //         //     $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, qty)
+        //         //                                     VALUES(?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['qty']]);
+        //         // }
   
 
-                DB::commit();
+        //         DB::commit();
 
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
+        //     } catch (Exception $e) {
+        //         DB::rollBack();
+        //         return exceped($e);
+        //     }
 
-        } //end of foreach
+        // } //end of foreach
 
         $orderProduct = DB::select('select id, product_id, order_id, qty from order_products
             where  order_id=?   ; ', [$orderId[0]->id]);
