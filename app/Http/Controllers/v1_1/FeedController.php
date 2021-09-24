@@ -162,8 +162,8 @@ class FeedController extends Controller
                             MissionTreasurePoint::where(['id' => $tmp[2], 'is_stock' => true])->decrement('count');
 
                             // 포인트 지급
-                            PointController::change_point($user_id, $point, 'mission_bomul', 'mission', $mission_id);
-                            NotificationController::send($user_id, 'mission_bomul', null, $mission_id, false, ['point' => $point]);
+                            PointController::change_point($user_id, $point, 'mission_treasure', 'mission', $mission_id);
+                            NotificationController::send($user_id, 'mission_treasure', null, $mission_id, false, ['point' => $point]);
 
                             $treasure_reward = $point;
                         }
