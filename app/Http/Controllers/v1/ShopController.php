@@ -755,14 +755,14 @@ class ShopController extends Controller
         try {
             DB::beginTransaction();
 
-            // $order = DB::insert(' 
-            //     INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id, use_point )
-            //                             values(?, ?, ?, ?, ?, ?, ?, ? ); ', [$time, $time, $orderNo, $user_id, $totalPrice, $imp_id, $merchant_id, $use_point]);
+            $order = DB::insert(' 
+                INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id, use_point )
+                                        values(?, ?, ?, ?, ?, ?, ?, ? ); ', [$time, $time, $orderNo, $user_id, $totalPrice, $imp_id, $merchant_id, $use_point]);
 
-            // $orderId = DB::select('select id from orders
-            //                             where user_id=? and order_no=? order by id desc limit 1; ', [$user_id, $orderNo]);
+            $orderId = DB::select('select id from orders
+                                        where user_id=? and order_no=? order by id desc limit 1; ', [$user_id, $orderNo]);
 
-            PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId);
+            PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId );
 
             DB::commit();
         } catch (Exception $e) {
