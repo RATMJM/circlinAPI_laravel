@@ -130,10 +130,11 @@ class MissionCategoryController extends Controller
 
         $local = $request->get('local');
 
-        $missions = Mission::when($id, function ($query, $id) {
-            $query->whereIn('missions.mission_category_id', Arr::wrap($id))
-                ->where('is_event', 0);
-        })
+        $missions = Mission::where('is_show', true)
+            ->when($id, function ($query, $id) {
+                $query->whereIn('missions.mission_category_id', Arr::wrap($id))
+                    ->where('is_event', 0);
+            })
             ->when($id == 0, function ($query) {
                 $query->where('is_event', 1)
                     ->orderBy(DB::raw("(missions.started_at is null or missions.started_at<=now()) and
