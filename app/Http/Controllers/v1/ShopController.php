@@ -775,14 +775,14 @@ class ShopController extends Controller
 
                 DB::beginTransaction();
                  
-                $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
+                // $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
 
-                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, brand_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['sale_price'], $value['product_id'], $brand_id[0]->brand_id, $value['qty']]);
+                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id,  qty)
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['sale_price'], $value['product_id'], $value['qty']]);
 
                 if ($value['shipping_fee'] > 0) {
-                    $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, brand_id, qty)
-                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $brand_id[0]->brand_id, $value['qty']]);
+                    $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, qty)
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['qty']]);
                 }
 
 
