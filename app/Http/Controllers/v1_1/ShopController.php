@@ -303,7 +303,7 @@ class ShopController extends Controller
 
             $orderList = DB::select('select a.id as order_id, f.id as product_id,
                 ORDER_NO, a.total_price, f.name_ko as product_name, g.name_ko as brand_name, f.thumbnail_image, f.code, a.created_at as order_time,
-                h.id as feed_product_id,  "" SELECT_YN, b.qty, 
+                h.id as feed_product_id,  "" SELECT_YN, b.qty, e.company, e.tracking_no,
                 case when e.tracking_no is null then "상품준비중" else case when e.completed_at is null then "배송중" else "배송완료" end end as status ,
                 concat(
                 (opt1.name_ko  ) , " / ",
