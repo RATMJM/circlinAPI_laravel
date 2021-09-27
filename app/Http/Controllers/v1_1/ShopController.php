@@ -38,7 +38,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ? 
                 and b.id=a.brand_id  
-                order by `order` desc, status ;', ['1']);
+                order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1']);
 
                 } elseif ($type == "high") {
 
@@ -54,7 +54,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
-                order by `order` desc, sale_price desc;', ['1']);
+                order by a.status="sale" desc, `order` desc, sale_price desc;', ['1']);
                 } elseif ($type == "low") {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -69,7 +69,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
-                order by `order` desc, sale_price ;', ['1']);
+                order by a.status="sale" desc, `order` desc, sale_price ;', ['1']);
                 } else {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -84,7 +84,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
-                order by `order` desc, status;', ['1']);
+                order by a.status="sale" desc, `order` desc, a.id desc;', ['1']);
                 }
             } else {// ㅋㅏ테고리 눌렀을떄
                 if ($type == "hot") {
