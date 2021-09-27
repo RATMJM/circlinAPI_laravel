@@ -157,7 +157,7 @@ class SearchController extends Controller
         $keyword = $request->get('keyword');
         $keyword2 = str_replace([' ', '%'], '', $keyword);
 
-        $missions = Mission::where('is_show', true)
+        $missions = Mission::where('missions.is_show', true)
             ->where(DB::raw("REPLACE(missions.title,' ','')"), 'like', "%$keyword2%")
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
