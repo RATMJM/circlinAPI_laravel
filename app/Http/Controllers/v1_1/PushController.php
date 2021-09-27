@@ -48,7 +48,7 @@ class PushController extends Controller
                         'type' => $type,
                         'result' => isset($res['res']['results'][$i]?->message_id) ?? false,
                         'json' => json_encode($res['json'] ?? null),
-                        'result_json' => json_encode($res['res'] ?? null),
+                        'result_json' => json_encode($res['res']['results'][$i] ?? null),
                     ];
                 }
                 PushHistory::insert($data);
