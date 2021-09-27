@@ -261,11 +261,11 @@ class ScheduleController extends Controller
 
         $data = MissionStat::leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
             ->select([
-                'mission_stats.id', 'mission_stats.user_id', 'mission_stats.mission_id',
+                'mission_stats.user_id',
                 /*DB::raw("mission_stats.created_at < '$deadline' and
                 (MAX(feed_missions.created_at) < '$deadline' or MAX(feed_missions.created_at) is null) as is_warning"),*/
             ])
-            ->groupBy('mission_stats.id')
+            ->groupBy('mission_stats.user_id')
             // ->orderBy('is_warning')
             ->get();
 
@@ -284,7 +284,7 @@ class ScheduleController extends Controller
         $tmp = [];
         foreach ($data as $i => $item) {
             $tmp[] = $item;
-            if (count($tmp) === 10000) {
+            if (count($tmp) >= 1000) {
                 $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_'.$type]);
                 $tmp = [];
             }
