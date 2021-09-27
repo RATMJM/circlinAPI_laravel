@@ -19,7 +19,7 @@ class ShopController extends Controller
         //  $category = '2';//$request->get('category'); // 카테고리
         //  $type = 'high';//$request->get('type'); // 필터값
         $user_id = token()->uid;
-        $category = $request->get('category'); // 카테고리
+        $category = $request->get('category', '전체'); // 카테고리
         $type = $request->get('type'); // 필터값
         try {
             DB::beginTransaction();
@@ -101,7 +101,8 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ? 
                 and  a.product_category_id=?
-                and b.id=a.brand_id;', ['1', $category]);
+                and b.id=a.brand_id
+                order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1', $category]);
 
 
                 } elseif ($type == "high") {
@@ -119,7 +120,7 @@ class ShopController extends Controller
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by `order` desc, sale_price desc;', ['1', $category]);
+                order by a.status="sale" desc, `order` desc, sale_price desc;', ['1', $category]);
                 } elseif ($type == "low") {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -135,7 +136,7 @@ class ShopController extends Controller
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by `order` desc, sale_price  ;', ['1', $category]);
+                order by a.status="sale" desc, `order` desc, sale_price ;', ['1', $category]);
                 } else {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -151,7 +152,7 @@ class ShopController extends Controller
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by `order` desc, status;', ['1', $category]);
+                order by a.status="sale" desc, `order` desc, a.id desc;', ['1', $category]);
                 }
             }
 
