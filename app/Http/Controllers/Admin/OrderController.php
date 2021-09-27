@@ -33,7 +33,7 @@ class OrderController extends Controller
             ->leftJoin('product_options', 'product_options.id', 'order_product_options.product_option_id')
             ->leftJoin('order_product_deliveries', 'order_product_deliveries.order_product_id', 'order_products.id')
             ->select([
-                'orders.id', 'orders.order_no', 'orders.total_price', 'orders.use_point',
+                'orders.id', 'orders.created_at', 'orders.order_no', 'orders.total_price', 'orders.use_point',
                 'users.nickname', 'users.email',
                 'products.id as product_id', 'products.name_ko as product_name', 'order_products.price as product_price',
                 'product_options.name_ko as option_name', 'order_products.qty',

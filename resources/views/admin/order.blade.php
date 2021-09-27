@@ -59,7 +59,7 @@
             @php($rowspan = count($order->whereNotNull('product_id')->pluck('product_id')->unique()) +
                     count($order->whereNotNull('ship_brand_id')->pluck('ship_brand_id')->unique()))
             <tr style="border-top: 2px solid #000">
-                <td rowspan="{{ $rowspan }}">{{ $order[0]->order_no }}<br>({{ $order[0]->id }})</td>
+                <td rowspan="{{ $rowspan }}">{{ $order[0]->order_no }}<br>({{ $order[0]->created_at }})<br>({{ $order[0]->id }})</td>
                 <td rowspan="{{ $rowspan }}">
                     {{ $order[0]->nickname }}
                     <br>({{ $order[0]->email }})
