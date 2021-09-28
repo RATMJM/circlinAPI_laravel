@@ -441,7 +441,7 @@ class ChatController extends Controller
                 [$message->image, $message->imaeg_type] = match ($message->type) {
                     'feed', 'feed_emoji' => [$message->feed_image, $message->feed_image_type],
                     'mission', 'mission_invite' => [$message->mission['thumbnail_image'], 'image'],
-                    default => $message->image,
+                    default => [$message->image, 'image'],
                 };
                 Arr::except($message, ['feed_image_type', 'feed_image', 'mission_image']);
 
