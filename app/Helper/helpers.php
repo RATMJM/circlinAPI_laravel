@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\v1\NotificationController;
 use App\Http\Controllers\v1\PushController;
+use App\Http\Controllers\v1_1\BaseController;
 use App\Models\Area;
 use App\Models\CommonCode;
 use App\Models\FeedMission;
@@ -36,6 +37,8 @@ function success($data): array
 /* 도중 오류 발생 */
 function exceped(Exception $e): array
 {
+    (new BaseController())->error_logging(request(), 'back', date('Y-m-d H:i:s'), $e->getMessage(), $e->getTraceAsString());
+
     return [
         'success' => false,
         'reason' => 'error',
