@@ -35,7 +35,7 @@ class PushController extends Controller
                 foreach ($users_group as $i => $users) {
                     $res = self::send_gcm_notify($i, $users->pluck('device_token')->toArray(), $title, $message, $type, $id, $image);
 
-                    Arr::except($res['json'], 'registration_ids');
+                    $res['json'] = Arr::except($res['json'], 'registration_ids');
 
                     foreach ($users as $j => $user) {
                         $data[] = [
