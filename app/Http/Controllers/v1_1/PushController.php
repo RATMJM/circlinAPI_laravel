@@ -29,29 +29,30 @@ class PushController extends Controller
             if (count($users) > 0) {
                 $message = preg_replace('/{(.*?)}/', '$1', $message);
 
-                foreach ($users->groupBy('device_type') as $i => $ids) {
-                    $res = self::send_gcm_notify($i, $ids->pluck('device_token')->toArray(), $title, $message, $type, $id, $image);
-                }
-
                 $data = [];
-
                 $now = date('Y-m-d H:i:s');
+                $users_group = $users->groupBy('device_type');
+                foreach ($users_group as $i => $users) {
+                    $res = self::send_gcm_notify($i, $users->pluck('device_token')->toArray(), $title, $message, $type, $id, $image);
 
-                foreach ($users as $i => $user) {
-                    $data[] = [
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                        'target_id' => $user->id,
-                        'device_token' => $user->device_token,
-                        'title' => $title,
-                        'message' => $message,
-                        'type' => $type,
-                        'result' => isset($res['res']['results'][$i]?->message_id) ?? false,
-                        'json' => json_encode($res['json'] ?? null),
-                        'result_json' => json_encode($res['res']['results'][$i] ?? null),
-                    ];
+                    Arr::except($res['json'], 'registration_ids');
+
+                    foreach ($users as $j => $user) {
+                        $data[] = [
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                            'target_id' => $user->id,
+                            'device_token' => $user->device_token,
+                            'title' => $title,
+                            'message' => $message,
+                            'type' => $type,
+                            'result' => isset($res['res']['results'][$j]?->message_id) ?? false,
+                            'json' => json_encode($res['json'] ?? null),
+                            'result_json' => json_encode($res['res']['results'][$j] ?? null),
+                        ];
+                    }
+                    PushHistory::insert($data);
                 }
-                PushHistory::insert($data);
 
                 return $res;
             } else {
