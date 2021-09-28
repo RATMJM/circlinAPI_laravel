@@ -418,7 +418,8 @@ class ChatController extends Controller
                 ->select([
                     'chat_messages.id',
                     'chat_messages.user_id', 'users.nickname', 'users.profile_image', 'users.gender',
-                    'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message', 'chat_messages.image',
+                    'chat_messages.type', 'chat_messages.created_at', 'chat_messages.message',
+                    'chat_messages.image_type', 'chat_messages.image',
                     'feed_id', 'mission_id',
                     'feed_content' => Feed::select('content')->whereColumn('id', 'chat_messages.feed_id')->limit(1),
                     'feed_image_type' => FeedImage::select('type')->whereColumn('feed_id', 'chat_messages.feed_id')
@@ -441,7 +442,7 @@ class ChatController extends Controller
                 [$message->image, $message->imaeg_type] = match ($message->type) {
                     'feed', 'feed_emoji' => [$message->feed_image, $message->feed_image_type],
                     'mission', 'mission_invite' => [$message->mission['thumbnail_image'], 'image'],
-                    default => [$message->image, 'image'],
+                    default => [$message->image, $message->image_type],
                 };
                 Arr::except($message, ['feed_image_type', 'feed_image', 'mission_image']);
 
