@@ -31,9 +31,12 @@ class PointController extends Controller
                 ]);
             }
 
+            $user->increment('point', $point);
+
             $data = [
                 'user_id' => $user_id,
                 'point' => $point,
+                'result' => $user->point,
                 'reason' => $reason,
             ];
 
@@ -42,8 +45,6 @@ class PointController extends Controller
             }
 
             PointHistory::create($data);
-
-            $user->increment('point', $point);
 
             DB::commit();
 
