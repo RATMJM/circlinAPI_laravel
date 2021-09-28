@@ -4,11 +4,12 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Area;
+use App\Models\ErrorLog;
 use App\Models\Feed;
 use App\Models\Follow;
-use App\Models\Version;
 use App\Models\Place;
 use App\Models\User;
+use App\Models\Version;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -102,5 +103,19 @@ class BaseController extends Controller
             'result' => true,
             'is_force' => $is_force,
         ]);
+    }
+
+    public function error_logging(Request $request): array
+    {
+        $data = [
+            'type' => $request->get('type'),
+            'user_id' => token_option()?->uid,
+            'client_time' => $request->get('client_time'),
+            'message' => $request->get('message'),
+            'stack_trace' => $request->get('stack_trace'),
+        ];
+        $res = ErrorLog::create($data);
+
+        return success(['result' => true]);
     }
 }
