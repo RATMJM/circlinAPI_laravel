@@ -148,7 +148,7 @@ class FeedController extends Controller
                             // 랜덤 보상 개수만큼 배열에 담기
                             $rewards = [];
                             foreach ($reward_points as $point) {
-                                for ($i = 0; $i < $point->count; $i++) {
+                                for ($i = 0; $i < $point->qty; $i++) {
                                     $rewards[] = [$point->point_min, $point->point_max, $point->id];
                                 }
                             }
@@ -160,7 +160,8 @@ class FeedController extends Controller
                             // 포인트 랜덤뽑기
                             $tmp = $rewards[random_int(0, count($rewards)-1)];
                             $point = round(random_int($tmp[0], $tmp[1]), -1);
-                            MissionTreasurePoint::where(['id' => $tmp[2], 'is_stock' => true])->decrement('count');
+                            MissionTreasurePoint::where(['id' => $tmp[2], 'is_stock' => true])->decrement('qty');
+                            MissionTreasurePoint::where(['id' => $tmp[2]])->increment('count');
 
                             // 포인트 지급
                             PointController::change_point($user_id, $point, 'mission_treasure', 'mission', $mission_id);
