@@ -15,13 +15,13 @@ class PushController extends Controller
     /**
      * gcm push notice
      */
-    public static function gcm_notify($uid, $title, $message, $image = '', $type = null, $id = null): array|null
+    public static function gcm_notify($uid, $title, $message, $image = '', $tag = null, $id = null): array|null
     {
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)
                 ->where(DB::raw("IFNULL(device_token,'')"), '!=', '')
                 ->where(PushHistory::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id')
-                    ->where(['result' => true, 'type' => $type])
+                    ->where(['result' => true, 'type' => $tag])
                     ->where('created_at', '>=', date('Y-m-d H:i:s', time() - 5)), 0)
                 ->select(['device_token', 'id', 'device_type'])
                 ->get();
@@ -33,7 +33,7 @@ class PushController extends Controller
                 $now = date('Y-m-d H:i:s');
                 $users_group = $users->groupBy('device_type');
                 foreach ($users_group as $i => $users) {
-                    $res = self::send_gcm_notify($i, $users->pluck('device_token')->toArray(), $title, $message, $type, $id, $image);
+                    $res = self::send_gcm_notify($i, $users->pluck('device_token')->toArray(), $title, $message, $tag, $id, $image);
 
                     $res['json'] = Arr::except($res['json'], 'registration_ids');
 
@@ -45,7 +45,7 @@ class PushController extends Controller
                             'device_token' => $user->device_token,
                             'title' => $title,
                             'message' => $message,
-                            'type' => $type,
+                            'type' => $tag,
                             'result' => isset($res['res']['results'][$j]?->message_id) ?? false,
                             'json' => json_encode($res['json'] ?? null),
                             'result_json' => json_encode($res['res']['results'][$j] ?? null),

@@ -23,7 +23,12 @@ class NotificationController extends Controller
 
         $data = $this->get($user_id);
 
-        Notification::whereIn('id', $data->pluck('id')->toArray())->whereNull('read_at')->update(['read_at' => now()]);
+        $ids = [];
+        foreach ($data->pluck('ids') as $id) {
+            $ids = Arr::collapse([$ids, explode('|', $id)]);
+        }
+
+        Notification::whereIn('id', $ids)->whereNull('read_at')->update(['read_at' => now()]);
 
         return success([
             'result' => false,
@@ -47,6 +52,7 @@ class NotificationController extends Controller
             ->where('type', 'not like', '%서로 메이트%')
             ->select([
                 DB::raw("MAX(id) as id"),
+                DB::raw("GROUP_CONCAT(id separator '|') as ids"),
                 DB::raw("MAX(created_at) as created_at"),
                 DB::raw("COUNT(distinct IFNULL(user_id,0)) as count"),
                 'user_id' => DB::table('notifications as n')->select('user_id')
@@ -56,7 +62,7 @@ class NotificationController extends Controller
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
             ])
-            ->groupBy(DB::raw("IF(type in ($q), type, id)"),
+            ->groupBy(DB::raw("IF(type in ($q), type, IF(type in ('follow'), user_id, id))"),
                 DB::raw("CONCAT(YEAR(notifications.created_at),'|',MONTH(notifications.created_at),'|',DAY(notifications.created_at))"),
                 'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
