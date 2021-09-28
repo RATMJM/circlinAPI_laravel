@@ -335,6 +335,7 @@ class ShopController extends Controller
                 
                 and f.brand_id = g.id
                 and a.user_id=? 
+                and a.deleted_at is null
                 order by a.id desc , product_id desc
                 ;', [$user_id]);
 
