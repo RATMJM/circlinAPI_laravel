@@ -215,6 +215,8 @@ Route::post('/shop/update_cart', [v1_1\ShopController::class, 'update_cart']);
 
 Route::get('/latest_version', [v1_1\BaseController::class, 'latest_version']);
 
+Route::post('/error_logging', [v1_1\BaseController::class, 'error_logging']);
+
 Route::get('/show_construction', function () {
     return success([
         'result' => true,
