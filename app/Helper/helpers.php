@@ -37,9 +37,11 @@ function success($data): array
 /* 도중 오류 발생 */
 function exceped(Exception $e): array
 {
-    $request = request();
-    (new BaseController())->error_logging($request, 'back', date('Y-m-d H:i:s'),
-        $request->server('HTTP_REFERER'), $e->getMessage(), $e->getTraceAsString());
+    if (env('APP_ENV') !== 'local') {
+        $request = request();
+        (new BaseController())->error_logging($request, 'back', date('Y-m-d H:i:s'),
+            $request->server('HTTP_REFERER'), $e->getMessage(), $e->getTraceAsString());
+    }
 
     return [
         'success' => false,
