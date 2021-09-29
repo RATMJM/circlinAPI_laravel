@@ -55,7 +55,7 @@ class Mission extends Model
 
     public function content()
     {
-        return $this->hasOneThrough(Content::class, MissionContent::class);
+        return $this->belongsToMany(Content::class, MissionContent::class);
     }
 
     public function mission_stats()

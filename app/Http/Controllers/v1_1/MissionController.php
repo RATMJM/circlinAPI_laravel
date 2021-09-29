@@ -264,9 +264,7 @@ class MissionController extends Controller
             ->withCount(['feeds' => function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             }])
-            ->with('place', function ($query) {
-                $query->select(['places.id', 'places.address', 'places.title', 'places.description', 'places.image', 'places.url']);
-            })
+            ->with(['place', 'content'])
             ->first();
 
         if (is_null($data)) {
