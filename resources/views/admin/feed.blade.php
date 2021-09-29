@@ -86,7 +86,7 @@
             @endforeach
         @empty
             <tr>
-                <td colspan="6" style="text-align: center">피드가 없습니다.</td>
+                <td colspan="0" style="text-align: center">피드가 없습니다.</td>
             </tr>
         @endforelse
         </tbody>

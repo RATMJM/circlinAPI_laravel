@@ -94,7 +94,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" style="text-align: center">유저가 없습니다.</td>
+                <td colspan="0" style="text-align: center">유저가 없습니다.</td>
             </tr>
         @endforelse
         </tbody>

@@ -77,7 +77,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" style="text-align: center">미션이 없습니다.</td>
+                <td colspan="0" style="text-align: center">미션이 없습니다.</td>
             </tr>
         @endforelse
         </tbody>
