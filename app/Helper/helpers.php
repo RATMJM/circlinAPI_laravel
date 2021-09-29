@@ -52,14 +52,14 @@ function token()
         $token = request()->header('token');
 
         if (is_null($token)) {
-            abort(403);
+            abort(403, '토큰이 없습니다.');
         }
 
         $key = env('JWT_SECRET');
 
         return JWT::decode($token, $key, ['HS256']);
     } catch (Exception $e) {
-        abort(403);
+        abort(403, '토큰이 없습니다.');
     }
 }
 
@@ -69,7 +69,7 @@ function token_option(): object|null
         $token = request()->header('token');
 
         if (is_null($token)) {
-            abort(403);
+            return null;
         }
 
         return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
