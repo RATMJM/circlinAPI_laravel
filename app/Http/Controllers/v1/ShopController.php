@@ -19,7 +19,7 @@ class ShopController extends Controller
         //  $category = '2';//$request->get('category'); // 카테고리
         //  $type = 'high';//$request->get('type'); // 필터값
         $user_id = token()->uid;
-        $category = $request->get('category'); // 카테고리
+        $category = $request->get('category', '전체'); // 카테고리
         $type = $request->get('type'); // 필터값
         try {
             DB::beginTransaction();
@@ -38,7 +38,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ? 
                 and b.id=a.brand_id  
-                order by `order` desc, status ;', ['1']);
+                order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1']);
 
                 } elseif ($type == "high") {
 
@@ -54,7 +54,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
-                order by `order` desc, sale_price desc;', ['1']);
+                order by a.status="sale" desc, `order` desc, sale_price desc;', ['1']);
                 } elseif ($type == "low") {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -69,7 +69,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
-                order by `order` desc, sale_price ;', ['1']);
+                order by a.status="sale" desc, `order` desc, sale_price ;', ['1']);
                 } else {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -84,7 +84,7 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ?  
                 and b.id=a.brand_id
-                order by `order` desc, status;', ['1']);
+                order by a.status="sale" desc, `order` desc, a.id desc;', ['1']);
                 }
             } else {// ㅋㅏ테고리 눌렀을떄
                 if ($type == "hot") {
@@ -101,7 +101,8 @@ class ShopController extends Controller
                 WHERE  deleted_at is null and
                 is_show= ? 
                 and  a.product_category_id=?
-                and b.id=a.brand_id;', ['1', $category]);
+                and b.id=a.brand_id
+                order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1', $category]);
 
 
                 } elseif ($type == "high") {
@@ -119,7 +120,7 @@ class ShopController extends Controller
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by `order` desc, sale_price desc;', ['1', $category]);
+                order by a.status="sale" desc, `order` desc, sale_price desc;', ['1', $category]);
                 } elseif ($type == "low") {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -135,7 +136,7 @@ class ShopController extends Controller
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by `order` desc, sale_price  ;', ['1', $category]);
+                order by a.status="sale" desc, `order` desc, sale_price ;', ['1', $category]);
                 } else {
 
                     $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
@@ -151,7 +152,7 @@ class ShopController extends Controller
                 is_show= ?  
                 and b.id=a.brand_id
                 and  a.product_category_id=? 
-                order by `order` desc, status;', ['1', $category]);
+                order by a.status="sale" desc, `order` desc, a.id desc;', ['1', $category]);
                 }
             }
 
@@ -303,7 +304,7 @@ class ShopController extends Controller
 
             $orderList = DB::select('select a.id as order_id, f.id as product_id,
                 ORDER_NO, a.total_price, f.name_ko as product_name, g.name_ko as brand_name, f.thumbnail_image, f.code, a.created_at as order_time,
-                h.id as feed_product_id,  "" SELECT_YN, b.qty, 
+                h.id as feed_product_id,  "" SELECT_YN, b.qty, e.company, e.tracking_no,
                 case when e.tracking_no is null then "상품준비중" else case when e.completed_at is null then "배송중" else "배송완료" end end as status ,
                 concat(
                 (opt1.name_ko  ) , " / ",
@@ -334,6 +335,7 @@ class ShopController extends Controller
                 
                 and f.brand_id = g.id
                 and a.user_id=? 
+                and a.deleted_at is null
                 order by a.id desc , product_id desc
                 ;', [$user_id]);
 
@@ -762,7 +764,9 @@ class ShopController extends Controller
             $orderId = DB::select('select id from orders
                                         where user_id=? and order_no=? order by id desc limit 1; ', [$user_id, $orderNo]);
 
-            PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId );
+            if ($use_point > 0) {
+                PointController::change_point($user_id, $use_point * -1, 'order_use_point', 'order', $orderId[0]->id);
+            }
 
             DB::commit();
         } catch (Exception $e) {
@@ -774,17 +778,17 @@ class ShopController extends Controller
             try {
 
                 DB::beginTransaction();
-                 
-                // $brand_id = DB::select('select brand_id From products where id = ?; ', [107]);
 
-                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id,  qty)
+                $brand_id = DB::select('select brand_id From products where id = ?;', [$value['product_id']]);
+
+                $product = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, product_id, qty)
                                                     VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['sale_price'], $value['product_id'], $value['qty']]);
-                
+
                 if ($value['shipping_fee'] > 0) {
-                    $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, qty)
-                                                    VALUES(?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $value['qty']]);
+                    $shipping_fee = DB::insert('INSERT into order_products(created_at, updated_at, order_id, price, brand_id, qty)
+                                                    VALUES(?, ?, ?, ?, ?, ?); ', [$time, $time, $orderId[0]->id, $value['shipping_fee'], $brand_id[0]->brand_id, 1]);
                 }
-  
+
 
                 DB::commit();
 
