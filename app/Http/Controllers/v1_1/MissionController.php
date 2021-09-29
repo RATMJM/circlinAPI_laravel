@@ -828,25 +828,26 @@ class MissionController extends Controller
                      g.intro_image_6,
                      g.intro_image_7, g.intro_image_8, g.intro_image_9, g.intro_image_10,
                      g.subtitle_1 , `description`, g.subtitle_3 , g.subtitle_4 ,g.subtitle_5 , g.subtitle_6, g.subtitle_7 
-             FROM users a, 
-             missions b LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
-                        LEFT JOIN mission_etc g on  b.id=g.mission_id , 
-             mission_stats d 
-             LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
-             left join feed_missions e on   d.id=e.mission_stat_id
+             FROM missions b
+                LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
+                LEFT JOIN mission_etc g on  b.id=g.mission_id
+                LEFT JOIN mission_stats d on b.id=d.mission_id
+                LEFT JOIN users a on d.user_id=a.id
+                LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
+                left join feed_missions e on   d.id=e.mission_stat_id
              
-             where b.id=d.mission_id
-             and d.user_id=a.id
+             where 
              -- and b.id=e.mission_id
              -- and e.mission_stat_id=d.id 
-             and a.id= ?    and d.id=? and b.id =?
+             -- and 
+                   b.id =?
               ; ', [$mission_id, $mission_id,
                 $user_id,
                 $mission_id,
                 $mission_stat_id, $mission_id, $today, $mission_id,
                 $user_id, $today, $mission_id, $user_id, $yesterDay, $mission_id,
                 $today,
-                $user_id, $mission_stat_id, $mission_id]);
+                $mission_id]);
 
 
         } catch (Exception $e) {
@@ -939,8 +940,8 @@ class MissionController extends Controller
          GROUP BY  b.distance, c.goal_distance
          union 
          select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,  
-            ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count,
-            ifnull((select count(id) from feed_missions where mission_id= ? and created_at >= ?) ,0) today_cert_count
+            ifnull((select count(feeds.id) from feed_missions join feeds on feeds.id=feed_id and feeds.deleted_at is null where mission_id= ? ) ,0) cert_count,
+            ifnull((select count(feeds.id) from feed_missions join feeds on feeds.id=feed_id and feeds.deleted_at is null where mission_id= ? and feeds.created_at >= ?) ,0) today_cert_count
          
          limit 1',
                 [$mission_id, $mission_id, date('Y-m-d'), $mission_stat_id, $user_id, $mission_id, $mission_id, $mission_id, date('Y-m-d')]);
