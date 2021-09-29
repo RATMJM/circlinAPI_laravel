@@ -105,11 +105,12 @@ class BaseController extends Controller
         ]);
     }
 
-    public function error_logging(Request $request, $type, $client_time, $message, $stack_trace): array
+    public function error_logging(Request $request, $type, $client_time, $ip, $message, $stack_trace): array
     {
         $data = [
             'type' => $type ?? $request->get('type'),
             'user_id' => token_option()?->uid,
+            'ip' => $ip ?? $request->get('ip'),
             'client_time' => $client_time ?? $request->get('client_time'),
             'message' => $message ?? $request->get('message'),
             'stack_trace' => $stack_trace ?? $request->get('stack_trace'),
