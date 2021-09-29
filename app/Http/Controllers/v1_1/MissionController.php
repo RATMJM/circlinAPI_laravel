@@ -781,7 +781,7 @@ class MissionController extends Controller
 
         try {
             DB::beginTransaction();
-            /*$event_mission_info = Mission::where('missions.id', $mission_id)
+            $event_mission_info = Mission::where('missions.id', $mission_id)
                 ->leftJoin('circlinDEV.CHALLENGE_INFO_2', 'CHALLENGE_INFO_2.CHALLINFO_PK', 'missions.id')
                 ->leftJoin('mission_etc', 'mission_etc.mission_id', 'missions.id')
                 ->leftJoin('mission_stats', 'mission_stats.mission_id', 'missions.id')
@@ -794,10 +794,11 @@ class MissionController extends Controller
                             'INS_DATE' => $today,
                         ]);
                 })
+                ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
                 ->select([
                     'mission_stats.id as mission_stat_id', 'mission_stats.certification_image',
                     'mission_stats.mission_id',
-                    DB::raw("CASE WHEN ? ='1213' THEN '40000' ELSE '' END AS MAX_NUM"),
+                    DB::raw("CASE WHEN $mission_id ='1213' THEN '40000' ELSE '' END AS MAX_NUM"),
                     'users.gender', 'users.nickname', 'users.profile_image', 'users.id as user_id',
                     DB::raw("IFNULL(RUN_RANK.RANK,0) as RANK"),
                     DB::raw("round(mission_stats.goal_distance - feed_missions.distance,3) as REMAIN_DIST"),
@@ -805,14 +806,14 @@ class MissionController extends Controller
                     'feed_missions.distance_origin', 'feed_missions.laptime_origin',
                     'SCORE' => MissionStat::selectRaw("COUNT(user_id)")->whereColumn('user_id', 'users.id')
                         ->where('mission_id', $mission_id),
-                    DB::raw("CASE WHEN d.completed_at is null THEN '' ELSE '1' END as BONUS_FLAG"),
-                    DB::raw("CASE when $today between b.reserve_started_at and b.reserve_ended_at then 'R'
-                      when $today between b.started_at and b.ended_at then 'Y'
+                    DB::raw("CASE WHEN mission_stats.completed_at is null THEN '' ELSE '1' END as BONUS_FLAG"),
+                    DB::raw("CASE when $today between missions.reserve_started_at and missions.reserve_ended_at then 'R'
+                      when $today between missions.started_at and missions.ended_at then 'Y'
                       ELSE 'N' end as STATE"),
                     'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                     'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
                     'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
-                    'CERT_TODAY' => FeedMission::sleectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
+                    'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                         ->where('created_at', '>=', $today),
                     'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
                         ->whereNotNull('completed_at'),
@@ -820,77 +821,84 @@ class MissionController extends Controller
                         (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
                         FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
                         WHERE  a._ID=b.USER_PK
-                        and USER_PK= ?  and INS_DATE=? and DEL_YN='N' and b.SEX='A' and b.CHALL_ID= ? limit 0,1) TODAY
+                        and USER_PK= $user_id  and INS_DATE=$today and DEL_YN='N' and b.SEX='A' and b.CHALL_ID= $mission_stat_id limit 0,1) TODAY
                         LEFT JOIN
                         (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
                         FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
                         WHERE
-                        a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN='N'
-                        and b.SEX='A' and b.CHALL_ID= ? limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
-                        ),'') as CHANGED")
+                        a._ID=b.USER_PK and USER_PK= $user_id  and INS_DATE= $today and DEL_YN='N'
+                        and b.SEX='A' and b.CHALL_ID= $mission_stat_id limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
+                        ),'') as CHANGED"),
+                    'mission_etc.bg_image', 'mission_etc.info_image_1', 'mission_etc.info_image_2', 'mission_etc.info_image_3',
+                    'mission_etc.info_image_4', 'mission_etc.info_image_5', 'mission_etc.info_image_6', 'mission_etc.info_image_7',
+                    'mission_etc.intro_image_1', 'mission_etc.intro_image_2', 'mission_etc.intro_image_3', 'mission_etc.intro_image_4',
+                    'mission_etc.intro_image_5', 'mission_etc.intro_image_6', 'mission_etc.intro_image_7', 'mission_etc.intro_image_8',
+                    'mission_etc.intro_image_9', 'mission_etc.intro_image_10',
+                    'mission_etc.subtitle_1', 'missions.description', 'mission_etc.subtitle_3', 'mission_etc.subtitle_4',
+                    'mission_etc.subtitle_5', 'mission_etc.subtitle_6', 'mission_etc.subtitle_7',
                 ])
                 ->distinct()
-                ->get();*/
+                ->get();
 
-            $event_mission_info = DB::select('SELECT distinct d.id as mission_stat_id, d.certification_image,
-             b.id as mission_id , 
-             CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
-             ifnull(c.RANK,0) as RANK, 
-             round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance , 
+            /*$event_mission_info = DB::select('SELECT distinct d.id as mission_stat_id, d.certification_image,
+             b.id as mission_id ,
+             CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,
+             ifnull(c.RANK,0) as RANK,
+             round(d.goal_distance - e.distance,3) as REMAIN_DIST, goal_distance ,
              e.distance, e.laptime, e.laptime_origin, e.distance_origin,
                (select count(user_id) from mission_stats where mission_id=? and user_id=a.id) as SCORE ,
-              case when d.completed_at is null then "" else "1" end as BONUS_FLAG,   
+              case when d.completed_at is null then "" else "1" end as BONUS_FLAG,
               CASE when date_add(SYSDATE() , interval + 9 hour ) between b.reserve_started_at and b.reserve_ended_at then "R"
               when date_add(SYSDATE() , interval + 9 hour ) between b.started_at and b.ended_at then "Y"
               ELSE "N" end as STATE,
- 
-               ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER, 
-               ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI, 
+
+               ifnull((select count(user_id) from follows where target_id= ? ) ,0) as FOLLOWER,
+               ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as CHALL_PARTI,
                b.started_at as START_DATE, Adddate(b.ended_at, interval 1 day )  as END_DAY1,
-               (SELECT COUNT(*) FROM  feed_missions WHERE  mission_stat_id = ? 
+               (SELECT COUNT(*) FROM  feed_missions WHERE  mission_stat_id = ?
                and mission_id= ? and substr(created_at,1,10)= ?)  as CERT_TODAY,
-               (SELECT count(k.mission_id) FROM mission_stats k 
+               (SELECT count(k.mission_id) FROM mission_stats k
                  WHERE k.mission_id=? and completed_at is not null) as FINISH,
               ifnull(   ( SELECT ifnull(YEST.RANK-TODAY.RANK,"0") CHANGED FROM
                              (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
                              FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
                              WHERE  a._ID=b.USER_PK
-                             and USER_PK= ?  and INS_DATE=? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1) TODAY 
-                             LEFT JOIN 
+                             and USER_PK= ?  and INS_DATE=? and DEL_YN="N" and b.SEX="A" and b.CHALL_ID= ? limit 0,1) TODAY
+                             LEFT JOIN
                              (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
                              FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
                              WHERE
-                             a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN="N" 
+                             a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN="N"
                              and b.SEX="A" and b.CHALL_ID= ? limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
                         ),"") as CHANGED,
                      g.bg_image,
-                     g.info_image_1 , 
-                     g.info_image_2, 
+                     g.info_image_1 ,
+                     g.info_image_2,
                      g.info_image_3,
                      g.info_image_4,
                      g.info_image_5,
                      g.info_image_6,
                      g.info_image_7,
-                     g.intro_image_1, 
-                     g.intro_image_2, 
+                     g.intro_image_1,
+                     g.intro_image_2,
                      g.intro_image_3,
                      g.intro_image_4,
                      g.intro_image_5,
                      g.intro_image_6,
                      g.intro_image_7, g.intro_image_8, g.intro_image_9, g.intro_image_10,
-                     g.subtitle_1 , `description`, g.subtitle_3 , g.subtitle_4 ,g.subtitle_5 , g.subtitle_6, g.subtitle_7 
+                     g.subtitle_1 , `description`, g.subtitle_3 , g.subtitle_4 ,g.subtitle_5 , g.subtitle_6, g.subtitle_7
              FROM missions b
                 LEFT JOIN circlinDEV.CHALLENGE_INFO_2 f on b.id=f.CHALLINFO_PK
                 LEFT JOIN mission_etc g on  b.id=g.mission_id
                 LEFT JOIN mission_stats d on b.id=d.mission_id
                 LEFT JOIN users a on d.user_id=a.id
-                LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ? 
+                LEFT JOIN circlinDEV.RUN_RANK c on  d.id = c.CHALL_PK and c.SEX="A" and c.DEL_YN="N" and c.INS_DATE= ?
                 left join feed_missions e on   d.id=e.mission_stat_id
-             
-             where 
+
+             where
              -- and b.id=e.mission_id
-             -- and e.mission_stat_id=d.id 
-             -- and 
+             -- and e.mission_stat_id=d.id
+             -- and
                    b.id =?
               ; ', [$mission_id, $mission_id,
                 $user_id,
@@ -898,7 +906,7 @@ class MissionController extends Controller
                 $mission_stat_id, $mission_id, $today, $mission_id,
                 $user_id, $today, $mission_id, $user_id, $yesterDay, $mission_id,
                 $today,
-                $mission_id]);
+                $mission_id]);*/
 
 
         } catch (Exception $e) {
