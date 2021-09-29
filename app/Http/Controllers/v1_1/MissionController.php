@@ -781,7 +781,58 @@ class MissionController extends Controller
 
         try {
             DB::beginTransaction();
-            $event_mission_info = DB::select('SELECT distinct d.id as mission_stat_id, d.image as certification_image,
+            /*$event_mission_info = Mission::where('missions.id', $mission_id)
+                ->leftJoin('circlinDEV.CHALLENGE_INFO_2', 'CHALLENGE_INFO_2.CHALLINFO_PK', 'missions.id')
+                ->leftJoin('mission_etc', 'mission_etc.mission_id', 'missions.id')
+                ->leftJoin('mission_stats', 'mission_stats.mission_id', 'missions.id')
+                ->leftJoin('users', 'users.id', 'mission_stats.user_id')
+                ->leftJoin('circlinDEV.RUN_RANK', function ($query) use ($today) {
+                    $query->on('RUN_RANK.CHALL_PK', 'missions.id')
+                        ->where([
+                            'sex' => 'A',
+                            'DEL_YN' => 'N',
+                            'INS_DATE' => $today,
+                        ]);
+                })
+                ->select([
+                    'mission_stats.id as mission_stat_id', 'mission_stats.certification_image',
+                    'mission_stats.mission_id',
+                    DB::raw("CASE WHEN ? ='1213' THEN '40000' ELSE '' END AS MAX_NUM"),
+                    'users.gender', 'users.nickname', 'users.profile_image', 'users.id as user_id',
+                    DB::raw("IFNULL(RUN_RANK.RANK,0) as RANK"),
+                    DB::raw("round(mission_stats.goal_distance - feed_missions.distance,3) as REMAIN_DIST"),
+                    'mission_stats.goal_distance','feed_missions.distance', 'feed_missions.laptime',
+                    'feed_missions.distance_origin', 'feed_missions.laptime_origin',
+                    'SCORE' => MissionStat::selectRaw("COUNT(user_id)")->whereColumn('user_id', 'users.id')
+                        ->where('mission_id', $mission_id),
+                    DB::raw("CASE WHEN d.completed_at is null THEN '' ELSE '1' END as BONUS_FLAG"),
+                    DB::raw("CASE when $today between b.reserve_started_at and b.reserve_ended_at then 'R'
+                      when $today between b.started_at and b.ended_at then 'Y'
+                      ELSE 'N' end as STATE"),
+                    'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
+                    'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
+                    'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
+                    'CERT_TODAY' => FeedMission::sleectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
+                        ->where('created_at', '>=', $today),
+                    'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
+                        ->whereNotNull('completed_at'),
+                    DB::raw("ifnull(   ( SELECT ifnull(YEST.RANK-TODAY.RANK,'0') CHANGED FROM
+                        (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
+                        FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
+                        WHERE  a._ID=b.USER_PK
+                        and USER_PK= ?  and INS_DATE=? and DEL_YN='N' and b.SEX='A' and b.CHALL_ID= ? limit 0,1) TODAY
+                        LEFT JOIN
+                        (SELECT b.RANK, b.USER_PK, a.TIER, a.NICKNAME, a.PROFILE_IMG, a.FOLLOWER
+                        FROM circlinDEV.MEMBERDATA a, circlinDEV.RUN_RANK b
+                        WHERE
+                        a._ID=b.USER_PK and USER_PK= ?  and INS_DATE= ? and DEL_YN='N'
+                        and b.SEX='A' and b.CHALL_ID= ? limit 0,1)  YEST  on  TODAY.USER_PK=YEST.USER_PK
+                        ),'') as CHANGED")
+                ])
+                ->distinct()
+                ->get();*/
+
+            $event_mission_info = DB::select('SELECT distinct d.id as mission_stat_id, d.certification_image,
              b.id as mission_id , 
              CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,  
              ifnull(c.RANK,0) as RANK, 
