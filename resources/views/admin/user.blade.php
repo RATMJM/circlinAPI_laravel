@@ -55,7 +55,7 @@
             <th style="width: 200px">닉네임</th>
             <th style="width: 50px">성별</th>
             <th style="width: 150px">생년월일</th>
-            <th style="width: 200px">사는 동네</th>
+            <th style="width: 220px">사는 동네</th>
             <th style="width: 80px">팔로잉</th>
             <th style="width: 150px">가입일</th>
         </tr>
