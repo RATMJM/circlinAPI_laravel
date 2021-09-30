@@ -20,4 +20,9 @@ class Place extends Model
     {
         return $this->belongsToMany(Mission::class, MissionPlace::class);
     }
+
+    public function feeds()
+    {
+        return $this->belongsToMany(Feed::class, FeedPlace::class);
+    }
 }

@@ -93,11 +93,14 @@ Route::post('/participant_list', [v1_1\MissionController::class, 'participant_li
 Route::post('/certification_image', [v1_1\MissionController::class, 'certification_image']);
 Route::post('/doublezone_feed_list', [v1_1\MissionController::class, 'doublezone_feed_list']);
 
+/* 미션 */
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
     Route::post('/', [v1_1\MissionController::class, 'store'])->name('store');
     Route::group(['prefix' => '{mission_id}'], function () {
         Route::get('/', [v1_1\MissionController::class, 'show'])->name('show');
         Route::get('/feed', [v1_1\MissionController::class, 'feed'])->name('feed');
+        Route::get('/place/{available?}', [v1_1\MissionController::class, 'place_available'])->name('place.available')
+            ->where(['available' => 'available']);
         Route::get('/edit', [v1_1\MissionController::class, 'edit'])->name('edit');
         Route::patch('/', [v1_1\MissionController::class, 'update'])->name('update');
         Route::delete('/', [v1_1\MissionController::class, 'destroy'])->name('destroy');

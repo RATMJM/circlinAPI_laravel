@@ -515,6 +515,26 @@ class MissionController extends Controller
         ]);
     }
 
+    public function place_available($mission_id, $available): array
+    {
+        $places = Place::where('mission_places.mission_id', $mission_id)
+            ->when($available, function ($query) {
+                $query->whereDoesntHave('feeds', function ($query) {
+                    $query->where('feeds.created_at', '>=', date('Y-m-d'));
+                });
+            })
+            ->join('mission_places', 'mission_places.place_id', 'places.id')
+            ->select('places.*')
+            ->distinct()
+            ->get();
+
+        return success([
+            'result' => true,
+            'places_count' => count($places),
+            'places' => $places,
+        ]);
+    }
+
     public function edit($mission_id): array
     {
         $user_id = token()->uid;
