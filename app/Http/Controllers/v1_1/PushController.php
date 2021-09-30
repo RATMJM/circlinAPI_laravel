@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
+use App\Models\MissionStat;
 use App\Models\PushHistory;
 use App\Models\User;
 use Exception;
@@ -104,5 +105,28 @@ class PushController extends Controller
         } else {
             return ['res' => (array)json_decode($result), 'json' => $arrayToSend];
         }
+    }
+
+    public static function send_mission_push($push, $user_id, $mission_id)
+    {
+        if ($push->target === 'self') {
+            $ids = [$user_id];
+        } elseif ($push->target === 'mission') {
+            $ids = MissionStat::where('mission_id', $mission_id)->pluck('user_id');
+        } elseif ($push->target === 'all') {
+            $ids = User::pluck('user_id');
+        } else {
+            $ids = [];
+        }
+
+        $tmp = [];
+        foreach ($ids as $i => $id) {
+            $tmp[] = $id;
+            if (count($tmp) >= 1000) {
+                PushController::gcm_notify($tmp, '써클인', $push->message);
+                $tmp = [];
+            }
+        }
+        PushController::gcm_notify($tmp, '써클인', $push->message);
     }
 }

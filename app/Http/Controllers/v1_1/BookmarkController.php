@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\FeedMission;
 use App\Models\Mission;
 use App\Models\MissionComment;
+use App\Models\MissionPush;
 use App\Models\MissionStat;
 use App\Models\Place;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class BookmarkController extends Controller
@@ -107,7 +107,7 @@ class BookmarkController extends Controller
             foreach ($data->groupBy('category_title') as $i => $item) {
                 $tmp[] = [
                     'id' => $item[0]->category_id, 'title' => $i, 'emoji' => $item[0]->emoji,
-                    'missions' => $item->toArray()
+                    'missions' => $item->toArray(),
                 ];
             }
             $data = $tmp;
@@ -133,14 +133,24 @@ class BookmarkController extends Controller
 
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
-        /*} elseif (MissionStat::where('user_id', $user_id)->count() >= 5) {
-            return success(['result' => false, 'reason' => 'bookmark is full']);*/
+            /*} elseif (MissionStat::where('user_id', $user_id)->count() >= 5) {
+                return success(['result' => false, 'reason' => 'bookmark is full']);*/
         } elseif (Mission::select(DB::raw("(missions.started_at is null or missions.started_at<=now()) and
             (missions.ended_at is null or missions.ended_at>now()) as is_available"))->where('id', $mission_id)->value('is_available')) {
             $data = MissionStat::create([
                 'user_id' => $user_id,
                 'mission_id' => $mission_id,
             ]);
+
+            // 조건별 푸시
+            $pushes = MissionPush::where('mission_id', $mission_id)->get();
+            if (count($pushes) > 0) {
+                foreach ($pushes as $push) {
+                    if ($push->type === 'bookmark' && $push->value > 0) {
+                        PushController::send_mission_push($push, $user_id, $mission_id);
+                    }
+                }
+            }
             return success(['result' => (bool)$data]);
         }
     }
