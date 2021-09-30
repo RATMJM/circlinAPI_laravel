@@ -804,11 +804,11 @@ class UserController extends Controller
         $missions = Mission::whereNotNull('mission_categories.mission_category_id')
             ->where(function ($query) {
                 $query->where(function ($query) {
-                        $query->whereNull('mission_stats.ended_at')
-                            ->orWhere(Feed::selectRaw("COUNT(1)")->whereColumn('feeds.user_id', 'mission_stats.user_id')
-                                ->whereColumn('feed_missions.mission_id', 'missions.id')
-                                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'), '>', 0);
-                    });
+                    $query->whereNull('mission_stats.ended_at')
+                        ->orWhere(Feed::selectRaw("COUNT(1)")->whereColumn('feeds.user_id', 'mission_stats.user_id')
+                            ->whereColumn('feed_missions.mission_id', 'missions.id')
+                            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'), '>', 0);
+                });
             })
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->join('mission_stats', function ($query) use ($user_id) {
