@@ -21,10 +21,10 @@ class BannerController extends Controller
         $now = date('Y-m-d H:i:s');
 
         $banners = Banner::whereIn('type', Arr::wrap($type))
-            /*->where(function ($query) use ($now) {
+            ->where(function ($query) use ($now) {
                 $query->where('started_at', '<=', $now)
                     ->orWhereNull('started_at');
-            })*/
+            })
             ->where(function ($query) use ($now) {
                 $query->where('ended_at', '>', $now)
                     ->orWhereNull('ended_at');
