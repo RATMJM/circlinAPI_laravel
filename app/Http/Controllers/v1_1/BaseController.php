@@ -108,7 +108,8 @@ class BaseController extends Controller
         ]);
     }
 
-    public function error_logging(Request $request, $type, $client_time, $ip, $message, $stack_trace): array
+    public function error_logging(Request $request, string $type = null, string $client_time = null,
+                                  string $ip = null, string $message = null, string $stack_trace = null): array
     {
         $data = [
             'type' => $type ?? $request->get('type'),
