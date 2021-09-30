@@ -801,22 +801,18 @@ class UserController extends Controller
         $limit = $limit ?? $request->get('limit', 20);
         $page = $request->get('page', 0);
 
-        $missions = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+        $missions = Mission::whereNotNull('mission_categories.mission_category_id')
             ->where(function ($query) use ($user_id) {
-                $query->whereNull('mission_stats.ended_at')
-                    ->where('mission_stats.user_id', $user_id)
-                    ->orWhere('feeds.user_id', $user_id);
-            })
-            ->join('missions', 'missions.mission_category_id', 'mission_categories.id')
-            ->join('mission_stats', 'mission_stats.mission_id', 'missions.id')
-            ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
-            ->leftJoin('feeds', function ($query) use ($uid) {
-                $query->on('feeds.id', 'feed_missions.feed_id')
-                    ->whereNull('feeds.deleted_at')
-                    ->where(function ($query) use ($uid) {
-                        // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
+                $query->where('mission_stats.user_id', $user_id)
+                    ->where(function ($query) use ($user_id) {
+                        $query->whereNull('mission_stats.ended_at')
+                            ->orWhere(Feed::selectRaw("COUNT(1)")->whereColumn('feeds.user_id', 'mission_stats.user_id')
+                                ->whereColumn('feed_missions.mission_id', 'missions.id')
+                                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'), '>', 0);
                     });
-            });
+            })
+            ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
+            ->join('mission_stats', 'mission_stats.mission_id', 'missions.id');
 
         $categories = $missions->select([
             'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
@@ -827,10 +823,10 @@ class UserController extends Controller
         $missions->getQuery()->groups = null;
 
         $missions->when($category_id, function ($query, $category_id) {
-                $query->whereHas('missions', function ($query) use ($category_id) {
-                    $query->whereIn('missions.mission_category_id', Arr::wrap($category_id));
-                });
+            $query->whereHas('missions', function ($query) use ($category_id) {
+                $query->whereIn('missions.mission_category_id', Arr::wrap($category_id));
             });
+        });
 
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
 
@@ -897,8 +893,8 @@ class UserController extends Controller
                                 // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
                             });
                     })->limit(1),
-                DB::raw("COUNT(distinct feeds.id) as feeds_count"),
             ])
+            ->withCount('feeds')
             ->groupBy('mission_categories.id', 'missions.id', 'users.id',
                 'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
             ->when($user_id == $uid, function ($query) {
