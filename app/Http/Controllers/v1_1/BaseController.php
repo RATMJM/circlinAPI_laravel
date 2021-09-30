@@ -113,7 +113,7 @@ class BaseController extends Controller
         $data = [
             'type' => $type ?? $request->get('type'),
             'user_id' => token_option()?->uid,
-            'ip' => $ip ?? $request->get('ip'),
+            'ip' => $ip ?? $request->ip(),
             'client_time' => date('Y-m-d H:i:s', strtotime($client_time)) ?? $request->get('client_time'),
             'message' => $message ?? $request->get('message'),
             'stack_trace' => $stack_trace ?? $request->get('stack_trace'),
