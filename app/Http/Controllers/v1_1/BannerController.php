@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -20,10 +21,10 @@ class BannerController extends Controller
         $now = date('Y-m-d H:i:s');
 
         $banners = Banner::whereIn('type', Arr::wrap($type))
-            ->where(function ($query) use ($now) {
+            /*->where(function ($query) use ($now) {
                 $query->where('started_at', '<=', $now)
                     ->orWhereNull('started_at');
-            })
+            })*/
             ->where(function ($query) use ($now) {
                 $query->where('ended_at', '>', $now)
                     ->orWhereNull('ended_at');
@@ -33,8 +34,8 @@ class BannerController extends Controller
                     ->where('common_codes.ctg_lg', 'click_action');
             })
             ->select([
-                'banners.image', 'common_codes.content_ko as link',
-                DB::raw("CASE WHEN link_type='mission' THEN mission_id
+                'banners.image', 'banners.link_type', 'common_codes.content_ko as link',
+                DB::raw("CASE WHEN link_type in ('mission','event_mission') THEN mission_id
                     WHEN link_type='product' THEN product_id
                     WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url'
             ])
