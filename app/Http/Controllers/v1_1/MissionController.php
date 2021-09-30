@@ -18,6 +18,7 @@ use App\Models\MissionComment;
 use App\Models\MissionImage;
 use App\Models\MissionPlace;
 use App\Models\MissionProduct;
+use App\Models\MissionPush;
 use App\Models\MissionStat;
 use App\Models\OutsideProduct;
 use App\Models\Place;
@@ -1198,6 +1199,14 @@ class MissionController extends Controller
 
             DB::commit();
 
+            $pushes = MissionPush::where('mission_id', $mission_id)->get();
+            if (count($pushes) > 0) {
+                foreach ($pushes as $push) {
+                    if ($push->type === 'bookmark' && $push->value > 0) {
+                        PushController::send_mission_push($push, $user_id, $mission_id);
+                    }
+                }
+            }
 
             $mission_stat_id = DB::select('select max(id) as mission_stat_id
             From mission_stats a
