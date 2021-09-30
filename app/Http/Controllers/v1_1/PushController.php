@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
+use App\Models\Mission;
 use App\Models\MissionStat;
 use App\Models\PushHistory;
 use App\Models\User;
@@ -123,11 +124,13 @@ class PushController extends Controller
 
         $tag = "mission_cond_{$push->type}.$mission_id";
 
+        $mission_title = Mission::where('id', $mission_id)->value('title');
+
         $tmp = [];
         foreach ($ids as $i => $id) {
             $tmp[] = $id;
             if (count($tmp) >= 1000) {
-                PushController::gcm_notify($tmp, '써클인', $push->message, '', $tag, $mission_id);
+                PushController::gcm_notify($tmp, '써클인', "[$mission_title]\n".$push->message, '', $tag, $mission_id);
                 $tmp = [];
             }
         }
