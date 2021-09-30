@@ -802,9 +802,8 @@ class UserController extends Controller
         $page = $request->get('page', 0);
 
         $missions = Mission::whereNotNull('mission_categories.mission_category_id')
-            ->where(function ($query) use ($user_id) {
-                $query->where('mission_stats.user_id', $user_id)
-                    ->where(function ($query) use ($user_id) {
+            ->where(function ($query) {
+                $query->where(function ($query) {
                         $query->whereNull('mission_stats.ended_at')
                             ->orWhere(Feed::selectRaw("COUNT(1)")->whereColumn('feeds.user_id', 'mission_stats.user_id')
                                 ->whereColumn('feed_missions.mission_id', 'missions.id')
@@ -812,7 +811,10 @@ class UserController extends Controller
                     });
             })
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
-            ->join('mission_stats', 'mission_stats.mission_id', 'missions.id');
+            ->join('mission_stats', function ($query) use ($user_id) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->where('mission_stats.user_id', $user_id);
+            });
 
         $categories = $missions->select([
             'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
