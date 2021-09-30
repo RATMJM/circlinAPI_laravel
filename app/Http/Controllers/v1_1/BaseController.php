@@ -96,11 +96,14 @@ class BaseController extends Controller
     {
         $version = $request->get('version');
 
+        $latest_version = Version::orderBy('id', 'desc')->value('version');
+
         $is_force = Version::where('id', '>', Version::select('id')->where('version', $version)->value('id') ?? 0)
             ->where('is_force', true)->exists();
 
         return success([
             'result' => true,
+            'latest_version' => $latest_version,
             'is_force' => $is_force,
         ]);
     }
