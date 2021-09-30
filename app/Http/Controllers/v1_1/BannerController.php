@@ -45,7 +45,14 @@ class BannerController extends Controller
 
 
         foreach ($banners as $i => $banner) {
-            $banners[$i]->link = code_replace($banner->link, ['id' => $banner->link_id]);
+            $params = match ($banner->link_type) {
+                'event_mission' => [
+                    'id' => $banner->link_id,
+                    'user_id' => token_option()?->uid,
+                ],
+                default => ['id' => $banner->link_id],
+            };
+            $banner->link = code_replace($banner->link, $params);
         }
 
         return success([
