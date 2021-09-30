@@ -119,6 +119,8 @@ class PushController extends Controller
             $ids = [];
         }
 
+        $push->increment('count');
+
         $tag = "mission_{$push->type}.$mission_id";
 
         $tmp = [];
