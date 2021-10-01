@@ -41,6 +41,12 @@ class Kernel extends ConsoleKernel
         $schedule->call([ScheduleController::class, 'mission_expire_warning_pm'])->dailyAt('20:00')->name('2차 미션 인증 알림');
 
         $schedule->command('telescope:prune --hours=72')->daily();
+
+        $schedule->call(function () {
+            $msg = "[월드비전 6K 하이킹2 D-1] 내일부터 시작되는 아프리카 아이들을 위한 하이킹, 모두 준비 되셨나요? 😎";
+            $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
+            PushController::gcm_notify($users, '써클인', $msg, '', 'mission',1671);
+        })->cron('30 19 01 10 *');
     }
 
     /**
