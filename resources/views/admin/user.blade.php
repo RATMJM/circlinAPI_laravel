@@ -63,7 +63,7 @@
         <tbody>
         @forelse($users as $user)
             <tr>
-                <td style="text-align: center">{{ $user->id }}</td>
+                <td class="center">{{ $user->id }}</td>
                 <td>
                     @php(preg_match('/@(.+)$/', $user->email, $at) && $at = $at[1])
                     @if($at === 'K')
@@ -80,25 +80,25 @@
                 </td>
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->nickname }}</td>
-                <td style="text-align: center">
+                <td class="center">
                     @if($user->gender === 'M')
                         <span style="color:blue">남</span>
                     @elseif($user->gender === 'W')
                         <span style="color:red">여</span>
                     @endif
                 </td>
-                <td style="text-align: center">@if($user->birthday){{ date('Y년 m월 d일', strtotime($user->birthday)) }}@endif</td>
+                <td class="center">@if($user->birthday){{ date('Y년 m월 d일', strtotime($user->birthday)) }}@endif</td>
                 <td>{{ $user->area }}</td>
-                <td style="text-align: center">{{ $user->following }}</td>
-                <td style="text-align: center">{{ $user->created_at }}</td>
+                <td class="center">{{ $user->following }}</td>
+                <td class="center">{{ $user->created_at }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="0" style="text-align: center">유저가 없습니다.</td>
+                <td colspan="0" class="center">유저가 없습니다.</td>
             </tr>
         @endforelse
         </tbody>
     </table>
     <br>
-    <div style="text-align: center">{{ $users->withQUeryString()->links() }}</div>
+    <div class="center">{{ $users->withQUeryString()->links() }}</div>
 @endsection

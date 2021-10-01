@@ -57,7 +57,7 @@
         <tbody>
         @forelse($feeds as $feed)
             <tr>
-                <td rowspan="{{ max(count($feed->missions), 1) }}" style="text-align: center">
+                <td rowspan="{{ max(count($feed->missions), 1) }}" class="center">
                     {{ $feed->id }}
                     <br>{{ $feed->is_hidden ? '🔒︎' : '' }}
                 </td>
@@ -71,16 +71,16 @@
                     @endforeach
                 </td>
                 <td rowspan="{{ max(count($feed->missions), 1) }}">
-                    {!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}
+                    {!! rn_to_br($feed->content) !!}
                 </td>
                 @if(count($feed->missions) > 0)
                     <td>{{ $feed->missions[0]->emoji }} {{ $feed->missions[0]->category }}</td>
                     <td>{{ $feed->missions[0]->title }}</td>
                 @else
-                    <td colspan="2" style="text-align: center">미션이 없습니다.</td>
+                    <td colspan="2" class="center">미션이 없습니다.</td>
                 @endif
                 <td rowspan="{{ max(count($feed->missions), 1) }}">{{ $feed->nickname }}<br>({{ $feed->email }})</td>
-                <td rowspan="{{ max(count($feed->missions), 1) }}" style="text-align: center">{{ $feed->created_at }}</td>
+                <td rowspan="{{ max(count($feed->missions), 1) }}" class="center">{{ $feed->created_at }}</td>
             </tr>
             @foreach($feed->missions as $mission)
                 @if($loop->first) @continue @endif
@@ -91,11 +91,11 @@
             @endforeach
         @empty
             <tr>
-                <td colspan="0" style="text-align: center">피드가 없습니다.</td>
+                <td colspan="0" class="center">피드가 없습니다.</td>
             </tr>
         @endforelse
         </tbody>
     </table>
     <br>
-    <div style="text-align: center">{{ $feeds->withQUeryString()->links() }}</div>
+    <div class="center">{{ $feeds->withQUeryString()->links() }}</div>
 @endsection

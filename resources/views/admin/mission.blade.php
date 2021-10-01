@@ -61,8 +61,8 @@
         <tbody>
         @forelse($missions->groupBy('id') as $mission)
             <tr>
-                <td style="text-align: center">{{ $mission[0]->id }}</td>
-                <td style="text-align: center">{{ $mission[0]->category }}</td>
+                <td class="center">{{ $mission[0]->id }}</td>
+                <td class="center">{{ $mission[0]->category }}</td>
                 <td><img src="{{ $mission[0]->thumbnail_image }}" alt="" width="100%"></td>
                 <td>{{ $mission[0]->title }}</td>
                 <td>{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $mission[0]->description) !!}</td>
@@ -71,17 +71,17 @@
                         {{ $area }} {!! $loop->last ? '' : '<br>' !!}
                     @endforeach
                 </td>
-                <td style="text-align: center">{{ $mission[0]->success_count ? '1회성' : '일반' }}</td>
+                <td class="center">{{ $mission[0]->success_count ? '1회성' : '일반' }}</td>
                 <td>{{ $mission[0]->nickname }}<br>({{ $mission[0]->email }})</td>
-                <td style="text-align: center">{{ $mission[0]->created_at }}</td>
+                <td class="center">{{ $mission[0]->created_at }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="0" style="text-align: center">미션이 없습니다.</td>
+                <td colspan="0" class="center">미션이 없습니다.</td>
             </tr>
         @endforelse
         </tbody>
     </table>
     <br>
-    <div style="text-align: center">{{ $missions->withQUeryString()->links() }}</div>
+    <div class="center">{{ $missions->withQUeryString()->links() }}</div>
 @endsection

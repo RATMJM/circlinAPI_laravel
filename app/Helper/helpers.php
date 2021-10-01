@@ -315,3 +315,8 @@ function mission_areas($mission_id)
         ->select(['mission_id', 'areas.name'])
         ->orderBy('areas.code');
 }
+
+function rn_to_br($text)
+{
+    return preg_replace('/(\r|\n|\r\n)/', '<br>', $text);
+}

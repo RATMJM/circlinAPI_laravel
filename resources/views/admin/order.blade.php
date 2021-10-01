@@ -70,7 +70,7 @@
                     <br>({{ $order[0]->phone }})
                 </td>
                 <td rowspan="{{ $rowspan }}">{{ $order[0]->comment }}</td>
-                <td rowspan="{{ $rowspan }}" style="text-align: center">
+                <td rowspan="{{ $rowspan }}" class="center">
                     {{ number_format($order[0]->total_price) }}<br>({{ number_format($order[0]->use_point) }})
                 </td>
                 @foreach($order->whereNotNull('ship_brand_id') as $ship_brand)
@@ -78,9 +78,9 @@
                         <b>[{{ $ship_brand->ship_brand_name }}]</b> 배송비
                         <br>{{ number_format($ship_brand->product_price) }}
                     </td>
-                    <td style="text-align: center"></td>
-                    <td style="text-align: center"></td>
-                    <td style="text-align: center"></td>
+                    <td class="center"></td>
+                    <td class="center"></td>
+                    <td class="center"></td>
                     {!! ($loop->last && count($order->whereNotNull('product_id')->groupBy('product_id')) == 0) ? '' : '</tr></tr>' !!}
                 @endforeach
                 @foreach($order->whereNotNull('product_id')->groupBy('product_id') as $products)
@@ -94,7 +94,7 @@
                             @endforeach
                         </td>
                         <td>@if($products[0]->company){{ $products[0]->company }}<br>{{ $products[0]->tracking_no }}<br>({{ $products[0]->delivery_qty }})@endif</td>
-                        <td style="text-align: center">
+                        <td class="center">
                             @if($products[0]->company)
                                 @if($products[0]->completed_at)
                                     <span style="color:red">배송완료</span>
@@ -108,11 +108,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="0" style="text-align: center">주문이 없습니다.</td>
+                    <td colspan="0" class="center">주문이 없습니다.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
     <br>
-    <div style="text-align: center">{{ $orders->withQUeryString()->links() }}</div>
+    <div class="center">{{ $orders->withQUeryString()->links() }}</div>
 @endsection

@@ -1,0 +1,33 @@
+@extends('layouts.admin')
+
+@section('title', '공지사항 - '.$data->title)
+
+@section('content')
+    <h1>{{ $data->title }}</h1>
+    <div class="board">{!! rn_to_br($data->content) !!}</div>
+    <a href="{{ route('admin.notice.index') }}" class="btn">목록</a>
+    <a href="javascript:update_show({{ $data->is_show ? 0 : 1 }})" class="btn">{{ $data->is_show ? '노출 끄기' : '노출 켜기' }}</a>
+    <a href="{{ route('admin.notice.edit', ['notice' => $data->id]) }}" class="btn">수정</a>
+    <a href="javascript:destroy()" class="btn">삭제</a>
+
+    <form action="{{ route('admin.notice.update_show', ['notice' => $data->id]) }}" method="post" id="update_show_form">
+        @csrf
+        <input type="hidden" name="is_show">
+    </form>
+    <form action="{{ route('admin.notice.destroy', ['notice' => $data->id]) }}" method="post" id="destroy_form">
+        @csrf
+        @method('DELETE')
+    </form>
+    <script>
+        function update_show(bool) {
+            document.querySelector("input[name=is_show]").value = bool;
+            document.querySelector("#update_show_form").submit();
+        }
+
+        function destroy() {
+            if (prompt('삭제하시려면 "삭제" 를 입력해주세요') === '삭제') {
+                document.querySelector("#destroy_form").submit();
+            }
+        }
+    </script>
+@endsection
