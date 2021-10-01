@@ -1113,8 +1113,8 @@ class MissionController extends Controller
              "https://www.circlin.co.kr/SNS/assets/img/maraTab5.png" as IMG_URL5,
              "https://www.circlin.co.kr/SNS/assets/img/maraTab6.png" as IMG_URL6,
              "https://www.circlin.co.kr/SNS/assets/img/medal_design.png" as IMG_MEDAL,
-        ifnull((SELECT "Y" FROM mission_likes n WHERE user_id= ? and a.id=n.mission_id),"N" )as like_yn ,         
-        ifnull((SELECT id FROM mission_stats WHERE user_id= ? and ended_at is null and completed_at is null and mission_id= ? ),"" ) as mission_stat_id,
+        ifnull((SELECT "Y" FROM mission_likes n WHERE user_id= ? and a.id=n.mission_id limit 1),"N" )as like_yn ,         
+        ifnull((SELECT id FROM mission_stats WHERE user_id= ? and ended_at is null and completed_at is null and mission_id= ? limit 1),"" ) as mission_stat_id,
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
