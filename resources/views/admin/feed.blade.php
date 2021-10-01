@@ -57,7 +57,10 @@
         <tbody>
         @forelse($feeds as $feed)
             <tr>
-                <td rowspan="{{ max(count($feed->missions), 1) }}" style="text-align: center">{{ $feed->id }}</td>
+                <td rowspan="{{ max(count($feed->missions), 1) }}" style="text-align: center">
+                    {{ $feed->id }}
+                    <br>{{ $feed->is_hidden ? '🔒︎' : '' }}
+                </td>
                 <td rowspan="{{ max(count($feed->missions), 1) }}">
                     @foreach($feed->images as $image)
                         @if($image->type === 'image')
@@ -68,8 +71,8 @@
                     @endforeach
                 </td>
                 <td rowspan="{{ max(count($feed->missions), 1) }}">
-                    {{ $feed->is_hidden ? '🔒︎' : '' }}<br>
-                    {!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}</td>
+                    {!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}
+                </td>
                 @if(count($feed->missions) > 0)
                     <td>{{ $feed->missions[0]->emoji }} {{ $feed->missions[0]->category }}</td>
                     <td>{{ $feed->missions[0]->title }}</td>
