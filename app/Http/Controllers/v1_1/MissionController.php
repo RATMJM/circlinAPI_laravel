@@ -27,6 +27,7 @@ use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -829,6 +830,8 @@ class MissionController extends Controller
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
                 DB::raw("missions.started_at + interval 24 hour as START_DATE"), DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
+                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
+                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                     ->where('created_at', '>=', $today),
                 'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
@@ -942,13 +945,75 @@ class MissionController extends Controller
             ])
             ->get();
 
-        $ai_text1 = $event_mission_info[0]->ai_text1;
-        $ai_text2 = $event_mission_info[0]->ai_text2;
+        $ai_text1 = new Collection(json_decode($event_mission_info[0]->ai_text1));
+        $ai_text2 = new Collection(json_decode($event_mission_info[0]->ai_text2));
 
+        $today_users_count = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
+            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+            ->join('feed_missions', function ($query) use ($mission_id) {
+                $query->on('feed_missions.feed_id', 'feeds.id')
+                    ->where('feed_missions.mission_id', $mission_id);
+            })
+            ->distinct()
+            ->count('user_id');
 
+        // return [$ai_text1, $ai_text2];
 
-        $AiText = "랜선 운동장에\n히어로들이 하나둘 모이고 있어요!";
-        $AiText2 = "10월 2일부터 여기서\n내 기록을 확인할 수 있어요!";
+        function AiText($data, $is_available, $mission_id)
+        {
+            $AiText = '';
+
+            foreach ($data->groupBy('type') as $type => $data) {
+                if ($is_available) {
+                    if ($type === 'cert') {
+                        $cert = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                            ->join('feed_missions', function ($query) use ($mission_id) {
+                                $query->on('feed_missions.feed_id', 'feeds.id')
+                                    ->where('feed_missions.mission_id', $mission_id);
+                            })
+                            ->value(DB::raw("COUNT(1) > 0"));
+                        foreach ($data as $item) {
+                            if ($item->value === $cert) {
+                                $AiText = $item->message;
+                            }
+                        }
+                    } elseif ($type === 'today_cert') {
+                        $cert = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
+                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                            ->join('feed_missions', function ($query) use ($mission_id) {
+                                $query->on('feed_missions.feed_id', 'feeds.id')
+                                    ->where('feed_missions.mission_id', $mission_id);
+                            })
+                            ->value(DB::raw("COUNT(1) > 0"));
+                        foreach ($data as $item) {
+                            if ($item->value === $cert) {
+                                $AiText = $item->message;
+                            }
+                        }
+                    }
+                } else {
+                    if ($type === 'default') {
+                        foreach ($data as $item) {
+                            if ($item->value > 0 && $AiText === '') {
+                                $AiText = $item->message;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return $AiText;
+        }
+
+        $AiText = AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id);
+        $AiText2 = AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id);
+
+        $replaces = [
+            'today_users_count' => $today_users_count,
+        ];
+
+        $AiText = code_replace($AiText, $replaces);
+        $AiText2 = code_replace($AiText2, $replaces);
 
         return success([
             'success' => true,
