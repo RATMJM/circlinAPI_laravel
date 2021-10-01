@@ -519,7 +519,7 @@ class MissionController extends Controller
 
     public function place_available($mission_id, $available = null): array
     {
-        $subtitle = Mission::where('mission_id', $mission_id)->value('subtitle');
+        $subtitle = Mission::where('id', $mission_id)->value('subtitle');
 
         $places = Place::where('mission_places.mission_id', $mission_id)
             ->when($available, function ($query) {
