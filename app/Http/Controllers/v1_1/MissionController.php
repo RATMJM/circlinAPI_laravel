@@ -519,6 +519,8 @@ class MissionController extends Controller
 
     public function place_available($mission_id, $available): array
     {
+        $subtitle = Mission::where('mission_id', $mission_id)->value('subtitle');
+
         $places = Place::where('mission_places.mission_id', $mission_id)
             ->when($available, function ($query) {
                 $query->whereDoesntHave('feeds', function ($query) {
@@ -533,6 +535,7 @@ class MissionController extends Controller
         return success([
             'result' => true,
             'places_count' => count($places),
+            'subtitle' => $subtitle,
             'places' => $places,
         ]);
     }
