@@ -67,7 +67,9 @@
                         @endif
                     @endforeach
                 </td>
-                <td rowspan="{{ max(count($feed->missions), 1) }}">{!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}</td>
+                <td rowspan="{{ max(count($feed->missions), 1) }}">
+                    {{ $feed->is_hidden ? '🔒︎' : '' }}<br>
+                    {!! preg_replace('/(\r|\n|\r\n)/', '<br>', $feed->content) !!}</td>
                 @if(count($feed->missions) > 0)
                     <td>{{ $feed->missions[0]->emoji }} {{ $feed->missions[0]->category }}</td>
                     <td>{{ $feed->missions[0]->title }}</td>

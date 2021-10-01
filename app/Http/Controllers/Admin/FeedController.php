@@ -39,7 +39,7 @@ class FeedController extends Controller
 
         $feeds = $feeds->join('users', 'users.id', 'feeds.user_id')
             ->select([
-                'feeds.id', 'feeds.content', 'feeds.created_at',
+                'feeds.id', 'feeds.content', 'feeds.created_at', 'feeds.is_hidden',
                 'users.nickname', 'users.email', 'users.gender',
             ])
             ->with('images')
