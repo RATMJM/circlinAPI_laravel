@@ -832,7 +832,7 @@ class MissionController extends Controller
                       ELSE 'N' end as STATE"),
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
-                DB::raw("missions.started_at + interval 24 hour as START_DATE"), DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
+                'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
                 DB::raw("(missions.started_at is null or missions.started_at<=now()) and
                     (missions.ended_at is null or missions.ended_at>now()) as is_available"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
