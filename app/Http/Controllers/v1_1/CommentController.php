@@ -110,7 +110,7 @@ class CommentController extends Controller
             }
 
             // 글 주인한테 푸시
-            if ($table !== 'notice' && $table_target_id !== $user_id) {
+            if (isset($table_target_id) && $table_target_id !== $user_id) {
                 NotificationController::send($table_target_id, "{$table}_comment", $user_id, $data->id, true);
             }
 
