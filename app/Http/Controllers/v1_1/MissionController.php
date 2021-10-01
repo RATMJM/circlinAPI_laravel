@@ -517,7 +517,7 @@ class MissionController extends Controller
         ]);
     }
 
-    public function place_available($mission_id, $available): array
+    public function place_available($mission_id, $available = null): array
     {
         $subtitle = Mission::where('mission_id', $mission_id)->value('subtitle');
 
