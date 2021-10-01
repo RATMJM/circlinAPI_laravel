@@ -209,7 +209,7 @@ class UserController extends Controller
             $token = $request->get('token');
             $platform = $request->get('platform');
 
-            User::where('device_token', $token)->where('id', '!=', $user_id)->update(['device_token' => '']);
+            User::withTrashed()->where('device_token', $token)->where('id', '!=', $user_id)->update(['device_token' => '']);
 
             User::where('id', $user_id)->update([
                 'device_type' => $platform,
