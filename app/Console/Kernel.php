@@ -45,7 +45,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $msg = "[월드비전 6K 하이킹2 D-1] 내일부터 시작되는 아프리카 아이들을 위한 하이킹, 모두 준비 되셨나요? 😎";
             $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
-            PushController::gcm_notify($users, '써클인', $msg, '', 'mission',1671);
+            PushController::gcm_notify($users, '써클인', $msg, '', 'mission',1701);
         })->cron('30 19 01 10 *');
     }
 
