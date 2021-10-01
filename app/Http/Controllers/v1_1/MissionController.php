@@ -859,6 +859,9 @@ class MissionController extends Controller
                 ->distinct()
                 ->get();
 
+            $event_mission_info[0]->AiText = "랜선 운동장에\n히어로들이 하나둘 모이고 있어요!";
+            $event_mission_info[0]->AiText2 = "10월 2일부터 여기서\n내 기록을 확인할 수 있어요!";
+
             /*$event_mission_info = DB::select('SELECT distinct d.id as mission_stat_id, d.certification_image,
              b.id as mission_id ,
              CASE WHEN ? ="1213" THEN "40000" ELSE "" END AS MAX_NUM, gender, nickname, profile_image, a.id as user_id,
