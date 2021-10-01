@@ -249,54 +249,56 @@ class FeedController extends Controller
             }
 
             // 조건별 푸시
-            foreach ($missions as $mission_id) {
-                $pushes = MissionPush::where('mission_id', $mission_id)
-                    ->where(function ($query) {
-                        $query->where('is_disposable', true)->where('count', 0)
-                            ->orWhere('is_disposable', false);
-                    })
-                    ->get();
-                if (count($pushes) > 0) {
-                    foreach ($pushes->groupBy('type') as $type => $pushes) {
-                        if ($type === 'feed_upload' || $type === 'first_feed_upload') {
-                            $count = Feed::where('feeds.user_id', $user_id)
-                                ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                ->join('feed_missions', function ($query) use ($mission_id) {
-                                    $query->on('feed_missions.feed_id', 'feeds.id')
-                                        ->where('feed_missions.mission_id', $mission_id);
-                                })
-                                ->distinct()
-                                ->count('feeds.id');
-                            foreach ($pushes as $push) {
-                                if ($count == $push->value) {
-                                    PushController::send_mission_push($push, $user_id, $mission_id);
+            if (count($missions)) {
+                foreach ($missions as $mission_id) {
+                    $pushes = MissionPush::where('mission_id', $mission_id)
+                        ->where(function ($query) {
+                            $query->where('is_disposable', true)->where('count', 0)
+                                ->orWhere('is_disposable', false);
+                        })
+                        ->get();
+                    if (count($pushes) > 0) {
+                        foreach ($pushes->groupBy('type') as $type => $pushes) {
+                            if ($type === 'feed_upload' || $type === 'first_feed_upload') {
+                                $count = Feed::where('feeds.user_id', $user_id)
+                                    ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->join('feed_missions', function ($query) use ($mission_id) {
+                                        $query->on('feed_missions.feed_id', 'feeds.id')
+                                            ->where('feed_missions.mission_id', $mission_id);
+                                    })
+                                    ->distinct()
+                                    ->count('feeds.id');
+                                foreach ($pushes as $push) {
+                                    if ($count == $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
                                 }
-                            }
-                        } elseif ($type === 'users_count') {
-                            $count = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                ->join('feed_missions', function ($query) use ($mission_id) {
-                                    $query->on('feed_missions.feed_id', 'feeds.id')
-                                        ->where('feed_missions.mission_id', $mission_id);
-                                })
-                                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
-                                ->distinct()
-                                ->count('user_id');
-                            foreach ($pushes as $push) {
-                                if ($count >= $push->value) {
-                                    PushController::send_mission_push($push, $user_id, $mission_id);
+                            } elseif ($type === 'users_count') {
+                                $count = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->join('feed_missions', function ($query) use ($mission_id) {
+                                        $query->on('feed_missions.feed_id', 'feeds.id')
+                                            ->where('feed_missions.mission_id', $mission_id);
+                                    })
+                                    ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                                    ->distinct()
+                                    ->count('user_id');
+                                foreach ($pushes as $push) {
+                                    if ($count >= $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
                                 }
-                            }
-                        } elseif ($type === 'feeds_count') {
-                            $count = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                ->join('feed_missions', function ($query) use ($mission_id) {
-                                    $query->on('feed_missions.feed_id', 'feeds.id')
-                                        ->where('feed_missions.mission_id', $mission_id);
-                                })
-                                ->distinct()
-                                ->count('feeds.id');
-                            foreach ($pushes as $push) {
-                                if ($count >= $push->value) {
-                                    PushController::send_mission_push($push, $user_id, $mission_id);
+                            } elseif ($type === 'feeds_count') {
+                                $count = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->join('feed_missions', function ($query) use ($mission_id) {
+                                        $query->on('feed_missions.feed_id', 'feeds.id')
+                                            ->where('feed_missions.mission_id', $mission_id);
+                                    })
+                                    ->distinct()
+                                    ->count('feeds.id');
+                                foreach ($pushes as $push) {
+                                    if ($count >= $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
                                 }
                             }
                         }
