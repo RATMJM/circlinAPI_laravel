@@ -458,6 +458,7 @@ class UserController extends Controller
 
             if (isset($user)) {
                 $user->delete_user()->create(['reason' => $request->get('reason')]);
+                $user->update(['device_token' => '']);
                 $user->delete();
 
                 DB::commit();
