@@ -23,6 +23,7 @@ use App\Models\PointHistory;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -37,7 +38,7 @@ class FeedController extends Controller
 
         $files = $request->file('files');
         $content = $request->get('content');
-        $missions = $request->get('missions');
+        $missions = Arr::wrap($request->get('missions'));
         $is_hidden = $request->get('is_hidden', 0);
 
         $product_id = $request->get('product_id');
@@ -63,7 +64,7 @@ class FeedController extends Controller
             ]);
         }
 
-        if (in_array(1701, ($missions ?? []))) {
+        if (in_array(1701, $missions)) {
             if (is_null($place_title)) {
                 abort(403, '해당 미션은 장소를 꼭 인증해야 합니다.');
             }
