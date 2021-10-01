@@ -19,8 +19,9 @@ class NoticeController extends Controller
 
         $latest_date = date('Y-m-d', time()-(86400 * 7));
 
-        $data = Notice::select(['notices.id', 'notices.created_at', 'notices.title',
-            DB::raw("created_at >= '$latest_date' as is_new")])
+        $data = Notice::where('is_show', true)
+            ->select(['notices.id', 'notices.created_at', 'notices.title',
+                DB::raw("created_at >= '$latest_date' as is_new")])
             ->withCount('comments')
             ->orderBy('notices.id', 'desc')
             ->get();
