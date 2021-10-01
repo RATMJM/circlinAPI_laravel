@@ -828,7 +828,7 @@ class MissionController extends Controller
                       ELSE 'N' end as STATE"),
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
-                DB::raw("missions.started_at + interval 33 hour as START_DATE"), DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
+                DB::raw("missions.started_at + interval 24 hour as START_DATE"), DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                     ->where('created_at', '>=', $today),
                 'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
@@ -852,6 +852,7 @@ class MissionController extends Controller
                 'mission_etc.intro_image_9', 'mission_etc.intro_image_10',
                 'mission_etc.subtitle_1', 'missions.description', 'mission_etc.subtitle_3', 'mission_etc.subtitle_4',
                 'mission_etc.subtitle_5', 'mission_etc.subtitle_6', 'mission_etc.subtitle_7',
+                'mission_etc.ai_text1', 'mission_etc.ai_text2',
             ])
             ->distinct()
             ->orderBy('mission_stats.id', 'desc')
@@ -940,6 +941,11 @@ class MissionController extends Controller
                 'places.address', 'places.title', 'places.description', 'places.image', 'places.url',
             ])
             ->get();
+
+        $ai_text1 = $event_mission_info[0]->ai_text1;
+        $ai_text2 = $event_mission_info[0]->ai_text2;
+
+
 
         $AiText = "랜선 운동장에\n히어로들이 하나둘 모이고 있어요!";
         $AiText2 = "10월 2일부터 여기서\n내 기록을 확인할 수 있어요!";
