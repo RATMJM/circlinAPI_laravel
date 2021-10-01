@@ -1005,15 +1005,12 @@ class MissionController extends Controller
             return $AiText;
         }
 
-        $AiText = AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id);
-        $AiText2 = AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id);
-
         $replaces = [
             'today_users_count' => $today_users_count,
         ];
 
-        $AiText = code_replace($AiText, $replaces);
-        $AiText2 = code_replace($AiText2, $replaces);
+        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id), $replaces);
+        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id), $replaces);
 
         return success([
             'success' => true,
