@@ -102,7 +102,7 @@ class CommentController extends Controller
             ]);
 
             $comment_target_id = $query_comment->where(["{$table}_id" => $id, 'group' => $group, 'depth' => 0])->value('user_id');
-            $table_target_id = $table === 'notice' ? $query->where('id', $id)->value('user_id') : null;
+            $table_target_id = $table !== 'notice' ? $query->where('id', $id)->value('user_id') : null;
 
             // 답글인 경우 푸시
             if ($data->depth > 0 && $comment_target_id !== $user_id && $comment_target_id !== $table_target_id) {
