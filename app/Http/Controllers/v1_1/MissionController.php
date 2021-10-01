@@ -241,8 +241,8 @@ class MissionController extends Controller
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
+                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
@@ -833,8 +833,8 @@ class MissionController extends Controller
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
                 'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
+                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                     ->where('created_at', '>=', $today),
                 'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
