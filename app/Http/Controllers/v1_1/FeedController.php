@@ -63,6 +63,12 @@ class FeedController extends Controller
             ]);
         }
 
+        if (in_array(1701, $missions)) {
+            if (is_null($place_title)) {
+                abort(403, '해당 미션은 장소를 꼭 인증해야 합니다.');
+            }
+        }
+
         try {
             DB::beginTransaction();
 
