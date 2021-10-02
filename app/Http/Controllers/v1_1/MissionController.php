@@ -519,6 +519,7 @@ class MissionController extends Controller
 
     public function place_available($mission_id, $available = null): array
     {
+        $user_id = token()->uid;
         $subtitle = Mission::where('id', $mission_id)->value('subtitle');
 
         $places = Place::where('mission_places.mission_id', $mission_id)
@@ -527,6 +528,7 @@ class MissionController extends Controller
                     $query->where('feeds.created_at', '>=', date('Y-m-d'));
                 });
             })
+            ->where('user_id',$user_id)
             ->join('mission_places', 'mission_places.place_id', 'places.id')
             ->select('places.*')
             ->distinct()
