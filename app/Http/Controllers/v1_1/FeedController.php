@@ -38,7 +38,7 @@ class FeedController extends Controller
 
         $files = $request->file('files');
         $content = $request->get('content');
-        $missions = Arr::wrap($request->get('missions'));
+        $missions = array_unique(Arr::wrap($request->get('missions')));
         $is_hidden = $request->get('is_hidden', 0);
 
         $product_id = $request->get('product_id');
