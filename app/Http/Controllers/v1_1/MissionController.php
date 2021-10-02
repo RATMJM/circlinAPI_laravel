@@ -1186,16 +1186,36 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
             //참가자 조회
-            $participant_list = DB::select('select a.user_id, b.nickname, b.profile_image, 
-            (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
-            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
-            From mission_stats a, users b 
-            where a.mission_id= ? and a.completed_at is null 
-            and b.id=a.user_id and b.deleted_at is null
-            group by a.user_id, b.id
-            order by MAX(a.created_at) desc;'
-                , [$user_id,
-                    $mission_id,]);
+            if ($mission_id == 1701) {
+                $participant_list = FeedMission::where('feed_missions.mission_id', $mission_id)
+                    ->join('feeds', function ($query) {
+                        $query->on('feeds.id', 'feed_missions.feed_id')->whereNull('deleted_at');
+                    })
+                    ->join('users', 'users.id', 'feeds.user_id')
+                    ->select([
+                        'users.id as user_id', 'users.nickname', 'users.profile_image',
+                        'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'follow_yn' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('follows.user_id', $user_id),
+                    ])
+                    ->groupBy('users.id')
+                    ->orderBy(DB::raw("MAX(feed_missions.created_at)"), 'desc')
+                    ->take(15)
+                    ->get();
+            } else {
+                $participant_list = MissionStat::where('mission_stats.mission_id', $mission_id)
+                    ->join('users', 'users.id', 'mission_stats.user_id')
+                    ->select([
+                        'users.id as user_id', 'users.nickname', 'users.profile_image',
+                        'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'follow_yn' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('follows.user_id', $user_id),
+                    ])
+                    ->groupBy('users.id')
+                    ->orderBy(DB::raw("MAX(mission_stats.created_at)"), 'desc')
+                    ->take(15)
+                    ->get();
+            }
 
             return success([
                 'success' => true,
