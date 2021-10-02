@@ -962,14 +962,15 @@ class MissionController extends Controller
 
         // return [$ai_text1, $ai_text2];
 
-        function AiText($data, $is_available, $mission_id)
+        function AiText($data, $is_available, $mission_id, $user_id)
         {
             $AiText = '';
 
             foreach ($data->groupBy('type') as $type => $data) {
                 if ($is_available) {
                     if ($type === 'cert') {
-                        $cert = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                        $cert = Feed::where('feeds.user_id', $user_id)
+                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                             ->join('feed_missions', function ($query) use ($mission_id) {
                                 $query->on('feed_missions.feed_id', 'feeds.id')
                                     ->where('feed_missions.mission_id', $mission_id);
@@ -981,7 +982,8 @@ class MissionController extends Controller
                             }
                         }
                     } elseif ($type === 'today_cert') {
-                        $cert = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
+                        $cert = Feed::where('feeds.user_id', $user_id)
+                            ->where('feeds.created_at', '>=', date('Y-m-d'))
                             ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                             ->join('feed_missions', function ($query) use ($mission_id) {
                                 $query->on('feed_missions.feed_id', 'feeds.id')
@@ -1012,8 +1014,8 @@ class MissionController extends Controller
             'today_users_count' => $today_users_count,
         ];
 
-        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id), $replaces);
-        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id), $replaces);
+        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
 
         return success([
             'success' => true,
