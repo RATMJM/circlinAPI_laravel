@@ -59,8 +59,8 @@ class NoticeController extends Controller
                         'missions.is_event',
                         DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                         'missions.started_at', 'missions.ended_at',
-                        DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                        DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
+                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
                         'missions.thumbnail_image', 'missions.success_count',
                         'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                             ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),

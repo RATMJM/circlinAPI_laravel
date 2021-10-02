@@ -241,8 +241,8 @@ class MissionController extends Controller
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
                 'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
+                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
@@ -834,9 +834,9 @@ class MissionController extends Controller
                       ELSE 'N' end as STATE"),
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
-                DB::raw("missions.started_at + interval 24 hour as START_DATE"), DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
+                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
+                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                     ->where('created_at', '>=', $today),
                 'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
@@ -964,14 +964,15 @@ class MissionController extends Controller
 
         // return [$ai_text1, $ai_text2];
 
-        function AiText($data, $is_available, $mission_id)
+        function AiText($data, $is_available, $mission_id, $user_id)
         {
             $AiText = '';
 
             foreach ($data->groupBy('type') as $type => $data) {
                 if ($is_available) {
                     if ($type === 'cert') {
-                        $cert = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                        $cert = Feed::where('feeds.user_id', $user_id)
+                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                             ->join('feed_missions', function ($query) use ($mission_id) {
                                 $query->on('feed_missions.feed_id', 'feeds.id')
                                     ->where('feed_missions.mission_id', $mission_id);
@@ -983,7 +984,8 @@ class MissionController extends Controller
                             }
                         }
                     } elseif ($type === 'today_cert') {
-                        $cert = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
+                        $cert = Feed::where('feeds.user_id', $user_id)
+                            ->where('feeds.created_at', '>=', date('Y-m-d'))
                             ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                             ->join('feed_missions', function ($query) use ($mission_id) {
                                 $query->on('feed_missions.feed_id', 'feeds.id')
@@ -1014,8 +1016,8 @@ class MissionController extends Controller
             'today_users_count' => $today_users_count,
         ];
 
-        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id), $replaces);
-        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id), $replaces);
+        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
 
         return success([
             'success' => true,
@@ -1106,48 +1108,29 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
         $mission_id = $request->get('mission_id');
-        // $user_id         = 4;//token()->uid;
-        // $mission_id      = 786;//$request->get('mission_id');
-        $time = date("Y-m-d H:i:s");
-        // insertExtUserCode($uid,$code,$challId);
 
-
-        //미션마스터 조회
-        $mission_info = DB::select('select started_at, ended_at, CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
-            when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
-            ELSE "" end as START_DATE_CHECK, 
-            (select   count(id) +1 from mission_stats where mission_id = ?) as user_count
-            From missions a
-            where id= ?;'
-            , [$mission_id, $mission_id]);
-
-        if ($mission_info[0]->START_DATE_CHECK == 'PRE') { // 오늘날짜와 비교해서 당일이면 상태를 시작상태(Y)로 변경
-            $state = 'R'; // 안쓰는 로직으로 변경됨. 무조건 다음날 부터 선택가능
-            $timestamp1 = $mission_info[0]->started_at;
-            $today = "";
-        } elseif ($mission_info[0]->START_DATE_CHECK == 'START') {
-            $state = 'Y';
-            // $timestamp1 = $checkDate;
-            $today = date("Y-m-d H:i:s");
-        } elseif ($mission_info[0]->START_DATE_CHECK == 'END') {
+        if (is_null($mission_id)) {
             return success([
-                'success' => 'END',
+                'result' => false,
+                'reason' => 'not enough data',
             ]);
         }
 
+        if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
+            return success(['result' => false, 'reason' => 'already bookmark']);
+        } elseif (Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
+            (missions.reserve_ended_at is null or missions.reserve_ended_at>'".date('Y-m-d H:i:s')."') or
+            (missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
+            (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"))
+            ->where('id', $mission_id)->value('is_available')) {
+            $data = MissionStat::create([
+                'user_id' => $user_id,
+                'mission_id' => $mission_id,
+            ]);
 
-        try {
-            DB::beginTransaction();
-            //미션   입력
-            $start_mission = DB::insert('insert into mission_stats(created_at, updated_at, user_id, mission_id)
-                                            values( ?, ? ,? ,?) ;'
-                , [$time, $time,
-                    $user_id,
-                    $mission_id,
-                ]);
+            $user_count = MissionStat::where('mission_id', $mission_id)->count();
 
-            DB::commit();
-
+            // 조건별 푸시
             $pushes = MissionPush::where('mission_id', $mission_id)->get();
             if (count($pushes) > 0) {
                 foreach ($pushes as $push) {
@@ -1156,23 +1139,14 @@ class MissionController extends Controller
                     }
                 }
             }
-
-            $mission_stat_id = DB::select('select max(id) as mission_stat_id
-            From mission_stats a
-            where mission_id= ? and user_id= ?  ;'
-                , [$mission_id, $user_id]);
-
             return success([
                 'success' => true,
-                'mission_stat_id' => $mission_stat_id,
-                'user_count' => $mission_info[0]->user_count,
+                'mission_stat_id' => $data->id,
+                'user_count' => $user_count,
             ]);
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
+        } else {
+            return success(['result' => false]);
         }
-
     }
 
     //참가자 조회
@@ -1186,16 +1160,17 @@ class MissionController extends Controller
         try {
             DB::beginTransaction();
             //참가자 조회
-            $participant_list = DB::select('select a.user_id, b.nickname, b.profile_image, 
-            (SELECT count(target_id) FROM follows WHERE  user_id=a.user_id ) as follower,
-            ifnull((SELECT "Y" FROM follows WHERE user_id= ? and target_id=a.user_id LIMIT 0,1),"N") as follow_yn
-            From mission_stats a, users b 
-            where a.mission_id= ? and a.completed_at is null 
-            and b.id=a.user_id and b.deleted_at is null
-            group by a.user_id, b.id
-            order by MAX(a.created_at) desc;'
-                , [$user_id,
-                    $mission_id,]);
+            $participant_list = MissionStat::where('mission_stats.mission_id', $mission_id)
+                ->join('users', 'users.id', 'mission_stats.user_id')
+                ->select([
+                    'users.id as user_id', 'users.nickname', 'users.profile_image',
+                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                    'follow_yn' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                        ->where('follows.user_id', $user_id),
+                ])
+                ->groupBy('users.id')
+                ->orderBy(DB::raw("MAX(mission_stats.created_at)"), 'desc')
+                ->get();
 
             return success([
                 'success' => true,
