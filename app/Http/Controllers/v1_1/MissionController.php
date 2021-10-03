@@ -907,7 +907,7 @@ class MissionController extends Controller
             ->join('users', 'users.id', 'feeds.user_id')
             ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
             ->join('missions', 'missions.id', 'feed_missions.mission_id')
-            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+            ->leftJoin('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->leftJoin('places', 'places.id', 'feed_places.place_id')
             ->select([
