@@ -901,8 +901,7 @@ class MissionController extends Controller
         $total_km = FeedMission::where('mission_id', $mission_id)->sum('distance');
 
         // 내 기록
-        $myRecord = Feed::where('mission_stats.id', $mission_stat_id)
-            ->where('missions.id', $mission_id)
+        $myRecord = Feed::where('missions.id', $mission_id)
             ->where('users.id', $user_id)
             ->join('users', 'users.id', 'feeds.user_id')
             ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
