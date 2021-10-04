@@ -34,10 +34,10 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ? 
-                and b.id=a.brand_id  
+                is_show= ?
+                and b.id=a.brand_id
                 order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1']);
 
                 } elseif ($type == "high") {
@@ -50,9 +50,9 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ?  
+                is_show= ?
                 and b.id=a.brand_id
                 order by a.status="sale" desc, `order` desc, sale_price desc;', ['1']);
                 } elseif ($type == "low") {
@@ -65,9 +65,9 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ?  
+                is_show= ?
                 and b.id=a.brand_id
                 order by a.status="sale" desc, `order` desc, sale_price ;', ['1']);
                 } else {
@@ -80,9 +80,9 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ?  
+                is_show= ?
                 and b.id=a.brand_id
                 order by a.status="sale" desc, `order` desc, a.id desc;', ['1']);
                 }
@@ -97,9 +97,9 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b 
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ? 
+                is_show= ?
                 and  a.product_category_id=?
                 and b.id=a.brand_id
                 order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1', $category]);
@@ -115,11 +115,11 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ?  
+                is_show= ?
                 and b.id=a.brand_id
-                and  a.product_category_id=? 
+                and  a.product_category_id=?
                 order by a.status="sale" desc, `order` desc, sale_price desc;', ['1', $category]);
                 } elseif ($type == "low") {
 
@@ -131,11 +131,11 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ?  
+                is_show= ?
                 and b.id=a.brand_id
-                and  a.product_category_id=? 
+                and  a.product_category_id=?
                 order by a.status="sale" desc, `order` desc, sale_price ;', ['1', $category]);
                 } else {
 
@@ -147,11 +147,11 @@ class ShopController extends Controller
                 price, sale_price,
                 round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
                 a.status
-                FROM products a, brands b  
+                FROM products a, brands b
                 WHERE  deleted_at is null and
-                is_show= ?  
+                is_show= ?
                 and b.id=a.brand_id
-                and  a.product_category_id=? 
+                and  a.product_category_id=?
                 order by a.status="sale" desc, `order` desc, a.id desc;', ['1', $category]);
                 }
             }
@@ -190,7 +190,7 @@ class ShopController extends Controller
         try {
             DB::beginTransaction();
 
-            $categoryList = DB::select('select id as product_category_id, title   
+            $categoryList = DB::select('select id as product_category_id, title
                                             from  product_categories b
                                             where deleted_at is null;');
 
@@ -217,7 +217,7 @@ class ShopController extends Controller
 
             // $shopBannerList = (new BannerController())->index('shop');
 
-            $shopBannerList = DB::select('select b.image, b.product_id, b.link_url, \'' . date('Y-m-d H:i:s') . '\',b.started_at,b.ended_at 
+            $shopBannerList = DB::select('select b.image, b.product_id, b.link_url, \'' . date('Y-m-d H:i:s') . '\',b.started_at,b.ended_at
                 From products a , banners b
                 where b.type=\'shop\' and
                 \'' . date('Y-m-d H:i:s') . '\' >= b.started_at and (b.ended_at is null or b.ended_at > \'' . date('Y-m-d H:i:s).') . '\')
@@ -313,7 +313,7 @@ class ShopController extends Controller
                 (opt4.name_ko  ) , " / ",
                 (opt5.name_ko  ) , " / ",
                 (opt6.name_ko  ) , " / "
-                 )  as option_name 
+                 )  as option_name
                  from
                 orders a,
                 order_products b
@@ -325,16 +325,16 @@ class ShopController extends Controller
                 LEFT JOIN (SELECT name_ko, order_product_id FROM order_product_options a, product_options b where b.id=a.product_option_id limit 5,1 ) opt6 ON opt6.order_product_id=b.id
                 LEFT JOIN order_product_deliveries e on  b.id=e.order_product_id,
                 order_destinations d,
-                  
+
                 products f LEFT JOIN feed_products h ON f.id=h.product_id,
                 brands g
                 where
-                a.id=b.order_id  
-                and a.id=d.order_id 
+                a.id=b.order_id
+                and a.id=d.order_id
                 and f.id=b.product_id
-                
+
                 and f.brand_id = g.id
-                and a.user_id=? 
+                and a.user_id=?
                 and a.deleted_at is null
                 order by a.id desc , product_id desc
                 ;', [$user_id]);
@@ -757,7 +757,7 @@ class ShopController extends Controller
         try {
             DB::beginTransaction();
 
-            $order = DB::insert(' 
+            $order = DB::insert('
                 INSERT into orders(created_at, updated_at, order_no, user_id, total_price, imp_id, merchant_id, use_point )
                                         values(?, ?, ?, ?, ?, ?, ?, ? ); ', [$time, $time, $orderNo, $user_id, $totalPrice, $imp_id, $merchant_id, $use_point]);
 
@@ -894,12 +894,12 @@ class ShopController extends Controller
 
             $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as brand_name, a.name_ko as product_name , a.price, a.sale_price, a.status,
                 round((a.price-a.sale_price)/a.PRICE *100) as discount_rate,
-                (select CASE WHEN count(product_id) >0 THEN "N" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN 
-                from products a  left join  brands d on a.brand_id=d.id 
-                where   
+                (select CASE WHEN count(product_id) >0 THEN "N" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN
+                from products a  left join  brands d on a.brand_id=d.id
+                where
                   a.id=?  ; ', [$user_id, $product_id, $product_id]);
 
-            $product_image = DB::select('select product_id, `order`, type, image  from product_images 
+            $product_image = DB::select('select product_id, `order`, type, image  from product_images
                             where product_id= ? ; ', [$product_id]);
 
 
@@ -942,7 +942,7 @@ class ShopController extends Controller
         if ($type == 'qty') { //카트 내 상품 수량업데이트
             try {
                 DB::beginTransaction();
-                $cart = DB::update('UPDATE carts set qty=?, updated_at =? 
+                $cart = DB::update('UPDATE carts set qty=?, updated_at =?
                     where id=?; ', [$qty, $time, $cart_id]);
 
                 DB::commit();

@@ -922,20 +922,20 @@ class MissionController extends Controller
 
         // 내 미션 상태
         $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
-                ifnull(sum(b.distance),0) total_distance, 
+                ifnull(sum(b.distance),0) total_distance,
                 ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
                 sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
                 ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count,
                 ifnull((select count(id) from feed_missions where mission_id= ? and created_at >= ?) ,0) today_cert_count
-            from feeds a 
+            from feeds a
             left join feed_missions b on a.id=b.feed_id
-            left join mission_stats c on b.mission_id=c.mission_id and b.mission_stat_id=c.id  and b.mission_stat_id= ?   
+            left join mission_stats c on b.mission_id=c.mission_id and b.mission_stat_id=c.id  and b.mission_stat_id= ?
             where a.user_id= ?
                 and b.mission_id= ?
                 and a.deleted_at is null
             GROUP BY  b.distance, c.goal_distance
-            union 
-            select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,  
+            union
+            select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,
                 (select count(feeds.id) from feed_missions join feeds on feeds.id=feed_id and feeds.deleted_at is null where mission_id=?) cert_count,
                 (select count(feeds.id) from feed_missions join feeds on feeds.id=feed_id and feeds.deleted_at is null where mission_id=? and feeds.created_at >= ?) today_cert_count
             limit 1',
@@ -1046,16 +1046,16 @@ class MissionController extends Controller
             //미션 댓글 입력
             $mission_info = DB::select('SELECT youtube, youtube_text, a.week_duration, a.week_min_count, a.thumbnail_image,  a.reward_point, a.title as mission_name, a.user_limit,
             a.id as mission_id, a.user_id, c.logo, c.apply_image1, c.apply_image2, c.apply_image3, c.apply_image4, c.apply_image5,
-            c.apply_image6, 
+            c.apply_image6,
             subtitle_1 , `description`,subtitle_3 , subtitle_4 ,subtitle_5 , subtitle_6 ,subtitle_7 ,
             desc1, desc2, bg_image, video_1,
-            ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants, 
+            ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants,
             ifnull(( select count(user_id) from mission_likes where mission_id= ? ),0) as likes,
-             
+
              intro_image_1,intro_image_2,intro_image_3,intro_image_4,intro_image_5,intro_image_6,intro_image_7,intro_image_8,intro_image_9,intro_image_10,
-             owner.nickname as owner_nickname, owner.profile_image , 
-             ifnull((select count(user_id) from follows where a.user_id= target_id ) ,0) as FOLLOWER, 
-             a.reserve_started_at, a.reserve_ended_at, a.started_at, a.ended_at, 
+             owner.nickname as owner_nickname, owner.profile_image ,
+             ifnull((select count(user_id) from follows where a.user_id= target_id ) ,0) as FOLLOWER,
+             a.reserve_started_at, a.reserve_ended_at, a.started_at, a.ended_at,
              "https://www.circlin.co.kr/SNS/assets/img/marathon.mp4" as IMG_URL1,
              "https://www.circlin.co.kr/SNS/assets/img/maraTab2.png" as IMG_URL2,
              "https://www.circlin.co.kr/SNS/assets/img/maraTab3.png" as IMG_URL3,
@@ -1063,18 +1063,18 @@ class MissionController extends Controller
              "https://www.circlin.co.kr/SNS/assets/img/maraTab5.png" as IMG_URL5,
              "https://www.circlin.co.kr/SNS/assets/img/maraTab6.png" as IMG_URL6,
              "https://www.circlin.co.kr/SNS/assets/img/medal_design.png" as IMG_MEDAL,
-        ifnull((SELECT "Y" FROM mission_likes n WHERE user_id= ? and a.id=n.mission_id limit 1),"N" )as like_yn ,         
+        ifnull((SELECT "Y" FROM mission_likes n WHERE user_id= ? and a.id=n.mission_id limit 1),"N" )as like_yn ,
         ifnull((SELECT id FROM mission_stats WHERE user_id= ? and ended_at is null and completed_at is null and mission_id= ? limit 1),"" ) as mission_stat_id,
             CASE when date_add(SYSDATE() , interval + 9 hour ) between a.reserve_started_at and a.reserve_ended_at then "PRE"
                             when date_add(SYSDATE() , interval + 9 hour ) between a.started_at and a.ended_at then "START"
                             ELSE "END" end as CHECK_START
                             , d.title as reward_name
                             , d.id as reward_id
-                            , d.image as reward_image 
-                             
-            from   missions a 
-					LEFT JOIN mission_etc c on  a.id=c.mission_id 
-					LEFT JOIN mission_rewards d on a.id = d.mission_id,  `users` as owner 
+                            , d.image as reward_image
+
+            from   missions a
+					LEFT JOIN mission_etc c on  a.id=c.mission_id
+					LEFT JOIN mission_rewards d on a.id = d.mission_id,  `users` as owner
             where a.user_id=owner.id and a.id=? and a.deleted_at is null;'
                 , [$mission_id,
                     $mission_id,
@@ -1314,24 +1314,24 @@ class MissionController extends Controller
         if ($type == 'ALL') {
             try {
                 DB::beginTransaction();
-                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type, 
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
                 g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,  
+                b.distance, b.laptime, c.goal_distance,
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
                 (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
                 (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
                 case when f.place_id is null then null else "1" end as has_place  ,
-                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
+                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product
                 from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
                 , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and a.is_hidden = 0
-                and b.mission_id= ?   
+                and b.mission_id= ?
                 order by feed_id desc ;',
                     // order by feed_id desc limit ?, 10;',
                     [$user_id, $user_id, $mission_id]);
@@ -1343,25 +1343,25 @@ class MissionController extends Controller
         } elseif ($type == 'ETC') {
             try {
                 DB::beginTransaction();
-                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type, 
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
                 g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,  
+                b.distance, b.laptime, c.goal_distance,
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
                 (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
                 (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
                 case when f.place_id is null then null else "1" end as has_place  ,
-                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
+                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product
                 from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
                 , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and a.is_hidden = 0
                 and f.place_id not in (select place_id from mission_places where mission_id=d.id)
-                and b.mission_id= ?   
+                and b.mission_id= ?
                 order by feed_id desc ;',
                     // order by feed_id desc limit ?, 10;',
                     [$user_id, $user_id, $mission_id]);
@@ -1373,25 +1373,25 @@ class MissionController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id, 
+                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type, 
+                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
                 g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,  
+                b.distance, b.laptime, c.goal_distance,
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
                 (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
                 (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
                 case when f.place_id is null then null else "1" end as has_place  ,
-                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product  
+                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product
                 from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
                 , users g
                 where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
                 and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
                 and a.is_hidden = 0
-                and b.mission_id= ?  
-                and f.place_id = ? 
+                and b.mission_id= ?
+                and f.place_id = ?
                 order by feed_id desc ;',
                     // order by feed_id desc limit ?, 10; , $page',
                     [$user_id, $user_id, $mission_id, $place_id]);
