@@ -1218,7 +1218,7 @@ class MissionController extends Controller
                 try {
                     DB::beginTransaction();
                     //인증서 사진 업로드
-                    $certification_image = DB::update('UPDATE mission_stats set certiifcation_image = ? where id = ? ;'
+                    $certification_image = DB::update('UPDATE mission_stats set certification_image = ? where id = ? ;'
                         , [$filename,
                             $mission_stat_id]);
 
