@@ -528,22 +528,24 @@ class FeedController extends Controller
                 $feed->update($update_data);
             }
 
-            if ($product_delete) {
-                $feed->product()->delete();
-            } elseif ($product_id) {
-                $feed->product()->updateOrCreate([], [
-                    'type' => 'inside',
-                    'product_id' => $product_id,
-                ]);
-            } elseif ($outside_product_id && $product_title && $product_price && $product_url) {
-                $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
-                    'image' => $product_image,
-                    'brand' => $product_brand,
-                    'title' => $product_title,
-                    'price' => $product_price,
-                    'url' => $product_url,
-                ]);
-                $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
+            if (count($feed->missions()->where('is_event', 1)) == 0) {
+                if ($product_delete) {
+                    $feed->product()->delete();
+                } elseif ($product_id) {
+                    $feed->product()->updateOrCreate([], [
+                        'type' => 'inside',
+                        'product_id' => $product_id,
+                    ]);
+                } elseif ($outside_product_id && $product_title && $product_price && $product_url) {
+                    $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
+                        'image' => $product_image,
+                        'brand' => $product_brand,
+                        'title' => $product_title,
+                        'price' => $product_price,
+                        'url' => $product_url,
+                    ]);
+                    $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
+                }
             }
 
 
