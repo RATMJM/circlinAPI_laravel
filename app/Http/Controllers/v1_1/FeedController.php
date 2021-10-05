@@ -546,7 +546,7 @@ class FeedController extends Controller
                 $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
-            if (count($feed->missions()->where('is_event', 1)) == 0) {
+            if ($feed->missions()->where('is_event', 1)->exists()) {
                 if ($place_delete) {
                     $feed->feed_place()->delete();
                 } elseif ($place_address && $place_title) {
