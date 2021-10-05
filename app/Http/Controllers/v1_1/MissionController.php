@@ -1048,8 +1048,8 @@ class MissionController extends Controller
             c.apply_image6,
             subtitle_1 , `description`,subtitle_3 , subtitle_4 ,subtitle_5 , subtitle_6 ,subtitle_7 ,
             desc1, desc2, bg_image, video_1,
-            ifnull(( select count(user_id) from mission_stats where mission_id= ? ),0) as participants,
-            ifnull(( select count(user_id) from mission_likes where mission_id= ? ),0) as likes,
+            (select count(user_id) from mission_stats where mission_id= ? and ended_at is null) as participants,
+            (select count(user_id) from mission_likes where mission_id= ? and deleted_at is null) as likes,
 
              intro_image_1,intro_image_2,intro_image_3,intro_image_4,intro_image_5,intro_image_6,intro_image_7,intro_image_8,intro_image_9,intro_image_10,
              owner.nickname as owner_nickname, owner.profile_image ,
