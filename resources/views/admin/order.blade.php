@@ -31,13 +31,13 @@
     <form action="{{ route('admin.order.index') }}">
         <input type="hidden" name="filter" value="{{ request()->get('filter') }}">
         <select name="type">
-            <option value="all" selected>전체 (닉네임, 이메일)</option>
+            <option value="all" {{ $type === 'all' ? 'selected' : '' }}>전체 (닉네임, 이메일)</option>
         </select>
-        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요.">
+        <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요." value="{{ $keyword }}">
         <button>검색</button>
     </form>
     <br>
-    <p style="font-size: 20px">검색 결과 : <b>{{ number_format($orders->total()) }}</b> 명</p>
+    <p style="font-size: 20px">검색 결과 : <b>{{ number_format($orders->total()) }}</b> 개</p>
     <br>
     <table>
         <thead>
