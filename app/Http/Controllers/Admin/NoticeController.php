@@ -51,8 +51,9 @@ class NoticeController extends Controller
         $content = $request->get('content');
         $is_show = $request->get('is_show');
         $files = $request->file('files');
+        $orders = $request->get('orders');
 
-        if (!$title || !$content || !$files) {
+        if (!$title || !$content || !$files || count($files) !== count($orders)) {
             return "<script>alert('데이터가 부족합니다.');history.back()</script>";
         }
 
@@ -94,7 +95,7 @@ class NoticeController extends Controller
 
                     NoticeImage::create([
                         'notice_id' => $data->id,
-                        'order' => $i,
+                        'order' => $orders[$i],
                         'type' => $type,
                         'image' => image_url(3, $uploaded_file),
                     ]);
@@ -113,7 +114,11 @@ class NoticeController extends Controller
 
     public function show($id)
     {
-        $data = Notice::where('id', $id)->firstOrFail();
+        $data = Notice::where('id', $id)
+            ->with('images', function ($query) {
+                $query->orderBy('order');
+            })
+            ->firstOrFail();
 
         return view('admin.notice.show', [
             'data' => $data,

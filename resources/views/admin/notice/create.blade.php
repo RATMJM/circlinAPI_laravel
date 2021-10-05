@@ -28,22 +28,31 @@
     </form>
 
     <script>
-        let file_count = 0;
+        let file_order = 0;
 
         function add_file() {
+            file_order += 1;
+
             let remove_button = document.createElement('button');
             remove_button.type = 'button';
             remove_button.classList.add('btn');
             remove_button.innerHTML = '-';
             remove_button.onclick = remove_file;
 
+            let order = document.createElement('input');
+            order.type = 'number';
+            order.name = 'orders[]';
+            order.value = file_order - 1;
+            order.style = "width: 40px";
+
             let file = document.createElement('input');
             file.type = 'file';
             file.name = 'files[]';
-            file.id = 'file'+(++file_count);
 
             let div = document.createElement('div');
             div.append(remove_button);
+            div.append(' ');
+            div.append(order);
             div.append(file);
             document.querySelector('#files').append(div);
         }
