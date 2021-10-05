@@ -141,7 +141,7 @@ class NoticeController extends Controller
         $is_show = $request->get('is_show');
 
         if (!$title || !$content || !$is_show) {
-            return redirect()->to($request->server('HTTP_REFERER'));
+            return "<script>alert('데이터가 부족합니다.');history.back()</script>";
         }
 
         Notice::where('id', $id)->update([
