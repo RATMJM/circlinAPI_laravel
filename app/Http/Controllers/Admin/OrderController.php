@@ -51,6 +51,8 @@ class OrderController extends Controller
 
         return view('admin.order', [
             'orders' => $orders,
+            'type' => $type,
+            'keyword' => $keyword,
         ]);
     }
 }
