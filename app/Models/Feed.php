@@ -34,7 +34,7 @@ class Feed extends Model
 
     public function missions()
     {
-        return $this->belongsToMany(Mission::class, 'feed_missions');
+        return $this->belongsToMany(Mission::class, FeedMission::class);
     }
 
     public function likes()
