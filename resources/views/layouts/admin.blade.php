@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <link rel="stylesheet" href="{{ asset('css/admin/common.css?202110011843') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/board.css?202110011843') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/board.css?202110051800') }}">
 
     <title>써클인 - @yield('title')</title>
 </head>

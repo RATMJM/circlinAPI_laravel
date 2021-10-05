@@ -3,12 +3,22 @@
 @section('title', '공지사항 - '.$data->title)
 
 @section('content')
-    <h1>{{ $data->title }}</h1>
-    <div class="board">{!! rn_to_br($data->content) !!}</div>
-    <a href="{{ route('admin.notice.index') }}" class="btn">목록</a>
-    <a href="javascript:update_show({{ $data->is_show ? 0 : 1 }})" class="btn">{{ $data->is_show ? '노출 끄기' : '노출 켜기' }}</a>
-    <a href="{{ route('admin.notice.edit', ['notice' => $data->id]) }}" class="btn">수정</a>
-    <a href="javascript:destroy()" class="btn">삭제</a>
+    <div>
+        <h1>{{ $data->title }}</h1>
+        <div class="board">{!! rn_to_br($data->content) !!}</div>
+        <div>
+            @foreach($data->images as $image)
+                <img src="{{ $image->image }}" alt="" width="300px">
+            @endforeach
+        </div>
+    </div>
+
+    <div>
+        <a href="{{ route('admin.notice.index') }}" class="btn">목록</a>
+        <a href="javascript:update_show({{ $data->is_show ? 0 : 1 }})" class="btn">{{ $data->is_show ? '노출 끄기' : '노출 켜기' }}</a>
+        <a href="{{ route('admin.notice.edit', ['notice' => $data->id]) }}" class="btn">수정</a>
+        <a href="javascript:destroy()" class="btn">삭제</a>
+    </div>
 
     <form action="{{ route('admin.notice.update_show', ['notice' => $data->id]) }}" method="post" id="update_show_form">
         @csrf

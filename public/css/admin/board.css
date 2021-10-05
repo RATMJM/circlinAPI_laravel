@@ -45,3 +45,9 @@ ul.pagination > li > span {
     padding: 15px;
     border-left: 5px solid #000;
 }
+
+.image-input-box {
+    width: 200px;
+    height: 100px;
+    border: 1px solid #000;
+}
