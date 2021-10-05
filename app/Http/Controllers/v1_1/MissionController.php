@@ -94,6 +94,9 @@ class MissionController extends Controller
                         $src = $image->width();
                     }
                     $image->crop($src, $src, round($x), round($y));
+
+                    $image->orientate();
+
                     $tmp_path = "{$thumbnail->getPath()}/{$user_id}_" . Str::uuid() . ".{$thumbnail->extension()}";
                     $image->save($tmp_path);
                     $uploaded_thumbnail = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", new File($tmp_path));
@@ -133,6 +136,9 @@ class MissionController extends Controller
                             $src = $image->width();
                         }
                         $image->crop($src, $src, round($x), round($y));
+
+                        $image->orientate();
+
                         $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
                         $image->save($tmp_path);
                         $uploaded_file = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", new File($tmp_path));
