@@ -43,10 +43,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=72')->daily();
 
         $schedule->call(function () {
-            $msg = "[월드비전 6K 하이킹2 D-1] 내일부터 시작되는 아프리카 아이들을 위한 하이킹, 모두 준비 되셨나요? 😎";
+            $msg = "[월드비전 6K 하이킹2] 가장 인기많은 산 TOP3! 아차산, 용마산, 인왕산⛰ 이번 주말엔 TOP3에서 히어로들을 만나보는 거 어때요?";
             $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
             PushController::gcm_notify($users, '써클인', $msg, '', 'mission',1701);
-        })->cron('30 19 01 10 *');
+        })->cron('30 18 06 10 *');
     }
 
     /**
