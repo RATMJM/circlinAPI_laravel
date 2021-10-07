@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(): array
     {
         $data = Product::where('products.is_show', true)
             ->join('brands', 'brands.id', 'products.brand_id')
@@ -29,32 +29,32 @@ class ProductController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): array
     {
         //
     }
 
-    public function store(Request $request)
+    public function store(Request $request): array
     {
         //
     }
 
-    public function show($id)
+    public function show($id): array
     {
         //
     }
 
-    public function edit($id)
+    public function edit($id): array
     {
         //
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): array
     {
         //
     }
 
-    public function destroy($id)
+    public function destroy($id): array
     {
         //
     }
