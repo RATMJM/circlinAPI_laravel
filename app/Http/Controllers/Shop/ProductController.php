@@ -15,7 +15,8 @@ class ProductController extends Controller
         $data = Product::where('products.is_show', true)
             ->join('brands', 'brands.id', 'products.brand_id')
             ->select([
-                'products.id', 'products.code', 'brands.name_ko as brand_name', 'products.name_ko as product_name',
+                'products.id', 'products.code', 'products.name_ko as product_name',
+                'products.brand_id', 'brands.name_ko as brand_name',
                 'products.thumbnail_image',
                 'products.shipping_fee', 'products.price', 'products.sale_price', 'products.status',
                 DB::raw("CAST(ROUND(100-(products.sale_price/products.price*100)) as unsigned) as discount_rate"),
@@ -45,7 +46,8 @@ class ProductController extends Controller
         $data = Product::where('products.id', $id)
             ->join('brands', 'brands.id', 'products.brand_id')
             ->select([
-                'products.id', 'products.code', 'brands.name_ko as brand_name', 'products.name_ko as product_name',
+                'products.id', 'products.code', 'products.name_ko as product_name',
+                'products.brand_id', 'brands.name_ko as brand_name',
                 'products.thumbnail_image',
                 'products.shipping_fee', 'products.price', 'products.sale_price', 'products.status',
                 DB::raw("CAST(ROUND(100-(products.sale_price/products.price*100)) as unsigned) as discount_rate"),
