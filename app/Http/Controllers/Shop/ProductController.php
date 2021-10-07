@@ -24,9 +24,7 @@ class ProductController extends Controller
             ->orderBy('products.id', 'desc')
             ->get();
 
-        return success([
-            'products' => $data,
-        ]);
+        return $data;
     }
 
     public function create(): array
