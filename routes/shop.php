@@ -20,6 +20,10 @@ Route::get('/', function (Request $request) {
     return $request->ip();
 });
 
+Route::group(['prefix' => 'banner', 'as' => 'banner.'], function () {
+    Route::get('/{type}', [Shop\BannerController::class, 'index'])->name('index');
+});
+
 Route::group(['prefix' => 'product', 'as' => 'product.'], function () {
     Route::get('/', [Shop\ProductController::class, 'index'])->name('index');
 });
