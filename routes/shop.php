@@ -24,6 +24,7 @@ Route::group(['prefix' => 'banner', 'as' => 'banner.'], function () {
     Route::get('/', [Shop\BannerController::class, 'index'])->name('index');
 });
 
+Route::resource('product', Shop\ProductController::class);
 Route::group(['prefix' => 'product', 'as' => 'product.'], function () {
-    Route::get('/', [Shop\ProductController::class, 'index'])->name('index');
+    // Route::get('/', [Shop\ProductController::class, 'index'])->name('index');
 });
