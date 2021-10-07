@@ -15,6 +15,16 @@ class Product extends Model
         'created_at' => 'date:Y-m-d H:i:s',
     ];
 
+    public function options()
+    {
+        return $this->hasMany(ProductOption::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
     public function missions()
     {
         return $this->belongsToMany(Mission::class, MissionProduct::class)
