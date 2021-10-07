@@ -21,7 +21,7 @@ Route::get('/', function (Request $request) {
 });
 
 Route::group(['prefix' => 'banner', 'as' => 'banner.'], function () {
-    Route::get('/{type}', [Shop\BannerController::class, 'index'])->name('index');
+    Route::get('/', [Shop\BannerController::class, 'index'])->name('index');
 });
 
 Route::group(['prefix' => 'product', 'as' => 'product.'], function () {
