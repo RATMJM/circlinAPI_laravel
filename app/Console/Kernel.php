@@ -51,12 +51,12 @@ class Kernel extends ConsoleKernel
             foreach ($users as $user) {
                 $tmp[] = $user;
                 if (count($tmp) >= 1000) {
-                    PushController::gcm_notify($users, '써클인', $msg, '');
+                    PushController::gcm_notify($tmp, '써클인', $msg, '');
                     $tmp = [];
                 }
             }
-            PushController::gcm_notify($users, '써클인', $msg, '');
-        })->cron('03 11 08 10 *');
+            PushController::gcm_notify($tmp, '써클인', $msg, '');
+        })->cron('05 11 08 10 *');
     }
 
     /**
