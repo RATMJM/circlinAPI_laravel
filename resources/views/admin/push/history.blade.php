@@ -1,4 +1,4 @@
-@extends('admin.push.layouts.index')
+@extends('layouts.push')
 
 @section('title', '푸시 관리')
 
