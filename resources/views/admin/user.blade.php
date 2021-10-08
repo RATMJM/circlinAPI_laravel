@@ -100,5 +100,5 @@
         </tbody>
     </table>
     <br>
-    <div class="center">{{ $users->withQUeryString()->links() }}</div>
+    <div class="center">{{ $users->withQueryString()->links() }}</div>
 @endsection

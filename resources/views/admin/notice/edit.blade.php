@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '공지사항 - '.$data->title)
+@section('title', '공지사항 관리 - '.$data->title)
 
 @section('content')
     <form action="{{ route('admin.notice.update', ['notice' => $data->id]) }}" method="post">

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '공지사항 - 작성하기')
+@section('title', '공지사항 관리 - 작성하기')
 
 @section('content')
     <form action="{{ route('admin.notice.store') }}" method="POST" enctype="multipart/form-data">

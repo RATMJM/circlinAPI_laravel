@@ -114,5 +114,5 @@
         </tbody>
     </table>
     <br>
-    <div class="center">{{ $orders->withQUeryString()->links() }}</div>
+    <div class="center">{{ $orders->withQueryString()->links() }}</div>
 @endsection

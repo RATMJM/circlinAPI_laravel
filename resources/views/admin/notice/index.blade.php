@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '공지사항')
+@section('title', '공지사항 관리')
 
 @section('content')
     <form action="{{ route('admin.notice.index') }}">
@@ -41,5 +41,5 @@
         </tbody>
     </table>
     <br>
-    <div class="center">{{ $data->withQUeryString()->links() }}</div>
+    <div class="center">{{ $data->withQueryString()->links() }}</div>
 @endsection

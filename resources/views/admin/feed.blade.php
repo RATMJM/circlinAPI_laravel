@@ -97,5 +97,5 @@
         </tbody>
     </table>
     <br>
-    <div class="center">{{ $feeds->withQUeryString()->links() }}</div>
+    <div class="center">{{ $feeds->withQueryString()->links() }}</div>
 @endsection

@@ -83,5 +83,5 @@
         </tbody>
     </table>
     <br>
-    <div class="center">{{ $missions->withQUeryString()->links() }}</div>
+    <div class="center">{{ $missions->withQueryString()->links() }}</div>
 @endsection
