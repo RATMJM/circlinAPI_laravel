@@ -36,5 +36,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         // 관리
         Route::resource('/notice', Admin\NoticeController::class);
         Route::patch('/notice/{notice}/show', [Admin\NoticeController::class, 'update_show'])->name('notice.update_show');
+
+        Route::get('/push/reservation', [Admin\PushController::class, 'index'])->name('push.reservation');
+        Route::get('/push/history', [Admin\PushController::class, 'history'])->name('push.history');
+        Route::resource('/push', Admin\PushController::class);
     });
 });
