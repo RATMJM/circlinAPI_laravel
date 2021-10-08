@@ -15,13 +15,18 @@
 
     <div>
         <a href="{{ route('admin.notice.index') }}" class="btn">목록</a>
-        <a href="javascript:update_show({{ $data->is_show ? 0 : 1 }})" class="btn">{{ $data->is_show ? '노출 끄기' : '노출 켜기' }}</a>
+        @if($data->is_show)
+            <a href="javascript:update_show(0)" class="btn">노출 끄기</a>
+        @else
+            <a href="javascript:update_show(1)" class="btn">노출 켜기</a>
+        @endif
         <a href="{{ route('admin.notice.edit', ['notice' => $data->id]) }}" class="btn">수정</a>
         <a href="javascript:destroy()" class="btn">삭제</a>
     </div>
 
     <form action="{{ route('admin.notice.update_show', ['notice' => $data->id]) }}" method="post" id="update_show_form">
         @csrf
+        @method('PATCH')
         <input type="hidden" name="is_show">
     </form>
     <form action="{{ route('admin.notice.destroy', ['notice' => $data->id]) }}" method="post" id="destroy_form">

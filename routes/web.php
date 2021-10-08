@@ -20,9 +20,7 @@ Route::get('/', function (Request $request) {
 });
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
-    Route::get('/', function (Request $request) {
-        return $request->ip();
-    });
+    Route::get('/', [Admin\UserController::class, 'index'])->name('index');
 
     Route::get('/login', [Admin\AuthController::class, 'loginForm'])->name('login');
     Route::post('/login', [Admin\AuthController::class, 'login']);
@@ -37,6 +35,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
         // 관리
         Route::resource('/notice', Admin\NoticeController::class);
-        Route::post('/notice/{notice}/update_show', [Admin\NoticeController::class, 'update_show'])->name('notice.update_show');
+        Route::patch('/notice/{notice}/show', [Admin\NoticeController::class, 'update_show'])->name('notice.update_show');
     });
 });
