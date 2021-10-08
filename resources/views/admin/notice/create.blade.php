@@ -28,10 +28,11 @@
     </form>
 
     <script>
-        let file_order = 0;
-
         function add_file() {
-            file_order += 1;
+            let file_order = 0;
+            let orders = document.querySelectorAll('input[name="orders[]"]');
+
+            orders.forEach((item, i) => file_order = Math.max(file_order, Number(item.value) + 1));
 
             let remove_button = document.createElement('button');
             remove_button.type = 'button';
@@ -42,7 +43,7 @@
             let order = document.createElement('input');
             order.type = 'number';
             order.name = 'orders[]';
-            order.value = file_order - 1;
+            order.value = file_order;
             order.style = "width: 40px";
 
             let file = document.createElement('input');
