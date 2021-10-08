@@ -29,11 +29,22 @@ class PushController extends Controller
         $type = $request->get('type');
         $keyword = trim($request->get('keyword'));
 
-        $data = PushHistory::join('users', 'users.id', 'push_histories.target_id')
+        $data = PushHistory::when($type, function ($query, $type) use ($keyword) {
+            match ($type) {
+                'all' => $query->where(function ($query) use ($keyword) {
+                    $query->where('push_histories.title', 'like', "%$keyword%")
+                        ->orWhere('push_histories.message', 'like', "%$keyword%")
+                        ->orWhere('users.nickname', 'like', "%$keyword%")
+                        ->orWhere('users.email', 'like', "%$keyword%");
+                }),
+                default => null,
+            };
+        })
+            ->join('users', 'users.id', 'push_histories.target_id')
             ->select([
                 'push_histories.id', 'push_histories.created_at',
                 'push_histories.title', 'push_histories.message', 'push_histories.type',
-                'users.nickname',
+                'users.nickname', 'users.email',
             ])
             ->orderBy('push_histories.id', 'desc')
             ->paginate(50);

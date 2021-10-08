@@ -4,10 +4,10 @@
 
 @section('content')
     @parent
-    <form action="{{ route('admin.push.index') }}">
+    <form action="{{ route('admin.push.history') }}">
         <input type="hidden" name="filter" value="{{ request()->get('filter') }}">
         <select name="type">
-            <option value="all" {{ $type === 'all' ? 'selected' : '' }}>전체 (설명, 타이틀, 내용)</option>
+            <option value="all" {{ $type === 'all' ? 'selected' : '' }}>전체 (닉네임, 이메일, 타이틀, 내용)</option>
         </select>
         <input name="keyword" type="text" placeholder="검색 내용을 입력해주세요." value="{{ $keyword }}">
         <button>검색</button>
@@ -31,7 +31,7 @@
         @forelse($data as $item)
             <tr>
                 <td class="center">{{ $item->id }}</td>
-                <td>{{ $item->nickname }}</td>
+                <td>{{ $item->nickname }}<br>({{ $item->email }})</td>
                 <td class="center">{{ $item->title }}</td>
                 <td>{{ rn_to_br($item->message) }}</td>
                 <td>{{ $item->created_at }}</td>
