@@ -82,6 +82,7 @@ table > thead > tr:nth-child(2n-1) > th {
 
 .container {
     margin: 0 auto;
+    padding: 0 15px;
     width: 1800px;
     overflow: hidden;
 }
