@@ -14,7 +14,6 @@
     "ext-ftp": "*",
     "ext-gd": "*",
     "ext-mbstring": "*",
-    "darkaonline/l5-swagger": "^8.0",
     "fideloper/proxy": "^4.4",
     "firebase/php-jwt": "^5.4",
     "fruitcake/laravel-cors": "^2.0",
