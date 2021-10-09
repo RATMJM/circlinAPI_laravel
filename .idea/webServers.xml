@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e1183633-13f1-4f6f-b80e-390e7a54d868" name="circlin">
+        <fileTransfer accessType="SFTP" host="34.64.248.255" port="22" sshConfigId="4e5d63c6-eb95-4aa2-beae-e4a0c523ea73" sshConfig="circlinDev@34.64.248.255:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
