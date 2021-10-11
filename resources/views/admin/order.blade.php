@@ -55,25 +55,25 @@
         </tr>
         </thead>
         <tbody>
-        @forelse($orders->groupBy('id') as $order)
-            @php($rowspan = count($order->whereNotNull('product_id')->pluck('product_id')->unique()) +
-                    count($order->whereNotNull('ship_brand_id')->pluck('ship_brand_id')->unique()))
+        @forelse($orders as $order)
+            @php($rowspan = count($order->order_products->whereNotNull('product_id')->pluck('id')->unique()) +
+                    count($order->order_products->whereNotNull('ship_brand_id')->pluck('id')->unique()))
             <tr style="border-top: 2px solid #000">
-                <td rowspan="{{ $rowspan }}">{{ $order[0]->order_no }}<br>({{ $order[0]->created_at }})<br>({{ $order[0]->id }})</td>
+                <td rowspan="{{ $rowspan }}">{{ $order->order_no }}<br>({{ $order->created_at }})<br>({{ $order->id }})</td>
                 <td rowspan="{{ $rowspan }}">
-                    {{ $order[0]->nickname }}
-                    <br>({{ $order[0]->email }})
+                    {{ $order->nickname }}
+                    <br>({{ $order->email }})
                 </td>
-                <td rowspan="{{ $rowspan }}">({{ $order[0]->post_code }}) {{ $order[0]->address }} {{ $order[0]->address_detail }}</td>
+                <td rowspan="{{ $rowspan }}">({{ $order->post_code }}) {{ $order->address }} {{ $order->address_detail }}</td>
                 <td rowspan="{{ $rowspan }}">
-                    {{ $order[0]->recipient_name }}
-                    <br>({{ $order[0]->phone }})
+                    {{ $order->recipient_name }}
+                    <br>({{ $order->phone }})
                 </td>
-                <td rowspan="{{ $rowspan }}">{{ $order[0]->comment }}</td>
+                <td rowspan="{{ $rowspan }}">{{ $order->comment }}</td>
                 <td rowspan="{{ $rowspan }}" class="center">
-                    {{ number_format($order[0]->total_price) }}<br>({{ number_format($order[0]->use_point) }})
+                    {{ number_format($order->total_price) }}<br>({{ number_format($order->use_point) }})
                 </td>
-                @foreach($order->whereNotNull('ship_brand_id') as $ship_brand)
+                @foreach($order->order_products->whereNotNull('ship_brand_id') as $ship_brand)
                     <td>
                         <b>[{{ $ship_brand->ship_brand_name }}]</b> 배송비
                         <br>{{ number_format($ship_brand->product_price) }}
@@ -81,9 +81,9 @@
                     <td class="center"></td>
                     <td class="center"></td>
                     <td class="center"></td>
-                    {!! ($loop->last && count($order->whereNotNull('product_id')->groupBy('product_id')) == 0) ? '' : '</tr></tr>' !!}
+                    {!! ($loop->last && count($order->order_products->whereNotNull('product_id')->groupBy('product_id')) == 0) ? '' : '</tr></tr>' !!}
                 @endforeach
-                @foreach($order->whereNotNull('product_id')->groupBy('product_id') as $products)
+                @foreach($order->order_products->whereNotNull('product_id')->groupBy('product_id') as $products)
                         <td>
                             <b>[{{ $products[0]->brand_name }}]</b> {{ $products[0]->product_name }}
                             <br>{{ number_format($products[0]->product_price) }} ({{ $products[0]->qty }})

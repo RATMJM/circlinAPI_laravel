@@ -15,4 +15,9 @@ class Order extends Model
     protected $casts = [
         'created_at' => 'date:Y-m-d H:i:s',
     ];
+
+    public function order_products()
+    {
+        return $this->hasMany(OrderProduct::class);
+    }
 }
