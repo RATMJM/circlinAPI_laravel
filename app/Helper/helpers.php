@@ -257,9 +257,7 @@ function area_like($table = 'users')
  */
 function challenge_type()
 {
-    return DB::raw("CASE WHEN missions.id in (786,796,811,1396,1424) THEN 1".
-        " WHEN missions.id in (1174) THEN 2".
-        " WHEN missions.id in (962,1027,1213,1701) THEN 3 END as event_type");
+    return 'missions.event_type';
 }
 
 function init_today($time = null)
