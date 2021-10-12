@@ -44,7 +44,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=72')->daily();
 
         $schedule->call(function () {
-            $msg = "주말 하이킹을 위한 선물도착 🎁 69% 할인받고 마이밀 뉴프로틴 챙겨가세요 ❤";
+            $msg = "콜롬비아 아이들의 흑백 삶을 알록달록한 색깔로 물들이는 컬러런🌈  2021 컴패션 버츄얼 런 참가자 모집 중!";
             // $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
             $users = User::pluck('id');
             $tmp = [];
@@ -56,7 +56,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('05 11 08 10 *');
+        })->cron('00 14 12 10 *');
     }
 
     /**
