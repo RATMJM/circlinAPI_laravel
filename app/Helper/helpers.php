@@ -252,14 +252,6 @@ function area_like($table = 'users')
     return Area::select('name')->where('code', DB::raw("CONCAT(SUBSTRING($table.area_code,1,5),'00000')"))->orderBy('code')->limit(1);
 }
 
-/**
- * 기존 챌린지 type
- */
-function challenge_type()
-{
-    return 'missions.event_type';
-}
-
 function init_today($time = null)
 {
     return date('Y-m-d 00:00:00', ($time ?? time()));
