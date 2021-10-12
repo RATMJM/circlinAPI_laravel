@@ -212,13 +212,13 @@ class FeedController extends Controller
                     'product_id' => $product_id,
                 ]);
 
-                if ($point < 500) {
+                /*if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
                     NotificationController::send($user_id, 'feed_upload_product', null, $feed->id, false,
                         ['point' => 50, 'point2' => 500 - $point - 50]);
                     $point += 50;
                     $product_reward = true;
-                }
+                }*/
             } elseif ($outside_product_id && $product_title && $product_price && $product_url) {
                 $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
                     'image' => $product_image,
@@ -229,13 +229,13 @@ class FeedController extends Controller
                 ]);
                 $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
 
-                if ($point < 500) {
+                /*if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
                     NotificationController::send($user_id, 'feed_upload_product', null, $feed->id, false,
                         ['point' => 50, 'point2' => 500 - $point - 50]);
                     $point += 50;
                     $product_reward = true;
-                }
+                }*/
             }
 
             if ($place_address && $place_title) {
@@ -248,13 +248,13 @@ class FeedController extends Controller
                 ]);
                 $feed->feed_place()->create(['place_id' => $place->id]);
 
-                if ($point < 500) {
+                /*if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_place', 'feed', $feed->id);
                     NotificationController::send($user_id, 'feed_upload_place', null, $feed->id, false,
                         ['point' => 50, 'point2' => 500 - $point - 50]);
                     $point += 50;
                     $place_reward = true;
-                }
+                }*/
             }
 
             // 조건별 푸시

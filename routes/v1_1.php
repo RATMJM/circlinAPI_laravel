@@ -230,7 +230,7 @@ Route::get('/show_construction', function () {
 Route::get('/feed_upload_point', function () {
     return success([
         'result' => true,
-        'show' => true,
+        'show' => false,
     ]);
 });
 
