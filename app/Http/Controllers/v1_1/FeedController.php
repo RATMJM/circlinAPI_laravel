@@ -590,9 +590,9 @@ class FeedController extends Controller
     {
         $user_id = token()->uid;
 
-        $feed = Feed::where('id', $id)->first();
+        $feed = Feed::where(['id' => $id, 'user_id' => $user_id])->first();
 
-        if ($feed->user_id === $user_id) {
+        if (isset($feed)) {
             $data = $feed->delete();
             return success(['result' => true]);
         } else {
