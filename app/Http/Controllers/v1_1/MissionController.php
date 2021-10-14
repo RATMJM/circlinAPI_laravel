@@ -15,6 +15,8 @@ use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
+use App\Models\MissionGround;
+use App\Models\MissionGroundText;
 use App\Models\MissionImage;
 use App\Models\MissionPlace;
 use App\Models\MissionProduct;
@@ -557,6 +559,79 @@ class MissionController extends Controller
         ]);
     }
 
+    public function ground($mission_id): array
+    {
+        $user_id = token()->uid;
+
+        $data = MissionGround::where('mission_id', $mission_id)
+            ->join('missions', function ($query) {
+                $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
+            })
+            ->select([
+                'mission_grounds.*', 'missions.started_at', 'missions.ended_at',
+                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
+                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+            ])
+            ->first();
+
+        $date = date('Y-m-d H:i:s');
+
+        $diff = abs(date_diff(new \DateTime(date('Y-m-d')), new \DateTime($data->started_at))->days);
+        if ($data->is_available) {
+            $data->ground_d_day_title = '함께하는 중';
+            $data->ground_d_day_text = "{$diff}일차";
+        } elseif ($data->started_at > $date) {
+            $data->ground_d_day_title = '함께하기 전';
+            $data->ground_d_day_text = "D - $diff";
+        } else {
+            $data->ground_d_day_title = '종료';
+            $data->ground_d_day_text = "";
+        }
+
+        $replaces = Mission::where('missions.id', $mission_id)
+            ->leftJoin('mission_stats', function ($query) {
+                $query->on('mission_stats.mission_id', 'missions.id')->whereNull('mission_stats.ended_at');
+            })
+            ->select([
+                'users_count' => MissionStat::selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
+                'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                DB::raw("IFNULL(goal_distance,0) as goal_distance"),
+                'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                'total_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+            ])
+            ->first();
+        $replaces->status_text = $data->record_progress_image_count > $replaces->feeds_count ? '도전 중' : '성공';
+        $replaces = $replaces->toArray();
+
+        foreach ($data->toArray() as $i => $item) {
+            if (!is_string($item)) continue;
+            $data[$i] = code_replace($item, $replaces);
+        }
+
+        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
+        $today_cert_count = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
+            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+            ->join('feed_missions', function ($query) use ($mission_id) {
+                $query->on('feed_missions.feed_id', 'feeds.id')
+                    ->where('feed_missions.mission_id', $mission_id);
+            })
+            ->distinct()
+            ->count('user_id');
+        $replaces = ['today_cert_count' => $today_cert_count];
+        $data->ground_text = code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces);
+        $data->record_text = code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces);
+
+        return success([
+            'ground' => $data,
+        ]);
+    }
+
     public function edit($mission_id): array
     {
         $user_id = token()->uid;
@@ -981,62 +1056,12 @@ class MissionController extends Controller
             ->distinct()
             ->count('user_id');
 
-        // return [$ai_text1, $ai_text2];
-
-        function AiText($data, $is_available, $mission_id, $user_id)
-        {
-            $AiText = '';
-
-            foreach ($data->groupBy('type') as $type => $data) {
-                if ($is_available) {
-                    if ($type === 'cert') {
-                        $cert = Feed::where('feeds.user_id', $user_id)
-                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                            ->join('feed_missions', function ($query) use ($mission_id) {
-                                $query->on('feed_missions.feed_id', 'feeds.id')
-                                    ->where('feed_missions.mission_id', $mission_id);
-                            })
-                            ->value(DB::raw("COUNT(1) > 0"));
-                        foreach ($data as $item) {
-                            if ($item->value === $cert) {
-                                $AiText = $item->message;
-                            }
-                        }
-                    } elseif ($type === 'today_cert') {
-                        $cert = Feed::where('feeds.user_id', $user_id)
-                            ->where('feeds.created_at', '>=', date('Y-m-d'))
-                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                            ->join('feed_missions', function ($query) use ($mission_id) {
-                                $query->on('feed_missions.feed_id', 'feeds.id')
-                                    ->where('feed_missions.mission_id', $mission_id);
-                            })
-                            ->value(DB::raw("COUNT(1) > 0"));
-                        foreach ($data as $item) {
-                            if ($item->value === $cert) {
-                                $AiText = $item->message;
-                            }
-                        }
-                    }
-                } else {
-                    if ($type === 'default') {
-                        foreach ($data as $item) {
-                            if ($item->value > 0 && $AiText === '') {
-                                $AiText = $item->message;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return $AiText;
-        }
-
         $replaces = [
             'today_users_count' => $today_users_count,
         ];
 
-        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
-        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText = code_replace(mission_ground_text($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText2 = code_replace(mission_ground_text($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
 
         return success([
             'success' => true,

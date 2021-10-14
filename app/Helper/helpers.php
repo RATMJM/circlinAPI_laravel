@@ -5,7 +5,9 @@ use App\Http\Controllers\v1\PushController;
 use App\Http\Controllers\v1_1\BaseController;
 use App\Models\Area;
 use App\Models\CommonCode;
+use App\Models\Feed;
 use App\Models\FeedMission;
+use App\Models\FeedPlace;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionArea;
@@ -304,6 +306,54 @@ function mission_areas($mission_id)
         ->join('areas', 'areas.code', DB::raw("CONCAT(mission_areas.area_code,'00000')"))
         ->select(['mission_id', 'areas.name'])
         ->orderBy('areas.code');
+}
+
+function mission_ground_text($data, $is_available, $mission_id, $user_id)
+{
+    $AiText = '';
+
+    foreach ($data->groupBy('type') as $type => $data) {
+        if ($is_available) {
+            if ($type === 'cert') {
+                $cert = Feed::where('feeds.user_id', $user_id)
+                    ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                    ->join('feed_missions', function ($query) use ($mission_id) {
+                        $query->on('feed_missions.feed_id', 'feeds.id')
+                            ->where('feed_missions.mission_id', $mission_id);
+                    })
+                    ->value(DB::raw("COUNT(1) > 0"));
+                foreach ($data as $item) {
+                    if ($item->value === $cert) {
+                        $AiText = $item->message;
+                    }
+                }
+            } elseif ($type === 'today_cert') {
+                $cert = Feed::where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                    ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                    ->join('feed_missions', function ($query) use ($mission_id) {
+                        $query->on('feed_missions.feed_id', 'feeds.id')
+                            ->where('feed_missions.mission_id', $mission_id);
+                    })
+                    ->value(DB::raw("COUNT(1) > 0"));
+                foreach ($data as $item) {
+                    if ($item->value === $cert) {
+                        $AiText = $item->message;
+                    }
+                }
+            }
+        } else {
+            if ($type === 'default') {
+                foreach ($data as $item) {
+                    if ($item->value > 0 && $AiText === '') {
+                        $AiText = $item->message;
+                    }
+                }
+            }
+        }
+    }
+
+    return $AiText;
 }
 
 function rn_to_br($text)
