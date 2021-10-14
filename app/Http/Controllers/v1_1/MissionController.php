@@ -831,6 +831,9 @@ class MissionController extends Controller
                     ]);
             })
             ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+            ->leftJoin('feeds', function ($query) {
+                $query->on('feeds.id', 'feed_missions.feed_id')->whereNull('feeds.deleted_at');
+            })
             ->select([
                 'mission_stats.id as mission_stat_id', 'mission_stats.certification_image',
                 'mission_stats.mission_id',
@@ -913,7 +916,10 @@ class MissionController extends Controller
         }
 
         // 참가자 총 거리
-        $total_km = FeedMission::where('mission_id', $mission_id)->sum('distance');
+        $total_km = FeedMission::where('mission_id', $mission_id)
+            ->leftJoin('feeds', function ($query) {
+                $query->on('feeds.id', 'feed_missions.feed_id')->whereNull('feeds.deleted_at');
+            })->sum('distance');
 
         // 내 기록
         $myRecord = Feed::where('missions.id', $mission_id)
@@ -935,10 +941,10 @@ class MissionController extends Controller
             ->get();
 
         // 내 미션 상태
-        $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
-                ifnull(sum(b.distance),0) total_distance,
-                ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
-                sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
+        $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(a.distance),2),0) as distance,
+                ifnull(sum(a.distance),0) total_distance,
+                ifnull(ROUND((sum(a.distance) / c.goal_distance) * 100 ,0),0) as progress,
+                sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(a.distance as unsigned) then  1 else 0 end ) as success_today,
                 ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count,
                 ifnull((select count(id) from feed_missions where mission_id= ? and created_at >= ?) ,0) today_cert_count
             from feeds a
@@ -947,7 +953,7 @@ class MissionController extends Controller
             where a.user_id= ?
                 and b.mission_id= ?
                 and a.deleted_at is null
-            GROUP BY  b.distance, c.goal_distance
+            GROUP BY  a.distance, c.goal_distance
             union
             select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,
                 (select count(feeds.id) from feed_missions join feeds on feeds.id=feed_id and feeds.deleted_at is null where mission_id=?) cert_count,
@@ -1332,7 +1338,7 @@ class MissionController extends Controller
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
                 (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
                 g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,
+                a.distance, a.laptime, c.goal_distance,
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
@@ -1361,7 +1367,7 @@ class MissionController extends Controller
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
                 (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
                 g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,
+                a.distance, a.laptime, c.goal_distance,
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
@@ -1391,7 +1397,7 @@ class MissionController extends Controller
                 (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
                 (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
                 g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,
+                a.distance, a.laptime, c.goal_distance,
                 e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
                 (select count(1) from feed_likes where feed_id=a.id ) as check_total,
                 (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
