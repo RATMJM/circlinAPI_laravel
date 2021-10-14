@@ -15,4 +15,9 @@ class Banner extends Model
     protected $casts = [
         'created_at' => 'date:Y-m-d H:i:s',
     ];
+
+    public function logs()
+    {
+        return $this->hasMany(BannerLog::class);
+    }
 }

@@ -123,7 +123,7 @@ Route::get('/badge', [v1_1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::get('/banner/local', [v1_1\BannerController::class, 'category_banner'])->name('banner.local');
 Route::get('/banner/{type}', [v1_1\BannerController::class, 'index'])->name('banner');
-Route::get('/banner/click/{id}', [v1_1\BannerController::class, 'click'])->name('banner.click');
+Route::post('/banner/click/{id}', [v1_1\BannerController::class, 'click'])->name('banner.click');
 
 Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
     Route::get('/place', [v1_1\PopularPlaceController::class, 'index'])->name('index');
