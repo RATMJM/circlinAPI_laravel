@@ -250,7 +250,7 @@ class MissionController extends Controller
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
-                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(), 'users.greeting',
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
@@ -280,7 +280,7 @@ class MissionController extends Controller
             ]);
         }
 
-        $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
+        $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'greeting', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
 
         if (!$data->is_ground) {
@@ -297,6 +297,8 @@ class MissionController extends Controller
                     'intro_video', 'logo_image', 'code_title', 'code', 'code_image', 'goal_distances',
                 ])
                 ->first();
+            $data->reward = $data->reward()->select(['title', 'image'])->first();
+
         }
 
         /*$places = FeedMission::where('mission_id', $mission_id)
