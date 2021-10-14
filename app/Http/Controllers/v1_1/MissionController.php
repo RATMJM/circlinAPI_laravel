@@ -229,8 +229,6 @@ class MissionController extends Controller
     public function show(Request $request, $mission_id): array
     {
         $user_id = token()->uid;
-        $page = $request->get('page', 0);
-        $limit = $request->get('limit', 10);
 
         $data = Mission::where('missions.id', $mission_id)
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
@@ -247,8 +245,8 @@ class MissionController extends Controller
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
                 'missions.is_ground',
                 'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+                    (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
@@ -285,10 +283,21 @@ class MissionController extends Controller
         $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
 
-        $data->images = $data->images()->orderBy('order')->orderBy('id')->pluck('image');
-        $data->areas = mission_areas($data->id)->pluck('name');
+        if (!$data->is_ground) {
+            $data->images = $data->images()->orderBy('order')->orderBy('id')->pluck('image');
+            $data->areas = mission_areas($data->id)->pluck('name');
 
-        $data->users = mission_users($mission_id, $user_id, true)->get();
+            $data->users = mission_users($mission_id, $user_id, true)->get();
+
+            $feeds = $this->feed($request, $mission_id)['data'];
+        } else {
+            $data->images = $data->images()->select(['type', 'image'])->orderBy('order')->orderBy('id')->get();
+            $data->ground = $data->ground()
+                ->select([
+                    'intro_video', 'logo_image', 'code_title', 'code', 'code_image', 'goal_distances',
+                ])
+                ->first();
+        }
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
@@ -466,15 +475,13 @@ class MissionController extends Controller
             }
         }*/
 
-        $feeds = $this->feed($request, $mission_id)['data'];
-
         return success([
             'result' => true,
             'mission' => $data,
             // 'places' => $places,
             // 'products' => $products,
-            'feeds_count' => $feeds['feeds_count'],
-            'feeds' => $feeds['feeds'],
+            'feeds_count' => $feeds['feeds_count'] ?? 0,
+            'feeds' => $feeds['feeds'] ?? [],
         ]);
     }
 
@@ -531,7 +538,7 @@ class MissionController extends Controller
                 $query->whereDoesntHave('feeds', function ($query) {
                     $user_id = token()->uid;
                     $query->where('feeds.created_at', '>=', date('Y-m-d'));
-                    $query->where('user_id',$user_id);
+                    $query->where('user_id', $user_id);
                 });
             })
             ->join('mission_places', 'mission_places.place_id', 'places.id')
@@ -839,8 +846,8 @@ class MissionController extends Controller
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
                 'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
-                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+                    (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                     ->where('created_at', '>=', $today),
                 'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
@@ -1121,10 +1128,10 @@ class MissionController extends Controller
 
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
-        } elseif (Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.reserve_ended_at is null or missions.reserve_ended_at>'".date('Y-m-d H:i:s')."') or
-            (missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"))
+        } elseif (Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='" . date('Y-m-d H:i:s') . "') and
+            (missions.reserve_ended_at is null or missions.reserve_ended_at>'" . date('Y-m-d H:i:s') . "') or
+            (missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+            (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"))
             ->where('id', $mission_id)->value('is_available')) {
             $data = MissionStat::create([
                 'user_id' => $user_id,
