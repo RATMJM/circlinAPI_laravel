@@ -18,12 +18,16 @@ class CreateMissionGroundsTable extends Migration
             $table->timestamps();
             $table->foreignId('mission_id')->constrained();
             $table->string('intro_video')->nullable()->comment('소개 페이지 상단 동영상');
-            $table->string('code')->nullable()->comment('입장 코드');
+
+            $table->string('logo_image')->nullable()->comment('상단 로고');
+            $table->string('code_title')->nullable()->comment('입장코드 라벨');
+            $table->string('code')->nullable()->comment('입장코드 (있으면 비교, 없으면 입력 받기만)');
+            $table->string('code_image')->nullable()->comment('입장코드 룸 상단 이미지');
             $table->json('goal_distances')->nullable()->comment('참가하기 전 설정할 목표 거리 (km)');
-            $table->string('logo_image')->nullable()->comment('운동장 상단 로고');
+
             $table->string('ground_title')->default('운동장')->comment('운동장 탭 타이틀');
             $table->string('record_title')->default('내기록')->comment('내기록 탭 타이틀');
-            $table->string('event_title')->default('이벤트')->comment('이벤트 탭 타이틀');
+            $table->string('cert_title')->default('이벤트')->comment('인증서 탭 타이틀');
             $table->string('feeds_title')->nullable()->comment('피드 탭 타이틀 (null 일 경우 노출 X)');
 
             // 운동장
@@ -51,21 +55,31 @@ class CreateMissionGroundsTable extends Migration
             $table->json('record_ai_text')->nullable()->comment('내기록 탭 조건별 텍스트');
 
             $table->tinyInteger('record_progress_image_count')->default(9)->comment('내기록 탭 진행상황 뱃지 개수');
-            $table->json('record_progress_images')->default([['', '']])->comment('내기록 탭 진행상황 이미지');
+            $table->json('record_progress_images')->comment('내기록 탭 진행상황 이미지');
             $table->string('record_progress_title')->comment('내기록 탭 진행상황 타이틀');
             $table->string('record_progress_text')->default('{%remaining_day}')->comment('내기록 탭 진행상황 텍스트');
             $table->string('record_progress_description')->nullable()->comment('내기록 탭 진행상황 텍스트 옆 설명');
 
             $table->boolean('record_box_is_show')->default(true)->comment('내기록 탭 박스 노출 여부');
-            $table->json('record_box_left_type')->comment('내기록 탭 박스 타입');
-            $table->json('record_box_left_title')->comment('내기록 탭 박스 타이틀');
-            $table->json('record_box_left_text')->comment('내기록 탭 박스 텍스트');
-            $table->json('record_box_center_type')->comment('내기록 탭 박스 타입');
-            $table->json('record_box_center_title')->comment('내기록 탭 박스 타이틀');
-            $table->json('record_box_center_text')->comment('내기록 탭 박스 텍스트');
-            $table->json('record_box_right_type')->comment('내기록 탭 박스 타입');
-            $table->json('record_box_right_title')->comment('내기록 탭 박스 타이틀');
-            $table->json('record_box_right_text')->comment('내기록 탭 박스 텍스트');
+            $table->json('record_box_left_type')->nullable()->comment('내기록 탭 박스 왼쪽 타입');
+            $table->json('record_box_left_title')->nullable()->comment('내기록 탭 박스 왼쪽 타이틀');
+            $table->json('record_box_left_text')->nullable()->comment('내기록 탭 박스 왼쪽 텍스트');
+            $table->json('record_box_center_type')->nullable()->comment('내기록 탭 박스 가운데 타입');
+            $table->json('record_box_center_title')->nullable()->comment('내기록 탭 박스 가운데 타이틀');
+            $table->json('record_box_center_text')->nullable()->comment('내기록 탭 박스 가운데 텍스트');
+            $table->json('record_box_right_type')->nullable()->comment('내기록 탭 박스 오른쪽 타입');
+            $table->json('record_box_right_title')->nullable()->comment('내기록 탭 박스 오른쪽 타이틀');
+            $table->json('record_box_right_text')->nullable()->comment('내기록 탭 박스 오른쪽 텍스트');
+            $table->string('record_box_description')->nullable()->comment('내기록 탭 박스 하단 설명');
+
+            // 이벤트
+            $table->string('cert_subtitle')->default('모바일 인증서')->comment('인증서 탭 인증서 타이틀');
+            $table->string('cert_description')->nullable()->comment('인증서 탭 내용');
+            $table->string('cert_background_image')->comment('인증서 탭 인증서 배경이미지');
+            $table->string('cert_disabled_text')->comment('인증서 탭 비활성화 상태 멘트');
+            $table->tinyInteger('cert_enabled_feeds_count')->default(1)->comment('인증서 탭 인증서 활성화될 피드 수');
+
+            $table->string('feeds_filter_title')->comment('전체 피드 탭 필터 타이틀');
         });
     }
 
