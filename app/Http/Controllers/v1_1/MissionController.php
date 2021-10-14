@@ -837,9 +837,9 @@ class MissionController extends Controller
                 DB::raw("CASE WHEN $mission_id ='1213' THEN '40000' ELSE '' END AS MAX_NUM"),
                 'users.gender', 'users.nickname', 'users.profile_image', 'users.id as user_id',
                 DB::raw("IFNULL(RUN_RANK.RANK,0) as RANK"),
-                DB::raw("round(mission_stats.goal_distance - feed_missions.distance,3) as REMAIN_DIST"),
-                'mission_stats.goal_distance', 'feed_missions.distance', 'feed_missions.laptime',
-                'feed_missions.distance_origin', 'feed_missions.laptime_origin',
+                DB::raw("round(mission_stats.goal_distance - feeds.distance,3) as REMAIN_DIST"),
+                'mission_stats.goal_distance', 'feeds.distance', 'feeds.laptime',
+                'feeds.distance_origin', 'feeds.laptime_origin',
                 'SCORE' => MissionStat::selectRaw("COUNT(user_id)")->whereColumn('user_id', 'users.id')
                     ->where('mission_id', $mission_id),
                 DB::raw("CASE WHEN mission_stats.completed_at is null THEN '' ELSE '1' END as BONUS_FLAG"),
@@ -928,7 +928,7 @@ class MissionController extends Controller
                 'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id',
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
-                'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
+                'feeds.distance', 'feeds.laptime', 'mission_stats.goal_distance',
                 'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url',
             ])
             ->orderBy('feeds.id', 'desc')
@@ -1308,7 +1308,7 @@ class MissionController extends Controller
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'users.profile_image', 'users.nickname', 'feeds.id',
-                'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
+                'feeds.distance', 'feeds.laptime', 'mission_stats.goal_distance',
                 'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url', 'places.id as place_id',
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
