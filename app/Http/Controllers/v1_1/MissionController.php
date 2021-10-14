@@ -294,7 +294,8 @@ class MissionController extends Controller
             $data->images = $data->images()->select(['type', 'image'])->orderBy('order')->orderBy('id')->get();
             $data->ground = $data->ground()
                 ->select([
-                    'intro_video', 'logo_image', 'code_title', 'code', 'code_image', 'goal_distances',
+                    'intro_video', 'logo_image', 'code_title', 'code', 'code_placeholder', 'code_image',
+                    'goal_distance_title', 'goal_distances',
                 ])
                 ->first();
             $data->reward = $data->reward()->select(['title', 'image'])->first();
