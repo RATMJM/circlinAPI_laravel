@@ -56,8 +56,8 @@
         </thead>
         <tbody>
         @forelse($orders as $order)
-            @php($rowspan = count($order->order_products->whereNotNull('product_id')->pluck('id')->unique()) +
-                    count($order->order_products->whereNotNull('ship_brand_id')->pluck('id')->unique()))
+            @php($rowspan = max(count($order->order_products->whereNotNull('product_id')->pluck('id')->unique()) +
+                    count($order->order_products->whereNotNull('ship_brand_id')->pluck('id')->unique()), 1))
             <tr style="border-top: 2px solid #000">
                 <td rowspan="{{ $rowspan }}">{{ $order->order_no }}<br>({{ $order->created_at }})<br>({{ $order->id }})</td>
                 <td rowspan="{{ $rowspan }}">
@@ -83,7 +83,7 @@
                     <td class="center"></td>
                     {!! ($loop->last && count($order->order_products->whereNotNull('product_id')->groupBy('product_id')) == 0) ? '' : '</tr></tr>' !!}
                 @endforeach
-                @foreach($order->order_products->whereNotNull('product_id')->groupBy('product_id') as $products)
+                @forelse($order->order_products->whereNotNull('product_id')->groupBy('product_id') as $products)
                         <td>
                             <b>[{{ $products[0]->brand_name }}]</b> {{ $products[0]->product_name }}
                             <br>{{ number_format($products[0]->product_price) }} ({{ $products[0]->qty }})
@@ -104,7 +104,9 @@
                             @endif
                         </td>
                     {!! $loop->last ? '' : '</tr></tr>' !!}
-                @endforeach
+                @empty
+                    <td colspan="4"></td>
+                @endforelse
                 </tr>
             @empty
                 <tr>
