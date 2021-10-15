@@ -562,7 +562,6 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
-        DB::enableQueryLog();
         $data = MissionGround::where('mission_id', $mission_id)
             ->join('missions', function ($query) {
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
@@ -684,8 +683,6 @@ class MissionController extends Controller
         $replaces = ['today_cert_count' => $today_cert_count];
         $data->ground_text = code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces);
         $data->record_text = code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces);
-
-        return DB::getQueryLog();
 
         return success([
             'ground' => $data,
