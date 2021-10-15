@@ -630,6 +630,20 @@ class MissionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
+        $tmp = $data->cert_details;
+        foreach ($tmp as $i => $item) {
+            $tmp[$i]['text'] = code_replace($item['text'], ['value' => match ($item['type']) {
+                'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                    $query->where('mission_id', $mission_id);
+                })->where('user_id', $user_id)->count(),
+                'total_distance' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                    $query->where('mission_id', $mission_id);
+                })->where('user_id', $user_id)->sum('distance'),
+                default => '',
+            }]);
+        }
+        $data->cert_details = $tmp;
+
         $replaces = Mission::where('missions.id', $mission_id)
             ->leftJoin('mission_stats', function ($query) {
                 $query->on('mission_stats.mission_id', 'missions.id')->whereNull('mission_stats.ended_at');

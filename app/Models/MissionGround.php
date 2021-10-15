@@ -15,6 +15,7 @@ class MissionGround extends Model
         'created_at' => 'date:Y-m-d H:i:s',
         'goal_distances' => 'array',
         'record_progress_images' => 'array',
+        'cert_details' => 'array',
         'cert_images' => 'array',
     ];
 }
