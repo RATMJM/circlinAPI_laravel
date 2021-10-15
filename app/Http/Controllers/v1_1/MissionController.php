@@ -606,7 +606,13 @@ class MissionController extends Controller
             'recent_complete' => MissionStat::whereNotNull('mission_stats.completed_at')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
-                }),
+                })
+                ->select([
+                    'users.id as user_id', 'users.nickname', 'users.profile_image',
+                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                    'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                        ->where('follows.user_id', $user_id),
+                ])->take(20)->get(),
             default => null,
         };
 
@@ -618,7 +624,7 @@ class MissionController extends Controller
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
                 'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
                 'content as top_text', 'created_at as date',
-                DB::raw("CONCAT(DATEDIFF(created_at, '{$data->started_at}')+1,'일차') as bottom_text"),
+                DB::raw("CONCAT(DATEDIFF(created_at,'{$data->started_at}')+1,'일차') as bottom_text"),
             ])
             ->orderBy('id', 'desc')
             ->get();
