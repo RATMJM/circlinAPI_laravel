@@ -40,6 +40,10 @@ class FeedController extends Controller
         $content = $request->get('content');
         $missions = array_unique(Arr::wrap($request->get('missions')));
         $is_hidden = $request->get('is_hidden', 0);
+        $distance = $request->get('distance');
+        $laptime = $request->get('laptime');
+        $distance_origin = $request->get('distance_origin');
+        $laptime_origin = $request->get('laptime_origin');
 
         $product_id = $request->get('product_id');
         $outside_product_id = $request->get('outside_product_id');
@@ -76,6 +80,10 @@ class FeedController extends Controller
             $feed = Feed::create([
                 'user_id' => $user_id,
                 'content' => $content,
+                'distance' => $distance,
+                'laptime' => $laptime,
+                'distance_origin' => $distance_origin,
+                'laptime_origin' => $laptime_origin,
                 'is_hidden' => $is_hidden == 1,
             ]);
 
