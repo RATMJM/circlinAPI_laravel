@@ -285,14 +285,14 @@ class MissionController extends Controller
         $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'greeting', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
 
-        if (!$data->is_ground) {
-            $data->images = $data->images()->orderBy('order')->orderBy('id')->pluck('image');
-            $data->areas = mission_areas($data->id)->pluck('name');
+        $data->images = $data->images()->orderBy('order')->orderBy('id')->pluck('image');
+        $data->areas = mission_areas($data->id)->pluck('name');
 
-            $data->users = mission_users($mission_id, $user_id, true)->get();
+        $data->users = mission_users($mission_id, $user_id, true)->get();
 
-            $feeds = $this->feed($request, $mission_id)['data'];
-        } else {
+        $feeds = $this->feed($request, $mission_id)['data'];
+
+        if ($data->is_ground) {
             $data->images = $data->images()->select(['type', 'image'])->orderBy('order')->orderBy('id')->get();
             $data->ground = $data->ground()
                 ->select([
