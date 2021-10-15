@@ -301,7 +301,6 @@ class MissionController extends Controller
                 ])
                 ->first();
             $data->reward = $data->reward()->select(['title', 'image'])->first();
-
         }
 
         /*$places = FeedMission::where('mission_id', $mission_id)
