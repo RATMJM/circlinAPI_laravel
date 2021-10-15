@@ -639,6 +639,7 @@ class MissionController extends Controller
                 'total_distance' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
                     $query->where('mission_id', $mission_id);
                 })->where('user_id', $user_id)->sum('distance'),
+                'goal_distance' => MissionStat::where('mission_id', $mission_id)->where('user_id', $user_id)->value('goal_distance'),
                 default => '',
             }]);
         }
