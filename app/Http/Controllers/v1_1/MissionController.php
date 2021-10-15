@@ -595,13 +595,6 @@ class MissionController extends Controller
             default => null,
         };
 
-        $data->record_progress_present = match ($data->record_progress_type) {
-            'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-                $query->where('mission_id', $mission_id);
-            })->where('user_id', $user_id)->count(),
-            default => null,
-        };
-
         $data->users = match ($data->ground_users_type) {
             'recent_complete' => MissionStat::whereNotNull('mission_stats.completed_at')
                 ->join('users', function ($query) {
@@ -613,6 +606,13 @@ class MissionController extends Controller
                     'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                         ->where('follows.user_id', $user_id),
                 ])->take(20)->get(),
+            default => null,
+        };
+
+        $data->record_progress_present = match ($data->record_progress_type) {
+            'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })->where('user_id', $user_id)->count(),
             default => null,
         };
 

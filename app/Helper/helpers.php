@@ -323,7 +323,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
                     })
                     ->value(DB::raw("COUNT(1) > 0"));
                 foreach ($data as $item) {
-                    if ($item->value === $cert) {
+                    if ($item->value == $cert) {
                         $AiText = $item->message;
                     }
                 }
@@ -337,7 +337,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
                     })
                     ->value(DB::raw("COUNT(1) > 0"));
                 foreach ($data as $item) {
-                    if ($item->value === $cert) {
+                    if ($item->value == $cert) {
                         $AiText = $item->message;
                     }
                 }
