@@ -598,7 +598,7 @@ class MissionController extends Controller
         $data->record_progress_present = match ($data->record_progress_type) {
             'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
                 $query->where('mission_id', $mission_id);
-            })->count(),
+            })->where('user_id', $user_id)->count(),
             default => null,
         };
 
