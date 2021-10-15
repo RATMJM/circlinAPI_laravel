@@ -588,6 +588,41 @@ class MissionController extends Controller
             $data->ground_d_day_text = "";
         }
 
+        $data->ground_progress_present = match ($data->ground_progress_type) {
+            'all_distance' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })->sum('distance'),
+            default => null,
+        };
+
+        $data->record_progress_present = match ($data->record_progress_type) {
+            'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })->count(),
+            default => null,
+        };
+
+        $data->users = match ($data->ground_users_type) {
+            'recent_complete' => MissionStat::whereNotNull('mission_stats.completed_at')
+                ->join('users', function ($query) {
+                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                }),
+            default => null,
+        };
+
+        $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+            $query->where('mission_id', $mission_id);
+        })
+            ->where('user_id', $user_id)
+            ->select([
+                'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
+                'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
+                'content as top_text', 'created_at as date',
+                DB::raw("CONCAT(DATEDIFF(created_at, '{$data->started_at}')+1,'일차') as bottom_text"),
+            ])
+            ->orderBy('id', 'desc')
+            ->get();
+
         $replaces = Mission::where('missions.id', $mission_id)
             ->leftJoin('mission_stats', function ($query) {
                 $query->on('mission_stats.mission_id', 'missions.id')->whereNull('mission_stats.ended_at');
