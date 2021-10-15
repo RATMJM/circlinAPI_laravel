@@ -124,6 +124,8 @@ class BookmarkController extends Controller
     {
         $user_id = token()->uid;
         $mission_id = $mission_id ?? $request->get('mission_id');
+        $code = $request->get('code');
+        $goal_distance = $request->get('distance');
 
         if (is_null($mission_id)) {
             return success([
@@ -142,6 +144,8 @@ class BookmarkController extends Controller
             $data = MissionStat::create([
                 'user_id' => $user_id,
                 'mission_id' => $mission_id,
+                'code' => $code,
+                'goal_distance' => $goal_distance,
             ]);
 
             // 조건별 푸시
