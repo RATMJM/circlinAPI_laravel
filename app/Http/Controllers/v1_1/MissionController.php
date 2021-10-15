@@ -563,6 +563,7 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
+        DB::enableQueryLog();
         $data = MissionGround::where('mission_id', $mission_id)
             ->join('missions', function ($query) {
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
@@ -589,8 +590,9 @@ class MissionController extends Controller
         }
 
         $data->ground_progress_present = match ($data->ground_progress_type) {
-            'all_distance' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-                $query->where('mission_id', $mission_id);
+            'all_distance' => Feed::join('feed_missions', function ($query) use ($mission_id) {
+                $query->on('feed_missions.feed_id', 'feeds.id')
+                    ->where('mission_id', $mission_id);
             })->sum('distance'),
             default => null,
         };
@@ -683,6 +685,8 @@ class MissionController extends Controller
         $replaces = ['today_cert_count' => $today_cert_count];
         $data->ground_text = code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces);
         $data->record_text = code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces);
+
+        return DB::getQueryLog();
 
         return success([
             'ground' => $data,
