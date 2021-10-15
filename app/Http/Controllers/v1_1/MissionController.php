@@ -621,6 +621,7 @@ class MissionController extends Controller
         })
             ->where('user_id', $user_id)
             ->select([
+                'id as feed_id', 'user_id',
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
                 'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
                 'content as top_text', 'created_at as date',
