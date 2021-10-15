@@ -557,19 +557,17 @@ class FeedController extends Controller
                 $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
-            if (!$feed->missions()->where('is_event', 1)->exists()) {
-                if ($place_delete) {
-                    $feed->feed_place()->delete();
-                } elseif ($place_address && $place_title) {
-                    $place = Place::updateOrCreate(['title' => $place_title, 'address' => $place_address], [
-                        'description' => $place_description,
-                        'image' => $place_image,
-                        'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
-                        'lat' => $place_lat,
-                        'lng' => $place_lng,
-                    ]);
-                    $feed->feed_place()->updateOrCreate([], ['place_id' => $place->id]);
-                }
+            if ($place_delete) {
+                $feed->feed_place()->delete();
+            } elseif ($place_address && $place_title) {
+                $place = Place::updateOrCreate(['title' => $place_title, 'address' => $place_address], [
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                    'lat' => $place_lat,
+                    'lng' => $place_lng,
+                ]);
+                $feed->feed_place()->updateOrCreate([], ['place_id' => $place->id]);
             }
 
             DB::commit();
