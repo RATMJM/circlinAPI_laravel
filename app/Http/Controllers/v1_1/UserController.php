@@ -835,7 +835,8 @@ class UserController extends Controller
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             ->leftJoin('products', 'products.id', 'mission_products.product_id')
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')->select([
+            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            ->select([
                 'missions.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
@@ -894,8 +895,10 @@ class UserController extends Controller
                                 // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
                             });
                     })->limit(1),
+                'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->where('feeds.user_id', $user_id)
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
             ])
-            ->withCount('feeds')
             ->groupBy('mission_categories.id', 'missions.id', 'users.id',
                 'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
             ->when($user_id == $uid, function ($query) {
