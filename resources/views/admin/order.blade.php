@@ -83,7 +83,7 @@
                     <td class="center"></td>
                     {!! ($loop->last && count($order->order_products->whereNotNull('product_id')->groupBy('product_id')) == 0) ? '' : '</tr></tr>' !!}
                 @endforeach
-                @forelse($order->order_products->whereNotNull('product_id')->groupBy('product_id') as $products)
+                @forelse($order->order_products->whereNotNull('product_id')->groupBy('id') as $products)
                         <td>
                             <b>[{{ $products[0]->brand_name }}]</b> {{ $products[0]->product_name }}
                             <br>{{ number_format($products[0]->product_price) }} ({{ $products[0]->qty }})
