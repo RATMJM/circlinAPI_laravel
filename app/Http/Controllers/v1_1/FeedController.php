@@ -40,6 +40,10 @@ class FeedController extends Controller
         $content = $request->get('content');
         $missions = array_unique(Arr::wrap($request->get('missions')));
         $is_hidden = $request->get('is_hidden', 0);
+        $distance = $request->get('distance');
+        $laptime = $request->get('laptime');
+        $distance_origin = $request->get('distance_origin');
+        $laptime_origin = $request->get('laptime_origin');
 
         $product_id = $request->get('product_id');
         $outside_product_id = $request->get('outside_product_id');
@@ -76,6 +80,10 @@ class FeedController extends Controller
             $feed = Feed::create([
                 'user_id' => $user_id,
                 'content' => $content,
+                'distance' => $distance,
+                'laptime' => $laptime,
+                'distance_origin' => $distance_origin,
+                'laptime_origin' => $laptime_origin,
                 'is_hidden' => $is_hidden == 1,
             ]);
 
@@ -212,13 +220,13 @@ class FeedController extends Controller
                     'product_id' => $product_id,
                 ]);
 
-                if ($point < 500) {
+                /*if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
                     NotificationController::send($user_id, 'feed_upload_product', null, $feed->id, false,
                         ['point' => 50, 'point2' => 500 - $point - 50]);
                     $point += 50;
                     $product_reward = true;
-                }
+                }*/
             } elseif ($outside_product_id && $product_title && $product_price && $product_url) {
                 $product = OutsideProduct::updateOrCreate(['product_id' => $outside_product_id], [
                     'image' => $product_image,
@@ -229,13 +237,13 @@ class FeedController extends Controller
                 ]);
                 $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
 
-                if ($point < 500) {
+                /*if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_product', 'feed', $feed->id);
                     NotificationController::send($user_id, 'feed_upload_product', null, $feed->id, false,
                         ['point' => 50, 'point2' => 500 - $point - 50]);
                     $point += 50;
                     $product_reward = true;
-                }
+                }*/
             }
 
             if ($place_address && $place_title) {
@@ -248,13 +256,13 @@ class FeedController extends Controller
                 ]);
                 $feed->feed_place()->create(['place_id' => $place->id]);
 
-                if ($point < 500) {
+                /*if ($point < 500) {
                     PointController::change_point($user_id, 50, 'feed_upload_place', 'feed', $feed->id);
                     NotificationController::send($user_id, 'feed_upload_place', null, $feed->id, false,
                         ['point' => 50, 'point2' => 500 - $point - 50]);
                     $point += 50;
                     $place_reward = true;
-                }
+                }*/
             }
 
             // 조건별 푸시
@@ -414,7 +422,8 @@ class FeedController extends Controller
             ->select([
                 'missions.id', 'mission_categories.emoji', 'missions.title',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
+                'missions.is_ground',
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
@@ -548,19 +557,17 @@ class FeedController extends Controller
                 $feed->product()->updateOrCreate([], ['type' => 'outside', 'outside_product_id' => $product->id]);
             }
 
-            if (!$feed->missions()->where('is_event', 1)->exists()) {
-                if ($place_delete) {
-                    $feed->feed_place()->delete();
-                } elseif ($place_address && $place_title) {
-                    $place = Place::updateOrCreate(['title' => $place_title, 'address' => $place_address], [
-                        'description' => $place_description,
-                        'image' => $place_image,
-                        'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
-                        'lat' => $place_lat,
-                        'lng' => $place_lng,
-                    ]);
-                    $feed->feed_place()->updateOrCreate([], ['place_id' => $place->id]);
-                }
+            if ($place_delete) {
+                $feed->feed_place()->delete();
+            } elseif ($place_address && $place_title) {
+                $place = Place::updateOrCreate(['title' => $place_title, 'address' => $place_address], [
+                    'description' => $place_description,
+                    'image' => $place_image,
+                    'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
+                    'lat' => $place_lat,
+                    'lng' => $place_lng,
+                ]);
+                $feed->feed_place()->updateOrCreate([], ['place_id' => $place->id]);
             }
 
             DB::commit();
@@ -589,12 +596,10 @@ class FeedController extends Controller
     {
         $user_id = token()->uid;
 
-        $feed = Feed::where('id', $id)->first();
+        $feed = Feed::where(['id' => $id, 'user_id' => $user_id])->first();
 
-        if ($feed->user_id === $user_id) {
+        if (isset($feed)) {
             $data = $feed->delete();
-
-            DB::commit();
             return success(['result' => true]);
         } else {
             return success([

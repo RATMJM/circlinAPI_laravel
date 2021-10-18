@@ -39,7 +39,8 @@ class BookmarkController extends Controller
                 'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
                 'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
+                'missions.is_ground',
                 'missions.started_at', 'missions.ended_at',
                 DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
                     (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
@@ -123,6 +124,8 @@ class BookmarkController extends Controller
     {
         $user_id = token()->uid;
         $mission_id = $mission_id ?? $request->get('mission_id');
+        $code = $request->get('code');
+        $goal_distance = $request->get('goal_distance');
 
         if (is_null($mission_id)) {
             return success([
@@ -141,6 +144,8 @@ class BookmarkController extends Controller
             $data = MissionStat::create([
                 'user_id' => $user_id,
                 'mission_id' => $mission_id,
+                'code' => $code,
+                'goal_distance' => $goal_distance,
             ]);
 
             // 조건별 푸시

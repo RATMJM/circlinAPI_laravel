@@ -85,8 +85,6 @@ class LikeController extends Controller
             $paid_point = false; // 대상에게 포인트 줬는지
             $take_point = false; // 10번 체크해서 포인트 받았는지
 
-            DB::beginTransaction();
-
             if ($type === 'feed') {
                 $count = FeedLike::withTrashed()->where('user_id', $user_id)
                     ->where('point', '>', 0)
@@ -124,8 +122,6 @@ class LikeController extends Controller
                 // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
                 default => null,
             };
-
-            DB::commit();
 
             return success([
                 'result' => (bool)$data_like, 'paid_point' => $paid_point,

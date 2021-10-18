@@ -15,6 +15,8 @@ use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
+use App\Models\MissionGround;
+use App\Models\MissionGroundText;
 use App\Models\MissionImage;
 use App\Models\MissionPlace;
 use App\Models\MissionProduct;
@@ -229,8 +231,6 @@ class MissionController extends Controller
     public function show(Request $request, $mission_id): array
     {
         $user_id = token()->uid;
-        $page = $request->get('page', 0);
-        $limit = $request->get('limit', 10);
 
         $data = Mission::where('missions.id', $mission_id)
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
@@ -244,14 +244,15 @@ class MissionController extends Controller
                 'missions.id', 'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
                 'missions.title', 'missions.subtitle', 'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), challenge_type(),
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
+                'missions.is_ground',
                 'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+                    (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->limit(1),
-                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id as owner_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(), 'users.greeting',
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
@@ -281,13 +282,26 @@ class MissionController extends Controller
             ]);
         }
 
-        $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'followers', 'is_following']);
+        $data->owner = arr_group($data, ['owner_id', 'nickname', 'profile_image', 'gender', 'area', 'greeting', 'followers', 'is_following']);
         $data->product = arr_group($data, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
 
         $data->images = $data->images()->orderBy('order')->orderBy('id')->pluck('image');
         $data->areas = mission_areas($data->id)->pluck('name');
 
         $data->users = mission_users($mission_id, $user_id, true)->get();
+
+        $feeds = $this->feed($request, $mission_id)['data'];
+
+        if ($data->is_ground) {
+            $data->images = $data->images()->select(['type', 'image'])->orderBy('order')->orderBy('id')->get();
+            $data->ground = $data->ground()
+                ->select([
+                    'intro_video', 'logo_image', 'code_title', 'code', 'code_placeholder', 'code_image',
+                    'goal_distance_title', 'goal_distances',
+                ])
+                ->first();
+            $data->reward = $data->reward()->select(['title', 'image'])->first();
+        }
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
@@ -465,15 +479,13 @@ class MissionController extends Controller
             }
         }*/
 
-        $feeds = $this->feed($request, $mission_id)['data'];
-
         return success([
             'result' => true,
             'mission' => $data,
             // 'places' => $places,
             // 'products' => $products,
-            'feeds_count' => $feeds['feeds_count'],
-            'feeds' => $feeds['feeds'],
+            'feeds_count' => $feeds['feeds_count'] ?? 0,
+            'feeds' => $feeds['feeds'] ?? [],
         ]);
     }
 
@@ -530,7 +542,7 @@ class MissionController extends Controller
                 $query->whereDoesntHave('feeds', function ($query) {
                     $user_id = token()->uid;
                     $query->where('feeds.created_at', '>=', date('Y-m-d'));
-                    $query->where('user_id',$user_id);
+                    $query->where('user_id', $user_id);
                 });
             })
             ->join('mission_places', 'mission_places.place_id', 'places.id')
@@ -543,6 +555,137 @@ class MissionController extends Controller
             'places_count' => count($places),
             'subtitle' => $subtitle,
             'places' => $places,
+        ]);
+    }
+
+    public function ground($mission_id): array
+    {
+        $user_id = token()->uid;
+
+        $data = MissionGround::where('mission_id', $mission_id)
+            ->join('missions', function ($query) {
+                $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
+            })
+            ->select([
+                'mission_grounds.*', 'missions.started_at', 'missions.ended_at',
+                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
+                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+            ])
+            ->first();
+
+        $date = date('Y-m-d H:i:s');
+
+        $diff = abs(date_diff(new \DateTime(date('Y-m-d')), new \DateTime($data->started_at))->days);
+        if ($data->is_available) {
+            $data->ground_d_day_title = '함께하는 중';
+            $data->ground_d_day_text = "{$diff}일차";
+        } elseif ($data->started_at > $date) {
+            $data->ground_d_day_title = '함께하기 전';
+            $data->ground_d_day_text = "D - $diff";
+        } else {
+            $data->ground_d_day_title = '종료';
+            $data->ground_d_day_text = "";
+        }
+
+        $data->ground_progress_present = match ($data->ground_progress_type) {
+            'all_distance' => Feed::join('feed_missions', function ($query) use ($mission_id) {
+                $query->on('feed_missions.feed_id', 'feeds.id')
+                    ->where('mission_id', $mission_id);
+            })->sum('distance'),
+            default => null,
+        };
+
+        $data->users = match ($data->ground_users_type) {
+            'recent_complete' => MissionStat::whereNotNull('mission_stats.completed_at')
+                ->join('users', function ($query) {
+                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                })
+                ->select([
+                    'users.id as user_id', 'users.nickname', 'users.profile_image',
+                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                    'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                        ->where('follows.user_id', $user_id),
+                ])->take(20)->get(),
+            default => null,
+        };
+
+        $data->record_progress_present = match ($data->record_progress_type) {
+            'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })->where('user_id', $user_id)->count(),
+            default => null,
+        };
+
+        $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+            $query->where('mission_id', $mission_id);
+        })
+            ->where('user_id', $user_id)
+            ->select([
+                'id as feed_id', 'user_id',
+                'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
+                'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->orderBy('id')->limit(1),
+                'content as top_text', 'created_at as date',
+                DB::raw("CONCAT(DATEDIFF(created_at,'{$data->started_at}')+1,'일차') as bottom_text"),
+            ])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $tmp = $data->cert_details;
+        foreach ($tmp as $i => $item) {
+            $tmp[$i]['text'] = code_replace($item['text'], ['value' => match ($item['type']) {
+                'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                    $query->where('mission_id', $mission_id);
+                })->where('user_id', $user_id)->count(),
+                'total_distance' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                    $query->where('mission_id', $mission_id);
+                })->where('user_id', $user_id)->sum('distance'),
+                'goal_distance' => MissionStat::where('mission_id', $mission_id)->where('user_id', $user_id)->value('goal_distance'),
+                default => '',
+            }]);
+        }
+        $data->cert_details = $tmp;
+
+        $replaces = Mission::where('missions.id', $mission_id)
+            ->leftJoin('mission_stats', function ($query) {
+                $query->on('mission_stats.mission_id', 'missions.id')->whereNull('mission_stats.ended_at');
+            })
+            ->select([
+                'users_count' => MissionStat::selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
+                'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                DB::raw("IFNULL(goal_distance,0) as goal_distance"),
+                'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                'total_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+            ])
+            ->first();
+        $replaces->status_text = $data->record_progress_image_count > $replaces->feeds_count ? '도전 중' : '성공';
+        $replaces = $replaces->toArray();
+
+        foreach ($data->toArray() as $i => $item) {
+            if (!is_string($item)) continue;
+            $data[$i] = code_replace($item, $replaces);
+        }
+
+        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
+        $today_cert_count = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
+            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+            ->join('feed_missions', function ($query) use ($mission_id) {
+                $query->on('feed_missions.feed_id', 'feeds.id')
+                    ->where('feed_missions.mission_id', $mission_id);
+            })
+            ->distinct()
+            ->count('user_id');
+        $replaces = ['today_cert_count' => $today_cert_count];
+        $data->ground_text = code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces);
+        $data->record_text = code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces);
+
+        return success([
+            'ground' => $data,
         ]);
     }
 
@@ -820,15 +963,18 @@ class MissionController extends Controller
                     ]);
             })
             ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
+            ->leftJoin('feeds', function ($query) {
+                $query->on('feeds.id', 'feed_missions.feed_id')->whereNull('feeds.deleted_at');
+            })
             ->select([
                 'mission_stats.id as mission_stat_id', 'mission_stats.certification_image',
                 'mission_stats.mission_id',
                 DB::raw("CASE WHEN $mission_id ='1213' THEN '40000' ELSE '' END AS MAX_NUM"),
                 'users.gender', 'users.nickname', 'users.profile_image', 'users.id as user_id',
                 DB::raw("IFNULL(RUN_RANK.RANK,0) as RANK"),
-                DB::raw("round(mission_stats.goal_distance - feed_missions.distance,3) as REMAIN_DIST"),
-                'mission_stats.goal_distance', 'feed_missions.distance', 'feed_missions.laptime',
-                'feed_missions.distance_origin', 'feed_missions.laptime_origin',
+                DB::raw("round(mission_stats.goal_distance - feeds.distance,3) as REMAIN_DIST"),
+                'mission_stats.goal_distance', 'feeds.distance', 'feeds.laptime',
+                'feeds.distance_origin', 'feeds.laptime_origin',
                 'SCORE' => MissionStat::selectRaw("COUNT(user_id)")->whereColumn('user_id', 'users.id')
                     ->where('mission_id', $mission_id),
                 DB::raw("CASE WHEN mission_stats.completed_at is null THEN '' ELSE '1' END as BONUS_FLAG"),
@@ -838,8 +984,8 @@ class MissionController extends Controller
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
                 'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
                 'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
-                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+                    (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
                 'CERT_TODAY' => FeedMission::selectRaw("COUNT(*)")->whereColumn('mission_stat_id', 'mission_stats.id')
                     ->where('created_at', '>=', $today),
                 'FINISH' => MissionStat::selectRaw("COUNT(*) > 0")->whereColumn('mission_id', 'missions.id')
@@ -902,7 +1048,10 @@ class MissionController extends Controller
         }
 
         // 참가자 총 거리
-        $total_km = FeedMission::where('mission_id', $mission_id)->sum('distance');
+        $total_km = FeedMission::where('mission_id', $mission_id)
+            ->leftJoin('feeds', function ($query) {
+                $query->on('feeds.id', 'feed_missions.feed_id')->whereNull('feeds.deleted_at');
+            })->sum('distance');
 
         // 내 기록
         $myRecord = Feed::where('missions.id', $mission_id)
@@ -917,17 +1066,17 @@ class MissionController extends Controller
                 'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id',
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
-                'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
+                'feeds.distance', 'feeds.laptime', 'mission_stats.goal_distance',
                 'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url',
             ])
             ->orderBy('feeds.id', 'desc')
             ->get();
 
         // 내 미션 상태
-        $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(b.distance),2),0) as distance,
-                ifnull(sum(b.distance),0) total_distance,
-                ifnull(ROUND((sum(b.distance) / c.goal_distance) * 100 ,0),0) as progress,
-                sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(b.distance as unsigned) then  1 else 0 end ) as success_today,
+        $mission_stat = DB::select('select count(b.id) as day_count, ifnull(round(avg(a.distance),2),0) as distance,
+                ifnull(sum(a.distance),0) total_distance,
+                ifnull(ROUND((sum(a.distance) / c.goal_distance) * 100 ,0),0) as progress,
+                sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(a.distance as unsigned) then  1 else 0 end ) as success_today,
                 ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count,
                 ifnull((select count(id) from feed_missions where mission_id= ? and created_at >= ?) ,0) today_cert_count
             from feeds a
@@ -936,7 +1085,7 @@ class MissionController extends Controller
             where a.user_id= ?
                 and b.mission_id= ?
                 and a.deleted_at is null
-            GROUP BY  b.distance, c.goal_distance
+            GROUP BY  a.distance, c.goal_distance
             union
             select 0 as day_count, 0 as distance, 0 as total_distance, 0 as progress, 0 as success_today,
                 (select count(feeds.id) from feed_missions join feeds on feeds.id=feed_id and feeds.deleted_at is null where mission_id=?) cert_count,
@@ -964,62 +1113,12 @@ class MissionController extends Controller
             ->distinct()
             ->count('user_id');
 
-        // return [$ai_text1, $ai_text2];
-
-        function AiText($data, $is_available, $mission_id, $user_id)
-        {
-            $AiText = '';
-
-            foreach ($data->groupBy('type') as $type => $data) {
-                if ($is_available) {
-                    if ($type === 'cert') {
-                        $cert = Feed::where('feeds.user_id', $user_id)
-                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                            ->join('feed_missions', function ($query) use ($mission_id) {
-                                $query->on('feed_missions.feed_id', 'feeds.id')
-                                    ->where('feed_missions.mission_id', $mission_id);
-                            })
-                            ->value(DB::raw("COUNT(1) > 0"));
-                        foreach ($data as $item) {
-                            if ($item->value === $cert) {
-                                $AiText = $item->message;
-                            }
-                        }
-                    } elseif ($type === 'today_cert') {
-                        $cert = Feed::where('feeds.user_id', $user_id)
-                            ->where('feeds.created_at', '>=', date('Y-m-d'))
-                            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                            ->join('feed_missions', function ($query) use ($mission_id) {
-                                $query->on('feed_missions.feed_id', 'feeds.id')
-                                    ->where('feed_missions.mission_id', $mission_id);
-                            })
-                            ->value(DB::raw("COUNT(1) > 0"));
-                        foreach ($data as $item) {
-                            if ($item->value === $cert) {
-                                $AiText = $item->message;
-                            }
-                        }
-                    }
-                } else {
-                    if ($type === 'default') {
-                        foreach ($data as $item) {
-                            if ($item->value > 0 && $AiText === '') {
-                                $AiText = $item->message;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return $AiText;
-        }
-
         $replaces = [
             'today_users_count' => $today_users_count,
         ];
 
-        $AiText = code_replace(AiText($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
-        $AiText2 = code_replace(AiText($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText = code_replace(mission_ground_text($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText2 = code_replace(mission_ground_text($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
 
         return success([
             'success' => true,
@@ -1120,10 +1219,10 @@ class MissionController extends Controller
 
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
-        } elseif (Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.reserve_ended_at is null or missions.reserve_ended_at>'".date('Y-m-d H:i:s')."') or
-            (missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"))
+        } elseif (Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='" . date('Y-m-d H:i:s') . "') and
+            (missions.reserve_ended_at is null or missions.reserve_ended_at>'" . date('Y-m-d H:i:s') . "') or
+            (missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+            (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"))
             ->where('id', $mission_id)->value('is_available')) {
             $data = MissionStat::create([
                 'user_id' => $user_id,
@@ -1297,7 +1396,7 @@ class MissionController extends Controller
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'users.profile_image', 'users.nickname', 'feeds.id',
-                'feed_missions.distance', 'feed_missions.laptime', 'mission_stats.goal_distance',
+                'feeds.distance', 'feeds.laptime', 'mission_stats.goal_distance',
                 'places.title as place_title', 'places.address as place_address', 'places.image as place_image', 'places.url as place_url', 'places.id as place_id',
                 'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
@@ -1308,103 +1407,6 @@ class MissionController extends Controller
             ])
             ->orderBy('feeds.id', 'desc')
             ->get();
-
-        return success([
-            'success' => true,
-            'double_zone_feed' => $double_zone_feed,
-        ]);
-
-        if ($type == 'ALL') {
-            try {
-                DB::beginTransaction();
-                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
-                (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
-                g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,
-                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
-                (select count(1) from feed_likes where feed_id=a.id ) as check_total,
-                (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
-                (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
-                (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
-                case when f.place_id is null then null else "1" end as has_place  ,
-                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product
-                from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
-                , users g
-                where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
-                and a.is_hidden = 0
-                and b.mission_id= ?
-                order by feed_id desc ;',
-                    // order by feed_id desc limit ?, 10;',
-                    [$user_id, $user_id, $mission_id]);
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
-
-        } elseif ($type == 'ETC') {
-            try {
-                DB::beginTransaction();
-                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
-                (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
-                g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,
-                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
-                (select count(1) from feed_likes where feed_id=a.id ) as check_total,
-                (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
-                (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
-                (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
-                case when f.place_id is null then null else "1" end as has_place  ,
-                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product
-                from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
-                , users g
-                where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
-                and a.is_hidden = 0
-                and f.place_id not in (select place_id from mission_places where mission_id=d.id)
-                and b.mission_id= ?
-                order by feed_id desc ;',
-                    // order by feed_id desc limit ?, 10;',
-                    [$user_id, $user_id, $mission_id]);
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
-
-        } else {
-            try {
-                DB::beginTransaction();
-                $double_zone_feed = DB::select('Select a.user_id, a.content, a.created_at, b.feed_id,
-                (select image from feed_images x where a.id=x.feed_id and `order`=0 ) as image,
-                (select type from feed_images x where a.id=x.feed_id and `order`=0 ) as image_type,
-                g.profile_image, g.nickname, a.id,
-                b.distance, b.laptime, c.goal_distance,
-                e.title as place_title , e.address as place_address, e.image as place_image, e.url as place_url, f.place_id,
-                (select count(1) from feed_likes where feed_id=a.id ) as check_total,
-                (select count(1) from feed_comments where feed_id=a.id ) as comment_total,
-                (select count(1)>0 from feed_likes where feed_id=a.id and user_id= ? ) as has_check   ,
-                (select count(1)>0 from feed_comments where feed_id=a.id and user_id= ? ) as has_comment  ,
-                case when f.place_id is null then null else "1" end as has_place  ,
-                (select count(1)>0 from feed_products where feed_id=a.id   ) as has_product
-                from feeds a left join feed_places f on a.id=f.feed_id, places e, feed_missions b, mission_stats c, missions d
-                , users g
-                where b.feed_id=a.id and c.mission_id=d.id and b.mission_stat_id=c.id  and b.mission_id=d.id
-                and a.user_id=c.user_id and a.deleted_at is null and f.place_id = e.id and g.id=a.user_id
-                and a.is_hidden = 0
-                and b.mission_id= ?
-                and f.place_id = ?
-                order by feed_id desc ;',
-                    // order by feed_id desc limit ?, 10; , $page',
-                    [$user_id, $user_id, $mission_id, $place_id]);
-            } catch (Exception $e) {
-                DB::rollBack();
-                return exceped($e);
-            }
-
-        }
-
 
         return success([
             'success' => true,

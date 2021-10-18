@@ -58,6 +58,16 @@ class Mission extends Model
         return $this->belongsToMany(Content::class, MissionContent::class);
     }
 
+    public function reward()
+    {
+        return $this->hasOne(MissionReward::class);
+    }
+
+    public function ground()
+    {
+        return $this->hasOne(MissionGround::class);
+    }
+
     public function mission_stats()
     {
         return $this->hasMany(MissionStat::class);

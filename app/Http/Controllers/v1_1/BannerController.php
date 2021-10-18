@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Models\BannerLog;
 use App\Models\MissionStat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -13,11 +14,13 @@ class BannerController extends Controller
 {
     public function category_banner(Request $request, $category_id = null): array
     {
-        return $this->index(['local', 'local.'.($category_id ?? $request->get('category_id'))]);
+        return $this->index($request, ['local', 'local.'.($category_id ?? $request->get('category_id'))]);
     }
 
-    public function index($type)
+    public function index(Request $request, $type)
     {
+        $user_id = token()->uid;
+
         $now = date('Y-m-d H:i:s');
 
         $banners = Banner::whereIn('type', Arr::wrap($type))
@@ -34,7 +37,7 @@ class BannerController extends Controller
                     ->where('common_codes.ctg_lg', 'click_action');
             })
             ->select([
-                'banners.image', 'banners.link_type', 'common_codes.content_ko as link',
+                'banners.id', 'banners.image', 'banners.link_type', 'common_codes.content_ko as link',
                 DB::raw("CASE WHEN link_type in ('mission','event_mission') THEN mission_id
                     WHEN link_type='product' THEN product_id
                     WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url'
@@ -42,7 +45,6 @@ class BannerController extends Controller
             ->orderBy('sort_num', 'desc')
             ->orderBy('banners.id', 'desc')
             ->get();
-
 
         foreach ($banners as $i => $banner) {
             $params = match ($banner->link_type) {
@@ -53,11 +55,29 @@ class BannerController extends Controller
                 default => ['id' => $banner->link_id],
             };
             $banner->link = code_replace($banner->link, $params);
+
+            $banner->logs()->create([
+                'user_id' => $user_id,
+                'ip' => $request->ip(),
+                'type' => 'view',
+            ]);
         }
 
         return success([
             'result' => true,
             'banners' => $banners,
         ]);
+    }
+
+    public function click(Request $request, $id)
+    {
+        BannerLog::create([
+            'user_id' => token()->uid,
+            'ip' => $request->ip(),
+            'type' => 'click',
+            'banner_id' => $id,
+        ]);
+
+        return success(['result' => true]);
     }
 }

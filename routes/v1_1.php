@@ -101,6 +101,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::get('/feed', [v1_1\MissionController::class, 'feed'])->name('feed');
         Route::get('/place/{available?}', [v1_1\MissionController::class, 'place_available'])->name('place.available')
             ->where(['available' => 'available']);
+        Route::get('/ground', [v1_1\MissionController::class, 'ground'])->name('ground');
         Route::get('/edit', [v1_1\MissionController::class, 'edit'])->name('edit');
         Route::patch('/', [v1_1\MissionController::class, 'update'])->name('update');
         Route::delete('/', [v1_1\MissionController::class, 'destroy'])->name('destroy');
@@ -120,8 +121,9 @@ Route::get('/town', [v1_1\HomeController::class, 'town'])->name('home.town');
 Route::get('/newsfeed', [v1_1\HomeController::class, 'newsfeed'])->name('home.newsfeed');
 Route::get('/badge', [v1_1\HomeController::class, 'badge'])->name('home.badge');
 
-Route::get('/banner/local', [v1_1\BannerController::class, 'category_banner'])->name('banner');
+Route::get('/banner/local', [v1_1\BannerController::class, 'category_banner'])->name('banner.local');
 Route::get('/banner/{type}', [v1_1\BannerController::class, 'index'])->name('banner');
+Route::post('/banner/click/{id}', [v1_1\BannerController::class, 'click'])->name('banner.click');
 
 Route::group(['prefix' => 'popular', 'as' => 'popular.'], function () {
     Route::get('/place', [v1_1\PopularPlaceController::class, 'index'])->name('index');
@@ -230,7 +232,7 @@ Route::get('/show_construction', function () {
 Route::get('/feed_upload_point', function () {
     return success([
         'result' => true,
-        'show' => true,
+        'show' => false,
     ]);
 });
 

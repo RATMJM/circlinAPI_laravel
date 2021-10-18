@@ -4,15 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Admin extends Model
+class MissionGround extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $guarded = [];
 
     protected $casts = [
         'created_at' => 'date:Y-m-d H:i:s',
+        'goal_distances' => 'array',
+        'record_progress_images' => 'array',
+        'cert_details' => 'array',
+        'cert_images' => 'array',
     ];
 }
