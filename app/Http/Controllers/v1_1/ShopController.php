@@ -217,7 +217,7 @@ class ShopController extends Controller
 
             // $shopBannerList = (new BannerController())->index('shop');
 
-            $shopBannerList = DB::select('select b.image, b.product_id, b.link_url, \'' . date('Y-m-d H:i:s') . '\',b.started_at,b.ended_at
+            $shopBannerList = DB::select('select b.id, b.image, b.product_id, b.link_url, \'' . date('Y-m-d H:i:s') . '\',b.started_at,b.ended_at
                 From products a , banners b
                 where b.type=\'shop\' and
                 \'' . date('Y-m-d H:i:s') . '\' >= b.started_at and (b.ended_at is null or b.ended_at > \'' . date('Y-m-d H:i:s).') . '\')
