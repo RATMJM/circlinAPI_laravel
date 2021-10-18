@@ -59,6 +59,7 @@ class BannerController extends Controller
 
             $banner->logs()->create([
                 'user_id' => $user_id,
+                'device_type' => User::where('id', $user_id)->value('device_type'),
                 'ip' => $request->ip(),
                 'type' => 'view',
             ]);
