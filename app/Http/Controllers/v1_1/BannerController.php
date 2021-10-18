@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\BannerLog;
 use App\Models\MissionStat;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -71,8 +72,11 @@ class BannerController extends Controller
 
     public function click(Request $request, $id)
     {
+        $user_id = token()->uid;
+
         BannerLog::create([
-            'user_id' => token()->uid,
+            'user_id' => $user_id,
+            'device_type' => User::where('id', $user_id)->value('device_type'),
             'ip' => $request->ip(),
             'type' => 'click',
             'banner_id' => $id,
