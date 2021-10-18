@@ -18,6 +18,7 @@
             <li><a href="{{ route('admin.order.index') }}">주문 통계</a></li>
             <li><a href="{{ route('admin.mission.index') }}">미션 통계</a></li>
             <li><a href="{{ route('admin.feed.index') }}">피드 통계</a></li>
+            <li><a href="{{ route('admin.banner.log.index') }}">배너 클릭률 통계</a></li>
             <li><a href="{{ route('admin.notice.index') }}">공지사항 관리</a></li>
             <li><a href="{{ route('admin.push.index') }}">푸시 관리</a></li>
         </ul>
