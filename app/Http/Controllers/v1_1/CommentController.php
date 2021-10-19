@@ -32,7 +32,7 @@ class CommentController extends Controller
 
             $query_comment = $query_comment->withTrashed()->where("{$table}_id", $id)
                 ->whereRaw("({$table}_comments.deleted_at is null or
-                    (depth=0 and (select COUNT(1) from {$table}_comments c where c.{$table}_id={$table}_comments.{$table}_id and c.depth>0 and c.group={$table}_comments.group)>0))")
+                    (depth=0 and (select COUNT(1) from {$table}_comments c where c.{$table}_id={$table}_comments.{$table}_id and c.deleted_at is null and c.depth>0 and c.group={$table}_comments.group)>0))")
                 ->join('users', 'users.id', "{$table}_comments.user_id")
                 ->select([
                     "{$table}_comments.group", "{$table}_comments.depth",
