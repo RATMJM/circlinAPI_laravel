@@ -302,11 +302,13 @@ class MissionController extends Controller
                 ->first();
             $data->reward = $data->reward()->select(['title', 'image'])->first();
 
-            $tmp = $data->ground->goal_distances;
-            foreach ($tmp as $i => $item) {
-                $tmp[$i] = $item . $data->ground->goal_distance_text;
+            if ($data->ground) {
+                $tmp = $data->ground->goal_distances;
+                foreach ($tmp as $i => $item) {
+                    $tmp[$i] = $item . $data->ground->goal_distance_text;
+                }
+                $data->ground->goal_distances = $tmp;
             }
-            $data->ground->goal_distances = $tmp;
         }
 
         /*$places = FeedMission::where('mission_id', $mission_id)
