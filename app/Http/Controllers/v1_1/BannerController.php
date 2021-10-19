@@ -57,18 +57,33 @@ class BannerController extends Controller
             };
             $banner->link = code_replace($banner->link, $params);
 
-            $banner->logs()->create([
+            /*$banner->logs()->create([
                 'user_id' => $user_id,
                 'device_type' => User::where('id', $user_id)->value('device_type'),
                 'ip' => $request->ip(),
                 'type' => 'view',
-            ]);
+            ]);*/
         }
 
         return success([
             'result' => true,
             'banners' => $banners,
         ]);
+    }
+
+    public function view(Request $request, $id)
+    {
+        $user_id = token()->uid;
+
+        BannerLog::create([
+            'user_id' => $user_id,
+            'device_type' => User::where('id', $user_id)->value('device_type'),
+            'ip' => $request->ip(),
+            'type' => 'view',
+            'banner_id' => $id,
+        ]);
+
+        return success(['result' => true]);
     }
 
     public function click(Request $request, $id)
