@@ -654,8 +654,10 @@ class MissionController extends Controller
         $data->cert_details = $tmp;
 
         $replaces = Mission::where('missions.id', $mission_id)
-            ->leftJoin('mission_stats', function ($query) {
-                $query->on('mission_stats.mission_id', 'missions.id')->whereNull('mission_stats.ended_at');
+            ->leftJoin('mission_stats', function ($query) use ($user_id) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->where('mission_stats.user_id', $user_id)
+                    ->whereNull('mission_stats.ended_at');
             })
             ->select([
                 'users_count' => MissionStat::selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
