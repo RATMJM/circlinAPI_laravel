@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\ErrorLog;
 use App\Models\Feed;
 use App\Models\Follow;
+use App\Models\Log;
 use App\Models\Place;
 use App\Models\User;
 use App\Models\Version;
@@ -94,12 +95,23 @@ class BaseController extends Controller
 
     public function latest_version(Request $request): array
     {
+        $user_id = token_option()?->uid;
         $version = $request->get('version');
 
         $latest_version = Version::orderBy('id', 'desc')->value('version');
 
         $is_force = Version::where('id', '>', Version::select('id')->where('version', $version)->value('id') ?? 0)
             ->where('is_force', true)->exists();
+
+        if ($user_id) {
+            User::where('id', $user_id)->update(['current_version' => $version]);
+
+            Log::create([
+                'user_id' => $user_id,
+                'ip' => $request->ip(),
+                'type' => 'connect',
+            ]);
+        }
 
         return success([
             'result' => true,
