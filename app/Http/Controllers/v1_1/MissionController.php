@@ -297,10 +297,16 @@ class MissionController extends Controller
             $data->ground = $data->ground()
                 ->select([
                     'intro_video', 'logo_image', 'code_title', 'code', 'code_placeholder', 'code_image',
-                    'goal_distance_title', 'goal_distances',
+                    'goal_distance_title', 'goal_distances', 'goal_distance_text',
                 ])
                 ->first();
             $data->reward = $data->reward()->select(['title', 'image'])->first();
+
+            $tmp = $data->ground->goal_distances;
+            foreach ($tmp as $i => $item) {
+                $tmp[$i] = $item . $data->ground->goal_distance_text;
+            }
+            $data->ground->goal_distances = $tmp;
         }
 
         /*$places = FeedMission::where('mission_id', $mission_id)

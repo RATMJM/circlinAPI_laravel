@@ -126,6 +126,7 @@ class BookmarkController extends Controller
         $mission_id = $mission_id ?? $request->get('mission_id');
         $code = $request->get('code');
         $goal_distance = $request->get('goal_distance');
+        $goal_distance = preg_replace('/[^\d.]+/', '', $goal_distance);
 
         if (is_null($mission_id)) {
             return success([
