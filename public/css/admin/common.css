@@ -90,3 +90,10 @@ table > thead > tr:nth-child(2n-1) > th {
 .center {
     text-align: center;
 }
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', '피드 통계')
+@section('title', '배너 클릭률 통계')
 
 @section('content')
     @php
@@ -32,13 +32,24 @@
                 <tr>
                     <td class="center">{{ $item->id }}</td>
                     <td><img src="{{ $item->image }}" alt="" width="100%"></td>
-                    <td>{{ $item->name }}</td>
+                    <td><a href="{{ route('admin.banner.log.show', ['id' => $item->id]) }}">{{ $item->name }}</a></td>
                     <td class="center">
                         {{ $item->started_at ?? '-' }}<br>~<br>{{ $item->ended_at ?? '-' }}
                         {!! $item->is_available ? '' : '<br><span style="color:red">(종료됨)</span>' !!}
                     </td>
                     <td class="center">{{ $link_type[$item->link_type] }}</td>
-                    <td>{{ $item->link_url ?? $item->link_id }}</td>
+                    <td>
+                        @if($item->link_type === 'url')
+                            <a href="{{ $item->link_url }}">{{ $item->link_url }}</a>
+                        @elseif($item->link_type === 'notice')
+                            <a href="{{ route('admin.notice.show', ['notice' => $item->link_id]) }}">
+                                {{ $link_type[$item->link_type] }}
+                            </a>
+                        @else
+                            {{ $link_type[$item->link_type] }}
+                            ( {{ $item->link_id }} )
+                        @endif
+                    </td>
                     <td class="center">
                         {{ $item->clicks_count }} / {{ $item->views_count }}
                         <br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}%

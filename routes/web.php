@@ -33,6 +33,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::get('/mission', [Admin\MissionController::class, 'index'])->name('mission.index');
         Route::get('/feed', [Admin\FeedController::class, 'index'])->name('feed.index');
         Route::get('/banner/log', [Admin\BannerLogController::class, 'index'])->name('banner.log.index');
+        Route::get('/banner/log/{id}', [Admin\BannerLogController::class, 'show'])->name('banner.log.show');
 
         // 관리
         Route::resource('/notice', Admin\NoticeController::class);
