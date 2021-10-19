@@ -1416,6 +1416,7 @@ class MissionController extends Controller
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'),
             ])
             ->orderBy('feeds.id', 'desc')
+            ->take(200)
             ->get();
 
         return success([
