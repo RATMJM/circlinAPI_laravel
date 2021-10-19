@@ -143,23 +143,53 @@ class FeedController extends Controller
             $completed_missions = [];
             if ($missions) {
                 foreach ($missions as $mission_id) {
-                    $stat = MissionStat::orderBy('id', 'desc')
-                        ->firstOrCreate(['user_id' => $user_id, 'mission_id' => $mission_id]);
+                    $stat = MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])
+                        ->orderBy('id', 'desc')->first();
+                    if (is_null($stat)) continue;
 
-                    if (($mission = Mission::where('id', $mission_id)->first())?->success_count === 1 && FeedMission::where([
-                            'feed_id' => $feed->id,
-                            'mission_id' => $mission_id,
-                        ])->doesntExist()) {
+                    $mission = Mission::where('id', $mission_id)
+                        ->leftJoin('mission_grounds', 'mission_grounds.mission_id', 'missions.id')
+                        ->select(['missions.*', 'mission_grounds.goal_distance_type'])
+                        ->first();
+                    $feeds_count = Feed::where('feeds.user_id', $user_id)
+                        ->where('feed_missions.mission_id', $mission_id)
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->count();
+
+                    if ($mission->is_ground) {
+                        if ($mission->success_count === 0 || $feeds_count >= $mission->success_count) {
+                            $feeds_distance = Feed::where('feeds.user_id', $user_id)
+                                ->where('feed_missions.mission_id', $mission_id)
+                                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                                ->sum('distance');
+
+                            if (($mission->goal_distance_type === 'goal' && $feeds_distance >= $stat->goal_distance) ||
+                                ($mission->goal_distance_type === 'min' && $distance >= $stat->goal_distance)
+                            ) {
+                                $completed_missions[] = $mission_id;
+
+                                if (is_null($stat->completed_at)) {
+                                    $stat->update(['completed_at' => date('Y-m-d H:i:s')]);
+                                }
+                                NotificationController::send($user_id, 'mission_complete', null, $mission_id);
+                            }
+                        }
+                    } elseif ($mission->success_count === 1 && $feeds_count === 0) {
                         $completed_missions[] = $mission_id;
+
+                        if (is_null($stat->completed_at)) {
+                            $stat->update(['completed_at' => date('Y-m-d H:i:s')]);
+                        }
+                        NotificationController::send($user_id, 'mission_complete', null, $mission_id);
                     }
 
                     // 보물찾기 보상
                     if ($mission->treasure_started_at <= date('Y-m-d H:i:s') &&
-                        $mission->treasure_ended_at > date('Y-m-d H:i:s') &&
-                        !$is_hidden &&
-                        FeedMission::where('mission_id', $mission_id)
-                            ->where(Feed::withTrashed()->select('user_id')->whereColumn('feeds.id', 'feed_missions.feed_id'), $user_id)
-                            ->where('created_at', '>=', date('Y-m-d'))->doesntExist()) {
+                        $mission->treasure_ended_at > date('Y-m-d H:i:s') && !$is_hidden &&
+                        FeedMission::where('mission_id', $mission_id)->where(Feed::withTrashed()->select('user_id')
+                            ->whereColumn('feeds.id', 'feed_missions.feed_id'), $user_id)
+                            ->where('created_at', '>=', date('Y-m-d'))->doesntExist()
+                    ) {
                         // 랜덤 보상 가져오기
                         $reward_points = MissionTreasurePoint::where('mission_id', $mission_id)
                             ->orderBy(DB::raw("(point_min+point_max)/2"))
@@ -199,9 +229,9 @@ class FeedController extends Controller
                     ]);
                 }
 
-                foreach ($completed_missions as $mission_id) {
+                /*foreach ($completed_missions as $mission_id) {
                     NotificationController::send($user_id, 'mission_complete', null, $mission_id);
-                }
+                }*/
             }
 
             // 제품이나 장소 등록 시 50포인트 씩 제공
