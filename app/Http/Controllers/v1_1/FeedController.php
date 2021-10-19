@@ -147,7 +147,7 @@ class FeedController extends Controller
                         ->orderBy('id', 'desc')->first();
                     if (is_null($stat)) continue;
 
-                    $mission = Mission::where('id', $mission_id)
+                    $mission = Mission::where('missions.id', $mission_id)
                         ->leftJoin('mission_grounds', 'mission_grounds.mission_id', 'missions.id')
                         ->select(['missions.*', 'mission_grounds.goal_distance_type'])
                         ->first();
