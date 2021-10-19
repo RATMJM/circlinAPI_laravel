@@ -669,7 +669,7 @@ class MissionController extends Controller
                     ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
-        $replaces->status_text = $data->record_progress_image_count > $replaces->feeds_count ? '도전 중' : '성공';
+        $replaces->status_text = $data->record_progress_image_count > $replaces->feeds_count ? '도전 중' : '성공!';
         $replaces = $replaces->toArray();
 
         foreach ($data->toArray() as $i => $item) {
