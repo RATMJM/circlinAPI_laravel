@@ -37,10 +37,17 @@
             border-right-width: 1px;
         }
         #table #head {
-            border-bottom: 1px solid #000;
+            background-color: #000;
+            color: #fff;
+            font-weight: bold;
         }
         #table p {
+            padding: 5px 10px;
             border-right: 1px solid #000;
+        }
+        #table #head p {
+            border-bottom: 1px solid #fff;
+            border-right: 1px solid #fff;
         }
         #table > *:not(:last-child) p {
             border-bottom: 1px solid #000;
