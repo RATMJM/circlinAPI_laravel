@@ -30,7 +30,10 @@ class BannerLogController extends Controller
             'ios_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                 ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
             'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                ->where('banner_logs.type', 'view')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                ->where('banner_logs.type', 'view')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
             'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                 ->where('banner_logs.type', 'click'),
             'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -38,7 +41,10 @@ class BannerLogController extends Controller
             'ios_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                 ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
             'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                ->where('banner_logs.type', 'click')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                ->where('banner_logs.type', 'click')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
         ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -61,7 +67,10 @@ class BannerLogController extends Controller
                 'ios_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
                 'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                    ->where('banner_logs.type', 'view')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
                 'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click'),
                 'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -69,7 +78,10 @@ class BannerLogController extends Controller
                 'ios_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
                 'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                    ->where('banner_logs.type', 'click')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -92,7 +104,10 @@ class BannerLogController extends Controller
                 'ios_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
                 'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                    ->where('banner_logs.type', 'view')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
                 'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click'),
                 'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -100,7 +115,10 @@ class BannerLogController extends Controller
                 'ios_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
                 'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                    ->where('banner_logs.type', 'click')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -135,7 +153,10 @@ class BannerLogController extends Controller
                 'ios_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
                 'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                    ->where('banner_logs.type', 'view')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
                 'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click'),
                 'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -143,7 +164,10 @@ class BannerLogController extends Controller
                 'ios_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
                 'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                    ->where('banner_logs.type', 'click')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -168,7 +192,10 @@ class BannerLogController extends Controller
                 ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
             'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
-                ->where('banner_logs.type', 'view')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                ->where('banner_logs.type', 'view')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
             'clicks_count' => BannerLog::selectRaw("COUNT(1)")->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'click'),
@@ -180,7 +207,10 @@ class BannerLogController extends Controller
                 ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
             'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
-                ->where('banner_logs.type', 'click')->whereNotIn('banner_logs.device_type', ['android', 'ios']),
+                ->where('banner_logs.type', 'click')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
         ])
             ->groupBy('date')
             ->orderBy('date', 'desc')
