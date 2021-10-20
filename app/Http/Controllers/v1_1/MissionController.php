@@ -604,7 +604,8 @@ class MissionController extends Controller
         };
 
         $data->users = match ($data->ground_users_type) {
-            'recent_complete' => MissionStat::whereNotNull('mission_stats.completed_at')
+            'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                ->whereNotNull('mission_stats.completed_at')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
                 })
