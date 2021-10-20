@@ -46,7 +46,7 @@
                                 {{ $link_type[$item->link_type] }}
                             </a>
                         @else
-                            {{ $link_type[$item->link_type] }}
+                            {{ array_key_exists($item->link_type, $link_type) ? $link_type[$item->link_type] : '' }}
                             ( {{ $item->link_id }} )
                         @endif
                     </td>
