@@ -1088,8 +1088,8 @@ class MissionController extends Controller
                 ifnull(sum(a.distance),0) total_distance,
                 ifnull(ROUND((sum(a.distance) / c.goal_distance) * 100 ,0),0) as progress,
                 sum( CASE WHEN cast(c.goal_distance as unsigned ) <= cast(a.distance as unsigned) then  1 else 0 end ) as success_today,
-                ifnull((select count(id) from feed_missions where mission_id= ? ) ,0) cert_count,
-                ifnull((select count(id) from feed_missions where mission_id= ? and created_at >= ?) ,0) today_cert_count
+                ifnull((select count(id) from feeds where ? in (select mission_id from feed_missions where feed_missions.feed_id=feeds.id) and feeds.deleted_at is null ) ,0) cert_count,
+                ifnull((select count(id) from feeds where ? in (select mission_id from feed_missions where feed_missions.feed_id=feeds.id) and feeds.deleted_at is null and created_at >= ?) ,0) today_cert_count
             from feeds a
             left join feed_missions b on a.id=b.feed_id
             left join mission_stats c on b.mission_id=c.mission_id and b.mission_stat_id=c.id  and b.mission_stat_id= ?
