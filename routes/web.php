@@ -43,4 +43,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::get('/push/history', [Admin\PushController::class, 'history'])->name('push.history');
         Route::resource('/push', Admin\PushController::class);
     });
+
+    // 외부 제공 어드민
+    Route::get('/world-vision2-hiking', [Admin\EtcController::class, 'world_vision2_hiking'])->name('world_vision2_hiking');
 });
