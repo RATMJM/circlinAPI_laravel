@@ -3,16 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Feed;
 use App\Models\FeedMission;
 use App\Models\Place;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class EtcController extends Controller
 {
     public function world_vision2_hiking(Request $request)
     {
+        $remote_addr = $request->server('REMOTE_ADDR');
+        if (Auth::id() !== 61373 && !Admin::where(['type' => 'ip', 'ip' => $remote_addr])->exists() &&
+            !Admin::where(['type' => 'user', 'user_id' => Auth::id()])->exists()) {
+            return redirect()->route('admin.login', ['referer' => $request->url()]);
+        }
+
         $type = $request->get('type');
         $keyword = $request->get('keyword');
 

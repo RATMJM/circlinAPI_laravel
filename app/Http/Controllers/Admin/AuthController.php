@@ -22,7 +22,7 @@ class AuthController extends Controller
         $user = $request->only('email', 'password');
 
         if (Auth::attempt($user, true)) {
-            return redirect()->route('admin.user.index');
+            return redirect()->to($request->get('referer', route('admin.user.index')));
         } else {
             return "<script>alert('로그인에 실패했습니다.');</script>";
         }
