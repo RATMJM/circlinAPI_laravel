@@ -114,11 +114,14 @@ class HomeController extends Controller
         $limit = $request->get('limit', 20);
 
         $data = Follow::where('follows.user_id', $user_id)
+            // ->where(User::selectRaw("COUNT(1) > 0")->where('users.id', 'follows.user_id'), 1)
             ->where('feeds.is_hidden', false)
             ->where('feeds.created_at', '>=', date('Y-m-d H:i:s', time()-86400))
+            ->join('users', function ($query) {
+                $query->on('users.id', 'follows.target_id')->whereNull('users.deleted_at');
+            })
             ->join('feeds', function ($query) {
-                $query->on('feeds.user_id', 'follows.target_id')
-                    ->whereNull('feeds.deleted_at');
+                $query->on('feeds.user_id', 'users.id')->whereNull('feeds.deleted_at');
             })
             ->select('feeds.id')
             ->orderBy('feeds.id', 'desc');
