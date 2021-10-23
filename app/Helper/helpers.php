@@ -251,8 +251,8 @@ function is_available($as = true)
 {
     $time = date('Y-m-d H:i:s');
 
-    return DB::raw("(missions.started_at is null or missions.started_at<=$time) and
-    (missions.ended_at is null or missions.ended_at>$time)" . ($as ? 'as is_available' : ''));
+    return DB::raw("(missions.started_at is null or missions.started_at<='$time') and
+    (missions.ended_at is null or missions.ended_at>'$time')" . ($as ? 'as is_available' : ''));
 }
 
 /**
