@@ -575,9 +575,7 @@ class MissionController extends Controller
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
             })
             ->select([
-                'mission_grounds.*', 'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                'mission_grounds.*', 'missions.started_at', 'missions.ended_at', is_available(),
             ])
             ->first();
 

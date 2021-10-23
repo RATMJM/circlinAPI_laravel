@@ -181,9 +181,7 @@ class MissionCategoryController extends Controller
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
                 'missions.is_ground',
-                'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                'missions.started_at', 'missions.ended_at', is_available(),
                 'missions.thumbnail_image', 'missions.success_count',
                 'm.bookmarks',
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),

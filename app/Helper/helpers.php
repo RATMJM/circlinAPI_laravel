@@ -1,19 +1,13 @@
 <?php
 
-use App\Http\Controllers\v1\NotificationController;
-use App\Http\Controllers\v1\PushController;
 use App\Http\Controllers\v1_1\BaseController;
 use App\Models\Area;
-use App\Models\CommonCode;
 use App\Models\Feed;
 use App\Models\FeedMission;
 use App\Models\FeedPlace;
-use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionArea;
 use App\Models\MissionStat;
-use App\Models\SortUser;
-use App\Models\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -25,7 +19,7 @@ const SORT_RECENT = 1;
 const SORT_USER = 2;
 const SORT_COMMENT = 3;
 
-const DAY_OF_WEEK = ['일','월','화','수','목','금','토'];
+const DAY_OF_WEEK = ['일', '월', '화', '수', '목', '금', '토'];
 
 /* 결과 정상 전달 */
 function success($data): array
@@ -128,8 +122,7 @@ function random_password($length = 8): string
     $chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()";
     $str = '';
 
-    while ($length--)
-    {
+    while ($length--) {
         $str .= $chars[mt_rand(0, strlen($chars) - 1)];
     }
 
@@ -242,7 +235,7 @@ function profile_image($user): string|null
 }
 
 /**
- * area 변환
+ * 공통 쿼리
  */
 function area($table = 'users')
 {
@@ -254,6 +247,17 @@ function area_like($table = 'users')
     return Area::select('name')->where('code', DB::raw("CONCAT(SUBSTRING($table.area_code,1,5),'00000')"))->orderBy('code')->limit(1);
 }
 
+function is_available($as = true)
+{
+    $time = date('Y-m-d H:i:s');
+
+    return DB::raw("(missions.started_at is null or missions.started_at<=$time) and
+    (missions.ended_at is null or missions.ended_at>$time)" . ($as ? 'as is_available' : ''));
+}
+
+/**
+ * 하루 초기화 시간
+ */
 function init_today($time = null)
 {
     return date('Y-m-d 00:00:00', ($time ?? time()));
@@ -279,23 +283,6 @@ function mission_users($mission_id, $user_id, $has_owner = false)
         })
         ->select(['mission_stats.mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
         ->groupBy('users.id', 'mission_stats.mission_id')
-        ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
-        ->take(2);
-
-    return FeedMission::where('feed_missions.mission_id', $mission_id)
-        ->when(!$has_owner, function ($query) {
-            $query->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'));
-        })
-        ->join('feeds', function ($query) use ($user_id) {
-            $query->on('feeds.id', 'feed_missions.feed_id')
-                ->whereNull('feeds.deleted_at')
-                ->where(function ($query) use ($user_id) {
-                    $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
-                });
-        })
-        ->join('users', 'users.id', 'feeds.user_id')
-        ->select(['mission_id', 'users.id', 'users.nickname', 'users.profile_image', 'users.gender'])
-        ->groupBy('users.id', 'mission_id')
         ->orderBy(DB::raw("COUNT(distinct feeds.id)"), 'desc')
         ->take(2);
 }

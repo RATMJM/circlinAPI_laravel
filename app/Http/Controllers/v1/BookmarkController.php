@@ -40,9 +40,7 @@ class BookmarkController extends Controller
                 'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now()) as is_available"),
+                'missions.started_at', 'missions.ended_at', is_available(),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
@@ -135,8 +133,7 @@ class BookmarkController extends Controller
             return success(['result' => false, 'reason' => 'already bookmark']);
         /*} elseif (MissionStat::where('user_id', $user_id)->count() >= 5) {
             return success(['result' => false, 'reason' => 'bookmark is full']);*/
-        } elseif (Mission::select(DB::raw("(missions.started_at is null or missions.started_at<=now()) and
-            (missions.ended_at is null or missions.ended_at>now()) as is_available"))->where('id', $mission_id)->value('is_available')) {
+        } elseif (Mission::select(is_available())->where('id', $mission_id)->value('is_available')) {
             $data = MissionStat::create([
                 'user_id' => $user_id,
                 'mission_id' => $mission_id,
