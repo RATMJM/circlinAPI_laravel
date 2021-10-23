@@ -584,7 +584,7 @@ class MissionController extends Controller
         $diff = abs(date_diff(new \DateTime(date('Y-m-d')), new \DateTime($data->started_at))->days);
         if ($data->is_available) {
             $data->ground_d_day_title = '함께하는 중';
-            $data->ground_d_day_text = "{$diff}일차";
+            $data->ground_d_day_text = ($diff + 1) . "일차";
         } elseif ($data->started_at > $date) {
             $data->ground_d_day_title = '함께하기 전';
             $data->ground_d_day_text = "D - $diff";
