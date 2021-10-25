@@ -697,11 +697,6 @@ class MissionController extends Controller
         $data->cert_details = $tmp;
 
         $replaces = Mission::where('missions.id', $mission_id)
-            ->leftJoin('mission_stats', function ($query) use ($user_id) {
-                $query->on('mission_stats.mission_id', 'missions.id')
-                    ->where('mission_stats.user_id', $user_id)
-                    ->whereNull('mission_stats.ended_at');
-            })
             ->select([
                 'users_count' => MissionStat::selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
                 'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
@@ -715,20 +710,26 @@ class MissionController extends Controller
                     })
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
-                DB::raw("IFNULL(goal_distance,0) as goal_distance"),
+                'goal_distance' => MissionStat::selectRaw("IFNULL(goal_distance,0)")->whereColumn('mission_id', 'missions.id')
+                    ->where('mission_stats.user_id', $user_id)->orderBy('mission_stats.id', 'desc'),
                 'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
                     })
-                    ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'total_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
                     })
-                    ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
-        $replaces->status_text = $data->record_progress_image_count > $replaces->feeds_count ? '도전 중' : '성공!';
+        $replaces->status_text = (
+            $data->record_progress_image_count > $replaces->feeds_count &&
+            (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
+        ) ? '도전 중' : '성공!';
         $replaces = $replaces->toArray();
 
         foreach ($data->toArray() as $i => $item) {
