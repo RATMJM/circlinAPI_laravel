@@ -25,6 +25,7 @@ use App\Models\MissionStat;
 use App\Models\OutsideProduct;
 use App\Models\Place;
 use App\Models\User;
+use DateTime;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -219,6 +220,33 @@ class MissionController extends Controller
             DB::commit();
 
             return success(['result' => true, 'mission' => $data]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
+    public function invite(Request $request, $mission_id): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $users = Arr::wrap($request->get('user_id', $request->get('invite_id')));
+            $users = array_unique($users);
+            $success = [];
+            $sockets = [];
+            foreach ($users as $user) {
+                $res = (new ChatController())->send_direct($request, $user, 'mission', $mission_id,
+                    '미션에 초대합니다!');
+                if ($res['success'] && $res['data']['result']) {
+                    $success[] = $user;
+                    $sockets = Arr::collapse([$sockets, $res['data']['sockets']]);
+                }
+            }
+
+            DB::commit();
+
+            return success(['result' => true, 'users' => $success, 'sockets' => $sockets]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -580,8 +608,9 @@ class MissionController extends Controller
             ->first();
 
         $date = date('Y-m-d H:i:s');
+        $is_min = $data->goal_distance_type === 'min';
 
-        $diff = abs(date_diff(new \DateTime(date('Y-m-d')), new \DateTime($data->started_at))->days);
+        $diff = abs(date_diff(new DateTime(date('Y-m-d')), new DateTime($data->started_at))->days);
         if ($data->is_available) {
             $data->ground_d_day_title = '함께하는 중';
             $data->ground_d_day_text = ($diff + 1) . "일차";
@@ -594,10 +623,13 @@ class MissionController extends Controller
         }
 
         $data->ground_progress_present = match ($data->ground_progress_type) {
-            'all_distance' => Feed::join('feed_missions', function ($query) use ($mission_id) {
-                $query->on('feed_missions.feed_id', 'feeds.id')
-                    ->where('mission_id', $mission_id);
-            })->sum('distance'),
+            'all_distance' => Feed::when($is_min, function ($query) {
+                $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+            })
+                ->join('feed_missions', function ($query) use ($mission_id) {
+                    $query->on('feed_missions.feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id);
+                })->sum('distance'),
             default => null,
         };
 
@@ -617,9 +649,13 @@ class MissionController extends Controller
         };
 
         $data->record_progress_present = match ($data->record_progress_type) {
-            'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-                $query->where('mission_id', $mission_id);
-            })->where('user_id', $user_id)->count(),
+            'feeds_count' => Feed::when($is_min, function ($query) {
+                $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+            })
+                ->join('feed_missions', function ($query) use ($mission_id) {
+                    $query->on('feed_missions.feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id);
+                })->where('user_id', $user_id)->count(),
             default => null,
         };
 
@@ -640,12 +676,20 @@ class MissionController extends Controller
         $tmp = $data->cert_details;
         foreach ($tmp as $i => $item) {
             $tmp[$i]['text'] = code_replace($item['text'], ['value' => match ($item['type']) {
-                'feeds_count' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-                    $query->where('mission_id', $mission_id);
-                })->where('user_id', $user_id)->count(),
-                'total_distance' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-                    $query->where('mission_id', $mission_id);
-                })->where('user_id', $user_id)->value(DB::raw("SUM(ROUND(distance))")),
+                'feeds_count' => Feed::when($is_min, function ($query) {
+                    $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                })
+                    ->join('feed_missions', function ($query) use ($mission_id) {
+                        $query->on('feed_missions.feed_id', 'feeds.id')
+                            ->where('mission_id', $mission_id);
+                    })->where('user_id', $user_id)->count(),
+                'total_distance' => Feed::when($is_min, function ($query) {
+                    $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                })
+                    ->join('feed_missions', function ($query) use ($mission_id) {
+                        $query->on('feed_missions.feed_id', 'feeds.id')
+                            ->where('mission_id', $mission_id);
+                    })->where('user_id', $user_id)->value(DB::raw("SUM(ROUND(distance))")),
                 'goal_distance' => MissionStat::where('mission_id', $mission_id)->where('user_id', $user_id)->value('goal_distance'),
                 default => '',
             }]);
@@ -661,14 +705,26 @@ class MissionController extends Controller
             ->select([
                 'users_count' => MissionStat::selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
                 'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->when($is_min, function ($query) {
+                        $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                    })
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->when($is_min, function ($query) {
+                        $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                    })
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 DB::raw("IFNULL(goal_distance,0) as goal_distance"),
                 'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->when($is_min, function ($query) {
+                        $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                    })
                     ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'total_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
+                    ->when($is_min, function ($query) {
+                        $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                    })
                     ->where('user_id', $user_id)->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
@@ -884,33 +940,6 @@ class MissionController extends Controller
             'success' => true,
             'users' => $users,
         ]);
-    }
-
-    public function invite(Request $request, $mission_id): array
-    {
-        try {
-            DB::beginTransaction();
-
-            $users = Arr::wrap($request->get('user_id', $request->get('invite_id')));
-            $users = array_unique($users);
-            $success = [];
-            $sockets = [];
-            foreach ($users as $user) {
-                $res = (new ChatController())->send_direct($request, $user, 'mission', $mission_id,
-                    '미션에 초대합니다!');
-                if ($res['success'] && $res['data']['result']) {
-                    $success[] = $user;
-                    $sockets = Arr::collapse([$sockets, $res['data']['sockets']]);
-                }
-            }
-
-            DB::commit();
-
-            return success(['result' => true, 'users' => $success, 'sockets' => $sockets]);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
-        }
     }
 
     public function destroy($id): array
