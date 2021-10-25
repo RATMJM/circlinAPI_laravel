@@ -82,8 +82,8 @@ class FeedController extends Controller
                 'content' => $content,
                 'distance' => $distance,
                 'laptime' => $laptime,
-                'distance_origin' => $distance_origin,
-                'laptime_origin' => $laptime_origin,
+                'distance_origin' => is_null($distance_origin) ? $distance_origin : floatval($distance_origin),
+                'laptime_origin' => is_null($laptime_origin) ? $laptime_origin : floatval($laptime_origin),
                 'is_hidden' => $is_hidden == 1,
             ]);
 
