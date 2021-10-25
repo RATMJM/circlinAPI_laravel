@@ -727,9 +727,9 @@ class MissionController extends Controller
             ])
             ->first();
         $replaces->status_text = (
-            $data->record_progress_image_count > $replaces->feeds_count &&
+            $replaces->feeds_count >= $data->record_progress_image_count &&
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
-        ) ? '도전 중' : '성공!';
+        ) ? '성공!' : '도전 중';
         $replaces = $replaces->toArray();
 
         foreach ($data->toArray() as $i => $item) {
