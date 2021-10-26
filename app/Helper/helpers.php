@@ -3,7 +3,6 @@
 use App\Http\Controllers\v1_1\BaseController;
 use App\Models\Area;
 use App\Models\Feed;
-use App\Models\FeedMission;
 use App\Models\FeedPlace;
 use App\Models\Mission;
 use App\Models\MissionArea;
@@ -81,10 +80,10 @@ function token_option(): object|null
 /**
  * ftp url 자동완성 $server: (2, 3, 4)
  */
-function image_url($server, $image_url): string|null
+function image_url($image_url): string|null
 {
     if ($image_url) {
-        return "https://" . config("filesystems.disks.ftp$server.host") . "/$image_url";
+        return "https://circlin-app.s3.ap-northeast-2.amazonaws.com/$image_url";
     } else {
         return null;
     }
@@ -134,7 +133,7 @@ function random_password($length = 8): string
  */
 function upload_image(UploadedFile $file, $upload_dir): string
 {
-    return Storage::disk('ftp')->put($upload_dir, $file);
+    return Storage::disk('s3')->put($upload_dir, $file);
 }
 
 // 이미지 압축 210810 JM 추가

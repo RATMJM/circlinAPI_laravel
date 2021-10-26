@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\FeedImage;
 use App\Models\Notice;
 use App\Models\NoticeImage;
 use Exception;
@@ -87,7 +86,7 @@ class NoticeController extends Controller
 
                         $tmp_path = "{$file->getPath()}/" . Str::uuid() . ".{$file->extension()}";
                         $image->save($tmp_path);
-                        $uploaded_file = Storage::disk('ftp3')->put("/Image/NOTICE/{$data->id}", new File($tmp_path));
+                        $uploaded_file = Storage::disk('s3')->put("/notice/{$data->id}", new File($tmp_path));
                         @unlink($tmp_path);
                     } else {
                         continue;
@@ -97,7 +96,7 @@ class NoticeController extends Controller
                         'notice_id' => $data->id,
                         'order' => $orders[$i],
                         'type' => $type,
-                        'image' => image_url(3, $uploaded_file),
+                        'image' => image_url($uploaded_file),
                     ]);
                 }
             }

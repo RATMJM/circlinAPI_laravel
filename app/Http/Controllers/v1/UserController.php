@@ -336,7 +336,7 @@ class UserController extends Controller
             $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
             $image->save($tmp_path);
 
-            if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
+            if ($filename = Storage::disk('s3')->put("/profile/$user_id", new File($tmp_path))) { //파일전송 성공
                 try {
                     @unlink($tmp_path);
                     DB::beginTransaction();

@@ -89,7 +89,7 @@ class FeedController extends Controller
 
             // 이미지 및 동영상 업로드
             if ($files) {
-                foreach ($files as $i => $file) {
+                foreach (Arr::wrap($files) as $i => $file) {
                     $uploaded_thumbnail = '';
                     if (str_starts_with($file->getMimeType(), 'image/')) {
                         $type = 'image';
@@ -109,19 +109,19 @@ class FeedController extends Controller
 
                         $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
                         $image->save($tmp_path);
-                        $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", new File($tmp_path));
+                        $uploaded_file = Storage::disk('s3')->put("/SNS/$user_id", new File($tmp_path));
                         @unlink($tmp_path);
                     } elseif (str_starts_with($file->getMimeType(), 'video/')) {
                         $type = 'video';
-                        $uploaded_file = Storage::disk('ftp3')->put("/Image/SNS/$user_id", $file);
+                        $uploaded_file = Storage::disk('s3')->put("/SNS/$user_id", $file);
 
                         $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
 
                         $host = config('filesystems.disks.ftp3.host');
                         $username = config('filesystems.disks.ftp3.username');
                         $password = config('filesystems.disks.ftp3.password');
-                        $url = image_url(3, $uploaded_file);
-                        $url2 = image_url(3, $thumbnail);
+                        $url = image_url($uploaded_file);
+                        $url2 = image_url($thumbnail);
                         if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $feed->id)) {
                             $uploaded_thumbnail = $thumbnail;
                         }
@@ -133,8 +133,8 @@ class FeedController extends Controller
                         'feed_id' => $feed->id,
                         'order' => $i,
                         'type' => $type,
-                        'image' => image_url(3, $uploaded_file),
-                        'thumbnail_image' => image_url(3, $uploaded_thumbnail ?: $uploaded_file),
+                        'image' => image_url($uploaded_file),
+                        'thumbnail_image' => image_url($uploaded_thumbnail ?: $uploaded_file),
                     ]);
                 }
             }

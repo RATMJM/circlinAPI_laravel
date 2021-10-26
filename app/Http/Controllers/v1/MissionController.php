@@ -94,7 +94,7 @@ class MissionController extends Controller
                     $image->crop($src, $src, round($x), round($y));
                     $tmp_path = "{$thumbnail->getPath()}/{$user_id}_" . Str::uuid() . ".{$thumbnail->extension()}";
                     $image->save($tmp_path);
-                    $uploaded_thumbnail = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", new File($tmp_path));
+                    $uploaded_thumbnail = Storage::disk('s3')->put("/mission/user/$user_id", new File($tmp_path));
                     @unlink($tmp_path);
                 }
             }
@@ -133,11 +133,11 @@ class MissionController extends Controller
                         $image->crop($src, $src, round($x), round($y));
                         $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
                         $image->save($tmp_path);
-                        $uploaded_file = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", new File($tmp_path));
+                        $uploaded_file = Storage::disk('s3')->put("/mission/user/$user_id", new File($tmp_path));
                         @unlink($tmp_path);
                     } elseif (str_starts_with($file->getMimeType(), 'video/')) {
                         $type = 'video';
-                        $uploaded_file = Storage::disk('ftp3')->put("/Image/USERPROMISE/$user_id", $file);
+                        $uploaded_file = Storage::disk('s3')->put("/mission/user/$user_id", $file);
 
                         $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
 
@@ -1169,7 +1169,7 @@ class MissionController extends Controller
             $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
             $image->save($tmp_path);
 
-            if ($filename = Storage::disk('ftp2')->put("/Image/profile/$user_id", new File($tmp_path))) { //파일전송 성공
+            if ($filename = Storage::disk('s3')->put("/profile/$user_id", new File($tmp_path))) { //파일전송 성공
                 $filename = image_url(2, $filename);
                 try {
                     DB::beginTransaction();

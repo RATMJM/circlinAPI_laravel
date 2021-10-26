@@ -108,11 +108,11 @@ class ChatController extends Controller
                     $image->crop($src, $src, round($x), round($y));
                     $tmp_path = "{$file->getPath()}/{$user_id}_" . Str::uuid() . ".{$file->extension()}";
                     $image->save($tmp_path);
-                    $uploaded_file = Storage::disk('ftp3')->put("/Image/CHAT/$room_id", new File($tmp_path));
+                    $uploaded_file = Storage::disk('s3')->put("/chat/$room_id", new File($tmp_path));
                     @unlink($tmp_path);
                 } elseif (str_starts_with($file->getMimeType(), 'video/')) {
                     $image_type = 'video';
-                    $uploaded_file = Storage::disk('ftp3')->put("/Image/CHAT/$room_id", $file);
+                    $uploaded_file = Storage::disk('s3')->put("/chat/$room_id", $file);
 
                     $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
                 }
@@ -126,7 +126,7 @@ class ChatController extends Controller
                         (isset($file) && $message === '' ? 'chat_image' : 'chat')),
                 'message' => $message,
                 'image_type' => $image_type,
-                'image' => image_url(3, $uploaded_file),
+                'image' => image_url($uploaded_file),
                 'feed_id' => $feed_id,
                 'mission_id' => $mission_id,
             ]);
