@@ -5,7 +5,6 @@ namespace App\Console;
 use App\Http\Controllers\v1_1\PushController;
 use App\Http\Controllers\v1_1\ScheduleController;
 use App\Models\MissionStat;
-use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -44,9 +43,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=72')->daily();
 
         $schedule->call(function () {
-            $msg = "콜롬비아 아이들의 흑백 삶을 알록달록한 색깔로 물들이는 컬러런🌈  2021 컴패션 버츄얼 런 참가자 모집 중!";
-            // $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
-            $users = User::pluck('id');
+            $msg = "[월드비전 6k EVENT] 찾아라! 제리캔 히어로🦸‍♀️🦸 지금 운동장에서 이벤트 내용을 확인하고 투표에 참여해보세요😉";
+            $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
+            // $users = User::pluck('id');
             $tmp = [];
             foreach ($users as $user) {
                 $tmp[] = $user;
@@ -56,7 +55,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('00 14 12 10 *');
+        })->cron('30 11 27 10 *');
     }
 
     /**
