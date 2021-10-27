@@ -55,7 +55,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('30 11 27 10 *');
+        })->cron('30 11 27 10 *')->name('푸시 예약 발송');
     }
 
     /**
