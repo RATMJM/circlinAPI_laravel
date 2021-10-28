@@ -73,9 +73,9 @@ class NotificationController extends Controller
         })
             ->leftJoin('users', 'users.id', 'n.user_id')
             ->leftJoin('feeds', 'feeds.id', 'n.feed_id')
-            // ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
+            ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
-            // ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
+            ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
             ->leftJoin('common_codes', function ($query) use ($q) {
                 $query->on('common_codes.ctg_sm', DB::raw("IF(type in ($q) and count > 1, CONCAT(type,'_multi'), type)"))
                     ->where('common_codes.ctg_lg', 'notifications');
@@ -94,6 +94,7 @@ class NotificationController extends Controller
                 'mission_emoji' => MissionCategory::select('emoji')->whereColumn('id', 'missions.mission_category_id')->limit(1),
                 'missions.title as mission_title',
                 'missions.thumbnail_image as mission_image',
+                'feed_comments.comment as feed_comment', 'mission_comments.comment as mission_comment',
                 'notifications.variables',
             ])
             ->orderBy('id', 'desc')
@@ -113,6 +114,8 @@ class NotificationController extends Controller
                 'count' => $item->count - 1,
                 'nickname' => $item->nickname,
                 'mission' => $item->mission_emoji . ' ' . $item->mission_title,
+                'feed_comment' => $item->feed_comment,
+                'mission_comment' => $item->mission_comment,
             ];
             $replaces = Arr::collapse([$replaces, $item->variables]);
             if (array_key_exists('point', $replaces)) {
