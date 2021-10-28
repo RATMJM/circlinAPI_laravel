@@ -457,7 +457,7 @@ class ShopController extends Controller
     {
         $user_id = token()->uid;
         $product_id = $request->get('product_id');
-        $qty = $request->get('qty');;
+        $qty = $request->get('qty');
         $options = $request->get('options'); //option_Id, price
         $time = date("Y-m-d H:i:s");
 
@@ -902,7 +902,7 @@ class ShopController extends Controller
                   a.id=?  ; ', [$user_id, $product_id, $product_id]);
 
             $product_image = DB::select('select product_id, `order`, type, image  from product_images
-                            where product_id= ? ; ', [$product_id]);
+                            where product_id= ? order by `order` desc, id; ', [$product_id]);
 
 
             $optionList1 = DB::select('select product_id, name_ko, id as option_id, price, status, `group` From product_options where product_id= ? and `group`=1 and deleted_at is null; ', [$product_id]);
@@ -936,7 +936,7 @@ class ShopController extends Controller
     {
         $user_id = token()->uid;
         $qty = $request->get('qty');
-        $type = $request->get('type');;
+        $type = $request->get('type');
         $cart_id = $request->get('cart_id'); //option_Id, price
         $time = date("Y-m-d H:i:s");
 
