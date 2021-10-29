@@ -111,11 +111,12 @@ class BannerLogController extends Controller
         ])
             ->groupBy('date')
             ->orderBy('date', 'desc')
-            ->paginate(20);
+            ->take(20)
+            ->get();
 
         return [
             'banner' => $banner,
-            'data' => $data,
+            'data' => $data->toArray(),
         ];
     }
 }
