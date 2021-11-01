@@ -222,7 +222,7 @@ class ShopController extends Controller
                 where b.type=\'shop\' and
                 \'' . date('Y-m-d H:i:s') . '\' >= b.started_at and (b.ended_at is null or b.ended_at > \'' . date('Y-m-d H:i:s).') . '\')
                 and b.product_id=a.id and b.deleted_at is null
-                order by sort_num;');
+                order by sort_num desc, b.id desc;');
 
             return success([
                 'result' => true,
