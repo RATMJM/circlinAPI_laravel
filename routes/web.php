@@ -20,14 +20,13 @@ Route::get('/', function (Request $request) {
 });
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
-    Route::get('/', [Admin\UserController::class, 'index'])->name('index');
-
     Route::get('/login', [Admin\AuthController::class, 'loginForm'])->name('login');
     Route::post('/login', [Admin\AuthController::class, 'login']);
     Route::get('/logout', [Admin\AuthController::class, 'logout'])->name('logout');
 
     Route::group(['middleware' => ['web', 'admin']], function () {
         // 통계
+        Route::get('/', [Admin\UserController::class, 'index'])->name('index');
         Route::get('/user', [Admin\UserController::class, 'index'])->name('user.index');
         Route::get('/order', [Admin\OrderController::class, 'index'])->name('order.index');
         Route::get('/mission', [Admin\MissionController::class, 'index'])->name('mission.index');
