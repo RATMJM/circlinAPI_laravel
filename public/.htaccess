@@ -7,7 +7,7 @@
 
     # Redirect HTTP to HTTPS
     RewriteCond %{HTTP:X-Forwarded-Proto} =http
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R,L]
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
