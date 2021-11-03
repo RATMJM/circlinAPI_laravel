@@ -5,7 +5,13 @@
 @section('content')
     @php
         $header = ['홈 배너', '미션 탭 배너', '샵 배너'];
-        $link_type = ['mission' => '미션', 'event_mission' => '이벤트 미션', 'product' => '제품', 'notice' => '공지사항', 'url' => 'URL'];
+        $link_type = [
+            'mission' => '미션',
+            'event_mission' => '이벤트 미션',
+            'event_mission_old' => '이벤트 미션',
+            'product' => '제품',
+            'notice' => '공지사항',
+            'url' => 'URL']
     @endphp
     @foreach([$floats, $locals, $shops] as $i => $data)
         <p style="font-size: 20px">{{ $header[$i] }} : <b>{{ number_format($data->total()) }}</b> 개</p>
