@@ -11,10 +11,12 @@
             'event_mission_old' => '이벤트 미션',
             'product' => '제품',
             'notice' => '공지사항',
-            'url' => 'URL']
+            'url' => 'URL'
+        ]
     @endphp
     @foreach([$floats, $locals, $shops] as $i => $data)
-        <p style="font-size: 20px">{{ $header[$i] }} : <b>{{ number_format($data->total()) }}</b> 개</p>
+        <p style="font-size: 20px">{{ $header[$i] }}
+            : <b>{{ number_format($data->total()) }}</b> 개</p>
         <table>
             <thead>
             <tr>
@@ -40,7 +42,8 @@
                     <td><img src="{{ $item->image }}" alt="" width="100%"></td>
                     <td><a href="{{ route('admin.banner.log.show', ['id' => $item->id]) }}">{{ $item->name }}</a></td>
                     <td class="center">
-                        {{ $item->started_at ?? '-' }}<br>~<br>{{ $item->ended_at ?? '-' }}
+                        {{ $item->started_at ?? '-' }}
+                        <br>~<br>{{ $item->ended_at ?? '-' }}
                         {!! $item->is_available ? '' : '<br><span style="color:red">(종료됨)</span>' !!}
                     </td>
                     <td class="center">{{ $link_type[$item->link_type] }}</td>
@@ -53,24 +56,33 @@
                             </a>
                         @else
                             {{ array_key_exists($item->link_type, $link_type) ? $link_type[$item->link_type] : '' }}
-                            ( {{ $item->link_id }} )
+                            ( {{ $item->link_id }}
+                            )
                         @endif
                     </td>
                     <td class="center">
-                        {{ $item->clicks_count }} / {{ $item->views_count }}
-                        <br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}%
+                        {{ $item->clicks_count }}
+                        / {{ $item->views_count }}
+                        <br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}
+                        %
                     </td>
                     <td class="center">
-                        {{ $item->android_clicks_count }} / {{ $item->android_views_count }}
-                        <br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}%
+                        {{ $item->android_clicks_count }}
+                        / {{ $item->android_views_count }}
+                        <br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}
+                        %
                     </td>
                     <td class="center">
-                        {{ $item->ios_clicks_count }} / {{ $item->ios_views_count }}
-                        <br>{{ round($item->ios_clicks_count / max($item->ios_views_count, 1) * 100, 1) }}%
+                        {{ $item->ios_clicks_count }}
+                        / {{ $item->ios_views_count }}
+                        <br>{{ round($item->ios_clicks_count / max($item->ios_views_count, 1) * 100, 1) }}
+                        %
                     </td>
                     <td class="center">
-                        {{ $item->etc_clicks_count }} / {{ $item->etc_views_count }}
-                        <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}%
+                        {{ $item->etc_clicks_count }}
+                        / {{ $item->etc_views_count }}
+                        <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}
+                        %
                     </td>
                 </tr>
             @empty
