@@ -18,30 +18,9 @@ class BannerLogController extends Controller
         $data = Banner::where('banners.type', 'like', "$type%")
             ->select([
                 'banners.id', 'banners.name', 'banners.image',
+                'banners.started_at', 'banners.ended_at',
                 DB::raw("(banners.started_at is null or banners.started_at<='$now') and
                     (banners.ended_at is null or banners.ended_at>'$now') as is_available"),
-            ])
-            ->orderBy('is_available', 'desc')
-            ->orderBy('banners.sort_num', 'desc')
-            ->orderBy('banners.id', 'desc')
-            ->get();
-
-        return response()->json($data);
-    }
-
-    public function show(Request $request, $id): array
-    {
-        $now = date('Y-m-d H:i:s');
-
-        $banner = Banner::where('banners.id', $id)
-            ->select([
-                'banners.id', 'banners.type', 'banners.name', 'banners.image', 'banners.started_at', 'banners.ended_at',
-                DB::raw("(banners.started_at is null or banners.started_at<='$now') and
-                    (banners.ended_at is null or banners.ended_at>'$now') as is_available"),
-                'banners.link_type',
-                DB::raw("CASE WHEN link_type in ('mission','event_mission') THEN mission_id
-                    WHEN link_type='product' THEN product_id
-                    WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url',
                 'views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'view'),
                 'android_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -64,6 +43,28 @@ class BannerLogController extends Controller
                         $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
                             ->orWhereNull('banner_logs.device_type');
                     }),
+            ])
+            ->orderBy('is_available', 'desc')
+            ->orderBy('banners.sort_num', 'desc')
+            ->orderBy('banners.id', 'desc')
+            ->get();
+
+        return response()->json($data);
+    }
+
+    public function show(Request $request, $id): array
+    {
+        $now = date('Y-m-d H:i:s');
+
+        $banner = Banner::where('banners.id', $id)
+            ->select([
+                'banners.id', 'banners.type', 'banners.name', 'banners.image', 'banners.started_at', 'banners.ended_at',
+                DB::raw("(banners.started_at is null or banners.started_at<='$now') and
+                    (banners.ended_at is null or banners.ended_at>'$now') as is_available"),
+                'banners.link_type',
+                DB::raw("CASE WHEN link_type in ('mission','event_mission') THEN mission_id
+                    WHEN link_type='product' THEN product_id
+                    WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url',
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -117,5 +118,10 @@ class BannerLogController extends Controller
             'banner' => $banner,
             'data' => $data->toArray(),
         ];
+    }
+
+    public function log($id)
+    {
+
     }
 }
