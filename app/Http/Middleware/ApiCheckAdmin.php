@@ -23,7 +23,7 @@ class ApiCheckAdmin
             Admin::where(['type' => 'user', 'user_id' => Auth::id()])->exists()) {
             return $next($request);
         } else {
-            return abort(403);
+            return abort(403, Auth::check() ? '권한이 없습니다.' : '로그인이 필요한 서비스입니다.');
         }
     }
 }

@@ -9,16 +9,14 @@ use JetBrains\PhpStorm\ArrayShape;
 
 class AuthController extends Controller
 {
-    #[ArrayShape(['result' => "bool"])] public function login(Request $request): array
+    #[ArrayShape(['result' => "bool", 'user' => "array|null"])] public function login(Request $request): array
     {
         $user = $request->only('email', 'password');
 
-        Auth::attempt($user, true);
-
-        return $this->my();
+        return ['result' => Auth::attempt($user, true), 'user' => $this->my()];
     }
 
-    public function my(): array|null
+    #[ArrayShape(['nickname' => "mixed", 'email' => "mixed"])] public function my(): array|null
     {
         $data = Auth::user();
 
@@ -28,10 +26,10 @@ class AuthController extends Controller
         ];
     }
 
-    #[ArrayShape(['result' => "bool"])] public function logout(): array
+    #[ArrayShape(['result' => "bool", 'user' => "array|null"])] public function logout(): array
     {
         Auth::logout();
 
-        return ['result' => true];
+        return ['result' => true, 'user' => $this->my()];
     }
 }

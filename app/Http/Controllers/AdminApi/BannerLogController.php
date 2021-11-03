@@ -5,12 +5,13 @@ namespace App\Http\Controllers\AdminApi;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\BannerLog;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BannerLogController extends Controller
 {
-    public function index(Request $request, $type): array
+    public function index(Request $request, $type): JsonResponse
     {
         $now = date('Y-m-d H:i:s');
 
@@ -25,9 +26,7 @@ class BannerLogController extends Controller
             ->orderBy('banners.id', 'desc')
             ->get();
 
-        return [
-            'data' => $data,
-        ];
+        return response()->json($data);
     }
 
     public function show(Request $request, $id): array
