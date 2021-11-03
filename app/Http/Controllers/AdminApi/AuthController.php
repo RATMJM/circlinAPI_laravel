@@ -3,33 +3,36 @@
 namespace App\Http\Controllers\AdminApi;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use JetBrains\PhpStorm\ArrayShape;
 
 class AuthController extends Controller
 {
-    #[ArrayShape(['result' => "bool", 'user' => "array|null"])] public function login(Request $request): array
+    public function login(Request $request): JsonResponse
     {
         $user = $request->only('email', 'password');
 
-        return ['result' => Auth::attempt($user, true), 'user' => $this->my()];
+        return response()->json([
+            'result' => Auth::attempt($user, true),
+            'user' => $this->my(),
+        ]);
     }
 
-    #[ArrayShape(['nickname' => "mixed", 'email' => "mixed"])] public function my(): array|null
+    public function my(): JsonResponse
     {
         $data = Auth::user();
 
-        return [
+        return response()->json([
             'nickname' => $data?->nickname ?? null,
             'email' => $data?->email ?? null,
-        ];
+        ]);
     }
 
-    #[ArrayShape(['result' => "bool", 'user' => "array|null"])] public function logout(): array
+    public function logout(): JsonResponse
     {
         Auth::logout();
 
-        return ['result' => true, 'user' => $this->my()];
+        return response()->json(['result' => true, 'user' => $this->my()]);
     }
 }
