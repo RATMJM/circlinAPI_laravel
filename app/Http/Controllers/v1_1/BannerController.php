@@ -5,7 +5,6 @@ namespace App\Http\Controllers\v1_1;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\BannerLog;
-use App\Models\MissionStat;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -49,7 +48,7 @@ class BannerController extends Controller
 
         foreach ($banners as $i => $banner) {
             $params = match ($banner->link_type) {
-                'event_mission' => [
+                'event_mission', 'event_mission_old' => [
                     'id' => $banner->link_id,
                     'user_id' => token_option()?->uid,
                 ],
