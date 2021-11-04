@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class BannerLogController extends Controller
 {
-    public function index(Request $request, $type): JsonResponse
+    public function index(Request $request, $type)
     {
         $now = date('Y-m-d H:i:s');
 
@@ -49,10 +49,10 @@ class BannerLogController extends Controller
             ->orderBy('banners.id', 'desc')
             ->get();
 
-        return response()->json($data);
+        return arraySnakeToCamelCase($data->toArray());
     }
 
-    public function show(Request $request, $id): array
+    public function show(Request $request, $id)
     {
         $now = date('Y-m-d H:i:s');
 
@@ -114,10 +114,10 @@ class BannerLogController extends Controller
             ->take(20)
             ->get();
 
-        return [
+        return arraySnakeToCamelCase([
             'banner' => $banner,
             'data' => $data->toArray(),
-        ];
+        ]);
     }
 
     public function log($id)

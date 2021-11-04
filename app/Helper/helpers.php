@@ -59,6 +59,7 @@ function token()
         return JWT::decode($token, $key, ['HS256']);
     } catch (Exception $e) {
         abort(403, '토큰이 없습니다.');
+        return null;
     }
 }
 
@@ -345,4 +346,20 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
 function rn_to_br($text)
 {
     return preg_replace('/(\r|\n|\r\n)/', '<br>', $text);
+}
+
+function arraySnakeToCamelCase(array $array): array
+{
+    $res = [];
+    foreach ($array as $key => $item) {
+        $res[snakeToCamelCase($key)] = is_array($item) ? arraySnakeToCamelCase($item) : $item;
+    }
+    return $res;
+}
+
+function snakeToCamelCase($string): string
+{
+    $str = str_replace('_', '', ucwords($string, '_'));
+    $str[0] = strtolower($str[0]);
+    return $str;
 }
