@@ -15,7 +15,7 @@ class AuthController extends Controller
 
         return response()->json([
             'result' => Auth::attempt($user, true),
-            'user' => $this->my(),
+            'user' => $this->my()->original,
         ]);
     }
 
