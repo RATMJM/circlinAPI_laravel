@@ -93,7 +93,7 @@
                     @endforeach
                 </td>
                 <td>
-                    {!! rn_to_br($feed->content) !!}
+                    {!! nl2br($feed->content) !!}
                 </td>
                 <td class="center">{{ $feed->title }}</td >
                 <td>{{ $feed->address }}</td>

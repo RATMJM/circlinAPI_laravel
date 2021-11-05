@@ -343,16 +343,13 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
     return $AiText;
 }
 
-function rn_to_br($text)
+function arraySnakeToCamelCase(array|object $array): array
 {
-    return preg_replace('/(\r|\n|\r\n)/', '<br>', $text);
-}
-
-function arraySnakeToCamelCase(array $array): array
-{
+    dump([gettype($array), isset($array->exists) ? $array->toArray() : $array]);
     $res = [];
+    $array = isset($array->exists) ? $array->toArray() : $array;
     foreach ($array as $key => $item) {
-        $res[snakeToCamelCase($key)] = is_array($item) ? arraySnakeToCamelCase($item) : $item;
+        $res[snakeToCamelCase($key)] = is_array($item) || is_object($item) ? arraySnakeToCamelCase($item) : $item;
     }
     return $res;
 }

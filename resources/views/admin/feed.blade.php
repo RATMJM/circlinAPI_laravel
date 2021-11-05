@@ -71,7 +71,7 @@
                     @endforeach
                 </td>
                 <td rowspan="{{ max(count($feed->missions), 1) }}">
-                    {!! rn_to_br($feed->content) !!}
+                    {!! nl2br($feed->content) !!}
                 </td>
                 @if(count($feed->missions) > 0)
                     <td>{{ $feed->missions[0]->emoji }} {{ $feed->missions[0]->category }}</td>

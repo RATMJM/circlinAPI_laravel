@@ -5,7 +5,7 @@
 @section('content')
     <div>
         <h1>{{ $data->title }}</h1>
-        <div class="board">{!! rn_to_br($data->content) !!}</div>
+        <div class="board">{!! nl2br($data->content) !!}</div>
         <div>
             @foreach($data->images as $image)
                 <img src="{{ $image->image }}" alt="" width="300px">
