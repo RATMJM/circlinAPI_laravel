@@ -698,7 +698,7 @@ class MissionController extends Controller
 
         $replaces = Mission::where('missions.id', $mission_id)
             ->select([
-                'users_count' => MissionStat::selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
+                'users_count' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
                 'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
