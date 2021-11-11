@@ -333,8 +333,7 @@ class ChatController extends Controller
     {
         $user_id = token()->uid;
 
-        $data = ChatUser::withTrashed()
-            ->whereIn('chat_room_id', ChatUser::select('chat_room_id')->where('user_id', $user_id))
+        $data = ChatUser::whereIn('chat_room_id', ChatUser::select('chat_room_id')->where('user_id', $user_id))
             ->where('user_id', '!=', $user_id)
             ->selectRaw("MAX(id) as id")
             ->groupBy('user_id');
@@ -342,7 +341,8 @@ class ChatController extends Controller
             ->join('chat_users as cu2', 'cu2.id', 'cu.id')
             ->join('chat_users as cu_me', function ($query) use ($user_id) {
                 $query->on('cu_me.chat_room_id', 'cu2.chat_room_id')
-                    ->where('cu_me.user_id', $user_id);
+                    ->where('cu_me.user_id', $user_id)
+                    ->whereNull('cu_me.deleted_at');
             })
             ->join('users', function ($query) {
                 $query->on('users.id', 'cu2.user_id')
