@@ -989,17 +989,13 @@ class MissionController extends Controller
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
         $event_mission_info = Mission::where('missions.id', $mission_id)
-            ->leftJoin('circlinDEV.CHALLENGE_INFO_2', 'CHALLENGE_INFO_2.CHALLINFO_PK', 'missions.id')
+            ->where('mission_stats.user_id', $user_id)
             ->leftJoin('mission_etc', 'mission_etc.mission_id', 'missions.id')
             ->leftJoin('mission_stats', 'mission_stats.mission_id', 'missions.id')
             ->leftJoin('users', 'users.id', 'mission_stats.user_id')
             ->leftJoin('circlinDEV.RUN_RANK', function ($query) use ($today) {
                 $query->on('RUN_RANK.CHALL_PK', 'missions.id')
-                    ->where([
-                        'sex' => 'A',
-                        'DEL_YN' => 'N',
-                        'INS_DATE' => $today,
-                    ]);
+                    ->where(['sex' => 'A', 'DEL_YN' => 'N', 'INS_DATE' => $today]);
             })
             ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
             ->leftJoin('feeds', function ($query) {
@@ -1014,8 +1010,7 @@ class MissionController extends Controller
                 DB::raw("round(mission_stats.goal_distance - feeds.distance,3) as REMAIN_DIST"),
                 'mission_stats.goal_distance', 'feeds.distance', 'feeds.laptime',
                 'feeds.distance_origin', 'feeds.laptime_origin',
-                'SCORE' => MissionStat::selectRaw("COUNT(user_id)")->whereColumn('user_id', 'users.id')
-                    ->where('mission_id', $mission_id),
+                'SCORE' => MissionStat::selectRaw("COUNT(user_id)")/*->whereColumn('user_id', 'users.id')*/ ->where('mission_id', $mission_id),
                 DB::raw("CASE WHEN mission_stats.completed_at is null THEN '' ELSE '1' END as BONUS_FLAG"),
                 DB::raw("CASE when $today between missions.reserve_started_at and missions.reserve_ended_at then 'R'
                       when $today between missions.started_at and missions.ended_at then 'Y'
@@ -1050,7 +1045,6 @@ class MissionController extends Controller
                 'mission_etc.subtitle_5', 'mission_etc.subtitle_6', 'mission_etc.subtitle_7',
                 'mission_etc.ai_text1', 'mission_etc.ai_text2',
             ])
-            ->distinct()
             ->orderBy('mission_stats.id', 'desc')
             ->take(1)
             ->get();
