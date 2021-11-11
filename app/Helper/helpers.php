@@ -345,9 +345,10 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
 
 function arraySnakeToCamelCase(array|object $array): array
 {
-    dump([gettype($array), isset($array->exists) ? $array->toArray() : $array]);
+    if (is_object($array)) {
+        $array = json_decode(json_encode($array));
+    }
     $res = [];
-    $array = isset($array->exists) ? $array->toArray() : $array;
     foreach ($array as $key => $item) {
         $res[snakeToCamelCase($key)] = is_array($item) || is_object($item) ? arraySnakeToCamelCase($item) : $item;
     }

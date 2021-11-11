@@ -5,51 +5,60 @@ namespace App\Http\Controllers\AdminApi;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\BannerLog;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class BannerLogController extends Controller
 {
-    public function index(Request $request, $type)
+    public function index(Request $request)
     {
         $now = date('Y-m-d H:i:s');
 
-        $data = Banner::where('banners.type', 'like', "$type%")
-            ->select([
-                'banners.id', 'banners.name', 'banners.image',
-                'banners.started_at', 'banners.ended_at',
-                DB::raw("(banners.started_at is null or banners.started_at<='$now') and
+        $data = Banner::select([
+            'banners.id', 'banners.type', 'banners.name', 'banners.image', 'banners.started_at', 'banners.ended_at',
+            DB::raw("(banners.started_at is null or banners.started_at<='$now') and
                     (banners.ended_at is null or banners.ended_at>'$now') as is_available"),
-                'views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view'),
-                'android_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'android'),
-                'ios_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
-                'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'view')->where(function ($query) {
-                        $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
-                            ->orWhereNull('banner_logs.device_type');
-                    }),
-                'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click'),
-                'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'android'),
-                'ios_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
-                'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
-                    ->where('banner_logs.type', 'click')->where(function ($query) {
-                        $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
-                            ->orWhereNull('banner_logs.device_type');
-                    }),
-            ])
+            'views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view'),
+            'android_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'android'),
+            'ios_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')->where('banner_logs.device_type', 'ios'),
+            'etc_views_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
+            'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click'),
+            'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'android'),
+            'ios_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')->where('banner_logs.device_type', 'ios'),
+            'etc_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')->where(function ($query) {
+                    $query->whereNotIn('banner_logs.device_type', ['android', 'ios'])
+                        ->orWhereNull('banner_logs.device_type');
+                }),
+        ])
             ->orderBy('is_available', 'desc')
             ->orderBy('banners.sort_num', 'desc')
             ->orderBy('banners.id', 'desc')
-            ->get();
+            ->get()
+            ->groupBy('type');
 
-        return arraySnakeToCamelCase($data->toArray());
+        $type = [
+            'float' => ['title' => '홈 배너', 'img_position' => 'left'],
+            'local' => ['title' => '미션 탭 배너', 'img_position' => 'top'],
+            'shop' => ['title' => '샵 배너', 'img_position' => 'top'],
+        ];
+        $res = [];
+        foreach ($type as $key => $item) {
+            $res[] = Arr::collapse([$item, ['data' => $data[$key] ?? []]]);
+        }
+
+        return arraySnakeToCamelCase(['data' => $res]);
     }
 
     public function show(Request $request, $id)
@@ -61,10 +70,6 @@ class BannerLogController extends Controller
                 'banners.id', 'banners.type', 'banners.name', 'banners.image', 'banners.started_at', 'banners.ended_at',
                 DB::raw("(banners.started_at is null or banners.started_at<='$now') and
                     (banners.ended_at is null or banners.ended_at>'$now') as is_available"),
-                'banners.link_type',
-                DB::raw("CASE WHEN link_type in ('mission','event_mission') THEN mission_id
-                    WHEN link_type='product' THEN product_id
-                    WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url',
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -72,6 +77,13 @@ class BannerLogController extends Controller
             ->orderBy('banners.id', 'desc')
             ->firstOrFail();
 
+        return arraySnakeToCamelCase([
+            'data' => $banner,
+        ]);
+    }
+
+    public function log($id)
+    {
         $data = BannerLog::where('banner_id', $id)
             ->select(DB::raw("CAST(created_at as DATE) as `date`"))
             ->groupBy('date')
@@ -114,14 +126,6 @@ class BannerLogController extends Controller
             ->take(20)
             ->get();
 
-        return arraySnakeToCamelCase([
-            'banner' => $banner,
-            'data' => $data->toArray(),
-        ]);
-    }
-
-    public function log($id)
-    {
-
+        return arraySnakeToCamelCase(['data' => $data]);
     }
 }

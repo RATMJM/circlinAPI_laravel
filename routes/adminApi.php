@@ -21,8 +21,7 @@ Route::post('/auth/logout', [adminApi\AuthController::class, 'logout'])->name('a
 Route::get('/auth/my', [adminApi\AuthController::class, 'my'])->name('auth.my');
 
 Route::middleware(ApiCheckAdmin::class)->group(function () {
-    Route::get('/banner/log/{type}', [AdminApi\BannerLogController::class, 'index'])
-        ->where(['type' => '(float|local|shop)'])->name('banner.log.index');
-    Route::get('/banner/log/{id}', [AdminApi\BannerLogController::class, 'show'])
-        ->where(['id' => '[\d]+'])->name('banner.log.show');
+    Route::get('/banner/log', [AdminApi\BannerLogController::class, 'index'])->name('banner.log.index');
+    Route::get('/banner/log/{id}', [AdminApi\BannerLogController::class, 'show'])->name('banner.log.show');
+    Route::get('/banner/log/{id}/log', [AdminApi\BannerLogController::class, 'log'])->name('banner.log.log');
 });
