@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SshConfigs">
-    <configs>
-      <sshConfig host="34.64.248.255" id="4e5d63c6-eb95-4aa2-beae-e4a0c523ea73" keyPath="$PROJECT_DIR$/../circlinDevPrivate.ppk" port="22" nameFormat="DESCRIPTIVE" username="circlinDev" />
-    </configs>
-  </component>
-</project>
