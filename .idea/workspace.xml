@@ -4,26 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="65870315-ed89-4cd7-96f8-20e11ffd388c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/circlinAPI.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/circlinAPI_laravel.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/circlinAPI_laravel.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsonSchemas.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/laravel-plugin.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/php-test-framework.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sshConfigs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/webResources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/webServers.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Console/Kernel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Console/Kernel.php" afterDir="false" />
+    <list default="true" id="65870315-ed89-4cd7-96f8-20e11ffd388c" name="Changes" comment="푸시 예약&#10;마지막 제리캔 히어로 출몰 예고🦸‍♀️ 이번주 토요일 오전 9시 ~ 오후 1시, 아차산⛰에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로를 찾아보세요!&#10;잠시후 9시, 아차산🏞에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로🦸‍♀️를 찾아보세요🔍">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+    </option>
   </component>
   <component name="ComposerSettings" doNotAsk="true" synchronizationState="SYNCHRONIZE">
     <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
@@ -209,11 +201,42 @@
       <workItem from="1636681599766" duration="8000" />
       <workItem from="1636681660207" duration="3501000" />
       <workItem from="1636774330688" duration="592000" />
-      <workItem from="1637026641765" duration="3167000" />
+      <workItem from="1637026641765" duration="4263000" />
     </task>
+    <task id="LOCAL-00001" summary=".idea">
+      <created>1637030252653</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1637030252653</updated>
+    </task>
+    <task id="LOCAL-00002" summary="푸시 예약&#10;마지막 제리캔 히어로 출몰 예고🦸‍♀️ 이번주 토요일 오전 9시 ~ 오후 1시, 아차산⛰에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로를 찾아보세요!&#10;잠시후 9시, 아차산🏞에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로🦸‍♀️를 찾아보세요🔍">
+      <created>1637030268911</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1637030268911</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value=".idea" />
+    <MESSAGE value="푸시 예약&#10;마지막 제리캔 히어로 출몰 예고‍♀️ 이번주 토요일 오전 9시 ~ 오후 1시, 아차산⛰에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로를 찾아보세요!&#10;잠시후 9시, 아차산에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로‍♀️를 찾아보세요" />
+    <option name="LAST_COMMIT_MESSAGE" value="푸시 예약&#10;마지막 제리캔 히어로 출몰 예고‍♀️ 이번주 토요일 오전 9시 ~ 오후 1시, 아차산⛰에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로를 찾아보세요!&#10;잠시후 9시, 아차산에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로‍♀️를 찾아보세요" />
   </component>
 </project>
