@@ -43,7 +43,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=72')->daily();
 
         $schedule->call(function () {
-            $msg = "내일 9시~13시 용마산에서 제리캔 히어로🦸‍♀️를 찾아보세요! 풍성한 선물🎁을 준비했어요!";
+            $msg = "마지막 제리캔 히어로 출몰 예고🦸‍♀️ 이번주 토요일 오전 9시 ~ 오후 1시, 아차산⛰에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로를 찾아보세요!";
             $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
             // $users = User::pluck('id');
             $tmp = [];
@@ -55,10 +55,10 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('30 19 05 11 *')->name('푸시 예약 발송');
+        })->cron('00 13 17 11 *')->name('푸시 예약 발송');
 
         $schedule->call(function () {
-            $msg = "(속닥속닥) 용마산 제리캔 히어로는 하늘색 제리캔을 들었대요!😉 이따 9시에 만나요!";
+            $msg = "잠시후 9시, 아차산🏞에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로🦸‍♀️를 찾아보세요🔍";
             $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
             // $users = User::pluck('id');
             $tmp = [];
@@ -70,7 +70,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('00 08 06 11 *')->name('푸시 예약 발송');
+        })->cron('00 08 20 11 *')->name('푸시 예약 발송');
     }
 
     /**
