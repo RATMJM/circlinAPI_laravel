@@ -18,4 +18,9 @@ class MissionGround extends Model
         'cert_details' => 'array',
         'cert_images' => 'array',
     ];
+
+    public function calendar_videos()
+    {
+        return $this->hasMany(MissionCalendarVideo::class, 'mission_id', 'mission_id');
+    }
 }

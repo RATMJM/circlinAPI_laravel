@@ -608,6 +608,14 @@ class MissionController extends Controller
             ->first();
 
         $date = date('Y-m-d H:i:s');
+
+        if ($data->ground_is_calendar) {
+            $data->calendar_videos = $data->calendar_videos()->select([
+                'day', 'url',
+                DB::raw("day <= '$date' as is_available"),
+            ])->orderBy('day')->get();
+        }
+
         $is_min = $data->goal_distance_type === 'min';
 
         $diff = abs(date_diff(new DateTime(date('Y-m-d')), new DateTime($data->started_at))->days);
@@ -747,8 +755,8 @@ class MissionController extends Controller
             ->distinct()
             ->count('user_id');
         $replaces = ['today_cert_count' => $today_cert_count];
-        $data->ground_text = code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces);
-        $data->record_text = code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces);
+        $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces) : null;
+        $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces) : null;
 
         return success([
             'ground' => $data,
