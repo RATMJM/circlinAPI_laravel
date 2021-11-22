@@ -607,15 +607,17 @@ class MissionController extends Controller
             ])
             ->first();
 
-        $date = date('Y-m-d H:i:s');
+        $date = date('Y-m-d');
 
         if ($data->ground_is_calendar) {
             $data->calendar_videos = $data->calendar_videos()->select([
                 'day', 'url',
                 DB::raw("day <= '$date' as is_available"),
+                DB::raw("day = '$date' as is_today"),
             ])->orderBy('day')->get();
         }
 
+        $date = date('Y-m-d H:i:s');
         $is_min = $data->goal_distance_type === 'min';
 
         $diff = abs(date_diff(new DateTime(date('Y-m-d')), new DateTime($data->started_at))->days);
