@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Http\Controllers\v1_1\PushController;
 use App\Http\Controllers\v1_1\ScheduleController;
 use App\Models\MissionStat;
+use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -43,9 +44,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=72')->daily();
 
         $schedule->call(function () {
-            $msg = "마지막 제리캔 히어로 출몰 예고🦸‍♀️ 이번주 토요일 오전 9시 ~ 오후 1시, 아차산⛰에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로를 찾아보세요!";
-            $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
-            // $users = User::pluck('id');
+            $msg = "'장어볼트' 에너지볼트로 운동 컨디션 폭발! 48% 할인+무료배송 오늘 마지막 찬스!";
+            // $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
+            $users = User::pluck('id');
             $tmp = [];
             foreach ($users as $user) {
                 $tmp[] = $user;
@@ -55,22 +56,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('00 13 17 11 *')->name('푸시 예약 발송');
-
-        $schedule->call(function () {
-            $msg = "잠시후 9시, 아차산🏞에서 하늘색 제리캔을 들고있는 '운동하는 아나운서' 박지혜 히어로🦸‍♀️를 찾아보세요🔍";
-            $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
-            // $users = User::pluck('id');
-            $tmp = [];
-            foreach ($users as $user) {
-                $tmp[] = $user;
-                if (count($tmp) >= 1000) {
-                    PushController::gcm_notify($tmp, '써클인', $msg, '');
-                    $tmp = [];
-                }
-            }
-            PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('00 08 20 11 *')->name('푸시 예약 발송');
+        })->cron('00 19 22 11 *')->name('푸시 예약 발송');
     }
 
     /**
