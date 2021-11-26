@@ -274,6 +274,7 @@ class MissionController extends Controller
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
                 'missions.is_ground',
+                'missions.reserve_started_at', 'missions.reserve_ended_at',
                 'missions.started_at', 'missions.ended_at',
                 DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
                     (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
@@ -331,7 +332,7 @@ class MissionController extends Controller
             $data->reward = $data->reward()->select(['title', 'image'])->first();
 
             if ($data->ground) {
-                $tmp = $data->ground->goal_distances;
+                $tmp = $data->ground->goal_distances ?? [];
                 foreach ($tmp as $i => $item) {
                     $tmp[$i] = $item . $data->ground->goal_distance_text;
                 }
