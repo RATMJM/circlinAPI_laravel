@@ -44,7 +44,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=72')->daily();
 
         $schedule->call(function () {
-            $msg = "'장어볼트' 에너지볼트로 운동 컨디션 폭발! 48% 할인+무료배송 오늘 마지막 찬스!";
+            $msg = "🎄한 달 남았다 ❤❤ 크리스마스 챌린지 OPEN!!\n비니와 째보리가 준비한 '어드벤트캘린더'도 확인하세요 🎁";
             // $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
             $users = User::pluck('id');
             $tmp = [];
@@ -56,7 +56,7 @@ class Kernel extends ConsoleKernel
                 }
             }
             PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('00 19 22 11 *')->name('푸시 예약 발송');
+        })->cron('16 18 27 11 *')->name('푸시 예약 발송');
     }
 
     /**
