@@ -139,7 +139,7 @@ class MissionCategoryController extends Controller
                 $query->where('is_event', 1)
                     ->orderBy(DB::raw("#(missions.started_at is null or missions.started_at<=now()) and
                     (missions.ended_at is null or missions.ended_at>now())"), 'desc')
-                    ->orderBy('missions.id', 'desc');
+                    ->orderBy(DB::raw("`missions`.`id` + (RAND() * (0.9 + `event_order`))"), 'desc');
             })
             ->when($local, function ($query) use ($user_id) {
                 $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
@@ -159,7 +159,7 @@ class MissionCategoryController extends Controller
         if ($sort == SORT_POPULAR) {
             $missions->orderBy(DB::raw("`event_order` + (RAND() * 0.9)"), 'desc')->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_RECENT) {
-            $missions->orderBy(DB::raw("`missions`.`id` + (RAND() * `event_order`)"), 'desc');
+            $missions->orderBy('event_order', 'desc');
         } elseif ($sort == SORT_USER) {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_COMMENT) {
