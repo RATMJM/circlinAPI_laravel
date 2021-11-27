@@ -159,7 +159,7 @@ class MissionCategoryController extends Controller
         if ($sort == SORT_POPULAR) {
             $missions->orderBy(DB::raw("`event_order` + (RAND() * 0.9)"), 'desc')->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_RECENT) {
-            $missions->orderBy('missions.id', 'desc');
+            $missions->orderBy(DB::raw("`missions`.`id` + (RANDOM() * `event_order`)"), 'desc');
         } elseif ($sort == SORT_USER) {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_COMMENT) {
