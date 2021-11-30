@@ -135,30 +135,35 @@ class BookmarkController extends Controller
             ]);
         }
 
-        if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
-            return success(['result' => false, 'reason' => 'already bookmark']);
-        } elseif (true || Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
+        $mission = Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
             (missions.reserve_ended_at is null or missions.reserve_ended_at>'".date('Y-m-d H:i:s')."') or
             (missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
             (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"))
-            ->where('id', $mission_id)->value('is_available')) {
-            $data = MissionStat::create([
-                'user_id' => $user_id,
-                'mission_id' => $mission_id,
-                'code' => $code,
-                'goal_distance' => $goal_distance,
-            ]);
+            ->where('id', $mission_id)->first();
+        if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
+            return success(['result' => false, 'reason' => 'already bookmark']);
+        } elseif (true || $mission->is_available) {
+            if (is_null($mission->code) || $mission->code === $code) {
+                $data = MissionStat::create([
+                    'user_id' => $user_id,
+                    'mission_id' => $mission_id,
+                    'code' => $code,
+                    'goal_distance' => $goal_distance,
+                ]);
 
-            // 조건별 푸시
-            $pushes = MissionPush::where('mission_id', $mission_id)->get();
-            if (count($pushes) > 0) {
-                foreach ($pushes as $push) {
-                    if ($push->type === 'bookmark' && $push->value > 0) {
-                        PushController::send_mission_push($push, $user_id, $mission_id);
+                // 조건별 푸시
+                $pushes = MissionPush::where('mission_id', $mission_id)->get();
+                if (count($pushes) > 0) {
+                    foreach ($pushes as $push) {
+                        if ($push->type === 'bookmark' && $push->value > 0) {
+                            PushController::send_mission_push($push, $user_id, $mission_id);
+                        }
                     }
                 }
+                return success(['result' => (bool)$data]);
+            } else {
+                return success(['result' => false, 'message' => '참여코드가 틀렸습니다. 다시 확인해주세요.']);
             }
-            return success(['result' => (bool)$data]);
         } else {
             return success(['result' => false]);
         }
