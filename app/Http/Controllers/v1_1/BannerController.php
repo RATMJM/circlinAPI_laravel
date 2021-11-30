@@ -42,7 +42,7 @@ class BannerController extends Controller
                     WHEN link_type='product' THEN product_id
                     WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url'
             ])
-            ->orderBy('sort_num', 'desc')
+            ->orderBy(DB::raw("`sort_num` + (RAND() * 0.9)"), 'desc')
             ->orderBy('banners.id', 'desc')
             ->get();
 
@@ -56,12 +56,12 @@ class BannerController extends Controller
             };
             $banner->link = code_replace($banner->link, $params);
 
-            /*$banner->logs()->create([
+            $banner->logs()->create([
                 'user_id' => $user_id,
                 'device_type' => User::where('id', $user_id)->value('device_type'),
                 'ip' => $request->ip(),
-                'type' => 'view',
-            ]);*/
+                'type' => 'open',
+            ]);
         }
 
         return success([
