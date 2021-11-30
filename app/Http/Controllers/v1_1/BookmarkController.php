@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FeedMission;
 use App\Models\Mission;
 use App\Models\MissionComment;
+use App\Models\MissionGround;
 use App\Models\MissionPush;
 use App\Models\MissionStat;
 use App\Models\Place;
@@ -42,8 +43,8 @@ class BookmarkController extends Controller
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
                 'missions.is_ground',
                 'missions.started_at', 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-                    (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
+                DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
+                    (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
@@ -135,17 +136,19 @@ class BookmarkController extends Controller
             ]);
         }
 
-        $mission = Mission::select([
-            DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.reserve_ended_at is null or missions.reserve_ended_at>'".date('Y-m-d H:i:s')."') or
-            (missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
-            'code',
-        ])
-            ->where('id', $mission_id)->first();
+        $date = date('Y-m-d H:i:s');
+        $mission = Mission::where('missions.id', $mission_id)
+            ->select([
+                DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='" . $date . "') and
+                (missions.reserve_ended_at is null or missions.reserve_ended_at>'" . $date . "') or
+                (missions.started_at is null or missions.started_at<='" . $date . "') and
+                (missions.ended_at is null or missions.ended_at>'" . $date . "') as is_available"),
+                'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
+            ])
+            ->first();
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
-        } elseif (true || $mission->is_available) {
+        } elseif ($mission->is_available) {
             if (is_null($mission->code) || $mission->code === $code) {
                 $data = MissionStat::create([
                     'user_id' => $user_id,
