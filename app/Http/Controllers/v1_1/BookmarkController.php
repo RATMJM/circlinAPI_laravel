@@ -135,10 +135,13 @@ class BookmarkController extends Controller
             ]);
         }
 
-        $mission = Mission::select(DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
+        $mission = Mission::select([
+            DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='".date('Y-m-d H:i:s')."') and
             (missions.reserve_ended_at is null or missions.reserve_ended_at>'".date('Y-m-d H:i:s')."') or
             (missions.started_at is null or missions.started_at<='".date('Y-m-d H:i:s')."') and
-            (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"))
+            (missions.ended_at is null or missions.ended_at>'".date('Y-m-d H:i:s')."') as is_available"),
+            'code',
+        ])
             ->where('id', $mission_id)->first();
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
