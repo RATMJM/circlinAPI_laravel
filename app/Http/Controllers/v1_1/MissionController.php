@@ -689,7 +689,7 @@ class MissionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $tmp = $data->cert_details;
+        $tmp = $data->cert_details ?? [];
         foreach ($tmp as $i => $item) {
             $tmp[$i]['text'] = code_replace($item['text'], ['value' => match ($item['type']) {
                 'feeds_count' => Feed::when($is_min, function ($query) {
