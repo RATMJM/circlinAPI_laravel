@@ -340,7 +340,7 @@ class MissionController extends Controller
             }
         }
 
-        $data->code = $data->ground->code;
+        $data->code = $data?->ground?->code;
 
         /*$places = FeedMission::where('mission_id', $mission_id)
             ->join('feeds', function ($query) use ($user_id) {
