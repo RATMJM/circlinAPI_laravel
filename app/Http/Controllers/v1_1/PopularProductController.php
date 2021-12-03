@@ -129,7 +129,7 @@ class PopularProductController extends Controller
                             'missions.id', 'missions.title', 'missions.description',
                             'missions.is_event',
                             DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                            'missions.is_ground',
+                            'missions.is_ground', 'missions.is_ocr',
                             'missions.started_at', 'missions.ended_at',
                             'missions.thumbnail_image', 'missions.success_count',
                             'bookmarks' => MissionStat::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')

@@ -841,7 +841,7 @@ class UserController extends Controller
                 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground',
+                'missions.is_ground', 'missions.is_ocr',
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
@@ -968,7 +968,7 @@ class UserController extends Controller
                 'missions.mission_category_id', 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground',
+                'missions.is_ground', 'missions.is_ocr',
                 'missions.started_at', 'missions.ended_at',
                 'missions.thumbnail_image', 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')

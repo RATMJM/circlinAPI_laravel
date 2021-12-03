@@ -181,7 +181,7 @@ class MissionCategoryController extends Controller
                 'missions.id', 'missions.title', 'missions.description',
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground',
+                'missions.is_ground', 'missions.is_ocr',
                 'missions.started_at', 'missions.ended_at', is_available(),
                 'missions.thumbnail_image', 'missions.success_count',
                 'm.bookmarks',

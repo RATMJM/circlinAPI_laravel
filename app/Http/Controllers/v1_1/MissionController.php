@@ -273,7 +273,7 @@ class MissionController extends Controller
                 'missions.title', 'missions.subtitle', 'missions.description',
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground',
+                'missions.is_ground', 'missions.is_ocr',
                 'missions.reserve_started_at', 'missions.reserve_ended_at',
                 'missions.started_at', 'missions.ended_at',
                 DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
