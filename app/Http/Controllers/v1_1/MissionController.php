@@ -623,6 +623,7 @@ class MissionController extends Controller
                 DB::raw("day <= '$date' as is_available"),
                 DB::raw("day = '$date' as is_today"),
                 'is_written' => Feed::selectRaw("COUNT(1) > 0")->where('mission_id', $mission_id)
+                    ->where('feeds.user_id', $user_id)
                     ->whereColumn(DB::raw("CAST(feeds.created_at as DATE)"), 'day')
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])->orderBy('day')->get();
