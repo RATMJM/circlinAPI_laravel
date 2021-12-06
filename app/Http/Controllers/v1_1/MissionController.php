@@ -1447,7 +1447,7 @@ class MissionController extends Controller
             ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->leftJoin('places', 'places.id', 'feed_places.place_id')
             ->select([
-                'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id',
+                'feeds.user_id', 'feeds.content', 'feeds.created_at', 'feeds.id as feed_id', 'feeds.is_hidden',
                 'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'image_type' => FeedImage::select('type')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
                 'users.profile_image', 'users.nickname', 'feeds.id',
