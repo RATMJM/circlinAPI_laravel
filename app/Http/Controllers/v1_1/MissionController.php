@@ -606,9 +606,14 @@ class MissionController extends Controller
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
             })
             ->select([
-                'mission_grounds.*', 'missions.started_at', 'missions.ended_at', is_available(),
+                'mission_grounds.*', 'missions.is_ocr',
+                'missions.started_at', 'missions.ended_at', is_available(),
             ])
             ->first();
+
+        if (is_null($data)) {
+            return success(['result' => false, 'reason' => 'not exist data']);
+        }
 
         $date = date('Y-m-d');
 
