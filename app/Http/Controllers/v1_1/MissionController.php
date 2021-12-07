@@ -702,7 +702,8 @@ class MissionController extends Controller
 
         $replaces = Mission::where('missions.id', $mission_id)
             ->select([
-                'users_count' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
+                'users_count' => ($data->is_available ? MissionStat::query() : MissionStat::withTrashed())
+                    ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
                 'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")->whereColumn('mission_id', 'missions.id')
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
@@ -730,8 +731,8 @@ class MissionController extends Controller
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
-        $replaces->all_distance_div10 = $replaces->all_distance > 10 ? floor($replaces->all_distance / 10) : sprintf('%0.1f', $replaces->all_distance / 10);
-        $replaces->total_distance_div10 = $replaces->total_distance > 10 ? floor($replaces->total_distance / 10) : sprintf('%0.1f', $replaces->total_distance / 10);
+        $replaces->all_distance_div10 = $replaces->all_distance > 10 || $replaces->all_distance < 1 ? floor($replaces->all_distance / 10) : sprintf('%0.1f', $replaces->all_distance / 10);
+        $replaces->total_distance_div10 = $replaces->total_distance > 10 || $replaces->total_distance < 1 ? floor($replaces->total_distance / 10) : sprintf('%0.1f', $replaces->total_distance / 10);
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
