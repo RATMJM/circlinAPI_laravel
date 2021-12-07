@@ -652,6 +652,11 @@ class MissionController extends Controller
                     $query->on('feed_missions.feed_id', 'feeds.id')
                         ->where('mission_id', $mission_id);
                 })->sum('distance'),
+            'feed' => Feed::join('feed_missions', function ($query) use ($mission_id) {
+                $query->on('feed_missions.feed_id', 'feeds.id')
+                    ->where('mission_id', $mission_id);
+            })
+                ->distinct()->count('feeds.id'),
             default => null,
         };
 
@@ -748,6 +753,7 @@ class MissionController extends Controller
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
+        $replaces->total_distance_div10 = floor($replaces->total_distance / 10);
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
