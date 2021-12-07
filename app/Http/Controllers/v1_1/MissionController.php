@@ -730,8 +730,8 @@ class MissionController extends Controller
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
-        $replaces->all_distance_div10 = floor($replaces->all_distance / 10);
-        $replaces->total_distance_div10 = floor($replaces->total_distance / 10);
+        $replaces->all_distance_div10 = $replaces->all_distance > 10 ? floor($replaces->all_distance / 10) : sprintf('%0.1f', $replaces->all_distance / 10);
+        $replaces->total_distance_div10 = $replaces->total_distance > 10 ? floor($replaces->total_distance / 10) : sprintf('%0.1f', $replaces->total_distance / 10);
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
