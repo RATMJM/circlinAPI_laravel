@@ -700,29 +700,6 @@ class MissionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $tmp = $data->cert_details ?? [];
-        foreach ($tmp as $i => $item) {
-            $tmp[$i]['text'] = code_replace($item['text'], ['value' => match ($item['type']) {
-                'feeds_count' => Feed::when($is_min, function ($query) {
-                    $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                })
-                    ->join('feed_missions', function ($query) use ($mission_id) {
-                        $query->on('feed_missions.feed_id', 'feeds.id')
-                            ->where('mission_id', $mission_id);
-                    })->where('user_id', $user_id)->count(),
-                'total_distance' => Feed::when($is_min, function ($query) {
-                    $query->where(MissionStat::select('goal_distance')->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                })
-                    ->join('feed_missions', function ($query) use ($mission_id) {
-                        $query->on('feed_missions.feed_id', 'feeds.id')
-                            ->where('mission_id', $mission_id);
-                    })->where('user_id', $user_id)->value(DB::raw("SUM(ROUND(distance))")),
-                'goal_distance' => MissionStat::where('mission_id', $mission_id)->where('user_id', $user_id)->value('goal_distance'),
-                default => '',
-            }]);
-        }
-        $data->cert_details = $tmp;
-
         $replaces = Mission::where('missions.id', $mission_id)
             ->select([
                 'users_count' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
@@ -753,6 +730,7 @@ class MissionController extends Controller
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
+        $replaces->all_distance_div10 = floor($replaces->all_distance / 10);
         $replaces->total_distance_div10 = floor($replaces->total_distance / 10);
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
@@ -764,6 +742,12 @@ class MissionController extends Controller
             if (!is_string($item)) continue;
             $data[$i] = code_replace($item, $replaces);
         }
+
+        $tmp = $data->cert_details;
+        foreach ($data->cert_details as $i => $item) {
+            $tmp[$i]['text'] = code_replace($item['text'], $replaces);
+        }
+        $data->cert_details = $tmp;
 
         $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
         $today_cert_count = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
