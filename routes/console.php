@@ -21,11 +21,11 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('user:sort', function () {
-    \App\Http\Controllers\v1\ScheduleController::sort_users($this);
+    \App\Http\Controllers\v1_1\ScheduleController::sort_users($this);
 })->describe('유저 추천 로직 갱신');
 
-Artisan::command('user:point {id} {point}', function ($id, $point) {
-    \App\Http\Controllers\v1_1\PointController::change_point($id, $point, 'test');
+Artisan::command('user:point {id} {point} {type}', function ($id, $point, $type) {
+    \App\Http\Controllers\v1_1\PointController::change_point($id, $point, $type);
 })->describe('포인트 지급');
 
 Artisan::command('order:cancel {order_id}', function ($order_id) {
@@ -43,27 +43,27 @@ Artisan::command('order:cancel {order_id}', function ($order_id) {
     }
 })->describe('주문취소');
 
-Artisan::command('push:all {msg}', function ($msg) {
-    if (trim($msg) == '') {
+Artisan::command('push:all {title} {msg}', function ($title, $msg) {
+    if (trim($title) == '' || trim($msg) == '') {
         print('메시지가 없습니다');
-        return false;
-    }
-    print("푸시 내용 : $msg\n");
-    $users = User::pluck('id');
-    print("총 " . $users->count() . "\n");
-    $tmp = [];
-    $count = 0;
-    foreach ($users as $user) {
-        $tmp[] = $user;
-        if (count($tmp) >= 1000) {
-            PushController::gcm_notify($tmp, '써클인', $msg, '');
-            $tmp = [];
-            print((++$count * 1000) . "개 완료\n");
+    } else {
+        print("푸시 내용 : $msg\n");
+        $users = User::pluck('id');
+        print("총 " . $users->count() . "\n");
+        $tmp = [];
+        $count = 0;
+        foreach ($users as $user) {
+            $tmp[] = $user;
+            if (count($tmp) >= 1000) {
+                PushController::gcm_notify($tmp, $title, $msg, '');
+                $tmp = [];
+                print((++$count * 1000) . "개 완료\n");
+            }
         }
+        PushController::gcm_notify($tmp, $title, $msg, '');
+        print((++$count * 1000) . "개 완료\n");
     }
-    PushController::gcm_notify($tmp, '써클인', $msg, '');
-    print((++$count * 1000) . "개 완료\n");
-});
+})->describe('전체 푸시 발송');
 
 Artisan::command('test', function () {
     $data = [
