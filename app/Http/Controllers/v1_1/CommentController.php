@@ -106,12 +106,14 @@ class CommentController extends Controller
 
             // 답글인 경우 푸시
             if ($data->depth > 0 && $comment_target_id !== $user_id && $comment_target_id !== $table_target_id) {
-                NotificationController::send($comment_target_id, "{$table}_reply", $user_id, $data->id, true);
+                NotificationController::send($comment_target_id, "{$table}_reply", $user_id, $data->id, true,
+                    ["{$table}_comment" => $comment]);
             }
 
             // 글 주인한테 푸시
             if (isset($table_target_id) && $table_target_id !== $user_id) {
-                NotificationController::send($table_target_id, "{$table}_comment", $user_id, $data->id, true);
+                NotificationController::send($table_target_id, "{$table}_comment", $user_id, $data->id, true,
+                    ["{$table}_comment" => $comment]);
             }
 
             DB::commit();
