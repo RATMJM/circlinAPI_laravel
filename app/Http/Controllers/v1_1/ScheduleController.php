@@ -305,7 +305,7 @@ class ScheduleController extends Controller
             $query->where('send_date', date('Y-m-d'))->orWhereNull('send_date');
         })
             // ->where(DB::raw("DATE_FORMAT(send_time + INTERVAL 9 hour, '%H:%i')"), date('H:i'))
-            ->select(['target', 'target_ids', 'title', 'message', DB::raw("DATE_FORMAT(send_time + INTERVAL 9 hour, '%H:%i') as send_time")])
+            ->select(['target', 'target_ids', 'title', 'message', DB::raw("DATE_FORMAT(send_time, '%H:%i') as send_time")])
             ->get();
 
         Log::create([
