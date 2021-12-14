@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
 use App\Models\Feed;
 use App\Models\Follow;
+use App\Models\Log;
 use App\Models\MissionStat;
 use App\Models\PushReservation;
 use App\Models\SortUser;
@@ -254,11 +255,6 @@ class ScheduleController extends Controller
         return self::mission_expire_warning('am');
     }
 
-    public static function mission_expire_warning_pm()
-    {
-        return self::mission_expire_warning('pm');
-    }
-
     public static function mission_expire_warning($type = 'am')
     {
         $deadline = init_today(time() - (86400 * 4));
@@ -298,14 +294,25 @@ class ScheduleController extends Controller
         return $res;
     }
 
+    public static function mission_expire_warning_pm()
+    {
+        return self::mission_expire_warning('pm');
+    }
+
     public function sendReservedPush()
     {
         $data = PushReservation::where(function ($query) {
             $query->where('send_date', date('Y-m-d'))->orWhereNull('send_date');
         })
             ->where(DB::raw("DATE_FORMAT(send_time + INTERVAL 9 hour, '%H:%i')"), date('H:i'))
-            ->select(['target', 'target_ids', 'title', 'message'])
+            ->select(['target', 'target_ids', 'title', 'message', DB::raw("DATE_FORMAT(send_time + INTERVAL 9 hour, '%H:%i') as send_time")])
             ->get();
+
+        Log::create([
+            'user_id' => 64175,
+            'ip' => 'localhost',
+            'type' => 'test_count_' . count($data) . date('H:i') . '_' . $data[0]->send_time ?? '',
+        ]);
 
         foreach ($data as $item) {
             if ($item->target === 'all') {
