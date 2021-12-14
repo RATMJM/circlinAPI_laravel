@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendPushMessage;
 use App\Models\PushHistory;
 use App\Models\PushReservation;
 use Illuminate\Http\Request;
@@ -67,14 +66,17 @@ class PushController extends Controller
 
     public function store(Request $request)
     {
-        $target = $request->get('target');
-        $title = $request->get('title', '써클인');
-        $msg = $request->get('content');
+        $data = $request->validate([
+            'description' => 'required|max:255',
+            'target' => 'required|max:255',
+            'title' => 'required|max:255',
+            'message' => 'required|max:255',
+            'send_date' => 'required|date_format:Y-m-d',
+            'send_time' => 'required|date_format:H:i',
+        ]);
 
-        if (mb_strlen(trim($title)) === 0 || mb_strlen(trim($msg)) === 0) {
-            return redirect()->route('admin.push.index');
-        }
+        PushReservation::create($data);
 
-        return redirect()->route('admin.push.history');
+        return redirect()->route('admin.push.index');
     }
 }

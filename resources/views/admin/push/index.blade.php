@@ -15,7 +15,7 @@
     <br>
     <p style="font-size: 20px">검색 결과 : <b>{{ number_format($data->total()) }}</b> 개</p>
     <br>
-    {{--<p><a href="{{ route('admin.push.create') }}" class="btn">예약하기</a></p>--}}
+    <p><a href="{{ route('admin.push.create') }}" class="btn">예약하기</a></p>
     <br>
     <table>
         <thead>
