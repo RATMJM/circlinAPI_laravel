@@ -31,11 +31,9 @@
         @forelse($data as $item)
             <tr>
                 <td class="center">{{ $item->id }}</td>
-                <td>{{ $item->nickname }}
-                    <br>({{ $item->email }}
-                    )</td>
+                <td>{{ $item->nickname }}<br>({{ $item->email }})</td>
                 <td class="center">{{ $item->title }}</td>
-                <td>{{ nl2br($item->message) }}</td>
+                <td>{!! nl2br($item->message) !!}</td>
                 <td>{{ $item->created_at }}</td>
             </tr>
         @empty
