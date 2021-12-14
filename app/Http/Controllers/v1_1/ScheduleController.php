@@ -299,7 +299,7 @@ class ScheduleController extends Controller
         return self::mission_expire_warning('pm');
     }
 
-    public function sendReservedPush()
+    public static function sendReservedPush()
     {
         $data = PushReservation::where(function ($query) {
             $query->where('send_date', date('Y-m-d'))->orWhereNull('send_date');
@@ -334,5 +334,7 @@ class ScheduleController extends Controller
             }
             PushController::gcm_notify($tmp, $item->title, $item->message, '');
         }
+
+        return true;
     }
 }
