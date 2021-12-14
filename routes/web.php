@@ -20,8 +20,6 @@ Route::get('/', function (Request $request) {
     return $request->ip();
 });
 
-Route::get('/test', [ScheduleController::class, 'sendReservedPush']);
-
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('/login', [Admin\AuthController::class, 'loginForm'])->name('login');
     Route::post('/login', [Admin\AuthController::class, 'login']);

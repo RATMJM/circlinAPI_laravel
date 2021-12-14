@@ -334,7 +334,5 @@ class ScheduleController extends Controller
             }
             PushController::gcm_notify($tmp, $item->title, $item->message, '');
         }
-
-        return true;
     }
 }
