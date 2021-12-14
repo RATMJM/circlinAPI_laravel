@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\v1_1\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function (Request $request) {
     return $request->ip();
 });
+
+Route::get('/test', [ScheduleController::class, 'sendReservedPush']);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('/login', [Admin\AuthController::class, 'loginForm'])->name('login');
