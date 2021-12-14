@@ -112,7 +112,8 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::delete('/like', [v1_1\MissionLikeController::class, 'destroy'])->name('like.destroy');
         Route::get('/comment', [v1_1\MissionCommentController::class, 'index'])->name('comment.index');
         Route::post('/comment', [v1_1\MissionCommentController::class, 'store'])->name('comment.store');
-        Route::delete('/comment/{comment_id}', [v1_1\MissionCommentController::class, 'destroy'])->name('comment.destroy');
+        Route::delete('/comment/{comment_id}', [v1_1\MissionCommentController::class, 'destroy'])
+            ->name('comment.destroy');
     });
 });
 
@@ -174,7 +175,8 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
 Route::get('/explore', [v1_1\SearchController::class, 'index'])->name('explore');
 Route::get('/explore/search', [v1_1\SearchController::class, 'search'])->name('explore.search');
 Route::get('/explore/search/simple', [v1_1\SearchController::class, 'simple'])->name('explore.search.simple');
-Route::get('/explore/search/invite_code', [v1_1\SearchController::class, 'invite_code'])->name('explore.search.invite_code');
+Route::get('/explore/search/invite_code', [v1_1\SearchController::class, 'invite_code'])
+    ->name('explore.search.invite_code');
 Route::get('/explore/search/user', [v1_1\SearchController::class, 'user'])->name('explore.search.user');
 Route::get('/explore/search/mission', [v1_1\SearchController::class, 'mission'])->name('explore.search.mission');
 Route::get('/explore/search/product', [v1_1\SearchController::class, 'product'])->name('explore.search.product');
@@ -192,7 +194,8 @@ Route::group(['prefix' => 'chat', 'as' => 'chat.'], function () {
         Route::delete('/{id}', [v1_1\ChatController::class, 'destroy'])->name('message.destroy');
     });
     Route::post('/direct/enter/{target_id}', [v1_1\ChatController::class, 'enter_direct'])->name('direct.enter');
-    Route::post('/direct/send/multiple', [v1_1\ChatController::class, 'send_direct_multiple'])->name('direct.send.multiple');
+    Route::post('/direct/send/multiple', [v1_1\ChatController::class, 'send_direct_multiple'])
+        ->name('direct.send.multiple');
     Route::post('/direct/send/{target_id}', [v1_1\ChatController::class, 'send_direct'])->name('direct.send');
 });
 
@@ -203,7 +206,8 @@ Route::group(['prefix' => 'notice', 'as' => 'notice.'], function () {
         Route::get('/', [v1_1\NoticeController::class, 'show'])->name('show');
         Route::get('/comment', [v1_1\NoticeCommentController::class, 'index'])->name('comment.index');
         Route::post('/comment', [v1_1\NoticeCommentController::class, 'store'])->name('comment.store');
-        Route::delete('/comment/{comment_id}', [v1_1\NoticeCommentController::class, 'destroy'])->name('comment.destroy');
+        Route::delete('/comment/{comment_id}', [v1_1\NoticeCommentController::class, 'destroy'])
+            ->name('comment.destroy');
     });
 });
 

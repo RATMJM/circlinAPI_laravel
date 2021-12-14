@@ -43,20 +43,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('telescope:prune --hours=72')->daily();
 
-        $schedule->call(function () {
-            $msg = "🎄한 달 남았다 ❤❤ 크리스마스 챌린지 OPEN!!\n비니와 째보리가 준비한 '어드벤트캘린더'도 확인하세요 🎁";
-            // $users = MissionStat::where('mission_id', 1701)->pluck('user_id')->toArray();
-            $users = User::pluck('id');
-            $tmp = [];
-            foreach ($users as $user) {
-                $tmp[] = $user;
-                if (count($tmp) >= 1000) {
-                    PushController::gcm_notify($tmp, '써클인', $msg, '');
-                    $tmp = [];
-                }
-            }
-            PushController::gcm_notify($tmp, '써클인', $msg, '');
-        })->cron('16 18 27 11 *')->name('푸시 예약 발송');
+        $schedule->call([ScheduleController::class, 'sendReservedPush'])->everyMinute()->name('푸시 예약 발송');
     }
 
     /**

@@ -16,8 +16,17 @@ class PushController extends Controller
 {
     /**
      * gcm push notice
+     *
+     * @param array|string $uid
+     * @param string $title
+     * @param string $message
+     * @param string $image
+     * @param string|mixed|null $tag
+     * @param integer|mixed|null $id
+     *
+     * @return array|null
      */
-    public static function gcm_notify($uid, $title, $message, $image = '', $tag = null, $id = null): array|null
+    public static function gcm_notify(array|string $uid, string $title, string $message, string $image = '', $tag = null, $id = null): array|null
     {
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)

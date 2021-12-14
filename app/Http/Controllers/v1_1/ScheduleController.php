@@ -7,11 +7,11 @@ use App\Models\CommonCode;
 use App\Models\Feed;
 use App\Models\Follow;
 use App\Models\MissionStat;
+use App\Models\PushReservation;
 use App\Models\SortUser;
 use App\Models\User;
 use App\Models\UserStat;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
@@ -21,7 +21,7 @@ class ScheduleController extends Controller
         $con ? $con->comment("유저 추출 시작") : print("유저 추출 시작\n");
 
         $max = round(Follow::select('target_id', DB::raw("COUNT(distinct user_id) as c"))
-            ->groupBy('target_id')->orderBy('c', 'desc')->value('c') / 2);
+                ->groupBy('target_id')->orderBy('c', 'desc')->value('c') / 2);
 
         $con ? $con->comment("최대 팔로워 : $max") : print("최대 팔로워 : $max\n");
 
@@ -40,8 +40,10 @@ class ScheduleController extends Controller
         $con ? $con->comment("sort_users 초기화 완료") : print("sort_users 초기화 완료\n");
         foreach ($users as $i => $user) {
             $data[] = [
-                'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
-                'user_id' => $user->id, 'order' => $user->r,
+                'created_at' => DB::raw("now()"),
+                'updated_at' => DB::raw("now()"),
+                'user_id' => $user->id,
+                'order' => $user->r,
             ];
             if (($i + 1) % 10000 === 0) {
                 SortUser::insert($data);
@@ -62,7 +64,7 @@ class ScheduleController extends Controller
 
         $con ? $con->comment("최대 팔로워 : $max") : print("최대 팔로워 : $max\n");
 
-        $init = init_today(time()-(86400*7));
+        $init = init_today(time() - (86400 * 7));
 
         $users = User::select([
             'users.id',
@@ -78,7 +80,7 @@ class ScheduleController extends Controller
                     limit 50
                 ) t on t.id = u.id
                 where u.id = users.id
-            ) as suggest_users")
+            ) as suggest_users"),
         ])
             ->groupBy('users.id')
             ->take(10)
@@ -88,7 +90,7 @@ class ScheduleController extends Controller
 
         function suggest($user_id, $max)
         {
-            return Feed::where('feeds.created_at', '>=', init_today(time()-(86400*7)))
+            return Feed::where('feeds.created_at', '>=', init_today(time() - (86400 * 7)))
                 ->whereDoesntHave('followers', function ($query) use ($user_id) {
                     $query->where('user_id', $user_id);
                 })
@@ -125,7 +127,6 @@ class ScheduleController extends Controller
             ->get();*/
 
 
-
         return $users;
 
         $con ? $con->comment("유저 불러오기 완료") : print("유저 불러오기 완료\n");
@@ -137,8 +138,10 @@ class ScheduleController extends Controller
         $con ? $con->comment("sort_users 초기화 완료") : print("sort_users 초기화 완료\n");
         foreach ($users as $i => $user) {
             $data[] = [
-                'created_at' => DB::raw("now()"), 'updated_at' => DB::raw("now()"),
-                'user_id' => $user->id, 'order' => $user->r,
+                'created_at' => DB::raw("now()"),
+                'updated_at' => DB::raw("now()"),
+                'user_id' => $user->id,
+                'order' => $user->r,
             ];
             if (($i + 1) % 10000 === 0) {
                 SortUser::insert($data);
@@ -157,7 +160,8 @@ class ScheduleController extends Controller
         $users = Follow::where('feeds.created_at', '>=', $yesterday)
             ->leftJoin('feeds', 'feeds.user_id', 'follows.target_id')
             ->select([
-                'follows.user_id', DB::raw("COUNT(distinct feeds.id) as c")
+                'follows.user_id',
+                DB::raw("COUNT(distinct feeds.id) as c"),
             ])
             ->groupBy('follows.user_id')
             ->orderBy('follows.user_id')
@@ -285,12 +289,43 @@ class ScheduleController extends Controller
         foreach ($data as $i => $item) {
             $tmp[] = $item;
             if (count($tmp) >= 1000) {
-                $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_'.$type]);
+                $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_' . $type]);
                 $tmp = [];
             }
         }
-        $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_'.$type]);
+        $res[] = PushController::gcm_notify($tmp, '써클인', $message['mission_upload_' . $type]);
 
         return $res;
+    }
+
+    public function sendReservedPush()
+    {
+        $data = PushReservation::where(function ($query) {
+            $query->where('send_date', date('Y-m-d'))->orWhereNull('send_date');
+        })
+            ->where(DB::raw("DATE_FORMAT(send_time, '%H:%i')"), date('H:i'))
+            ->select(['target', 'target_ids', 'title', 'message'])
+            ->get();
+
+        foreach ($data as $item) {
+            if ($item->target === 'all') {
+                $users = User::pluck('id');
+            } elseif ($item->target === 'mission') {
+                $users = MissionStat::whereIn('mission_id', explode('|', $item->target_ids))->pluck('user_id');
+            } elseif ($item->target === 'user') {
+                $users = User::whereIn('id', explode('|', $item->target_ids))->pluck('id');
+            } else {
+                continue;
+            }
+            $tmp = [];
+            foreach ($users as $user) {
+                $tmp[] = $user;
+                if (count($tmp) >= 1000) {
+                    PushController::gcm_notify($tmp, $item->title, $item->message, '');
+                    $tmp = [];
+                }
+            }
+            PushController::gcm_notify($tmp, $item->title, $item->message, '');
+        }
     }
 }

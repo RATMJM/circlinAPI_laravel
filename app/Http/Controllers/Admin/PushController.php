@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendPushMessage;
 use App\Models\PushHistory;
 use App\Models\PushReservation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PushController extends Controller
 {
@@ -42,9 +42,13 @@ class PushController extends Controller
         })
             ->join('users', 'users.id', 'push_histories.target_id')
             ->select([
-                'push_histories.id', 'push_histories.created_at',
-                'push_histories.title', 'push_histories.message', 'push_histories.type',
-                'users.nickname', 'users.email',
+                'push_histories.id',
+                'push_histories.created_at',
+                'push_histories.title',
+                'push_histories.message',
+                'push_histories.type',
+                'users.nickname',
+                'users.email',
             ])
             ->orderBy('push_histories.id', 'desc')
             ->paginate(50);
@@ -58,31 +62,19 @@ class PushController extends Controller
 
     public function create()
     {
-        //
+        return view('admin.push.create');
     }
 
     public function store(Request $request)
     {
-        //
-    }
+        $target = $request->get('target');
+        $title = $request->get('title', '써클인');
+        $msg = $request->get('content');
 
-    public function show($id)
-    {
-        //
-    }
+        if (mb_strlen(trim($title)) === 0 || mb_strlen(trim($msg)) === 0) {
+            return redirect()->route('admin.push.index');
+        }
 
-    public function edit($id)
-    {
-        //
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    public function destroy($id)
-    {
-        //
+        return redirect()->route('admin.push.history');
     }
 }
