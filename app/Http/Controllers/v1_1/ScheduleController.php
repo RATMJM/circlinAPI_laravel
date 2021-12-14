@@ -311,7 +311,7 @@ class ScheduleController extends Controller
         Log::create([
             'user_id' => 64175,
             'ip' => 'localhost',
-            'type' => 'test_count_' . count($data) . date('H:i') . '_' . $data[0]->send_time ?? '',
+            'type' => 'test_count_' . date('H:i') . '_' . json_encode($data),
         ]);
 
         foreach ($data as $item) {
