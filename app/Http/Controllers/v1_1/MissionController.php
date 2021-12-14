@@ -1029,7 +1029,8 @@ class MissionController extends Controller
                       when $today between missions.started_at and missions.ended_at then 'Y'
                       ELSE 'N' end as STATE"),
                 'FOLLOWER' => Follow::selectRaw("COUNT(user_id)")->where('target_id', $user_id),
-                'CHALL_PARTI' => MissionStat::selectRaw("COUNT(user_id)")->where('mission_id', $mission_id),
+                'CHALL_PARTI' => MissionStat::withTrashed()->selectRaw("COUNT(user_id)")
+                    ->where('mission_id', $mission_id),
                 'missions.started_at as START_DATE', DB::raw("missions.ended_at + interval 1 day as END_DAY1"),
                 DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
                     (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
