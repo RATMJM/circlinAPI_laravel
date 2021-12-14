@@ -5,6 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\Follow
+ *
+ * @property int $id
+ * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $user_id
+ * @property int $target_id
+ * @property int $feed_notify
+ * @property-read \App\Models\User $target
+ * @property-read Follow $target_user_follow
+ * @property-read \App\Models\User $user
+ * @property-read Follow $user_target_follow
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow whereFeedNotify($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow whereTargetId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Follow whereUserId($value)
+ * @mixin \Eloquent
+ */
 class Follow extends Model
 {
     use HasFactory;

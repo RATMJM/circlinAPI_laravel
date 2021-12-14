@@ -6,6 +6,43 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * App\Models\MissionStat
+ *
+ * @property int $id
+ * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $user_id
+ * @property int $mission_id
+ * @property \Illuminate\Support\Carbon|null $ended_at 미션 콤보 마지막 기록 일시
+ * @property string|null $completed_at 이벤트 미션 성공 일시
+ * @property string|null $code 이벤트 미션 참가할 때 입력한 코드
+ * @property float|null $goal_distance 이벤트 미션 목표 거리
+ * @property string|null $certification_image 인증서에 업로드한 이미지
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedMission[] $feed_missions
+ * @property-read int|null $feed_missions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Feed[] $feeds
+ * @property-read int|null $feeds_count
+ * @property-read \App\Models\Mission $mission
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat newQuery()
+ * @method static \Illuminate\Database\Query\Builder|MissionStat onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat query()
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereCertificationImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereCompletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereEndedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereGoalDistance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereMissionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereUserId($value)
+ * @method static \Illuminate\Database\Query\Builder|MissionStat withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|MissionStat withoutTrashed()
+ * @mixin \Eloquent
+ */
 class MissionStat extends Model
 {
     use HasFactory, SoftDeletes;
