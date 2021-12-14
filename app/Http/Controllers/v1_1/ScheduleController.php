@@ -308,12 +308,6 @@ class ScheduleController extends Controller
             ->select(['target', 'target_ids', 'title', 'message', DB::raw("DATE_FORMAT(send_time, '%H:%i') as send_time")])
             ->get();
 
-        Log::create([
-            'user_id' => 64175,
-            'ip' => 'localhost',
-            'type' => 'test_count_' . count($data) . '_' . date('H:i') . '_' . json_encode($data),
-        ]);
-
         foreach ($data as $item) {
             if ($item->target === 'all') {
                 $users = User::pluck('id');

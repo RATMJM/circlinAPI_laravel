@@ -43,7 +43,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('telescope:prune --hours=72')->daily();
 
-        $schedule->call([ScheduleController::class, 'sendReservedPush'])->everyMinute()->name('푸시 예약 발송');
+        $schedule->call([ScheduleController::class, 'sendReservedPush'])->everyMinute();
     }
 
     /**
