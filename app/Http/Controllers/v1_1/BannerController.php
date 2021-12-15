@@ -51,7 +51,7 @@ class BannerController extends Controller
                 'event_mission', 'event_mission_old' => [
                     'id' => $banner->link_id,
                     'user_id' => token_option()?->uid,
-                    'nickname' => token_option()?->nickname,
+                    'nickname' => User::where('id', token_option()?->uid)->value('nickname'),
                 ],
                 default => ['id' => $banner->link_id],
             };
