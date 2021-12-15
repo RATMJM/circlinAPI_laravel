@@ -13,9 +13,20 @@
             <span style="width: 100px">대상</span>
             <select name="target" id="target" style="flex: 1;">
                 <option value="all">전체</option>
-                <option value="mission" disabled>미션 참가자</option>
-                <option value="user" disabled>지정 유저</option>
+                <option value="mission">미션 참가자</option>
+                <option value="user">지정 유저</option>
             </select>
+        </label>
+        <label style="display: flex; align-items: center;">
+            <span style="width: 100px">대상 ID<br>(구분자 : " | ")</span>
+            <div style="display: flex; flex: 1; flex-direction: column; gap: 8px;">
+                <input type="text" name="target_ids" id="target_ids">
+                <div style="display: flex; gap: 8px;">
+                    <span style="font-weight: bold;">검색하기</span>
+                    <a href="{{ route('admin.mission.index') }}" target="_blank">미션</a>
+                    <a href="{{ route('admin.user.index') }}" target="_blank">유저</a>
+                </div>
+            </div>
         </label>
         <label style="display: flex; align-items: center;">
             <span style="width: 100px">제목</span>

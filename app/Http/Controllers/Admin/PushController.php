@@ -69,6 +69,7 @@ class PushController extends Controller
         $data = $request->validate([
             'description' => 'required|max:255',
             'target' => 'required|max:255',
+            'target_ids' => 'required_if:target,mission,user',
             'title' => 'required|max:255',
             'message' => 'required|max:255',
             'send_date' => 'required|date_format:Y-m-d',
