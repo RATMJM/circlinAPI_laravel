@@ -308,7 +308,7 @@ class FeedController extends Controller
                         foreach ($pushes->groupBy('type') as $type => $pushes) {
                             if ($type === 'feed_upload' || $type === 'first_feed_upload') {
                                 $count = Feed::where('feeds.user_id', $user_id)
-                                    ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                                     ->join('feed_missions', function ($query) use ($mission_id) {
                                         $query->on('feed_missions.feed_id', 'feeds.id')
                                             ->where('feed_missions.mission_id', $mission_id);
@@ -321,12 +321,11 @@ class FeedController extends Controller
                                     }
                                 }
                             } elseif ($type === 'users_count') {
-                                $count = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->join('feed_missions', function ($query) use ($mission_id) {
+                                $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
                                         $query->on('feed_missions.feed_id', 'feeds.id')
                                             ->where('feed_missions.mission_id', $mission_id);
                                     })
-                                    ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
                                     ->distinct()
                                     ->count('user_id');
                                 foreach ($pushes as $push) {
@@ -335,8 +334,8 @@ class FeedController extends Controller
                                     }
                                 }
                             } elseif ($type === 'feeds_count') {
-                                $count = Feed::where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->join('feed_missions', function ($query) use ($mission_id) {
+                                $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
                                         $query->on('feed_missions.feed_id', 'feeds.id')
                                             ->where('feed_missions.mission_id', $mission_id);
                                     })
@@ -441,12 +440,12 @@ class FeedController extends Controller
             ]);
         }
 
-        $feed->product = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
-        $feed->place = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
+        $feed['product'] = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+        $feed['place'] = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
 
-        $feed->images = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
+        $feed['images'] = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
-        $feed->missions = $feed->feed_missions()
+        $feed['missions'] = $feed->feed_missions()
             ->join('missions', 'missions.id', 'feed_missions.mission_id')
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
