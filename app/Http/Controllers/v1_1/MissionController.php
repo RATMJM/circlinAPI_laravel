@@ -719,7 +719,7 @@ class MissionController extends Controller
                     'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                         ->where('follows.user_id', $user_id),
                 ])
-                ->orderBy('mission_stats.completed_at')
+                ->orderBy('mission_stats.completed_at', 'desc')
                 ->take(20)->get(),
             'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
                 ->join('users', function ($query) {
@@ -733,7 +733,7 @@ class MissionController extends Controller
                     'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                         ->where('follows.user_id', $user_id),
                 ])
-                ->orderBy('mission_stats.created_at')
+                ->orderBy('mission_stats.created_at', 'desc')
                 ->take(20)->get(),
             'recent_feed' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
                 $query->where('mission_id', $mission_id);
@@ -749,7 +749,7 @@ class MissionController extends Controller
                     'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                         ->where('follows.user_id', $user_id),
                 ])
-                ->orderBy('feeds.created_at')
+                ->orderBy('feeds.created_at', 'desc')
                 ->take(20)->get(),
             default => null,
         };
