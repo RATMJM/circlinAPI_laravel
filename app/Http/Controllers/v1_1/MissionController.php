@@ -735,6 +735,22 @@ class MissionController extends Controller
                 ])
                 ->orderBy('mission_stats.created_at')
                 ->take(20)->get(),
+            'recent_feed' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })
+                ->join('users', function ($query) {
+                    $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
+                })
+                ->select([
+                    'users.id as user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                    'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                        ->where('follows.user_id', $user_id),
+                ])
+                ->orderBy('feeds.created_at')
+                ->take(20)->get(),
             default => null,
         };
 
