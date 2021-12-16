@@ -851,7 +851,7 @@ class MissionController extends Controller
 
         $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
         $today_cert_count = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
-            ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+            // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
             ->join('feed_missions', function ($query) use ($mission_id) {
                 $query->on('feed_missions.feed_id', 'feeds.id')
                     ->where('feed_missions.mission_id', $mission_id);
