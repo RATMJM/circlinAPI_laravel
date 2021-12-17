@@ -19,13 +19,15 @@ class BaseController extends Controller
     public function area(Request $request): array
     {
         $text = $request->get('searchText');
-        $text = mb_ereg_replace('/\s/', '', $text);
 
-        $areas = Area::select(['code as ctg', 'name'])
-            ->where('name', 'like', "%$text%")
+        $text = str_replace(' ', '', $text);
+
+        $areas = Area::where(DB::raw("REPLACE(name,' ', '')"), 'like', "%$text%")
             ->where(DB::raw("code % 100000"), '>', 0)
+            ->select(['code as ctg', 'name'])
             ->distinct()
-            ->orderBy('code')
+            ->orderBy(User::selectRaw("COUNT(1)")->whereColumn('users.area_code', 'areas.code')
+                ->groupBy('users.area_code'), 'desc')
             ->take(10)->get();
 
         return success([
