@@ -80,4 +80,37 @@ class PushController extends Controller
 
         return redirect()->route('admin.push.index');
     }
+
+    public function edit($id)
+    {
+        $data = PushReservation::where('id', $id)
+            ->select(['id', 'description', 'target', 'target_ids', 'title', 'message', 'send_date', 'send_time'])
+            ->firstOrFail();
+
+        return view('admin.push.edit', ['data' => $data]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $data = $request->validate([
+            'description' => 'required|max:255',
+            'target' => 'required|max:255',
+            'target_ids' => 'required_if:target,mission,user',
+            'title' => 'required|max:255',
+            'message' => 'required|max:255',
+            'send_date' => 'required|date_format:Y-m-d',
+            'send_time' => 'required|date_format:H:i',
+        ]);
+
+        PushReservation::where('id', $id)->update($data);
+
+        return redirect()->route('admin.push.index');
+    }
+
+    public function destroy($id)
+    {
+        PushReservation::where('id', $id)->delete();
+
+        return redirect()->route('admin.push.index');
+    }
 }

@@ -27,11 +27,11 @@
             <th style="width: 200px">설명</th>
             <th style="width: 100px">발송 일자<br>(없으면 매일 반복)</th>
             <th style="width: 100px">발송 시간</th>
-            <th style="width: 300px">푸시 링크</th>
+            <th style="width: 300px">관리</th>
         </tr>
         </thead>
         <tbody>
-        @forelse($data as $item)
+        @forelse($data as $i => $item)
             <tr>
                 <td>{{ $item->id }}</td>
                 <td>{{ $item->target }}</td>
@@ -39,8 +39,11 @@
                 <td>{{ $item->message }}</td>
                 <td>{{ $item->description }}</td>
                 <td>{{ $item->send_date }}</td>
-                <td>{{ $item->send_time }}</td>
-                <td>{{ $item->link_type }}</td>
+                <td>{{ date('H:i', strtotime($item->send_time)) }}</td>
+                <td>
+                    <a href="{{ route('admin.push.edit', $item->id) }}" class="btn">수정</a>
+                    <a href="javascript:deletePush({{ $item->id }})" class="btn">삭제</a>
+                </td>
             </tr>
         @empty
             <tr>
@@ -51,4 +54,20 @@
     </table>
     <br>
     <div class="center">{{ $data->withQueryString()->links() }}</div>
+
+    <form action="" method="post" id="delete-form">
+        @method('DELETE')
+        @csrf
+    </form>
+
+    <script>
+        function deletePush(id) {
+            if (prompt("푸시를 삭제하시려면 '삭제'를 입력 후 확인을 눌러주세요") === '삭제') {
+                const form = document.querySelector('#delete-form')
+
+                form.setAttribute('action', `{{ route('admin.push.index') }}/${id}`);
+                form.submit();
+            }
+        }
+    </script>
 @endsection
