@@ -749,7 +749,8 @@ class MissionController extends Controller
                     'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                         ->where('follows.user_id', $user_id),
                 ])
-                ->orderBy('feeds.created_at', 'desc')
+                ->groupBy('users.id')
+                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc')
                 ->take(20)->get(),
             default => null,
         };
@@ -794,7 +795,7 @@ class MissionController extends Controller
             ->select([
                 'users_count' => ($data->is_available ? MissionStat::query() : MissionStat::withTrashed())
                     ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
-                'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
+                'all_dista]nce' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
