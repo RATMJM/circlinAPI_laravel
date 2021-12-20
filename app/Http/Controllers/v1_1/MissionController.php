@@ -795,7 +795,7 @@ class MissionController extends Controller
             ->select([
                 'users_count' => ($data->is_available ? MissionStat::query() : MissionStat::withTrashed())
                     ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
-                'all_dista]nce' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
+                'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
