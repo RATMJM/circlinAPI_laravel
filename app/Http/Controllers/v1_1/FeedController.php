@@ -93,7 +93,8 @@ class FeedController extends Controller
                     $uploaded_thumbnail = '';
                     if (str_starts_with($file->getMimeType(), 'image/')) {
                         $type = 'image';
-                        $image = Image::make($file->getPathname());
+
+                        /*$image = Image::make($file->getPathname());
                         if ($image->width() > $image->height()) {
                             $x = ($image->width() - $image->height()) / 2;
                             $y = 0;
@@ -103,7 +104,7 @@ class FeedController extends Controller
                             $y = ($image->height() - $image->width()) / 2;
                             $src = $image->width();
                         }
-                        $image->crop($src, $src, round($x), round($y));
+                        $image->crop($src, $src, round($x), round($y));*/
 
                         $image->orientate();
 
