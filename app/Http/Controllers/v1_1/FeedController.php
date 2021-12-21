@@ -94,8 +94,8 @@ class FeedController extends Controller
                     if (str_starts_with($file->getMimeType(), 'image/')) {
                         $type = 'image';
 
-                        /*$image = Image::make($file->getPathname());
-                        if ($image->width() > $image->height()) {
+                        $image = Image::make($file->getPathname());
+                        /*if ($image->width() > $image->height()) {
                             $x = ($image->width() - $image->height()) / 2;
                             $y = 0;
                             $src = $image->height();
