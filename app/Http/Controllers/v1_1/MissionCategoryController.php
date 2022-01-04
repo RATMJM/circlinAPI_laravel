@@ -51,9 +51,11 @@ class MissionCategoryController extends Controller
                 ])
                 ->groupBy('mission_categories.id')
                 ->orWhere('mission_categories.id', 0)
-                ->orderBy(DB::raw("mission_categories.id=0"), 'desc') // 이벤트 탭 맨 뒤로
+                ->orderBy(DB::raw("mission_categories.id=0")) // 이벤트 탭 맨 뒤로
                 ->orderBy(DB::raw("mission_categories.id=21")) // 기타 탭 맨 뒤로
-                ->orderBy('bookmark_total', 'desc')->orderBy('is_favorite', 'desc')->orderBy('mission_categories.id')
+                ->orderBy('bookmark_total', 'desc')
+                ->orderBy('is_favorite', 'desc')
+                ->orderBy('mission_categories.id', 'desc')
                 ->get();
         } else {
             $data = MissionCategory::whereNotNull('mission_category_id')
