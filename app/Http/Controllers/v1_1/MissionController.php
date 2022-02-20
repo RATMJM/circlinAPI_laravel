@@ -845,7 +845,7 @@ class MissionController extends Controller
         }
 
         $tmp = $data->cert_details;
-        foreach ($data->cert_details as $i => $item) {
+        foreach ($data->cert_details ?? [] as $i => $item) {
             $tmp[$i]['text'] = code_replace($item['text'], $replaces);
         }
         $data->cert_details = $tmp;
