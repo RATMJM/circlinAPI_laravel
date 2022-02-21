@@ -832,6 +832,7 @@ class MissionController extends Controller
             ])
             ->first();
         $replaces->all_distance_div10 = $replaces->all_distance > 10 || $replaces->all_distance < 1 ? floor($replaces->all_distance / 10) : sprintf('%0.1f', $replaces->all_distance / 10);
+        $replaces->all_distance_times20 = $replaces->all_distance > 10 || $replaces->all_distance < 1 ? floor($replaces->all_distance * 20) : sprintf('%0.1f', $replaces->all_distance * 20);
         $replaces->total_distance_div10 = $replaces->total_distance > 10 || $replaces->total_distance < 1 ? floor($replaces->total_distance / 10) : sprintf('%0.1f', $replaces->total_distance / 10);
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
