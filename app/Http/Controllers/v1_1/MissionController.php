@@ -707,11 +707,11 @@ class MissionController extends Controller
                 })
                 ->distinct()->count('feeds.id'),
             'all_distance_2_to_100' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                ->where('mission_id', $mission_id)
-                ->when($is_min, function ($query) {
-                    $query->where(MissionStat::select('goal_distance')
-                        ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                })->sum('distance') * 50,
+                    ->where('mission_id', $mission_id)
+                    ->when($is_min, function ($query) {
+                        $query->where(MissionStat::select('goal_distance')
+                            ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                    })->sum('distance') * 50,
             default => null,
         }, 1);
 
@@ -774,6 +774,10 @@ class MissionController extends Controller
                     $query->on('feed_missions.feed_id', 'feeds.id')
                         ->where('mission_id', $mission_id);
                 })->where('user_id', $user_id)->count(),
+            'total_distance_div2' => floor(Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->where('mission_id', $mission_id)
+                    ->where('user_id', $user_id)
+                    ->sum('distance') / 2),
             default => null,
         };
 
@@ -834,10 +838,10 @@ class MissionController extends Controller
                 'total_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)
-                    ->when($is_min, function ($query) {
+                    /*->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
                             ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })
+                    })*/
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->first();
@@ -847,6 +851,9 @@ class MissionController extends Controller
 
         $value = ($replaces->all_distance - ($replaces->all_distance % 2)) * 50;
         $replaces->all_distance_2_to_100 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+
+        $value = $replaces->total_distance / 2;
+        $replaces->total_distance_div2 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
 
         $value = $replaces->total_distance / 10;
         $replaces->total_distance_div10 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
