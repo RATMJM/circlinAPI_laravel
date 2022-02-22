@@ -701,7 +701,17 @@ class MissionController extends Controller
                 $query->on('feed_missions.feed_id', 'feeds.id')
                     ->where('mission_id', $mission_id);
             })
+                ->when($is_min, function ($query) {
+                    $query->where(MissionStat::select('goal_distance')
+                        ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                })
                 ->distinct()->count('feeds.id'),
+            'all_distance_2_to_100' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->where('mission_id', $mission_id)
+                ->when($is_min, function ($query) {
+                    $query->where(MissionStat::select('goal_distance')
+                        ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                })->sum('distance') * 50,
             default => null,
         }, 1);
 
