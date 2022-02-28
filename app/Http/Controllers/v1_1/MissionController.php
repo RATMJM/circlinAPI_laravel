@@ -637,13 +637,25 @@ class MissionController extends Controller
         ]);
     }
 
+    /**
+     * 챌린지 운동장
+     *
+     * @param $mission_id
+     *
+     * @return array
+     * @throws Exception
+     */
     public function ground($mission_id): array
     {
         $user_id = token()->uid;
 
-        $data = MissionGround::where('mission_id', $mission_id)
+        $data = MissionGround::where('missions.id', $mission_id)
             ->join('missions', function ($query) {
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
+            })
+            ->leftJoin('mission_stats', function ($query) use ($user_id) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->where('mission_stats.user_id', $user_id);
             })
             ->select([
                 'mission_grounds.*',
@@ -651,7 +663,9 @@ class MissionController extends Controller
                 'missions.started_at',
                 'missions.ended_at',
                 is_available(),
+                'mission_stats.goal_distance',
             ])
+            ->orderBy('mission_stats.id', 'desc')
             ->first();
 
         if (is_null($data)) {
@@ -691,7 +705,10 @@ class MissionController extends Controller
         $data->ground_progress_present = round(match ($data->ground_progress_type) {
             'all_distance' => Feed::when($is_min, function ($query) {
                 $query->where(MissionStat::select('goal_distance')
-                    ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
+                    ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'),
+                    '<=',
+                    DB::raw("feeds.distance")
+                );
             })
                 ->join('feed_missions', function ($query) use ($mission_id) {
                     $query->on('feed_missions.feed_id', 'feeds.id')
@@ -807,7 +824,7 @@ class MissionController extends Controller
 
         $replaces = Mission::where('missions.id', $mission_id)
             ->select([
-                'users_count' => ($data->is_available ? MissionStat::query() : MissionStat::withTrashed())
+                'users_count' => (!$data->is_available && strtotime($data->ended_at) <= now()->timestamp ? MissionStat::withTrashed() : MissionStat::query())
                     ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
                 'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
@@ -846,6 +863,28 @@ class MissionController extends Controller
             ])
             ->first();
 
+        $replaces->all_complete_day = Feed::select([
+            DB::raw("CAST(feeds.created_at as DATE) as c"),
+            DB::raw("SUM(feeds.distance) as s")
+        ])
+            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+            ->where('mission_stats.mission_id', $mission_id)
+            ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+            ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+            ->count();
+        $replaces->total_complete_day = Feed::select([
+            DB::raw("CAST(feeds.created_at as DATE) as c"),
+            DB::raw("SUM(feeds.distance) as s")
+        ])
+            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+            ->where('mission_stats.mission_id', $mission_id)
+            ->where('feeds.user_id', $user_id)
+            ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+            ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+            ->count();
+
         $value = $replaces->all_distance / 10;
         $replaces->all_distance_div10 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
 
@@ -860,6 +899,9 @@ class MissionController extends Controller
 
         $value = ($replaces->total_distance - ($replaces->total_distance % 2)) * 50;
         $replaces->total_distance_2_to_100 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+
+        $replaces->all_complete_day_times100 = $replaces->all_complete_day * 100;
+        $replaces->total_complete_day_times100 = $replaces->total_complete_day * 100;
 
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
