@@ -37,20 +37,36 @@ class BookmarkController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
-                'mission_categories.id as category_id', 'mission_categories.title as category_title', 'mission_categories.emoji',
-                'missions.id', 'missions.title', DB::raw("IFNULL(missions.description, '') as description"),
+                'mission_categories.id as category_id',
+                'mission_categories.title as category_title',
+                'mission_categories.emoji',
+                'missions.id',
+                'missions.title',
+                DB::raw("IFNULL(missions.description, '') as description"),
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground', 'missions.is_ocr',
-                'missions.started_at', 'missions.ended_at',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.started_at',
+                'missions.ended_at',
                 DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
                     (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
-                'missions.thumbnail_image', 'missions.success_count',
+                'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'mission_stat_user_id' => MissionStat::withTrashed()
+                    ->select('user_id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->limit(1),
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'mission_products.type as product_type', //'mission_products.product_id',
                 DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
@@ -64,9 +80,11 @@ class BookmarkController extends Controller
                 'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                'place_description' => Place::select('description')
+                    ->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
-                    ->orderBy('mission_places.id')->limit(1),
+                    ->orderBy('mission_places.id')
+                    ->limit(1),
                 'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -93,9 +111,11 @@ class BookmarkController extends Controller
                     ->where('feeds.created_at', '>=', init_today())
                     ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
             ])
-            ->withCount(['feeds' => function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            }])
+            ->withCount([
+                'feeds' => function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                },
+            ])
             ->orderBy('has_check')
             ->orderBy('is_event')
             ->orderBy('event_order')
@@ -108,7 +128,9 @@ class BookmarkController extends Controller
             $tmp = [];
             foreach ($data->groupBy('category_title') as $i => $item) {
                 $tmp[] = [
-                    'id' => $item[0]->category_id, 'title' => $i, 'emoji' => $item[0]->emoji,
+                    'id' => $item[0]->category_id,
+                    'title' => $i,
+                    'emoji' => $item[0]->emoji,
                     'missions' => $item->toArray(),
                 ];
             }
@@ -154,7 +176,8 @@ class BookmarkController extends Controller
                     'user_id' => $user_id,
                     'mission_id' => $mission_id,
                     'code' => $code,
-                    'goal_distance' => $goal_distance,
+                    'goal_distance' => $goal_distance ??
+                        MissionGround::where('mission_id', $mission_id)->value('goal_distances')[0] ?? null,
                 ]);
 
                 // 조건별 푸시
