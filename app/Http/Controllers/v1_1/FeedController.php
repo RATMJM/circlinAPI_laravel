@@ -228,6 +228,72 @@ class FeedController extends Controller
                         'mission_stat_id' => $stat->id,
                         'mission_id' => $mission_id,
                     ]);
+
+                    #region 미션 푸시 발송
+                    $pushes = MissionPush::where('mission_id', $mission_id)
+                        ->where(function ($query) {
+                            $query->where('is_disposable', true)->where('count', 0)
+                                ->orWhere('is_disposable', false);
+                        })
+                        ->get();
+                    if (count($pushes) > 0) {
+                        foreach ($pushes->groupBy('type') as $type => $pushes) {
+                            if ($type === 'feed_upload_count' || $type === 'first_feed_upload') {
+                                $count = Feed::where('feeds.user_id', $user_id)
+                                    // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->join('feed_missions', function ($query) use ($mission_id) {
+                                        $query->on('feed_missions.feed_id', 'feeds.id')
+                                            ->where('feed_missions.mission_id', $mission_id);
+                                    })
+                                    ->distinct()
+                                    ->count('feeds.id');
+                                foreach ($pushes as $push) {
+                                    if ($count == $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
+                                }
+                            } elseif ($type === 'feed_upload_complete') {
+                                $count = Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                                    ->where('feed_missions.mission_id', $mission_id)
+                                    ->where('feeds.user_id', $user_id)
+                                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                                    ->sum('distance') >= $stat->goal_distance ? 1 : 0;
+
+                                foreach ($pushes as $push) {
+                                    if ($count == $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
+                                }
+                            } elseif ($type === 'users_count') {
+                                $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
+                                    $query->on('feed_missions.feed_id', 'feeds.id')
+                                        ->where('feed_missions.mission_id', $mission_id);
+                                })
+                                    ->distinct()
+                                    ->count('user_id');
+                                foreach ($pushes as $push) {
+                                    if ($count >= $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
+                                }
+                            } elseif ($type === 'feeds_count') {
+                                $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
+                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
+                                    $query->on('feed_missions.feed_id', 'feeds.id')
+                                        ->where('feed_missions.mission_id', $mission_id);
+                                })
+                                    ->distinct()
+                                    ->count('feeds.id');
+                                foreach ($pushes as $push) {
+                                    if ($count >= $push->value) {
+                                        PushController::send_mission_push($push, $user_id, $mission_id);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    #endregion
                 }
 
                 /*foreach ($completed_missions as $mission_id) {
@@ -299,57 +365,6 @@ class FeedController extends Controller
             // 조건별 푸시
             if (count($missions)) {
                 foreach ($missions as $mission_id) {
-                    $pushes = MissionPush::where('mission_id', $mission_id)
-                        ->where(function ($query) {
-                            $query->where('is_disposable', true)->where('count', 0)
-                                ->orWhere('is_disposable', false);
-                        })
-                        ->get();
-                    if (count($pushes) > 0) {
-                        foreach ($pushes->groupBy('type') as $type => $pushes) {
-                            if ($type === 'feed_upload' || $type === 'first_feed_upload') {
-                                $count = Feed::where('feeds.user_id', $user_id)
-                                    // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->join('feed_missions', function ($query) use ($mission_id) {
-                                        $query->on('feed_missions.feed_id', 'feeds.id')
-                                            ->where('feed_missions.mission_id', $mission_id);
-                                    })
-                                    ->distinct()
-                                    ->count('feeds.id');
-                                foreach ($pushes as $push) {
-                                    if ($count == $push->value) {
-                                        PushController::send_mission_push($push, $user_id, $mission_id);
-                                    }
-                                }
-                            } elseif ($type === 'users_count') {
-                                $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
-                                        $query->on('feed_missions.feed_id', 'feeds.id')
-                                            ->where('feed_missions.mission_id', $mission_id);
-                                    })
-                                    ->distinct()
-                                    ->count('user_id');
-                                foreach ($pushes as $push) {
-                                    if ($count >= $push->value) {
-                                        PushController::send_mission_push($push, $user_id, $mission_id);
-                                    }
-                                }
-                            } elseif ($type === 'feeds_count') {
-                                $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
-                                        $query->on('feed_missions.feed_id', 'feeds.id')
-                                            ->where('feed_missions.mission_id', $mission_id);
-                                    })
-                                    ->distinct()
-                                    ->count('feeds.id');
-                                foreach ($pushes as $push) {
-                                    if ($count >= $push->value) {
-                                        PushController::send_mission_push($push, $user_id, $mission_id);
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
 
