@@ -896,25 +896,25 @@ class MissionController extends Controller
             ->count();
 
         $value = $replaces->all_distance / 10;
-        $replaces->all_distance_div10 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+        $replaces->all_distance_div10 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
         $value = ($replaces->all_distance - ($replaces->all_distance % 2)) * 50;
-        $replaces->all_distance_2_to_100 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+        $replaces->all_distance_2_to_100 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
         $value = $replaces->total_distance / 2;
-        $replaces->total_distance_div2 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+        $replaces->total_distance_div2 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
         $value = $replaces->total_distance / 10;
-        $replaces->total_distance_div10 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+        $replaces->total_distance_div10 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
         $value = ($replaces->total_distance - ($replaces->total_distance % 2)) * 50;
-        $replaces->total_distance_2_to_100 = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+        $replaces->total_distance_2_to_100 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
         $replaces->all_complete_day_times100 = $replaces->all_complete_day * 100;
         $replaces->total_complete_day_times100 = $replaces->total_complete_day * 100;
 
         $value = $replaces->all_distance;
-        $replaces->all_distance = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
+        $replaces->all_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
