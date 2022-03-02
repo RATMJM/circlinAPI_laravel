@@ -916,6 +916,9 @@ class MissionController extends Controller
         $value = $replaces->all_distance;
         $replaces->all_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
+        $value = $replaces->total_distance;
+        $replaces->total_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
