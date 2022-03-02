@@ -836,7 +836,7 @@ class MissionController extends Controller
             ->select([
                 'users_count' => (!$data->is_available && strtotime($data->ended_at) <= now()->timestamp ? MissionStat::withTrashed() : MissionStat::query())
                     ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
-                'all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
+                'all_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
@@ -912,6 +912,9 @@ class MissionController extends Controller
 
         $replaces->all_complete_day_times100 = $replaces->all_complete_day * 100;
         $replaces->total_complete_day_times100 = $replaces->total_complete_day * 100;
+
+        $value = $replaces->all_distance;
+        $replaces->all_distance = $value > 10 || $value < 1 ? floor($value) : sprintf('%0.1f', $value);
 
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
