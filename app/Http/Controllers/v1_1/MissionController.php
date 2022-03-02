@@ -881,13 +881,13 @@ class MissionController extends Controller
             ->first();
 
         $replaces->all_complete_day = Feed::select([
-            DB::raw("CAST(feeds.created_at as DATE) as c"),
+            DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
             DB::raw("SUM(feeds.distance) as s"),
         ])
             ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
             ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
             ->where('mission_stats.mission_id', $mission_id)
-            ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+            ->groupBy(['c', 'mission_stats.goal_distance'])
             ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
             ->count();
         $replaces->total_complete_day = Feed::select([
@@ -903,14 +903,14 @@ class MissionController extends Controller
             ->count();
 
         $replaces->today_complete_count = Feed::select([
-            DB::raw("CAST(feeds.created_at as DATE) as c"),
+            DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
             DB::raw("SUM(feeds.distance) as s"),
         ])
             ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
             ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
             ->where('mission_stats.mission_id', $mission_id)
             ->where('feeds.created_at', '>=', date('Y-m-d'))
-            ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+            ->groupBy(['c', 'mission_stats.goal_distance'])
             ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
             ->count();
 
@@ -945,6 +945,8 @@ class MissionController extends Controller
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
         ) ? '성공!' : '도전 중';
         $replaces = $replaces->toArray();
+
+        return $replaces;
 
         foreach ($data->toArray() as $i => $item) {
             if (!is_string($item)) continue;
