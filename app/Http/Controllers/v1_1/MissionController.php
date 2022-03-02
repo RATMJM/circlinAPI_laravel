@@ -946,8 +946,6 @@ class MissionController extends Controller
         ) ? '성공!' : '도전 중';
         $replaces = $replaces->toArray();
 
-        return $replaces;
-
         foreach ($data->toArray() as $i => $item) {
             if (!is_string($item)) continue;
             $data[$i] = code_replace($item, $replaces);
