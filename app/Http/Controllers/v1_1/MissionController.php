@@ -838,17 +838,17 @@ class MissionController extends Controller
                     ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
                 'all_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
                     ->whereColumn('mission_id', 'missions.id')
-                    ->when($is_min, function ($query) {
+                    /*->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
                             ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })
+                    })*/
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
-                    ->when($is_min, function ($query) {
+                    /*->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
                             ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })
+                    })*/
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'goal_distance' => MissionStat::selectRaw("IFNULL(goal_distance,0)")
@@ -857,10 +857,10 @@ class MissionController extends Controller
                     ->orderBy('mission_stats.id', 'desc'),
                 'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)
-                    ->when($is_min, function ($query) {
+                    /*->when($is_min, function ($query) {
                         $query->where(MissionStat::select('goal_distance')
                             ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })
+                    })*/
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'total_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
