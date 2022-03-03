@@ -25,6 +25,7 @@ use App\Models\MissionStat;
 use App\Models\OutsideProduct;
 use App\Models\Place;
 use App\Models\User;
+use Carbon\Carbon;
 use DateTime;
 use Exception;
 use Illuminate\Http\File;
@@ -690,7 +691,8 @@ class MissionController extends Controller
         $date = date('Y-m-d H:i:s');
         $is_min = $data->goal_distance_type === 'min';
 
-        $diff = abs(date_diff(new DateTime(date('Y-m-d')), new DateTime($data->started_at))->days);
+        $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->d;
+
         if ($data->is_available) {
             $data->ground_d_day_title = '함께하는 중';
             $data->ground_d_day_text = ($diff + 1) . "일차";
