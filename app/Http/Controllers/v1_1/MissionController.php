@@ -732,13 +732,13 @@ class MissionController extends Controller
                             ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
                     })->sum('distance') * 50,
             'all_complete_day' => Feed::select([
-                DB::raw("CAST(feeds.created_at as DATE) as c"),
+                DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
                 DB::raw("SUM(feeds.distance) as s"),
             ])
                 ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                 ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
                 ->where('mission_stats.mission_id', $mission_id)
-                ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+                ->groupBy(['c', 'mission_stats.goal_distance'])
                 ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
                 ->count(),
             default => null,
