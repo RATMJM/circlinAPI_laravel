@@ -308,6 +308,8 @@ class ScheduleController extends Controller
             ->select(['target', 'target_ids', 'title', 'message', DB::raw("DATE_FORMAT(send_time, '%H:%i') as send_time")])
             ->get();
 
+        echo $data;
+
         foreach ($data as $item) {
             if ($item->target === 'all') {
                 $users = User::pluck('id');
@@ -318,6 +320,7 @@ class ScheduleController extends Controller
             } else {
                 continue;
             }
+            echo $users;
             $tmp = [];
             foreach ($users as $user) {
                 $tmp[] = $user;
