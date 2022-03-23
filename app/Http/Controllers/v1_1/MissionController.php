@@ -854,6 +854,10 @@ class MissionController extends Controller
         $value = $replaces->total_distance;
         $replaces->total_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
+        $replaces->complete_3 = $replaces->feeds_count >= 3 ? '성공' : '도전 중';
+        $replaces->complete_6 = $replaces->feeds_count >= 6 ? '성공' : '도전 중';
+        $replaces->complete_9 = $replaces->feeds_count >= 9 ? '성공' : '도전 중';
+
         $replaces->status_text = (
             $replaces->feeds_count >= $data->record_progress_image_count &&
             (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
