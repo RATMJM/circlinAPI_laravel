@@ -733,12 +733,19 @@ class MissionController extends Controller
         $replaces = Mission::where('missions.id', $mission_id)
             ->select([
                 'users_count' => (!$data->is_available && strtotime($data->ended_at) <= now()->timestamp ? MissionStat::withTrashed() : MissionStat::query())
-                    ->selectRaw("COUNT(distinct user_id)")->whereColumn('mission_id', 'missions.id'),
+                    ->selectRaw("COUNT(distinct user_id)")
+                    ->whereColumn('mission_id', 'missions.id'),
                 'goal_distance' => MissionStat::selectRaw("IFNULL(goal_distance,0)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('mission_stats.user_id', $user_id)
                     ->orderBy('mission_stats.id', 'desc'),
-                'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                'feeds_count' => Feed::selectRaw("COUNT(1)")
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                'feed_places_count' => Feed::selectRaw("COUNT(distinct feeds.id)")
+                    ->join('feed_places', 'feed_id', 'feeds.id')
+                    ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'all_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
