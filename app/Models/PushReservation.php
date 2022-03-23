@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property mixed|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $target 푸시 대상
+ * @property string|null $target_ids 구분자 : |
  * @property string $description 푸시 설명
  * @property string $title 푸시 타이틀
  * @property string $message 푸시 내용
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereSendDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereSendTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereTarget($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereTargetIds($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PushReservation whereUrl($value)

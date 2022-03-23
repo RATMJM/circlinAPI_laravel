@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $feed_id
- * @property int $mission_stat_id
+ * @property int|null $mission_stat_id
  * @property int $mission_id
  * @property-read \App\Models\Feed $feed
  * @property-read \App\Models\Mission $mission

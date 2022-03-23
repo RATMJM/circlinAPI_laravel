@@ -295,14 +295,14 @@ function mission_areas($mission_id)
         ->orderBy('areas.code');
 }
 
-function mission_ground_text($data, $is_available, $mission_id, $user_id)
+function mission_ground_text($data, $is_available, $mission_id, $user_id, &$cert = [])
 {
     $AiText = '';
 
     foreach ($data->groupBy('type') as $type => $data) {
         if ($is_available) {
             if ($type === 'cert') {
-                $cert = Feed::where('feeds.user_id', $user_id)
+                $cert[$type] = Feed::where('feeds.user_id', $user_id)
                     // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                     ->join('feed_missions', function ($query) use ($mission_id) {
                         $query->on('feed_missions.feed_id', 'feeds.id')
@@ -310,7 +310,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
                     })
                     ->value(DB::raw("COUNT(1) > 0"));
             } elseif ($type === 'today_cert') {
-                $cert = Feed::where('feeds.user_id', $user_id)
+                $cert[$type] = Feed::where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
                     // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                     ->join('feed_missions', function ($query) use ($mission_id) {
@@ -319,7 +319,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
                     })
                     ->value(DB::raw("COUNT(1) > 0"));
             } elseif ($type === 'complete') {
-                $cert = Feed::select([
+                $cert[$type] = Feed::select([
                     DB::raw("CAST(feeds.created_at as DATE) as c"),
                     DB::raw("SUM(feeds.distance) as s")
                 ])
@@ -331,7 +331,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
                     ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
                     ->exists() ? 1 : 0;
             } elseif ($type === 'today_complete') {
-                $cert = Feed::select([
+                $cert[$type] = Feed::select([
                     DB::raw("CAST(feeds.created_at as DATE) as c"),
                     DB::raw("SUM(feeds.distance) as s")
                 ])
@@ -345,9 +345,9 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id)
                     ->exists() ? 1 : 0;
             }
 
-            if (isset($cert)) {
+            if (isset($cert[$type])) {
                 foreach ($data as $item) {
-                    if ($item->value == $cert) {
+                    if ($item->value == $cert[$type]) {
                         $AiText = $item->message;
                     }
                 }

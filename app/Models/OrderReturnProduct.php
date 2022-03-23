@@ -15,8 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $qty
  * @property string $reason 반품 사유
  * @property string $status 상태 (request|receive|complete)
- * @property string|null $canceled_at 취소 접수 거절 일시
- * @property string|null $requested_at 반품 접수 일시
+ * @property string|null $canceled_at 반품 접수 거절 일시
  * @property string|null $received_at 반품 회수 일시
  * @property string|null $completed_at 반품 완료 일시
  * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct newModelQuery()
@@ -30,7 +29,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct whereQty($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct whereReason($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct whereReceivedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct whereRequestedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderReturnProduct whereUpdatedAt($value)
  * @mixin \Eloquent

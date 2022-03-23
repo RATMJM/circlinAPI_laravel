@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\OrderProduct
  *
  * @property int $id
- * @property mixed|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property mixed $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
  * @property int $order_id
  * @property int|null $product_id 상품
  * @property int|null $brand_id 배송비

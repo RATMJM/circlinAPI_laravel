@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $qty
  * @property string $reason 교환 사유
  * @property string $status 상태 (request|receive|complete)
- * @property string|null $canceled_at 취소 접수 거절 일시
+ * @property string|null $canceled_at 반품 접수 거절 일시
  * @property string|null $received_at 교환 접수 일시
  * @property string|null $completed_at 회수 완료 일시
  * @property int $redelivery_id

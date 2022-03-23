@@ -22,10 +22,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $goal_distance_type 성공 조건 (goal/min)
  * @property array|null $goal_distances 참가하기 전 설정할 목표 거리 (km)
  * @property string|null $goal_distance_text 참가하기 전 설정할 목표 거리 접미사
+ * @property string|null $background_image 운동장 전체 fixed 배경 이미지
  * @property string $ground_title 운동장 탭 타이틀
  * @property string $record_title 내기록 탭 타이틀
  * @property string $cert_title 인증서 탭 타이틀
  * @property string|null $feeds_title 피드 탭 타이틀 (null 일 경우 노출 X)
+ * @property string $rank_title 랭킹 탭 타이틀
  * @property int $ground_is_calendar 운동장 탭 캘린더 형태 여부
  * @property string|null $ground_background_image 운동장 탭 배경이미지
  * @property string $ground_progress_type 운동장 탭 진행상황 타입 (feed/distance)
@@ -36,7 +38,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $ground_progress_text 운동장 탭 진행상황 텍스트
  * @property string $ground_box_users_count_text 운동장 탭 참가중인 유저 수 텍스트
  * @property string $ground_box_users_count_title 운동장 탭 참가중인 유저 수 타이틀
- * @property string $ground_box_summary_type feed/today_feed/distance/today_distance
  * @property string $ground_box_summary_text 운동장 탭 피드 수 텍스트
  * @property string $ground_box_summary_title 운동장 탭 피드 수 타이틀
  * @property string $ground_users_type 운동장 탭 유저 목록 타입
@@ -51,13 +52,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $record_progress_text 내기록 탭 진행상황 텍스트
  * @property string|null $record_progress_description 내기록 탭 진행상황 텍스트 옆 설명
  * @property int $record_box_is_show 내기록 탭 박스 노출 여부
- * @property string|null $record_box_left_type 내기록 탭 박스 왼쪽 타입
  * @property string|null $record_box_left_title 내기록 탭 박스 왼쪽 타이틀
  * @property string|null $record_box_left_text 내기록 탭 박스 왼쪽 텍스트
- * @property string|null $record_box_center_type 내기록 탭 박스 가운데 타입
  * @property string|null $record_box_center_title 내기록 탭 박스 가운데 타이틀
  * @property string|null $record_box_center_text 내기록 탭 박스 가운데 텍스트
- * @property string|null $record_box_right_type 내기록 탭 박스 오른쪽 타입
  * @property string|null $record_box_right_title 내기록 탭 박스 오른쪽 타이틀
  * @property string|null $record_box_right_text 내기록 탭 박스 오른쪽 텍스트
  * @property string|null $record_box_description 내기록 탭 박스 하단 설명
@@ -74,6 +72,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround query()
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereBackgroundImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertBackgroundImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertDetails($value)
@@ -96,7 +95,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBackgroundImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxSummaryText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxSummaryTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxSummaryType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxUsersCountText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxUsersCountTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundIsCalendar($value)
@@ -114,18 +112,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereIntroVideo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereLogoImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereMissionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRankTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBackgroundImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxCenterText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxCenterTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxCenterType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxIsShow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxLeftText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxLeftTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxLeftType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxRightText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxRightTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxRightType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordProgressDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordProgressImageCount($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordProgressImages($value)
