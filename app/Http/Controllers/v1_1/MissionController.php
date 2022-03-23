@@ -26,7 +26,6 @@ use App\Models\OutsideProduct;
 use App\Models\Place;
 use App\Models\User;
 use Carbon\Carbon;
-use DateTime;
 use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -982,8 +981,101 @@ class MissionController extends Controller
         $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces) : null;
         $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces) : null;
 
+        $rank = [
+            'all' => [
+                'all' => Feed::select([
+                    'user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+                ])
+                    ->join('users', 'users.id', 'user_id')
+                    ->where(FeedMission::selectRaw("count(1)>0")->whereColumn('feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id), true)
+                    ->groupBy('user_id')
+                    ->orderBy('feeds_count', 'desc')
+                    ->take(50)
+                    ->get(),
+                'male' => Feed::select([
+                    'user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+                ])
+                    ->join('users', 'users.id', 'user_id')
+                    ->where('users.gender', 'M')
+                    ->where(FeedMission::selectRaw("count(1)>0")->whereColumn('feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id), true)
+                    ->groupBy('user_id')
+                    ->orderBy('feeds_count', 'desc')
+                    ->take(50)
+                    ->get(),
+                'female' => Feed::select([
+                    'user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+                ])
+                    ->join('users', 'users.id', 'user_id')
+                    ->where('users.gender', 'W')
+                    ->where(FeedMission::selectRaw("count(1)>0")->whereColumn('feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id), true)
+                    ->groupBy('user_id')
+                    ->orderBy('feeds_count', 'desc')
+                    ->take(50)
+                    ->get(),
+            ],
+            'today' => [
+                'all' => Feed::select([
+                    'user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+                ])
+                    ->join('users', 'users.id', 'user_id')
+                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                    ->where(FeedMission::selectRaw("count(1)>0")->whereColumn('feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id), true)
+                    ->groupBy('user_id')
+                    ->orderBy('feeds_count', 'desc')
+                    ->take(50)
+                    ->get(),
+                'male' => Feed::select([
+                    'user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+                ])
+                    ->join('users', 'users.id', 'user_id')
+                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                    ->where('users.gender', 'M')
+                    ->where(FeedMission::selectRaw("count(1)>0")->whereColumn('feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id), true)
+                    ->groupBy('user_id')
+                    ->orderBy('feeds_count', 'desc')
+                    ->take(50)
+                    ->get(),
+                'female' => Feed::select([
+                    'user_id',
+                    'users.nickname',
+                    'users.profile_image',
+                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+                ])
+                    ->join('users', 'users.id', 'user_id')
+                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                    ->where('users.gender', 'W')
+                    ->where(FeedMission::selectRaw("count(1)>0")->whereColumn('feed_id', 'feeds.id')
+                        ->where('mission_id', $mission_id), true)
+                    ->groupBy('user_id')
+                    ->orderBy('feeds_count', 'desc')
+                    ->take(50)
+                    ->get(),
+            ],
+        ];
+
         return success([
             'ground' => $data,
+            'rank' => $rank,
         ]);
     }
 
@@ -1460,7 +1552,6 @@ class MissionController extends Controller
         ]);
     }
 
-
     //이벤트챌린지 소개페이지(신청페이지) 데이터 조회
     public function mission_info(Request $request): array
     {
@@ -1532,7 +1623,6 @@ class MissionController extends Controller
         }
 
     }
-
 
     public function start_event_mission(Request $request): array
     {
