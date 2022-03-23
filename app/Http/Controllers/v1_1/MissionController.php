@@ -732,7 +732,7 @@ class MissionController extends Controller
         #region replaces
         $replaces = Mission::where('missions.id', $mission_id)
             ->select([
-                #region users
+                #region info
                 'users_count' => (!$data->is_available && strtotime($data->ended_at) <= now()->timestamp ? MissionStat::withTrashed() : MissionStat::query())
                     ->selectRaw("COUNT(distinct user_id)")
                     ->whereColumn('mission_id', 'missions.id'),
@@ -790,6 +790,8 @@ class MissionController extends Controller
             ])
             ->first();
 
+        $replaces->remaining_day = now()->setTime(0, 0)
+            ->diff((new Carbon($data->ended_at))->setTime(0, 0))->days;
         $replaces->goal_distance = $data->goal_distance;
 
         $replaces->all_complete_day = Feed::select([
