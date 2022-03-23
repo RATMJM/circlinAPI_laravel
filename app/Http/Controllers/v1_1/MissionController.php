@@ -653,19 +653,16 @@ class MissionController extends Controller
             ->join('missions', function ($query) {
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
             })
-            ->leftJoin('mission_stats', function ($query) use ($user_id) {
-                $query->on('mission_stats.mission_id', 'missions.id')
-                    ->where('mission_stats.user_id', $user_id);
-            })
             ->select([
                 'mission_grounds.*',
                 'missions.is_ocr',
                 'missions.started_at',
                 'missions.ended_at',
                 is_available(),
-                'mission_stats.goal_distance',
+                'goal_distance' => MissionStat::select('goal_distance')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
             ])
-            ->orderBy('mission_stats.id', 'desc')
             ->first();
 
         if (is_null($data)) {
@@ -703,55 +700,34 @@ class MissionController extends Controller
             $data->ground_d_day_text = "";
         }
 
-        $data['users'] = match ($data->ground_users_type) {
+        $data['users'] = (match ($data->ground_users_type) {
             'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
                 ->whereNotNull('mission_stats.completed_at')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
                 })
-                ->select([
-                    'users.id as user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                    'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                        ->where('follows.user_id', $user_id),
-                ])
-                ->orderBy('mission_stats.completed_at', 'desc')
-                ->take(20)->get(),
+                ->orderBy('mission_stats.completed_at', 'desc'),
             'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
                 ->join('users', function ($query) {
                     $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
                 })
-                ->select([
-                    'users.id as user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                    'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                        ->where('follows.user_id', $user_id),
-                ])
-                ->orderBy('mission_stats.created_at', 'desc')
-                ->take(20)->get(),
-            'recent_feed' => Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-                $query->where('mission_id', $mission_id);
-            })
+                ->orderBy('mission_stats.created_at', 'desc'),
+            'recent_feed' => FeedMission::join('feeds', 'feeds.id', 'feed_id')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
                 })
-                ->select([
-                    'users.id as user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                    'is_follow' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                        ->where('follows.user_id', $user_id),
-                ])
+                ->where('mission_id', $mission_id)
                 ->groupBy('users.id')
-                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc')
-                ->take(20)->get(),
+                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
             default => null,
-        };
+        })?->select([
+            'users.id as user_id',
+            'users.nickname',
+            'users.profile_image',
+            'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+            'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
+                ->where('follows.user_id', $user_id),
+        ])->take(20)->get();
 
         #region replaces
         $replaces = Mission::where('missions.id', $mission_id)
@@ -764,37 +740,20 @@ class MissionController extends Controller
                     ->orderBy('mission_stats.id', 'desc'),
                 'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)
-                    /*->when($is_min, function ($query) {
-                        $query->where(MissionStat::select('goal_distance')
-                            ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })*/
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'all_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
                     ->whereColumn('mission_id', 'missions.id')
-                    /*->when($is_min, function ($query) {
-                        $query->where(MissionStat::select('goal_distance')
-                            ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })*/
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
                     ->whereColumn('mission_id', 'missions.id')
-                    /*->when($is_min, function ($query) {
-                        $query->where(MissionStat::select('goal_distance')
-                            ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })*/
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'total_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)
-                    /*->when($is_min, function ($query) {
-                        $query->where(MissionStat::select('goal_distance')
-                            ->whereColumn('mission_stats.id', 'feed_missions.mission_stat_id'), '<=', DB::raw("feeds.distance"));
-                    })*/
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
                 'today_cert_count' => Feed::selectRaw("COUNT(distinct feeds.user_id)")
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    // ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
                     ->join('feed_missions', function ($query) use ($mission_id) {
                         $query->on('feed_missions.feed_id', 'feeds.id')
                             ->where('feed_missions.mission_id', $mission_id);
@@ -820,7 +779,7 @@ class MissionController extends Controller
             ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
             ->where('mission_stats.mission_id', $mission_id)
             ->where('feeds.user_id', $user_id)
-            ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+            ->groupBy(['c', 'mission_stats.goal_distance'])
             ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
             ->count();
 
