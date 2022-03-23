@@ -897,6 +897,9 @@ class MissionController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
+        $data->cert_background_image = $data->cert_background_image[min($data->record_progress_present,
+            count($data->cert_background_image) - 1)];
+
         foreach ($data->toArray() as $i => $item) {
             if (!is_string($item)) continue;
             $data[$i] = code_replace($item, $replaces);
