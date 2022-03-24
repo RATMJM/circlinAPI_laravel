@@ -74,6 +74,10 @@ class FeedController extends Controller
             }
         }
 
+        if(in_array(1879, $missions)) {
+            abort('업로드 오류 메시지 테스트');
+        }
+
         try {
             DB::beginTransaction();
 
