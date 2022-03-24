@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Feed;
 use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
@@ -38,7 +37,9 @@ class MissionCategoryController extends Controller
                     });
                 })
                 ->select([
-                    'mission_categories.id', DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"), DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
+                    'mission_categories.id',
+                    DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
+                    DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
                     'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct mission_stats.user_id)")
                         ->whereColumn('mission_id', 'missions.id')
@@ -97,7 +98,11 @@ class MissionCategoryController extends Controller
         $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
             ->join('users', 'users.id', 'user_favorite_categories.user_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
@@ -138,14 +143,13 @@ class MissionCategoryController extends Controller
                     ->where('is_event', 0);
             })
             ->when($id == 0, function ($query) {
-                $query->where('is_event', 1)
-                    /*->orderBy(DB::raw("#(missions.started_at is null or missions.started_at<=now()) and
+                $query->where('is_event', 1);
+                /*->orderBy(DB::raw("#(missions.started_at is null or missions.started_at<=now()) and
                     (missions.ended_at is null or missions.ended_at>now())"), 'desc')*/
-                    ->orderBy(DB::raw("`event_order` + IF(`event_order`>0, RAND() * 0.9, 0)"), 'desc')
-                    ->orderBy(DB::raw("missions.id + IF(missions.id=1806, (RAND() * 2), 0)"), 'desc');
             })
             ->when($local, function ($query) use ($user_id) {
-                $query->where(User::select('area_code')->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
+                $query->where(User::select('area_code')
+                    ->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
             })
             ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
             ->select('missions.id')
@@ -180,25 +184,41 @@ class MissionCategoryController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
-                'missions.id', 'missions.title', 'missions.description',
+                'missions.id',
+                'missions.title',
+                'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground', 'missions.is_ocr',
-                'missions.started_at', 'missions.ended_at', is_available(),
-                'missions.thumbnail_image', 'missions.success_count',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.started_at',
+                'missions.ended_at',
+                is_available(),
+                'missions.thumbnail_image',
+                'missions.success_count',
                 'm.bookmarks',
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                'mission_stat_user_id' => MissionStat::withTrashed()
+                    ->select('user_id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->limit(1),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'mission_products.type as product_type', //'mission_products.product_id', 'mission_products.outside_product_id',
+                'mission_products.type as product_type',
+                //'mission_products.product_id', 'mission_products.outside_product_id',
                 DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
@@ -211,16 +231,19 @@ class MissionCategoryController extends Controller
                 'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                'place_description' => Place::select('description')
+                    ->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
-                    ->orderBy('mission_places.id')->limit(1),
+                    ->orderBy('mission_places.id')
+                    ->limit(1),
                 'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'feeds_count' => FeedMission::selectRaw("COUNT(distinct feeds.id)")->whereColumn('mission_id', 'missions.id')
+                'feeds_count' => FeedMission::selectRaw("COUNT(distinct feeds.id)")
+                    ->whereColumn('mission_id', 'missions.id')
                     ->join('feeds', function ($query) use ($user_id) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')
@@ -235,8 +258,15 @@ class MissionCategoryController extends Controller
         if (count($missions)) {
             [$users, $areas] = null;
             foreach ($missions as $i => $item) {
-                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
-                    'area', 'followers', 'is_following']);
+                $item->owner = arr_group($item, [
+                    'user_id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area',
+                    'followers',
+                    'is_following',
+                ]);
 
                 if ($users) {
                     $users = $users->union(mission_users($item->id, $user_id));
@@ -278,7 +308,11 @@ class MissionCategoryController extends Controller
         $users = UserFavoriteCategory::where('user_favorite_categories.mission_category_id', $category_id)
             ->join('users', 'users.id', 'user_favorite_categories.user_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
