@@ -162,7 +162,7 @@ class MissionCategoryController extends Controller
         if ($sort == SORT_POPULAR) {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_RECENT) {
-            $missions->orderBy('event_order', 'desc');
+            $missions->orderBy('event_order', 'desc')->orderBy('id', 'desc');
         } elseif ($sort == SORT_USER) {
             $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
         } elseif ($sort == SORT_COMMENT) {
