@@ -700,7 +700,7 @@ class MissionController extends Controller
             $data->ground_d_day_text = "";
         }
 
-        $data['users'] = (match ($data->ground_users_type) {
+        $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
             'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
                 ->whereNotNull('mission_stats.completed_at')
                 ->join('users', function ($query) {
@@ -712,7 +712,14 @@ class MissionController extends Controller
                     $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
                 })
                 ->orderBy('mission_stats.created_at', 'desc'),
-            'recent_feed' => FeedMission::join('feeds', 'feeds.id', 'feed_id')
+            'recent_feed' => Feed::join('feed_missions', 'feed_missions.id', 'feed_mission_id')
+                ->join('users', function ($query) {
+                    $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
+                })
+                ->where('mission_id', $mission_id)
+                ->groupBy('users.id')
+                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+            'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.id', 'feed_mission_id')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
                 })
