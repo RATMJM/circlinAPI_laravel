@@ -144,6 +144,7 @@ class MissionGround extends Model
         'goal_distances' => 'array',
         'record_progress_images' => 'array',
         'cert_background_image' => 'array',
+        'cert_custom_cert' => 'array',
         'cert_details' => 'array',
         'cert_images' => 'array',
     ];

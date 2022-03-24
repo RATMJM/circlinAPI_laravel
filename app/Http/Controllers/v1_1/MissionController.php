@@ -701,25 +701,26 @@ class MissionController extends Controller
         }
 
         $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
+            'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                ->join('users', function ($query) {
+                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                })
+                ->orderBy('mission_stats.created_at', 'desc'),
             'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
                 ->whereNotNull('mission_stats.completed_at')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
                 })
                 ->orderBy('mission_stats.completed_at', 'desc'),
-            'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
-                ->join('users', function ($query) {
-                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
-                })
-                ->orderBy('mission_stats.created_at', 'desc'),
-            'recent_feed' => Feed::join('feed_missions', 'feed_missions.id', 'feed_mission_id')
+            'recent_feed' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
                 })
                 ->where('mission_id', $mission_id)
                 ->groupBy('users.id')
                 ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
-            'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.id', 'feed_mission_id')
+            'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
                 ->join('users', function ($query) {
                     $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
                 })
