@@ -124,6 +124,27 @@ class BookmarkController extends Controller
                 $query->take($limit);
             })->get();
 
+        $grounds = MissionGround::whereIn('mission_id', $data->pluck('id'))
+            ->select([
+                'mission_id',
+                'intro_video',
+                'logo_image',
+                'code_title',
+                'code',
+                'code_placeholder',
+                'code_image',
+                'goal_distance_title',
+                'goal_distances',
+                'goal_distance_text',
+                DB::raw("goal_distance_text is not null as `need_distance`"),
+                'distance_placeholder',
+            ])
+            ->get();
+
+        foreach ($grounds as $ground) {
+            $data->firstWhere('id', $ground->mission_id)->ground = $ground;
+        }
+
         if (!$category_id) {
             $tmp = [];
             foreach ($data->groupBy('category_title') as $i => $item) {
