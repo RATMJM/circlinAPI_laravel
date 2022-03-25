@@ -663,7 +663,14 @@ class MissionController extends Controller
                 is_available(),
                 'goal_distance' => MissionStat::select('goal_distance')
                     ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id),
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->take(1),
+                'code' => MissionStat::select('code')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->take(1),
             ])
             ->first();
 
@@ -803,6 +810,8 @@ class MissionController extends Controller
                     }),
             ])
             ->first();
+
+        $replaces->code = $data->code;
 
         $replaces->remaining_day = now()->setTime(0, 0)
             ->diff((new Carbon($data->ended_at))->setTime(0, 0))->days;
