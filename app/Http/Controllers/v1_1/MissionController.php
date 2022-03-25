@@ -825,7 +825,11 @@ class MissionController extends Controller
             ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
             ->where('mission_stats.mission_id', $mission_id)
             ->groupBy(['c', 'mission_stats.goal_distance'])
-            ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+            ->when($data->goal_distance, function ($query, $goal_distance) {
+                if ($goal_distance === 'min') {
+                    $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
+                }
+            })
             ->count();
         $replaces->total_complete_day = Feed::select([
             DB::raw("CAST(feeds.created_at as DATE) as c"),
@@ -836,7 +840,11 @@ class MissionController extends Controller
             ->where('mission_stats.mission_id', $mission_id)
             ->where('feeds.user_id', $user_id)
             ->groupBy(['c', 'mission_stats.goal_distance'])
-            ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+            ->when($data->goal_distance, function ($query, $goal_distance) {
+                if ($goal_distance === 'min') {
+                    $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
+                }
+            })
             ->count();
 
         $replaces->today_complete_count = Feed::select([
