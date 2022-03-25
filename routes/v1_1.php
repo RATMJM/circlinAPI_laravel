@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\v1_1;
+use App\Http\Controllers\v2;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -120,6 +121,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 /* Home */
 Route::get('/town', [v1_1\HomeController::class, 'town'])->name('home.town');
 Route::get('/newsfeed', [v1_1\HomeController::class, 'newsfeed'])->name('home.newsfeed');
+Route::get('/newsfeed2', [v2\HomeController::class, 'newsfeed'])->name('home.newsfeed2');
 Route::get('/badge', [v1_1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::get('/banner/local', [v1_1\BannerController::class, 'category_banner'])->name('banner.local');
