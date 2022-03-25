@@ -944,97 +944,19 @@ class MissionController extends Controller
         $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
         $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
-        $rank = [
-            'all' => [
-                'all' => FeedMission::select([
-                    'user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-                ])
-                    ->join('feeds', 'feeds.id', 'feed_id')
-                    ->join('users', 'users.id', 'user_id')
-                    ->where('mission_id', $mission_id)
-                    ->groupBy('user_id')
-                    ->orderBy('feeds_count', 'desc')
-                    ->take(50)
-                    ->get(),
-                'male' => FeedMission::select([
-                    'user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-                ])
-                    ->join('feeds', 'feeds.id', 'feed_id')
-                    ->join('users', 'users.id', 'user_id')
-                    ->where('mission_id', $mission_id)
-                    ->where('gender', 'M')
-                    ->groupBy('user_id')
-                    ->orderBy('feeds_count', 'desc')
-                    ->take(50)
-                    ->get(),
-                'female' => FeedMission::select([
-                    'user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-                ])
-                    ->join('feeds', 'feeds.id', 'feed_id')
-                    ->join('users', 'users.id', 'user_id')
-                    ->where('mission_id', $mission_id)
-                    ->where('gender', 'W')
-                    ->groupBy('user_id')
-                    ->orderBy('feeds_count', 'desc')
-                    ->take(50)
-                    ->get(),
-            ],
-            'today' => [
-                'all' => FeedMission::select([
-                    'user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-                ])
-                    ->join('feeds', 'feeds.id', 'feed_id')
-                    ->join('users', 'users.id', 'user_id')
-                    ->where('mission_id', $mission_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->groupBy('user_id')
-                    ->orderBy('feeds_count', 'desc')
-                    ->take(50)
-                    ->get(),
-                'male' => FeedMission::select([
-                    'user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-                ])
-                    ->join('feeds', 'feeds.id', 'feed_id')
-                    ->join('users', 'users.id', 'user_id')
-                    ->where('mission_id', $mission_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->where('gender', 'M')
-                    ->groupBy('user_id')
-                    ->orderBy('feeds_count', 'desc')
-                    ->take(50)
-                    ->get(),
-                'female' => FeedMission::select([
-                    'user_id',
-                    'users.nickname',
-                    'users.profile_image',
-                    DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-                ])
-                    ->join('feeds', 'feeds.id', 'feed_id')
-                    ->join('users', 'users.id', 'user_id')
-                    ->where('mission_id', $mission_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->where('gender', 'W')
-                    ->groupBy('user_id')
-                    ->orderBy('feeds_count', 'desc')
-                    ->take(50)
-                    ->get(),
-            ],
-        ];
+        $rank = FeedMission::select([
+            'user_id',
+            'users.nickname',
+            'users.profile_image',
+            DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+        ])
+            ->join('feeds', 'feeds.id', 'feed_id')
+            ->join('users', 'users.id', 'user_id')
+            ->where('mission_id', $mission_id)
+            ->groupBy('user_id')
+            ->orderBy('feeds_count', 'desc')
+            ->take(50)
+            ->get();
 
         return success([
             'ground' => $data,
