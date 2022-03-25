@@ -945,13 +945,13 @@ class MissionController extends Controller
         $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
         $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
-        $rank = FeedMission::select([
+        $rank = Feed::select([
             'user_id',
             'users.nickname',
             'users.profile_image',
             DB::raw("COUNT(distinct feeds.id) as feeds_count"),
         ])
-            ->join('feeds', 'feeds.id', 'feed_id')
+            ->join('feed_missions', 'feed_id', 'feeds.id')
             ->join('users', 'users.id', 'user_id')
             ->where('mission_id', $mission_id)
             ->groupBy('user_id')
