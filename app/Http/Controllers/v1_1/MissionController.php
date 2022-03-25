@@ -946,9 +946,12 @@ class MissionController extends Controller
         $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
         $rank = Feed::select([
-            'user_id',
+            'users.id as user_id',
             'users.nickname',
             'users.profile_image',
+            'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+            'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
+                ->where('follows.user_id', $user_id),
             DB::raw("COUNT(distinct feeds.id) as feeds_count"),
         ])
             ->join('feed_missions', 'feed_id', 'feeds.id')
@@ -958,6 +961,10 @@ class MissionController extends Controller
             ->orderBy('feeds_count', 'desc')
             ->take(50)
             ->get();
+
+        foreach ($rank as $item) {
+            $item['feeds_count'] = code_replace($data->rank_value_text, $item->toArray());
+        }
 
         return success([
             'ground' => $data,

@@ -999,7 +999,11 @@ class UserController extends Controller
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
                 'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
-                    ->whereColumn('mission_id', 'missions.id'),
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where(function ($query) {
+                        $query->where('missions.ended_at', '<', date('Y-m-d H:i:s'))
+                            ->orWhereNull('mission_stats.ended_at');
+                    }),
                 'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
             ]);
 
