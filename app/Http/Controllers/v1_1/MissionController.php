@@ -709,6 +709,7 @@ class MissionController extends Controller
             $data->ground_d_day_text = "";
         }
 
+        $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
         $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
             'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
                 ->join('users', function ($query) {
