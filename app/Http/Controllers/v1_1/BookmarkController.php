@@ -166,6 +166,10 @@ class BookmarkController extends Controller
                 (missions.started_at is null or missions.started_at<='" . $date . "') and
                 (missions.ended_at is null or missions.ended_at>'" . $date . "') as is_available"),
                 'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
+                'code_type' => MissionGround::select('code_type')
+                    ->whereColumn('mission_id', 'missions.id'),
+                'max_code' => MissionStat::selectRaw("IFNULL(MAX(code),1)")
+                    ->whereColumn('mission_id', 'missions.id'),
             ])
             ->first();
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
@@ -175,7 +179,7 @@ class BookmarkController extends Controller
                 $data = MissionStat::create([
                     'user_id' => $user_id,
                     'mission_id' => $mission_id,
-                    'code' => $code,
+                    'code' => $mission->code_type === 'auto_increment' ? $mission->max_code + 1 : $code,
                     'goal_distance' => $goal_distance ??
                         MissionGround::where('mission_id', $mission_id)->value('goal_distances')[0] ?? null,
                 ]);
