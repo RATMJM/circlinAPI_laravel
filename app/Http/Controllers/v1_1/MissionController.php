@@ -358,6 +358,8 @@ class MissionController extends Controller
                     'goal_distance_title',
                     'goal_distances',
                     'goal_distance_text',
+                    DB::raw("goal_distance_text is not null as `need_distance`"),
+                    'distance_placeholder',
                 ])
                 ->first();
             $data['reward'] = $data->reward()->select(['title', 'image'])->first();
