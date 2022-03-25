@@ -10,10 +10,10 @@ use App\Models\FeedComment;
 use App\Models\FeedImage;
 use App\Models\FeedLike;
 use App\Models\FeedMission;
-use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
+use App\Models\MissionGround;
 use App\Models\MissionPush;
 use App\Models\MissionStat;
 use App\Models\MissionTreasurePoint;
@@ -74,8 +74,24 @@ class FeedController extends Controller
             }
         }
 
-        if(in_array(1879, $missions)) {
-            return success(['result' => false, 'reason' => 'test', 'message' => '업로드 오류 메시지 테스트']);
+        $grounds = MissionGround::select([
+            'mission_grounds.goal_distance_type',
+            'mission_stats.goal_distance',
+            'mission_grounds.goal_distance_text',
+        ])
+            ->join('mission_stats', 'mission_stats.mission_id', 'mission_grounds.mission_id')
+            ->whereIn('mission_id', $missions)
+            ->get();
+
+        foreach ($grounds as $ground) {
+            if ($ground->goal_distance_type === 'max_required') {
+                if ($distance > $ground->goal_distance) {
+                    return success([
+                        'result' => false,
+                        'message' => "최대 $ground->goal_distance$ground->goal_distance_text 까지 입력이 가능합니다.",
+                    ]);
+                }
+            }
         }
 
         try {
@@ -210,7 +226,11 @@ class FeedController extends Controller
                             }
                             // 남은 보상 없는 경우 제일 저렴한 보상으로
                             if (count($rewards) === 0) {
-                                $rewards[] = [$reward_points[0]->point_min, $reward_points[0]->point_max, $reward_points[0]->id];
+                                $rewards[] = [
+                                    $reward_points[0]->point_min,
+                                    $reward_points[0]->point_max,
+                                    $reward_points[0]->id,
+                                ];
                             }
 
                             // 포인트 랜덤뽑기
@@ -270,7 +290,7 @@ class FeedController extends Controller
                                 }
                             } elseif ($type === 'users_count') {
                                 $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
+                                    ->*/ join('feed_missions', function ($query) use ($mission_id) {
                                     $query->on('feed_missions.feed_id', 'feeds.id')
                                         ->where('feed_missions.mission_id', $mission_id);
                                 })
@@ -283,7 +303,7 @@ class FeedController extends Controller
                                 }
                             } elseif ($type === 'feeds_count') {
                                 $count = Feed::/*where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
-                                    ->*/join('feed_missions', function ($query) use ($mission_id) {
+                                    ->*/ join('feed_missions', function ($query) use ($mission_id) {
                                     $query->on('feed_missions.feed_id', 'feeds.id')
                                         ->where('feed_missions.mission_id', $mission_id);
                                 })
@@ -399,8 +419,15 @@ class FeedController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'feeds.id',
+                'feeds.created_at',
+                'feeds.content',
+                'feeds.is_hidden',
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
                 'feed_products.type as product_type',
@@ -469,18 +496,28 @@ class FeedController extends Controller
             ->join('missions', 'missions.id', 'feed_missions.mission_id')
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->select([
-                'missions.id', 'mission_categories.emoji', 'missions.title',
+                'missions.id',
+                'mission_categories.emoji',
+                'missions.title',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground', 'missions.is_ocr',
-                'missions.started_at', 'missions.ended_at',
-                'missions.thumbnail_image', 'missions.success_count',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.started_at',
+                'missions.ended_at',
+                'missions.thumbnail_image',
+                'missions.success_count',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id),
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                'mission_stat_user_id' => MissionStat::withTrashed()
+                    ->select('user_id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->limit(1),
                 DB::raw("$user_id as mission_stat_user_id"),
             ])
             ->get();
