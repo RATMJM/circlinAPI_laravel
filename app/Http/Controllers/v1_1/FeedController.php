@@ -80,7 +80,7 @@ class FeedController extends Controller
             'mission_grounds.goal_distance_text',
         ])
             ->join('mission_stats', 'mission_stats.mission_id', 'mission_grounds.mission_id')
-            ->whereIn('mission_id', $missions)
+            ->whereIn('mission_grounds.mission_id', $missions)
             ->get();
 
         foreach ($grounds as $ground) {
