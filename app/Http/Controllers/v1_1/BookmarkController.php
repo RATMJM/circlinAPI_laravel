@@ -168,7 +168,7 @@ class BookmarkController extends Controller
                 'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
                 'code_type' => MissionGround::select('code_type')
                     ->whereColumn('mission_id', 'missions.id'),
-                'max_code' => MissionStat::selectRaw("IFNULL(MAX(code),1)")
+                'max_code' => MissionStat::selectRaw("IFNULL(MAX(code),0)")
                     ->whereColumn('mission_id', 'missions.id'),
             ])
             ->first();
