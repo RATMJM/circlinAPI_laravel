@@ -817,7 +817,7 @@ class MissionController extends Controller
             ->diff((new Carbon($data->ended_at))->setTime(0, 0))->days;
         $replaces->goal_distance = $data->goal_distance;
 
-        $replaces->all_complete_day = Feed::select([
+        $replaces->all_complete_day = DB::query()->from(Feed::select([
             DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
             DB::raw("SUM(feeds.distance) as s"),
         ])
@@ -829,9 +829,9 @@ class MissionController extends Controller
                 if ($goal_distance === 'min') {
                     $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
                 }
-            })
+            }))
             ->count();
-        $replaces->total_complete_day = Feed::select([
+        $replaces->total_complete_day = DB::query()->from(Feed::select([
             DB::raw("CAST(feeds.created_at as DATE) as c"),
             DB::raw("SUM(feeds.distance) as s"),
         ])
@@ -844,7 +844,7 @@ class MissionController extends Controller
                 if ($goal_distance === 'min') {
                     $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
                 }
-            })
+            }))
             ->count();
 
         $replaces->today_complete_count = Feed::select([
