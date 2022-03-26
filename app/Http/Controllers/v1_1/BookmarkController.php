@@ -194,7 +194,6 @@ class BookmarkController extends Controller
                     ->orderBy('mission_stats.id', 'desc'),
             ])
             ->first();
-        dd($mission);
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
         } elseif ($mission->is_available) {
