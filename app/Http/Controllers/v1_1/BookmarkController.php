@@ -190,7 +190,8 @@ class BookmarkController extends Controller
                 'code_type' => MissionGround::select('code_type')
                     ->whereColumn('mission_id', 'missions.id'),
                 'max_code' => MissionStat::selectRaw("IFNULL(MAX(code),0)")
-                    ->whereColumn('mission_id', 'missions.id'),
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->orderBy('id', 'desc'),
             ])
             ->first();
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
