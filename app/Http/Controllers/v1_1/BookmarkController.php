@@ -189,11 +189,12 @@ class BookmarkController extends Controller
                 'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
                 'code_type' => MissionGround::select('code_type')
                     ->whereColumn('mission_id', 'missions.id'),
-                'max_code' => MissionStat::selectRaw("IFNULL(MAX(code),0)")
+                'max_code' => MissionStat::selectRaw("IFNULL(MAX(CAST(code as signed)),0)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->orderBy('mission_stats.id', 'desc'),
             ])
             ->first();
+        dd($mission);
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
             return success(['result' => false, 'reason' => 'already bookmark']);
         } elseif ($mission->is_available) {
