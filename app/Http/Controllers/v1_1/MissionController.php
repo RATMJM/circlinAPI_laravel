@@ -929,22 +929,6 @@ class MissionController extends Controller
             max($data->record_progress_present, 1), count($data->cert_background_image)
         ) - 1] : null;
 
-        foreach ($data->toArray() as $i => $item) {
-            if (!is_string($item)) continue;
-            $data[$i] = code_replace($item, $replaces);
-        }
-
-        $tmp = $data->cert_details;
-        foreach ($data->cert_details ?? [] as $i => $item) {
-            $tmp[$i]['text'] = code_replace($item['text'], $replaces);
-        }
-        $data->cert_details = $tmp;
-
-        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
-        $cert = [];
-        $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
-        $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
-
         $rank = Feed::select([
             'users.id as user_id',
             'users.nickname',
@@ -965,6 +949,22 @@ class MissionController extends Controller
         foreach ($rank as $item) {
             $item['feeds_count'] = code_replace($data->rank_value_text, $item->toArray());
         }
+
+        foreach ($data->toArray() as $i => $item) {
+            if (!is_string($item)) continue;
+            $data[$i] = code_replace($item, $replaces);
+        }
+
+        $tmp = $data->cert_details;
+        foreach ($data->cert_details ?? [] as $i => $item) {
+            $tmp[$i]['text'] = code_replace($item['text'], $replaces);
+        }
+        $data->cert_details = $tmp;
+
+        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
+        $cert = [];
+        $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
+        $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
         return success([
             'ground' => $data,
@@ -1429,8 +1429,8 @@ class MissionController extends Controller
             'today_users_count' => $today_users_count,
         ];
 
-        $AiText = code_replace(mission_ground_text($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces, $cert);
-        $AiText2 = code_replace(mission_ground_text($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces, $cert);
+        $AiText = code_replace(mission_ground_text($ai_text1, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
+        $AiText2 = code_replace(mission_ground_text($ai_text2, $event_mission_info[0]->is_available, $mission_id, $user_id), $replaces);
 
         return success([
             'success' => true,
