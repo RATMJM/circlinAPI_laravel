@@ -191,7 +191,7 @@ class BookmarkController extends Controller
                     ->whereColumn('mission_id', 'missions.id'),
                 'max_code' => MissionStat::selectRaw("IFNULL(MAX(code),0)")
                     ->whereColumn('mission_id', 'missions.id')
-                    ->orderBy('id', 'desc'),
+                    ->orderBy('mission_stats.id', 'desc'),
             ])
             ->first();
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
