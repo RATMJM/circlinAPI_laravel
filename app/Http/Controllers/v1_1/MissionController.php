@@ -671,6 +671,11 @@ class MissionController extends Controller
                     ->where('user_id', $user_id)
                     ->orderBy('id', 'desc')
                     ->take(1),
+                'entry_no' => MissionStat::select('entry_no')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->take(1),
             ])
             ->first();
 

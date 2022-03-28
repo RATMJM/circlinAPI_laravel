@@ -192,6 +192,9 @@ class BookmarkController extends Controller
                 'max_code' => MissionStat::selectRaw("IFNULL(MAX(CAST(code as signed)),0)")
                     ->whereColumn('mission_id', 'missions.id')
                     ->orderBy('mission_stats.id', 'desc'),
+                'max_no' => MissionStat::selectRaw("IFNULL(MAX(entry_no),0)")
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->orderBy('mission_stats.id', 'desc'),
             ])
             ->first();
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
@@ -201,7 +204,8 @@ class BookmarkController extends Controller
                 $data = MissionStat::create([
                     'user_id' => $user_id,
                     'mission_id' => $mission_id,
-                    'code' => $mission->code_type === 'auto_increment' ? $mission->max_code + 1 : $code,
+                    'code' => $code,
+                    'entry_no' => $mission->max_no + 1,
                     'goal_distance' => $goal_distance ??
                         MissionGround::where('mission_id', $mission_id)->value('goal_distances')[0] ?? null,
                 ]);
