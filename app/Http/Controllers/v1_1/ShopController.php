@@ -744,10 +744,10 @@ class ShopController extends Controller
                 $order_product = $order->order_products()->create([
                     'product_id' => $item['product_id'],
                     'qty' => $item['qty'],
-                    'price' => $product->sale_price,
+                    'price' => $product->sale_price * $item['qty'],
                 ]);
 
-                $order->total_price += $product->sale_price;
+                $order->total_price += $product->sale_price * $item['qty'];
 
                 // 주문한 옵션 배열 생성
                 $option_ids = [
@@ -776,10 +776,10 @@ class ShopController extends Controller
                     // 주문한 옵션 입력
                     $order_product->order_product_options()->create([
                         'product_option_id' => $option_id,
-                        'price' => $option->price,
+                        'price' => $option->price * $item['qty'],
                     ]);
 
-                    $order->total_price += $option->price;
+                    $order->total_price += $option->price * $item['qty'];
                 }
             }
 
