@@ -49,6 +49,11 @@ class Order extends Model
         'created_at' => 'date:Y-m-d H:i:s',
     ];
 
+    public function destination()
+    {
+        return $this->hasOne(OrderDestination::class);
+    }
+
     public function order_products()
     {
         return $this->hasMany(OrderProduct::class);
