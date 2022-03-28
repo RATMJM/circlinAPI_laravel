@@ -791,6 +791,8 @@ class ShopController extends Controller
 
             $order->save();
 
+            Cart::where('user_id', $user_id)->delete();
+
             return ['result' => true];
         });
 
