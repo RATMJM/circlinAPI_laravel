@@ -567,6 +567,8 @@ class MissionController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 10);
 
+        $place_id = $request->get('place_id');
+
         $feeds = FeedMission::where('feed_missions.mission_id', $mission_id)
             ->whereNull('feeds.deleted_at')
             ->where(function ($query) use ($user_id) {
@@ -578,6 +580,10 @@ class MissionController extends Controller
                     ->where(function ($query) use ($user_id) {
                         // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
                     });
+            })
+            ->when($place_id, function ($query, $place_id) {
+                $query->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                    ->where('feed_places.place_id', $place_id);
             })
             ->join('users', 'users.id', 'feeds.user_id')
             ->select([
