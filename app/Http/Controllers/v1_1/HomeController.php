@@ -286,12 +286,16 @@ class HomeController extends Controller
             })
             ->where('feeds.is_hidden', false)
             ->where('feeds.created_at', '>=', date('Y-m-d H:i:s', time() - 86400))
-            ->orderBy('id', 'desc')
-            ->skip($page * $limit)
-            ->take($limit)
+            ->orderBy('id', 'desc');
+        $feeds_count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit)
             ->get();
 
-        return success($data);
+        return success([
+            'result' => true,
+            'feeds_count' => $feeds_count,
+            'feeds' => $data,
+        ]);
     }
 
     public function badge(): array
