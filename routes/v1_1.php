@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    v1_1\PushController::gcm_notify([64175], 'test', '11');
     return ['success' => true];
 })->name('index');
 

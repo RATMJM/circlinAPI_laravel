@@ -9,6 +9,7 @@ use App\Models\MissionStat;
 use App\Models\PushHistory;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -28,6 +29,9 @@ class PushController extends Controller
      */
     public static function gcm_notify(array|string $uid, string $title, string $message, string $image = '', $tag = null, $id = null): array|null
     {
+        if (request()->header('TEST') == 1) {
+            return null;
+        }
         try {
             $users = User::whereIn('id', Arr::wrap($uid))->where('agree_push', true)
                 ->where(DB::raw("IFNULL(device_token,'')"), '!=', '')
