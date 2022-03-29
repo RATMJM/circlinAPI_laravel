@@ -8,13 +8,14 @@ use App\Models\BannerLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BannerController extends Controller
 {
     public function category_banner(Request $request, $category_id = null): array
     {
-        return $this->index($request, ['local', 'local.'.($category_id ?? $request->get('category_id'))]);
+        return $this->index($request, ['local', 'local.' . ($category_id ?? $request->get('category_id'))]);
     }
 
     public function index(Request $request, $type)
@@ -23,7 +24,16 @@ class BannerController extends Controller
 
         $now = date('Y-m-d H:i:s');
 
+        $hid_at = User::where('id', $user_id)->value('banner_hid_at');
+
+        if ((new Carbon($hid_at))->diff(now())->d >= 7) {
+            $hid_at = null;
+        }
+
         $banners = Banner::whereIn('type', Arr::wrap($type))
+            ->when($hid_at, function ($query, $hid_at) {
+                $query->where('started_at', '>', $hid_at);
+            })
             ->where(function ($query) use ($now) {
                 $query->where('started_at', '<=', $now)
                     ->orWhereNull('started_at');
@@ -37,10 +47,14 @@ class BannerController extends Controller
                     ->where('common_codes.ctg_lg', 'click_action');
             })
             ->select([
-                'banners.id', 'banners.image', 'banners.link_type', 'common_codes.content_ko as link',
+                'banners.id',
+                'banners.image',
+                'banners.link_type',
+                'common_codes.content_ko as link',
                 DB::raw("CASE WHEN link_type in ('mission','event_mission','event_mission_old') THEN mission_id
                     WHEN link_type='product' THEN product_id
-                    WHEN link_type='notice' THEN notice_id END as link_id"), 'banners.link_url'
+                    WHEN link_type='notice' THEN notice_id END as link_id"),
+                'banners.link_url',
             ])
             ->orderBy(DB::raw("`sort_num` + (RAND() * 0.9)"), 'desc')
             ->orderBy('banners.id', 'desc')
@@ -97,6 +111,21 @@ class BannerController extends Controller
             'type' => 'click',
             'banner_id' => $id,
         ]);
+
+        return success(['result' => true]);
+    }
+
+    /**
+     * POST /banner/hide
+     * 배너 일주일 보지 않기
+     *
+     * @return array
+     */
+    public function hide(): array
+    {
+        $user_id = token()->uid;
+
+        User::where('id', $user_id)->update(['banner_hid_at' => date('Y-m-d H:i:s')]);
 
         return success(['result' => true]);
     }

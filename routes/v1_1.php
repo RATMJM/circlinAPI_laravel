@@ -126,6 +126,7 @@ Route::get('/badge', [v1_1\HomeController::class, 'badge'])->name('home.badge');
 
 Route::get('/banner/local', [v1_1\BannerController::class, 'category_banner'])->name('banner.local');
 Route::get('/banner/{type}', [v1_1\BannerController::class, 'index'])->name('banner');
+Route::post('/banner/hide', [v1_1\BannerController::class, 'hide'])->name('banner.hide');
 Route::post('/banner/view/{id}', [v1_1\BannerController::class, 'view'])->name('banner.view');
 Route::post('/banner/click/{id}', [v1_1\BannerController::class, 'click'])->name('banner.click');
 
