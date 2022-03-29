@@ -3,7 +3,6 @@
 use App\Http\Controllers\v1_1\BaseController;
 use App\Models\Area;
 use App\Models\Feed;
-use App\Models\FeedPlace;
 use App\Models\Mission;
 use App\Models\MissionArea;
 use App\Models\MissionStat;
@@ -244,14 +243,27 @@ function area($table = 'users')
 
 function area_like($table = 'users')
 {
-    return Area::select('name')->where('code', DB::raw("CONCAT(SUBSTRING($table.area_code,1,5),'00000')"))->orderBy('code')->limit(1);
+    return Area::select('name')
+        ->where('code', DB::raw("CONCAT(SUBSTRING($table.area_code,1,5),'00000')"))
+        ->orderBy('code')
+        ->limit(1);
+}
+
+function is_reserve_available($as = true)
+{
+    $time = date('Y-m-d H:i:s');
+
+    return DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='$time') and
+    (missions.reserve_ended_at is null or missions.reserve_ended_at>'$time')" . ($as ? 'as is_reserve_available' : ''));
 }
 
 function is_available($as = true)
 {
     $time = date('Y-m-d H:i:s');
 
-    return DB::raw("(missions.started_at is null or missions.started_at<='$time') and
+    return DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='$time') and
+    (missions.reserve_ended_at is null or missions.reserve_ended_at>'$time')" . ($as ? 'as is_reserve_available, ' : '') .
+        "(missions.started_at is null or missions.started_at<='$time') and
     (missions.ended_at is null or missions.ended_at>'$time')" . ($as ? 'as is_available' : ''));
 }
 
@@ -270,7 +282,9 @@ function mission_users($mission_id, $user_id, $has_owner = false)
 {
     return MissionStat::withTrashed()->where('mission_stats.mission_id', $mission_id)
         ->when(!$has_owner, function ($query) {
-            $query->where(Mission::select('user_id')->whereColumn('id', 'feed_missions.mission_id')->limit(1), '!=', DB::raw('feeds.user_id'));
+            $query->where(Mission::select('user_id')
+                ->whereColumn('id', 'feed_missions.mission_id')
+                ->limit(1), '!=', DB::raw('feeds.user_id'));
         })
         ->leftJoin('users', 'users.id', 'mission_stats.user_id')
         ->leftJoin('feed_missions', 'feed_missions.mission_stat_id', 'mission_stats.id')
@@ -321,7 +335,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id, &$cert
             } elseif ($type === 'complete') {
                 $cert[$type] = Feed::select([
                     DB::raw("CAST(feeds.created_at as DATE) as c"),
-                    DB::raw("SUM(feeds.distance) as s")
+                    DB::raw("SUM(feeds.distance) as s"),
                 ])
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                     ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
@@ -333,7 +347,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id, &$cert
             } elseif ($type === 'today_complete') {
                 $cert[$type] = Feed::select([
                     DB::raw("CAST(feeds.created_at as DATE) as c"),
-                    DB::raw("SUM(feeds.distance) as s")
+                    DB::raw("SUM(feeds.distance) as s"),
                 ])
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                     ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
