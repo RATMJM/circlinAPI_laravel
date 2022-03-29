@@ -428,6 +428,7 @@ class FeedController extends Controller
                 'users.profile_image',
                 'users.gender',
                 'area' => area_like(),
+                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
                 'feed_products.type as product_type',
