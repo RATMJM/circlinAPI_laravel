@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use App\Notifications\ErrorReport;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Notification;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -35,7 +37,12 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->reportable(function (Throwable $e) {
-            //
+            if (config('app.env') !== 'local') {
+                Notification::route('slack',
+                    "https://hooks.slack.com/services/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"
+                )
+                    ->notify(new ErrorReport($e));
+            }
         });
     }
 }
