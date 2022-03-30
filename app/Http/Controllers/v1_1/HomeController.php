@@ -143,6 +143,7 @@ class HomeController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
             ->select([
+                'feeds.id',
                 'users.id as user_id',
                 'users.nickname',
                 'users.profile_image',
@@ -204,6 +205,9 @@ class HomeController extends Controller
                         });
                     }), // 해당 피드로 이모지를 보낸 적이 있는가
             ])
+            ->with(['comments' => function ($query) {
+                $query->orderBy('id', 'desc')->take(2);
+            }])
             ->orderBy('has_check')
             ->orderBy('feeds.id', 'desc');
         $feeds_count = $data->count();
