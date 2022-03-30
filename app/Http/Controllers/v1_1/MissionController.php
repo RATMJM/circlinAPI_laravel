@@ -283,8 +283,7 @@ class MissionController extends Controller
                 'missions.reserve_ended_at',
                 'missions.started_at',
                 'missions.ended_at',
-                DB::raw("(missions.started_at is null or missions.started_at<='" . date('Y-m-d H:i:s') . "') and
-                    (missions.ended_at is null or missions.ended_at>'" . date('Y-m-d H:i:s') . "') as is_available"),
+                is_available(),
                 'missions.thumbnail_image',
                 'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
