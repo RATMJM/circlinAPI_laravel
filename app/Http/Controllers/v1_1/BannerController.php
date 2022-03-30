@@ -26,7 +26,13 @@ class BannerController extends Controller
 
         $hid_at = User::where('id', $user_id)->value('banner_hid_at');
 
-        if ($type === 'float' && (new Carbon($hid_at))->diff(now())->d >= 7) {
+        $new_float = Banner::where('type', 'float')
+            ->where(function ($query) use ($hid_at) {
+                $query->where('started_at', '<=', $hid_at)
+                    ->orWhereNull('started_at');
+            })->exists();
+
+        if ($type === 'float' && (!$new_float && (new Carbon($hid_at))->diff(now())->d < 7)) {
             $banners = [];
         } else {
             $banners = Banner::whereIn('type', Arr::wrap($type))
