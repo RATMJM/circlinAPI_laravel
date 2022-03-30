@@ -29,7 +29,7 @@ class BannerController extends Controller
         $new_float = $hid_at && Banner::where('type', 'float')
                 ->where(function ($query) use ($hid_at) {
                     $query->where('started_at', '>', $hid_at)
-                        ->orWhereNull('started_at');
+                        ->where('started_at', '<', now());
                 })->exists();
 
         if ($type === 'float' && ($hid_at && !$new_float && (new Carbon($hid_at))->diff(now())->d < 7)) {
