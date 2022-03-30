@@ -286,6 +286,8 @@ class HomeController extends Controller
             })
             ->where('feeds.is_hidden', false)
             ->where('feeds.created_at', '>=', date('Y-m-d H:i:s', time() - 86400))
+            ->orderBy(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                ->where('feed_likes.user_id', $user_id))
             ->orderBy('id', 'desc');
         $feeds_count = $data->count();
         $data = $data->skip($page * $limit)->take($limit)
