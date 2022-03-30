@@ -205,9 +205,25 @@ class HomeController extends Controller
                         });
                     }), // 해당 피드로 이모지를 보낸 적이 있는가
             ])
-            ->with(['comments' => function ($query) {
-                $query->orderBy('id', 'desc')->take(2);
-            }])
+            ->with([
+                'comments' => function ($query) {
+                    $query->select([
+                        "feed_comments.id",
+                        "feed_comments.feed_id",
+                        "feed_comments.group",
+                        "feed_comments.depth",
+                        DB::raw("feed_comments.deleted_at is not null as is_delete"),
+                        "feed_comments.created_at",
+                        "feed_comments.comment",
+                        'users.id as user_id',
+                        'users.nickname',
+                        'users.profile_image',
+                        'users.gender',
+                    ])
+                        ->join('users', 'users.id', 'user_id')
+                        ->orderBy('id', 'desc')->take(2);
+                },
+            ])
             ->orderBy('has_check')
             ->orderBy('feeds.id', 'desc');
         $feeds_count = $data->count();
