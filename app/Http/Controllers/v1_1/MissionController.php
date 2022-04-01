@@ -823,6 +823,7 @@ class MissionController extends Controller
             ->first();
 
         $replaces->code = $data->code;
+        $replaces->entry_no = $data->entry_no;
 
         $replaces->remaining_day = now()->setTime(0, 0)
             ->diff((new Carbon($data->ended_at))->setTime(0, 0))->days;
