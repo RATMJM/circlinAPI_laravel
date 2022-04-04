@@ -40,7 +40,7 @@ class ErrorReport extends Notification
 
     public function toSlack($notifiable)
     {
-        $user = User::find('id', token_option()?->uid ?? null) ?? null;
+        $user = User::where('id', token_option()?->uid ?? null)->first();
         $request = request();
 
         $e = $this->e;
