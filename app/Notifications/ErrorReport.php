@@ -49,7 +49,10 @@ class ErrorReport extends Notification
 
         $uri = explode('?', $request->getRequestUri())[0];
 
-        $payload = implode("\n", $request->all());
+        $payload = '';
+        foreach ($request->all() as $key => $item) {
+            $payload .= ($payload ? "\n" : "") . "$key : $item";
+        }
 
         $content = "*써클인 API 에서 오류가 발생했습니다.*
 사용자 IP : `{$request->ip()}`
