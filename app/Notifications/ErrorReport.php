@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
@@ -39,7 +40,7 @@ class ErrorReport extends Notification
 
     public function toSlack($notifiable)
     {
-        $user = Auth::user();
+        $user = User::find('id', token_option()?->uid);
         $request = request();
 
         $e = $this->e;
