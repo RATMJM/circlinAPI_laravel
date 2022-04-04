@@ -277,10 +277,14 @@ class FeedController extends Controller
                                     }
                                 }
                             } elseif ($type === 'feed_upload_complete') {
+                                $is_min = MissionGround::where('mission_id', $mission_id)
+                                    ->value('goal_distance_type') === 'min';
                                 $count = Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                                     ->where('feed_missions.mission_id', $mission_id)
                                     ->where('feeds.user_id', $user_id)
-                                    ->where('feeds.created_at', '>=', date('Y-m-d'))
+                                    ->when($is_min, function ($query) {
+                                        $query->where('feeds.created_at', '>=', date('Y-m-d'));
+                                    })
                                     ->sum('distance') >= $stat->goal_distance ? 1 : 0;
 
                                 foreach ($pushes as $push) {
