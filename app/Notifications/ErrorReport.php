@@ -58,7 +58,7 @@ class ErrorReport extends Notification
 사용자 IP : `{$request->ip()}`
 닉네임 (ID) : `{$user?->nickname} ({$user?->id})`
 API URL : `{$request->method()} $uri`
-Payload : ``` $payload ```
+Payload : ```$payload```
 ```$message```";
 
         return (new SlackMessage())
