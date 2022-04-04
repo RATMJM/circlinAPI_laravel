@@ -313,66 +313,64 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id, &$cert
     $AiText = '';
 
     foreach ($data->groupBy('type') as $type => $data) {
-        if ($is_available) {
-            if ($type === 'cert') {
-                $cert[$type] = Feed::where('feeds.user_id', $user_id)
-                    ->join('feed_missions', function ($query) use ($mission_id) {
-                        $query->on('feed_missions.feed_id', 'feeds.id')
-                            ->where('feed_missions.mission_id', $mission_id);
-                    })
-                    ->value(DB::raw("COUNT(1) > 0"));
-            } elseif ($type === 'today_cert') {
-                $cert[$type] = Feed::where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->join('feed_missions', function ($query) use ($mission_id) {
-                        $query->on('feed_missions.feed_id', 'feeds.id')
-                            ->where('feed_missions.mission_id', $mission_id);
-                    })
-                    ->value(DB::raw("COUNT(1) > 0"));
-            } elseif ($type === 'complete') {
-                $cert[$type] = Feed::select([
-                    DB::raw("CAST(feeds.created_at as DATE) as c"),
-                    DB::raw("SUM(feeds.distance) as s"),
-                ])
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
-                    ->where('mission_stats.mission_id', $mission_id)
-                    ->where('feeds.user_id', $user_id)
-                    ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
-                    ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
-                    ->exists() ? 1 : 0;
-            } elseif ($type === 'today_complete') {
-                $cert[$type] = Feed::select([
-                    DB::raw("CAST(feeds.created_at as DATE) as c"),
-                    DB::raw("SUM(feeds.distance) as s"),
-                ])
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
-                    ->where('mission_stats.mission_id', $mission_id)
-                    ->where('feeds.user_id', $user_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
-                    ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
-                    ->exists() ? 1 : 0;
-            } elseif ($type === 'end') {
-                $cert[$type] = Mission::where('id', $mission_id)
-                    ->where('ended_at', '<', now())
-                    ->count();
-            }
-
-            if (isset($cert[$type])) {
-                foreach ($data as $item) {
-                    if ($item->value == $cert[$type]) {
-                        $AiText = $item->message;
-                    }
+        if (!array_key_exists($type, $cert)) {
+            if ($is_available) {
+                if ($type === 'cert') {
+                    $cert[$type] = Feed::where('feeds.user_id', $user_id)
+                        ->join('feed_missions', function ($query) use ($mission_id) {
+                            $query->on('feed_missions.feed_id', 'feeds.id')
+                                ->where('feed_missions.mission_id', $mission_id);
+                        })
+                        ->value(DB::raw("COUNT(1) > 0"));
+                } elseif ($type === 'today_cert') {
+                    $cert[$type] = Feed::where('feeds.user_id', $user_id)
+                        ->where('feeds.created_at', '>=', date('Y-m-d'))
+                        ->join('feed_missions', function ($query) use ($mission_id) {
+                            $query->on('feed_missions.feed_id', 'feeds.id')
+                                ->where('feed_missions.mission_id', $mission_id);
+                        })
+                        ->value(DB::raw("COUNT(1) > 0"));
+                } elseif ($type === 'complete') {
+                    $cert[$type] = Feed::select([
+                        DB::raw("CAST(feeds.created_at as DATE) as c"),
+                        DB::raw("SUM(feeds.distance) as s"),
+                    ])
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+                        ->where('mission_stats.mission_id', $mission_id)
+                        ->where('feeds.user_id', $user_id)
+                        ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+                        ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+                        ->exists() ? 1 : 0;
+                } elseif ($type === 'today_complete') {
+                    $cert[$type] = Feed::select([
+                        DB::raw("CAST(feeds.created_at as DATE) as c"),
+                        DB::raw("SUM(feeds.distance) as s"),
+                    ])
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+                        ->where('mission_stats.mission_id', $mission_id)
+                        ->where('feeds.user_id', $user_id)
+                        ->where('feeds.created_at', '>=', date('Y-m-d'))
+                        ->groupBy([DB::raw("CAST(feeds.created_at as DATE)"), 'mission_stats.goal_distance'])
+                        ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+                        ->exists() ? 1 : 0;
+                }
+            } else {
+                if ($type === 'default') {
+                    $cert[$type] = 1;
+                } elseif ($type === 'end') {
+                    $cert[$type] = Mission::where('id', $mission_id)
+                        ->where('ended_at', '<', now())
+                        ->exists() ? 1 : 0;
                 }
             }
-        } else {
-            if ($type === 'default') {
-                foreach ($data as $item) {
-                    if ($item->value > 0 && $AiText === '') {
-                        $AiText = $item->message;
-                    }
+        }
+
+        if (isset($cert[$type])) {
+            foreach ($data as $item) {
+                if ($item->value == $cert[$type]) {
+                    $AiText = $item->message;
                 }
             }
         }
