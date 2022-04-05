@@ -4,7 +4,6 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
-use App\Models\FeedMission;
 use App\Models\Follow;
 use App\Models\Mission;
 use App\Models\MissionCategory;
@@ -14,7 +13,6 @@ use App\Models\Place;
 use App\Models\Product;
 use App\Models\SearchHistory;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -28,8 +26,10 @@ class SearchController extends Controller
 
         $categories = MissionCategory::whereNotNull('mission_category_id')
             ->select([
-                'id', DB::raw("IFNULL(emoji, '') as emoji"), 'title',
-                DB::raw("IFNULL(description, '') as description")
+                'id',
+                DB::raw("IFNULL(emoji, '') as emoji"),
+                'title',
+                DB::raw("IFNULL(description, '') as description"),
             ])
             ->orderBy('id')->get();
 
@@ -46,8 +46,12 @@ class SearchController extends Controller
         $keyword = $request->get('keyword');
 
         if ($keyword) {
-            $users = $this->user($request)['data']['users'];
-            $missions = $this->mission($request)['data']['missions'];
+            $users = $this->user($request);
+            $users_count = $users['data']['users_count'];
+            $users = $users['data']['users'];
+            $missions = $this->mission($request);
+            $missions_count = $missions['data']['missions_count'];
+            $missions = $missions['data']['missions'];
 
             SearchHistory::create([
                 'user_id' => $user_id,
@@ -57,7 +61,9 @@ class SearchController extends Controller
             return success([
                 'result' => true,
                 'users' => $users,
+                'users_count' => $users_count,
                 'missions' => $missions,
+                'missions_count' => $missions_count,
             ]);
         } else {
             return success([
@@ -86,7 +92,8 @@ class SearchController extends Controller
                 ->orderBy(DB::raw("LENGTH(keyword)"));
             $data = DB::table($data)
                 ->select([
-                    'keyword', DB::raw("SUBSTRING_INDEX(GROUP_CONCAT(`type` separator '|'), '|', 1) as `type`")
+                    'keyword',
+                    DB::raw("SUBSTRING_INDEX(GROUP_CONCAT(`type` separator '|'), '|', 1) as `type`"),
                 ])
                 ->groupBy('keyword')
                 ->orderBy(DB::raw("LENGTH(keyword)"))
@@ -110,7 +117,11 @@ class SearchController extends Controller
 
         $user = User::where(DB::raw("BINARY invite_code"), $code)
             ->select([
-                'id', 'nickname', 'profile_image', 'gender', 'area' => area_like(),
+                'id',
+                'nickname',
+                'profile_image',
+                'gender',
+                'area' => area_like(),
             ])
             ->first();
 
@@ -130,7 +141,11 @@ class SearchController extends Controller
 
         $data = User::where(DB::raw("REPLACE(users.nickname,' ','')"), 'like', "%$keyword2%")
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
@@ -139,13 +154,16 @@ class SearchController extends Controller
                         $query->where('user_id', $user_id);
                     }),
             ])
-            ->orderBy('together_following', 'desc')->orderby('is_following', 'desc')->orderBy('follower', 'desc')
-            ->skip($page * $limit)->take($limit)
-            ->get();
+            ->orderBy('together_following', 'desc')
+            ->orderby('is_following', 'desc')
+            ->orderBy('follower', 'desc');
+        $data_count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit)->get();
 
         return success([
             'success' => true,
             'users' => $data,
+            'users_count' => $data_count,
         ]);
     }
 
@@ -157,7 +175,7 @@ class SearchController extends Controller
         $keyword = $request->get('keyword');
         $keyword2 = str_replace([' ', '%'], '', $keyword);
 
-        $missions = Mission::where('missions.is_show', true)
+        $data = Mission::where('missions.is_show', true)
             ->where(DB::raw("REPLACE(missions.title,' ','')"), 'like', "%$keyword2%")
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
             ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
@@ -165,25 +183,40 @@ class SearchController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
-                'missions.id', 'missions.title', 'missions.description',
+                'missions.id',
+                'missions.title',
+                'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground', 'missions.is_ocr',
-                'missions.started_at', 'missions.ended_at', is_available(),
-                'missions.thumbnail_image', 'missions.success_count',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.started_at',
+                'missions.ended_at',
+                is_available(),
+                'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'users.id as owner_id', 'users.nickname as owner_nickname',
-                'users.profile_image as owner_profile_image', 'users.gender as owner_gender',
+                'mission_stat_user_id' => MissionStat::withTrashed()
+                    ->select('user_id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->limit(1),
+                'users.id as owner_id',
+                'users.nickname as owner_nickname',
+                'users.profile_image as owner_profile_image',
+                'users.gender as owner_gender',
                 'owner_area' => area_like(),
                 'owner_followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'owner_is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'mission_products.type as product_type', 'mission_products.product_id', 'mission_products.outside_product_id',
+                'mission_products.type as product_type',
+                'mission_products.product_id',
+                'mission_products.outside_product_id',
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
@@ -195,9 +228,11 @@ class SearchController extends Controller
                 'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                'place_description' => Place::select('description')
+                    ->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
-                    ->orderBy('mission_places.id')->limit(1),
+                    ->orderBy('mission_places.id')
+                    ->limit(1),
                 'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -208,18 +243,29 @@ class SearchController extends Controller
                     ->whereColumn('mission_id', 'missions.id'),
                 'comments' => MissionComment::selectRaw("COUNT(1)")->whereCOlumn('mission_id', 'missions.id'),
             ])
-            ->withCount(['feeds' => function ($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            }])
-            ->orderBy('is_bookmark', 'desc')->orderBy('bookmarks', 'desc')->orderBy('id', 'desc')
-            ->skip($page * $limit)->take($limit)
-            ->get();
+            ->withCount([
+                'feeds' => function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                },
+            ])
+            ->orderBy('is_bookmark', 'desc')
+            ->orderBy('bookmarks', 'desc')
+            ->orderBy('id', 'desc');
+        $data_count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit)->get();
 
-        if (count($missions)) {
+        if (count($data)) {
             [$users, $areas] = null;
-            foreach ($missions as $i => $mission) {
-                $mission->owner = arr_group($mission, ['user_id', 'nickname', 'profile_image', 'gender',
-                    'area', 'followers', 'is_following']);
+            foreach ($data as $i => $mission) {
+                $mission->owner = arr_group($mission, [
+                    'user_id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area',
+                    'followers',
+                    'is_following',
+                ]);
 
                 if ($users) {
                     $users = $users->union(mission_users($mission->id, $user_id));
@@ -233,20 +279,21 @@ class SearchController extends Controller
                     $areas = mission_areas($mission->id);
                 }
             }
-            $keys = $missions->pluck('id')->toArray();
+            $keys = $data->pluck('id')->toArray();
             $users = $users->get();
             foreach ($users->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->users = $item;
+                $data[array_search($i, $keys)]['users'] = $item;
             }
             $areas = $areas->get();
             foreach ($areas->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
+                $data[array_search($i, $keys)]['areas'] = $item->pluck('name');
             }
         }
 
         return success([
             'success' => true,
-            'missions' => $missions,
+            'missions' => $data,
+            'missions_count' => $data_count,
         ]);
     }
 
@@ -260,7 +307,9 @@ class SearchController extends Controller
 
         $data = Product::where('name_ko', 'like', "%$keyword2%")
             ->select([
-                'id', 'name_ko as title', 'thumbnail_image',
+                'id',
+                'name_ko as title',
+                'thumbnail_image',
                 'brand' => Brand::select('name_ko')->whereColumn('id', 'products.brand_id'),
             ])
             ->orderBy('id', 'desc')
