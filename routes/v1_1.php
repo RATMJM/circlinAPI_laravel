@@ -97,6 +97,7 @@ Route::post('/doublezone_feed_list', [v1_1\MissionController::class, 'doublezone
 
 /* 미션 */
 Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
+    Route::get('/', [v1_1\MissionController::class, 'index'])->name('index');
     Route::post('/', [v1_1\MissionController::class, 'store'])->name('store');
     Route::group(['prefix' => '{mission_id}'], function () {
         Route::get('/', [v1_1\MissionController::class, 'show'])->name('show');

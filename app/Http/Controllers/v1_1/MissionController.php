@@ -38,6 +38,104 @@ use Intervention\Image\Facades\Image;
 
 class MissionController extends Controller
 {
+    public function index(Request $request)
+    {
+        try {
+            $user_id = token()->uid;
+
+            $category_id = $request->get('category_id');
+            $page = $request->get('page', 0);
+            $limit = $request->get('limit', 20);
+
+            $data = Mission::select([
+                'missions.id',
+                'category' => MissionCategory::select('title')->whereColumn('id', 'missions.mission_category_id'),
+                'missions.title',
+                'missions.subtitle',
+                'missions.description',
+                'missions.is_event',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.reserve_started_at',
+                'missions.reserve_ended_at',
+                'missions.started_at',
+                'missions.ended_at',
+                is_available(),
+                'missions.thumbnail_image',
+                'missions.success_count',
+                'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)->limit(1),
+                'users.id as owner_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
+                'users.greeting',
+                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('follows.target_id', 'users.id')
+                    ->where('follows.user_id', $user_id),
+                'mission_products.type as product_type', //'mission_products.product_id',
+                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
+                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                'outside_products.url as product_url',
+                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
+                'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                    ->whereColumn('mission_id', 'missions.id'),
+                'comment_total' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+            ])
+                ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
+                ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+                ->leftJoin('products', 'products.id', 'mission_products.product_id')
+                ->leftJoin('brands', 'brands.id', 'products.brand_id')
+                ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+                ->leftJoin('mission_places', 'mission_places.mission_id', 'missions.id')
+                ->leftJoin('places', 'places.id', 'mission_places.place_id')
+                ->where('missions.is_show', true)
+                ->when(isset($category_id), function ($query) use ($category_id) {
+                    $query->where('mission_category_id', $category_id);
+                })
+                ->withCount([
+                    'feeds' => function ($query) use ($user_id) {
+                        $query->where('user_id', $user_id);
+                    },
+                ])
+                ->with(['place', 'content', 'images' => function ($query) {
+                    $query->orderBy('order')->orderBy('id');
+                }])
+                ->orderBy('missions.id', 'desc');
+            $count = $data->count();
+            $data = $data->skip($page * $limit)->take($limit)->get();
+
+            foreach ($data as $item) {
+                $item['owner'] = arr_group($item, [
+                    'owner_id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area',
+                    'greeting',
+                    'followers',
+                    'is_following',
+                ]);
+                $item['product'] = arr_group($item, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+
+                $item['images'] = $item->images->pluck('image');
+                $item['areas'] = mission_areas($item->id)->pluck('name');
+            }
+
+            return success(['missions' => $data, 'missions_count' => $count]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+    }
+
     public function store(Request $request): array
     {
         try {
