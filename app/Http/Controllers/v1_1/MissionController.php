@@ -1343,7 +1343,7 @@ class MissionController extends Controller
                 'users.nickname',
                 'users.profile_image',
                 'users.id as user_id',
-                DB::raw("IFNULL(RUN_RANK.RANK,0) as RANK"),
+                DB::raw("IFNULL(RUN_RANK.RANK,0) as `RANK`"),
                 DB::raw("round(mission_stats.goal_distance - feeds.distance,3) as REMAIN_DIST"),
                 'mission_stats.goal_distance',
                 'feeds.distance',
