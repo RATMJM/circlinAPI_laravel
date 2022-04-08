@@ -7,8 +7,10 @@ use App\Models\Mission;
 use App\Models\MissionArea;
 use App\Models\MissionStat;
 use Firebase\JWT\JWT;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -381,12 +383,15 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id, &$cert
 
 function arraySnakeToCamelCase(array|object $array): array
 {
-    if (is_object($array)) {
-        $array = json_decode(json_encode($array));
+    if ($array instanceof Collection || $array instanceof Model) {
+        $array = $array->toArray();
     }
     $res = [];
     foreach ($array as $key => $item) {
-        $res[snakeToCamelCase($key)] = is_array($item) || is_object($item) ? arraySnakeToCamelCase($item) : $item;
+        Arr::set($res,
+            snakeToCamelCase($key),
+            Arr::accessible($item) || $item instanceof StdClass ? arraySnakeToCamelCase($item) : $item
+        );
     }
     return $res;
 }
@@ -394,6 +399,13 @@ function arraySnakeToCamelCase(array|object $array): array
 function snakeToCamelCase($string): string
 {
     $str = str_replace('_', '', ucwords($string, '_'));
+    $str[0] = strtolower($str[0]);
+    return dashToDot($str);
+}
+
+function dashToDot($string): string
+{
+    $str = str_replace('-', '.', $string);
     $str[0] = strtolower($str[0]);
     return $str;
 }
