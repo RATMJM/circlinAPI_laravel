@@ -363,7 +363,7 @@ class ChatController extends Controller
                 'latest_at' => ChatMessage::selectRaw('created_at - interval 9 hour')->whereColumn('chat_room_id', 'cu2.chat_room_id')
                     ->orderBy('id', 'desc')->limit(1),
                 'unread_total' => ChatMessage::selectRaw("COUNT(1)")->whereColumn('chat_room_id', 'cu2.chat_room_id')
-                    ->where(ChatUser::select('read_message_id')->whereColumn('chat_room_id', 'cu2.chat_room_id')
+                    ->where(ChatUser::selectRaw("IFNULL(read_message_id,0)")->whereColumn('chat_room_id', 'cu2.chat_room_id')
                         ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1), '<', DB::raw("chat_messages.id"))
                     ->whereColumn('chat_messages.created_at', '>=', 'cu2.created_at')
                     ->where('user_id', '!=', $user_id),
