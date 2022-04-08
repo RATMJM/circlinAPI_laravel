@@ -51,17 +51,17 @@ class MypageController extends Controller
     /**
      * 나를 팔로우
      */
-    public function follower(): array
+    public function follower(Request $request): array
     {
-        return (new UserController())->follower(token()->uid);
+        return (new UserController())->follower($request, token()->uid);
     }
 
     /**
      * 내가 팔로우
      */
-    public function following(): array
+    public function following(Request $request): array
     {
-        return (new UserController())->following(token()->uid);
+        return (new UserController())->following($request, token()->uid);
     }
 
     public function wallpaper(): array
