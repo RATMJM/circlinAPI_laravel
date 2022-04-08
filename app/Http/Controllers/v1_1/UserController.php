@@ -209,7 +209,10 @@ class UserController extends Controller
             $token = $request->get('token');
             $platform = $request->get('platform');
 
-            User::withTrashed()->where('device_token', $token)->where('id', '!=', $user_id)->update(['device_token' => '']);
+            User::withTrashed()
+                ->where('device_token', $token)
+                ->where('id', '!=', $user_id)
+                ->update(['device_token' => '']);
 
             User::where('id', $user_id)->update([
                 'device_type' => $platform,
@@ -552,48 +555,66 @@ class UserController extends Controller
     /**
      * 나를 팔로우
      */
-    public function follower($user_id): array
+    public function follower(Request $request, $user_id): array
     {
         $uid = token()->uid;
+
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 20);
 
         $users = Follow::where('follows.target_id', $user_id)
             ->join('users', 'users.id', 'follows.user_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $uid),
             ])
-            ->orderBy('follows.id', 'desc')
-            ->get();
+            ->orderBy('follows.id', 'desc');
+        $users_count = $users->count();
+        $users = $users->skip($page * $limit)->take($limit)->get();
 
         return success([
             'result' => true,
             'users' => $users,
+            'users_count' => $users_count,
         ]);
     }
 
     /**
      * 내가 팔로우
      */
-    public function following($user_id): array
+    public function following(Request $request, $user_id): array
     {
         $uid = token()->uid;
+
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 20);
 
         $users = Follow::where('follows.user_id', $user_id)
             ->join('users', 'users.id', 'follows.target_id')
             ->select([
-                'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'users.id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $uid),
             ])
-            ->orderBy('follows.id', 'desc')
-            ->get();
+            ->orderBy('follows.id', 'desc');
+        $users_count = $users->count();
+        $users = $users->skip($page * $limit)->take($limit)->get();
 
         return success([
             'result' => true,
             'users' => $users,
+            'users_count' => $users_count,
         ]);
     }
 
@@ -607,7 +628,12 @@ class UserController extends Controller
 
         $data = User::where('users.id', $user_id)
             ->select([
-                'users.nickname', 'users.point', 'users.gender', 'users.profile_image', 'users.greeting', 'area' => ($user_id == $uid ? area() : area_like()),
+                'users.nickname',
+                'users.point',
+                'users.gender',
+                'users.profile_image',
+                'users.greeting',
+                'area' => ($user_id == $uid ? area() : area_like()),
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.target_id', 'users.id'),
                 'followings' => Follow::selectRaw("COUNT(1)")->whereColumn('follows.user_id', 'users.id'),
                 'created_missions' => Mission::selectRaw("COUNT(1)")->whereColumn('user_id', 'users.id'),
@@ -683,7 +709,9 @@ class UserController extends Controller
                     });
             })
             ->select([
-                'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
+                'mission_categories.id',
+                'mission_categories.title',
+                'mission_categories.emoji',
                 DB::raw('COUNT(distinct feeds.id) as feeds'),
             ])
             ->groupBy('mission_categories.id')
@@ -717,12 +745,21 @@ class UserController extends Controller
                 });
             })*/
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content', 'feeds.is_hidden',
+                'feeds.id',
+                'feeds.created_at',
+                'feeds.content',
+                'feeds.is_hidden',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
                 'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
-                'image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
-                'image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')->orderBy('id')->limit(1),
+                'image_type' => FeedImage::select('type')
+                    ->whereColumn('feed_images.feed_id', 'feeds.id')
+                    ->orderBy('id')
+                    ->limit(1),
+                'image' => FeedImage::select('image')
+                    ->whereColumn('feed_images.feed_id', 'feeds.id')
+                    ->orderBy('id')
+                    ->limit(1),
                 'missions' => FeedMission::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'mission_id' => FeedMission::select('mission_id')->whereColumn('feed_missions.feed_id', 'feeds.id')
                     ->orderBy('id')->limit(1),
@@ -740,7 +777,8 @@ class UserController extends Controller
                 'comments' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
                 'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_likes.feed_id', 'feeds.id')
                     ->where('feed_likes.user_id', token()->uid),
-                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")->whereColumn('feed_comments.feed_id', 'feeds.id')
+                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('feed_comments.feed_id', 'feeds.id')
                     ->where('feed_comments.user_id', token()->uid),
             ])
             ->orderBy('feeds.id', 'desc');
@@ -768,8 +806,13 @@ class UserController extends Controller
             ->join('feeds', 'feeds.id', 'feed_likes.feed_id')
             ->join('users', 'users.id', 'feeds.user_id')
             ->select([
-                'feeds.id', 'feeds.created_at', 'feeds.content',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
+                'feeds.id',
+                'feeds.created_at',
+                'feeds.content',
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
                 'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
                 'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
                 'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
@@ -818,7 +861,9 @@ class UserController extends Controller
             });
 
         $categories = $missions->select([
-            'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
+            'mission_categories.id',
+            'mission_categories.title',
+            'mission_categories.emoji',
         ])
             ->groupBy('mission_categories.id')
             ->get();
@@ -837,18 +882,34 @@ class UserController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
-                'missions.mission_category_id', 'mission_categories.title', 'mission_categories.emoji',
-                'missions.id', 'missions.title', 'missions.description',
+                'missions.mission_category_id',
+                'mission_categories.title',
+                'mission_categories.emoji',
+                'missions.id',
+                'missions.title',
+                'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground', 'missions.is_ocr',
-                'missions.started_at', 'missions.ended_at',
-                'missions.thumbnail_image', 'missions.success_count',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.started_at',
+                'missions.ended_at',
+                'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()->select('user_id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                'mission_stat_user_id' => MissionStat::withTrashed()
+                    ->select('user_id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->limit(1),
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
                 'mission_products.type as product_type', //'mission_products.product_id',
                 DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
@@ -862,9 +923,11 @@ class UserController extends Controller
                 'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                'place_description' => Place::select('description')
+                    ->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
-                    ->orderBy('mission_places.id')->limit(1),
+                    ->orderBy('mission_places.id')
+                    ->limit(1),
                 'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -898,7 +961,7 @@ class UserController extends Controller
                     })->limit(1),
                 'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
                     ->where('feeds.user_id', $user_id)
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
             ->groupBy('mission_categories.id', 'missions.id', 'users.id',
                 'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
@@ -911,8 +974,15 @@ class UserController extends Controller
         if (count($missions)) {
             [$users, $areas] = null;
             foreach ($missions as $i => $mission) {
-                $mission->owner = arr_group($mission, ['user_id', 'nickname', 'profile_image', 'gender',
-                    'area', 'followers', 'is_following']);
+                $mission->owner = arr_group($mission, [
+                    'user_id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area',
+                    'followers',
+                    'is_following',
+                ]);
 
                 if ($users) {
                     $users = $users->union(mission_users($mission->id, $uid));
@@ -964,20 +1034,34 @@ class UserController extends Controller
             ->leftJoin('brands', 'brands.id', 'products.brand_id')
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
-                'mission_categories.id', 'mission_categories.title', 'mission_categories.emoji',
-                'missions.mission_category_id', 'missions.id', 'missions.title', 'missions.description',
+                'mission_categories.id',
+                'mission_categories.title',
+                'mission_categories.emoji',
+                'missions.mission_category_id',
+                'missions.id',
+                'missions.title',
+                'missions.description',
                 'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"), 'missions.event_type',
-                'missions.is_ground', 'missions.is_ocr',
-                'missions.started_at', 'missions.ended_at',
-                'missions.thumbnail_image', 'missions.success_count',
+                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.event_type',
+                'missions.is_ground',
+                'missions.is_ocr',
+                'missions.started_at',
+                'missions.ended_at',
+                'missions.thumbnail_image',
+                'missions.success_count',
                 'mission_stat_id' => MissionStat::select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $uid)->limit(1),
                 // 'users.id as mission_stat_user_id',
-                'users.id as user_id', 'users.nickname', 'users.profile_image', 'users.gender',
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $uid)
                     ->whereColumn('mission_id', 'missions.id'),
-                'mission_products.type as product_type', 'mission_products.product_id', 'mission_products.outside_product_id',
+                'mission_products.type as product_type',
+                'mission_products.product_id',
+                'mission_products.outside_product_id',
                 DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
@@ -989,9 +1073,11 @@ class UserController extends Controller
                 'place_title' => Place::select('title')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'place_description' => Place::select('description')->whereColumn('mission_places.mission_id', 'missions.id')
+                'place_description' => Place::select('description')
+                    ->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
-                    ->orderBy('mission_places.id')->limit(1),
+                    ->orderBy('mission_places.id')
+                    ->limit(1),
                 'place_image' => Place::select('image')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -1022,8 +1108,15 @@ class UserController extends Controller
         if (count($missions)) {
             [$users, $areas] = null;
             foreach ($missions as $i => $item) {
-                $item->owner = arr_group($item, ['user_id', 'nickname', 'profile_image', 'gender',
-                    'area', 'followers', 'is_following']);
+                $item->owner = arr_group($item, [
+                    'user_id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area',
+                    'followers',
+                    'is_following',
+                ]);
 
                 if ($users) {
                     $users = $users->union(mission_users($item->id, $user_id));
