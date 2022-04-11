@@ -154,7 +154,7 @@ class ChatController extends Controller
                 $latest_message . ($res->type === 'feed_emoji' ? "\n\"$message\"" : ''),
                 profile_image($user), 'chat.' . $room_id, $user_id);
 
-            broadcast(new \App\Events\ChatMessage($room_id, arraySnakeToCamelCase([])))->toOthers();
+            broadcast(new \App\Events\ChatMessage($room_id, []));
 
             $sockets = ChatUser::where('chat_room_id', $room_id)->where('user_id', '!=', token()->uid)
                 ->whereNotNull('socket_id')->join('users', 'users.id', 'user_id')->pluck('socket_id');
