@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -21,9 +22,9 @@ class ChatMessage implements ShouldBroadcast
         $this->data = $data;
     }
 
-    public function broadcastOn(): PrivateChannel
+    public function broadcastOn(): Channel
     {
-        return new PrivateChannel("chat.$this->room_id");
+        return new Channel("chat.$this->room_id");
     }
 
     public function broadcastAs(): string
