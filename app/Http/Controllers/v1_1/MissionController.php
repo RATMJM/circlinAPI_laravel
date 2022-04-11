@@ -1322,9 +1322,11 @@ class MissionController extends Controller
         // $yesterDay = date('Y-m-d', $_SERVER['REQUEST_TIME']-86400);
 
         $event_mission_info = Mission::where('missions.id', $mission_id)
-            ->where('mission_stats.user_id', $user_id)
             ->leftJoin('mission_etc', 'mission_etc.mission_id', 'missions.id')
-            ->leftJoin('mission_stats', 'mission_stats.mission_id', 'missions.id')
+            ->leftJoin('mission_stats', function ($query) use ($user_id) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->where('mission_stats.user_id', $user_id);
+            })
             ->leftJoin('users', 'users.id', 'mission_stats.user_id')
             ->leftJoin('circlinDEV.RUN_RANK', function ($query) use ($today) {
                 $query->on('RUN_RANK.CHALL_PK', 'missions.id')
