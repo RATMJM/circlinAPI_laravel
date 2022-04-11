@@ -293,7 +293,7 @@ class UserController extends Controller
     {
         $user_id = token()->uid;
 
-        $data = User::where('id', $user_id)->first();
+        $data = User::where('id', $user_id)->firstOrFail();
         if (is_null($data) || !$request->file('file')) {
             return success([
                 'result' => false,
