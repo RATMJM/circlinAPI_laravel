@@ -11,4 +11,10 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
     });
     #endregion
 });
+Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
+    #region 마이 페이지
+    Route::get('/follower', [UserController::class, 'follower'])->name('follower');
+    Route::get('/following', [UserController::class, 'following'])->name('following');
+    #endregion
+});
 #endregion
