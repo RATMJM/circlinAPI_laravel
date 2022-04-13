@@ -579,14 +579,12 @@ class UserController extends Controller
             ->when($keyword, function ($query, $keyword) {
                 $query->where('users.nickname', 'like', "%$keyword%");
             })
-            ->orderBy('follows.id', 'desc');
-        $users_count = $users->count();
-        $users = $users->skip($page * $limit)->take($limit)->get();
+            ->orderBy('follows.id', 'desc')
+            ->get();
 
         return success([
             'result' => true,
             'users' => $users,
-            'users_count' => $users_count,
         ]);
     }
 
@@ -617,14 +615,12 @@ class UserController extends Controller
             ->when($keyword, function ($query, $keyword) {
                 $query->where('users.nickname', 'like', "%$keyword%");
             })
-            ->orderBy('follows.id', 'desc');
-        $users_count = $users->count();
-        $users = $users->skip($page * $limit)->take($limit)->get();
+            ->orderBy('follows.id', 'desc')
+            ->get();
 
         return success([
             'result' => true,
             'users' => $users,
-            'users_count' => $users_count,
         ]);
     }
 
