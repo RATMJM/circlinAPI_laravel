@@ -50,9 +50,10 @@ class UserController extends Controller
     /**
      * 내가 팔로우
      */
-    public function following(Request $request, $user_id): array
+    public function following(Request $request, $user_id = null): array
     {
         $uid = token()->uid;
+        if (is_null($user_id)) $user_id = $uid;
 
         $keyword = $request->get('keyword');
 
