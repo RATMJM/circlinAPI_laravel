@@ -41,8 +41,8 @@ class NotificationController extends Controller
     {
         $user_id = $user_id ?? token()->uid;
 
-        $page = $request->get('page', 0);
-        $limit = $request->Get('limit', 50);
+        $page = $request->get('page', 0) ?? 0;
+        $limit = $request->Get('limit', 50) ?? 50;
 
         $group = [
             // 'follow',
