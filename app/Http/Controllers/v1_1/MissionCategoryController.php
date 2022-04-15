@@ -20,7 +20,7 @@ class MissionCategoryController extends Controller
 {
     public function index($town = null): array
     {
-        $user_id = token()->uid;
+        $user_id = token_option()->uid;
         if ($town === 'town') {
             $data = MissionCategory::whereNotNull('mission_categories.mission_category_id')
                 ->where(function ($query) use ($user_id) {
@@ -65,8 +65,8 @@ class MissionCategoryController extends Controller
                     DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
                     'mission_categories.description',
-                    /*'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
-                        ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),*/
+                    'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
+                        ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
                 ])->get();
         }
 
