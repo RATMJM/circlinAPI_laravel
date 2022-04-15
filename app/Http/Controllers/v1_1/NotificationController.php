@@ -37,7 +37,7 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function get(Request $request, $user_id = null)
+    public function get(Request $request = null, $user_id = null)
     {
         $user_id = $user_id ?? token()->uid;
 
