@@ -320,7 +320,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function badge(): array
+    public function badge(Request $request): array
     {
         $user_id = token()->uid;
 
@@ -331,7 +331,7 @@ class HomeController extends Controller
                 ->whereDoesntHave('feed_missions', function ($query) {
                     $query->where('created_at', '>=', init_today());
                 })->count(),
-            'notifies' => (new Collection((new NotificationController())->get()))
+            'notifies' => (collect((new NotificationController())->get($request)))
                 ->where('is_read', false)->count(),
             'messages' => (new ChatController())->index(request())['data']['rooms']->sum('unread_total'),
         ]);

@@ -12,16 +12,17 @@ use App\Models\MissionComment;
 use App\Models\Notification;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
-    public function index(): array
+    public function index(Request $request): array
     {
         $user_id = token()->uid;
 
-        $data = $this->get($user_id);
+        $data = $this->get($request, $user_id);
 
         $ids = [];
         foreach ($data->pluck('ids') as $id) {
@@ -36,14 +37,21 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function get($user_id = null)
+    public function get(Request $request, $user_id = null)
     {
         $user_id = $user_id ?? token()->uid;
 
+        $page = $request->get('page', 0);
+        $limit = $request->Get('limit', 50);
+
         $group = [
             // 'follow',
-            'feed_check', 'feed_comment', 'feed_reply',
-            'mission_like', 'mission_comment', 'mission_reply',
+            'feed_check',
+            'feed_comment',
+            'feed_reply',
+            'mission_like',
+            'mission_comment',
+            'mission_reply',
         ];
 
         $q = "'" . implode("','", $group) . "'";
@@ -66,7 +74,8 @@ class NotificationController extends Controller
                 DB::raw("CONCAT(YEAR(notifications.created_at),'|',MONTH(notifications.created_at),'|',DAY(notifications.created_at))"),
                 'notifications.feed_id', 'notifications.mission_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
-            ->take(50);
+            ->skip($page * $limit)
+            ->take($limit);
 
         $data = Notification::joinSub($data, 'n', function ($query) {
             $query->on('n.id', 'notifications.id');
@@ -81,20 +90,26 @@ class NotificationController extends Controller
                     ->where('common_codes.ctg_lg', 'notifications');
             })
             ->select([
-                'n.*', DB::raw("IF(type in ($q) and count > 1, CONCAT(type,'_multi'), type) as type"),
+                'n.*',
+                DB::raw("IF(type in ($q) and count > 1, CONCAT(type,'_multi'), type) as type"),
                 DB::raw("IFNULL(NULLIF(content_ko,''), type) as message"),
                 DB::raw("!ISNULL(read_at) as is_read"),
-                'users.nickname', 'users.profile_image', 'users.gender',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
                 'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
                 'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')
                     ->orderBy('order')->limit(1),
-                'mission_emoji' => MissionCategory::select('emoji')->whereColumn('id', 'missions.mission_category_id')->limit(1),
+                'mission_emoji' => MissionCategory::select('emoji')
+                    ->whereColumn('id', 'missions.mission_category_id')
+                    ->limit(1),
                 'missions.title as mission_title',
                 'missions.thumbnail_image as mission_image',
-                'feed_comments.comment as feed_comment', 'mission_comments.comment as mission_comment',
+                'feed_comments.comment as feed_comment',
+                'mission_comments.comment as mission_comment',
                 'notifications.variables',
             ])
             ->orderBy('id', 'desc')
@@ -134,7 +149,10 @@ class NotificationController extends Controller
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'earn_badge',
                 'mission_over', 'mission_expire'
-                => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
+                => code_replace($action['mission'], [
+                    'id' => $item->mission_id,
+                    'comment_id' => $item->mission_comment_id,
+                ]),
 
                 'feed_check_reward', 'mission_treasure' => code_replace($action['point'], []),
 
@@ -157,7 +175,10 @@ class NotificationController extends Controller
 
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'earn_badge', 'mission_expire_warning',
                 'mission_over', 'mission_expire'
-                => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
+                => code_replace($action['mission'], [
+                    'id' => $item->mission_id,
+                    'comment_id' => $item->mission_comment_id,
+                ]),
                 default => null,
             };
             $item->link_right = match ($item->type) {
@@ -172,7 +193,10 @@ class NotificationController extends Controller
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'mission_expire_warning',
                 'mission_over', 'mission_expire'
-                => code_replace($action['mission'], ['id' => $item->mission_id, 'comment_id' => $item->mission_comment_id]),
+                => code_replace($action['mission'], [
+                    'id' => $item->mission_id,
+                    'comment_id' => $item->mission_comment_id,
+                ]),
 
                 'feed_check_reward', 'mission_treasure' => code_replace($action['point'], []),
 
@@ -193,6 +217,7 @@ class NotificationController extends Controller
      * @param int|null $id integer 연결될 테이블 id
      * @param bool $push 푸시 전송 여부
      * @param null $var 해당 알림에 고정으로 넣어둘 파라미터
+     *
      * @return array
      */
     public static function send(string|array $target_ids, string $type, int|null $user_id, int $id = null, bool $push = false, $var = null): array
@@ -245,7 +270,10 @@ class NotificationController extends Controller
 
             foreach (Arr::wrap($target_ids) as $target_id) {
                 if (!in_array($target_id, $except_ids)) {
-                    $res = Notification::create(Arr::collapse([$data, ['type' => $type, 'target_id' => $target_id, 'variables' => $var]]));
+                    $res = Notification::create(Arr::collapse([
+                        $data,
+                        ['type' => $type, 'target_id' => $target_id, 'variables' => $var],
+                    ]));
                 }
             }
 
@@ -266,7 +294,9 @@ class NotificationController extends Controller
                     ->leftJoin('missions', 'missions.id', 'notifications.mission_id')
                     ->leftJoin('mission_comments', 'mission_comments.id', 'notifications.mission_comment_id')
                     ->select([
-                        'users.nickname', 'users.profile_image', 'users.gender',
+                        'users.nickname',
+                        'users.profile_image',
+                        'users.gender',
                         'feed_image_type' => FeedImage::select('type')->whereColumn('feed_images.feed_id', 'feeds.id')
                             ->orderBy('order')->limit(1),
                         'feed_image' => FeedImage::select('image')->whereColumn('feed_images.feed_id', 'feeds.id')
