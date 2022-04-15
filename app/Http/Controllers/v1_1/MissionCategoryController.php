@@ -65,8 +65,8 @@ class MissionCategoryController extends Controller
                     DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
                     'mission_categories.title',
                     'mission_categories.description',
-                    'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
-                        ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
+                    /*'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
+                        ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),*/
                 ])->get();
         }
 
