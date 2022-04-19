@@ -189,7 +189,7 @@ class ShopController extends Controller
     // 샵 카테고리 조회
     public function shop_category(Request $request): array
     {
-        $data = ProductCategory::select(['id', 'title'])
+        $data = ProductCategory::select(['id as product_category_id', 'title'])
             ->withCount('products')
             ->orderBy('products_count', 'desc')
             ->orderBy('id')
