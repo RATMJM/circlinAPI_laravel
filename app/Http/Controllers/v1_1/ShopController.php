@@ -8,6 +8,7 @@ use App\Models\CartOption;
 use App\Models\Order;
 use App\Models\PointHistory;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -188,26 +189,16 @@ class ShopController extends Controller
     // 샵 카테고리 조회
     public function shop_category(Request $request): array
     {
+        $data = ProductCategory::select(['id', 'title'])
+            ->withCount('products')
+            ->orderBy('products_count', 'desc')
+            ->orderBy('id')
+            ->get();
 
-        try {
-            DB::beginTransaction();
-
-            $categoryList = DB::select('select id as product_category_id, title
-                                            from  product_categories b
-                                            where deleted_at is null;');
-
-
-            return success([
-                'result' => true,
-                'categoryList' => $categoryList,
-            ]);
-
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return exceped($e);
-        }
-
+        return success([
+            'result' => true,
+            'categoryList' => $data,
+        ]);
     }
 
     //샵 배너 조회
