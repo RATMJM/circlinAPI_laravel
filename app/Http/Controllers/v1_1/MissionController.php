@@ -290,7 +290,7 @@ class MissionController extends Controller
             }
 
             if ($place_address && $place_title) {
-                $place = Place::updateOrCreate(['title' => $place_title, 'address' => $place_address], [
+                $place = Place::firstOrCreate(['title' => $place_title, 'address' => $place_address], [
                     'description' => $place_description,
                     'image' => $place_image,
                     'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
@@ -1197,7 +1197,7 @@ class MissionController extends Controller
             if ($place_delete) {
                 $mission->mission_place()->delete();
             } elseif ($place_address && $place_title) {
-                $place = Place::updateOrCreate(['title' => $place_title, 'address' => $place_address], [
+                $place = Place::firstOrCreate(['title' => $place_title, 'address' => $place_address], [
                     'description' => $place_description,
                     'image' => $place_image,
                     'url' => $place_url ?? urlencode("https://google.com/search?q=$place_title"),
