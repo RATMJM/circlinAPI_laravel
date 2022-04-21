@@ -382,6 +382,7 @@ class ShopController extends Controller
                     'brands.user_id',
                     'carts.qty',
                     'products.name_ko as product_name',
+                    'products.price',
                     'products.sale_price',
                     'carts.product_id',
                     'products.status',
