@@ -777,7 +777,7 @@ class ShopController extends Controller
 
                 if (Arr::has($item, 'cart_id')) {
                     $cart = Cart::where('id', $item['cart_id'])->first();
-                    $cart->cart_options->delete();
+                    $cart->cart_options()->delete();
                     $cart->delete();
                 }
             }
