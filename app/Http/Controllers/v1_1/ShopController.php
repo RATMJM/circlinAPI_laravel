@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class ShopController extends Controller
@@ -772,6 +773,10 @@ class ShopController extends Controller
                     ]);
 
                     $order->total_price += $option->price * $item['qty'];
+                }
+
+                if (Arr::has($item, 'cart_id')) {
+                    Cart::where('id', $item['cart_id'])->delete();
                 }
             }
 
