@@ -143,7 +143,7 @@ class PushController extends Controller
         foreach ($ids as $i => $id) {
             $tmp[] = $id;
             if (count($tmp) >= 1000) {
-                PushController::gcm_notify($tmp, '써클인', "[$mission_title]\n".$push->message, '', $tag, $mission_id);
+                PushController::gcm_notify($tmp, $mission_title, "[$mission_title]\n".$push->message, '', $tag, $mission_id);
                 $tmp = [];
             }
         }
