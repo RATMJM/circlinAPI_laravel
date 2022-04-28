@@ -68,8 +68,9 @@ class FeedController extends Controller
             ]);
         }
 
-        $require_place = Mission::whereIn('id', $missions)->where('is_require_place', true)->exists();
-        if ($require_place && is_null($place_title)) {
+        $not_duplicate_place = Mission::whereIn('id', $missions)
+            ->where('is_not_duplicate_place', true)->exists();
+        if ($not_duplicate_place && is_null($place_title)) {
             abort(403, '해당 미션은 장소를 꼭 인증해야 합니다.');
         }
 
