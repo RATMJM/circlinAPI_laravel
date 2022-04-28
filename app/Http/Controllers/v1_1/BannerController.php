@@ -32,7 +32,11 @@ class BannerController extends Controller
                         ->where('started_at', '<', now());
                 })->exists();
 
-        if ($type === 'float' && ($hid_at && !$new_float && (new Carbon($hid_at))->diff(now())->d < 7)) {
+        if ($type === 'float' && ($hid_at && !$new_float
+                && (new Carbon($hid_at))->toDateString() === date('Y-m-d') // 하루 보지 않기
+                //(new Carbon($hid_at))->diff(now())->d < 7 // 일주일 보지 않기
+            )
+        ) {
             $banners = [];
         } else {
             $banners = Banner::whereIn('type', Arr::wrap($type))
