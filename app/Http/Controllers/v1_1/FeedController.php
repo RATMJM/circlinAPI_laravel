@@ -68,10 +68,9 @@ class FeedController extends Controller
             ]);
         }
 
-        if (in_array(1701, $missions)) {
-            if (is_null($place_title)) {
-                abort(403, '해당 미션은 장소를 꼭 인증해야 합니다.');
-            }
+        $require_place = Mission::whereIn('id', $missions)->where('is_require_place', true)->exists();
+        if ($require_place && is_null($place_title)) {
+            abort(403, '해당 미션은 장소를 꼭 인증해야 합니다.');
         }
 
         $grounds = MissionGround::select([
@@ -278,7 +277,7 @@ class FeedController extends Controller
                                 }
                             } elseif ($type === 'feed_upload_complete') {
                                 $is_min = MissionGround::where('mission_id', $mission_id)
-                                    ->value('goal_distance_type') === 'min';
+                                        ->value('goal_distance_type') === 'min';
                                 $count = Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                                     ->where('feed_missions.mission_id', $mission_id)
                                     ->where('feeds.user_id', $user_id)

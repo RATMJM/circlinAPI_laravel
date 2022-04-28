@@ -722,13 +722,13 @@ class MissionController extends Controller
     {
         $subtitle = Mission::where('id', $mission_id)->value('subtitle');
         $places = Place::where('mission_places.mission_id', $mission_id)
-            ->when($available, function ($query) {
+            /*->when($available, function ($query) {
                 $query->whereDoesntHave('feeds', function ($query) {
                     $user_id = token()->uid;
                     $query->where('feeds.created_at', '>=', date('Y-m-d'));
                     $query->where('user_id', $user_id);
                 });
-            })
+            })*/
             ->join('mission_places', 'mission_places.place_id', 'places.id')
             ->select('places.*')
             ->distinct()
@@ -881,6 +881,12 @@ class MissionController extends Controller
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id),
+                'all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
+                        CAST(feeds.created_at as DATE), '|', place_id
+                    ))")
+                    ->join('feed_places', 'feed_id', 'feeds.id')
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->whereColumn('mission_id', 'missions.id'),
                 'today_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
                         CAST(feeds.created_at as DATE), '|', place_id
                     ))")
@@ -889,6 +895,13 @@ class MissionController extends Controller
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('feeds.created_at', '>=', date('Y-m-d'))
                     ->where('user_id', $user_id),
+                'today_all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
+                        CAST(feeds.created_at as DATE), '|', place_id
+                    ))")
+                    ->join('feed_places', 'feed_id', 'feeds.id')
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('feeds.created_at', '>=', date('Y-m-d')),
                 #endregion
 
                 #region distance
@@ -1524,8 +1537,10 @@ class MissionController extends Controller
             ])
             ->get();
 
-        $ai_text1 = new Collection(json_decode($event_mission_info[0]->ai_text1));
-        $ai_text2 = new Collection(json_decode($event_mission_info[0]->ai_text2));
+        $ai_text1 = collect(json_decode($event_mission_info[0]->ai_text1));
+        $ai_text2 = collect(json_decode($event_mission_info[0]->ai_text2));
+
+        dd($ai_text1, $ai_text2);
 
         $today_users_count = Feed::where('feeds.created_at', '>=', date('Y-m-d'))
             ->where(FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), true)
