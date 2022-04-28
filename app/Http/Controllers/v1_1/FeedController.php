@@ -78,10 +78,13 @@ class FeedController extends Controller
         foreach ($not_duplicate_missions as $mission_id) {
             $feed_places = Feed::join('feed_places', 'feed_id', 'feeds.id')
                 ->join('places', 'places.id', 'place_id')
-                ->where('feeds.created-at', '>=',date('Y-m-d'))
-                ->where(FeedMission::select('mission_id')->whereColumn('feed_id', 'feeds.id'), $mission_id)
-                ->pluck('places.title');
-            if ($feed_places->where($place_title)->count()) {
+                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->where('feeds.created_at', '>=', date('Y-m-d'))
+                ->where('mission_id', $mission_id)
+                ->where('user_id', $user_id)
+                ->pluck('places.title')
+                ->toArray();
+            if (in_array($place_title, $feed_places)) {
                 abort(403, '동일한 장소 인증은 1일 1회만 가능합니다.');
             }
         }
