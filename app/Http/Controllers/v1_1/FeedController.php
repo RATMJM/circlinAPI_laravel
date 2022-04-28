@@ -85,6 +85,11 @@ class FeedController extends Controller
                 ->pluck('places.title')
                 ->toArray();
             if (in_array($place_title, $feed_places)) {
+                return success([
+                    'result' => false,
+                    'reason' => '동일한 장소 인증은 1일 1회만 가능합니다.',
+                    'message' => '동일한 장소 인증은 1일 1회만 가능합니다.',
+                ]);
                 abort(403, '동일한 장소 인증은 1일 1회만 가능합니다.');
             }
         }
