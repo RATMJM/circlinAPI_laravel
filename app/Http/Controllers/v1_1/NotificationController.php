@@ -108,6 +108,7 @@ class NotificationController extends Controller
                     ->limit(1),
                 'missions.title as mission_title',
                 'missions.thumbnail_image as mission_image',
+                'missions.is_ground',
                 'feed_comments.comment as feed_comment',
                 'mission_comments.comment as mission_comment',
                 'notifications.variables',
@@ -149,7 +150,7 @@ class NotificationController extends Controller
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'earn_badge',
                 'mission_over', 'mission_expire'
-                => code_replace($action['mission'], [
+                => code_replace($item->is_ground ? $action['event_mission'] : $action['mission'], [
                     'id' => $item->mission_id,
                     'comment_id' => $item->mission_comment_id,
                 ]),
