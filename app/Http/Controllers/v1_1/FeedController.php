@@ -68,10 +68,22 @@ class FeedController extends Controller
             ]);
         }
 
-        $not_duplicate_place = Mission::whereIn('id', $missions)
-            ->where('is_not_duplicate_place', true)->exists();
-        if ($not_duplicate_place && is_null($place_title)) {
+        $require_place = Mission::whereIn('id', $missions)->where('is_require_place', true)->exists();
+        if ($require_place && is_null($place_title)) {
             abort(403, '해당 미션은 장소를 꼭 인증해야 합니다.');
+        }
+
+        $not_duplicate_missions = Mission::whereIn('id', $missions)
+            ->where('is_not_duplicate_place', true)->pluck('id');
+        foreach ($not_duplicate_missions as $mission_id) {
+            $feed_places = Feed::join('feed_places', 'feed_id', 'feeds.id')
+                ->join('places', 'places.id', 'place_id')
+                ->where('feeds.created-at', '>=',date('Y-m-d'))
+                ->where(FeedMission::select('mission_id')->whereColumn('feed_id', 'feeds.id'), $mission_id)
+                ->pluck('places.title');
+            if ($feed_places->where($place_title)->count()) {
+                abort(403, '동일한 장소 인증은 1일 1회만 가능합니다.');
+            }
         }
 
         $grounds = MissionGround::select([
