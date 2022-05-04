@@ -869,6 +869,9 @@ class MissionController extends Controller
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id),
+                'all_feeds_count' => Feed::selectRaw("COUNT(1)")
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->whereColumn('mission_id', 'missions.id'),
                 'today_feeds_count' => Feed::selectRaw("COUNT(1)")
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                     ->whereColumn('mission_id', 'missions.id')
