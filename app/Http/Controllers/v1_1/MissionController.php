@@ -889,7 +889,7 @@ class MissionController extends Controller
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id),
                 'all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
-                        CAST(feeds.created_at as DATE), '|', place_id
+                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
                     ))")
                     ->join('feed_places', 'feed_id', 'feeds.id')
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
