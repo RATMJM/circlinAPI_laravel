@@ -17975,12 +17975,12 @@ namespace  {
              * Set the columns to be selected.
              *
              * @param array|mixed $columns
-             * @return \Illuminate\Database\Query\Builder
+             * @return \Illuminate\Database\Query\Builder|Eloquent
              * @static
              */
             public static function select($columns = [])
             {
-                                /** @var \Illuminate\Database\Query\Builder $instance */
+                                /** @var \Illuminate\Database\Query\Builder|Eloquent $instance */
                                 return $instance->select($columns);
             }
 
