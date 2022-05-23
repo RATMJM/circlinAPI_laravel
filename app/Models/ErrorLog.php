@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\ErrorLog
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $client_time
  * @property int|null $user_id 누가

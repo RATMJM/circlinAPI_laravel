@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\NoticeImage
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $notice_id
  * @property int|null $order

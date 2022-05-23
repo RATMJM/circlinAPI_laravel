@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\MissionTreasurePoint
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $mission_id
  * @property int $point_min 최소 지급 포인트

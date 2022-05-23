@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\Notification
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $target_id 알림 받는 사람
  * @property string $type 알림 구분 (출력 내용은 common_codes)
@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Feed|null $feed
  * @property-read \App\Models\FeedComment|null $feed_comment
  * @property-read \App\Models\Mission|null $mission
- * @property-read \App\Models\MissionComment $mission_commenet
+ * @property-read \App\Models\MissionComment|null $mission_commenet
  * @property-read \App\Models\User $target
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder|Notification newModelQuery()

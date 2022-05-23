@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\MissionGround
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $mission_id
  * @property string|null $intro_video 소개 페이지 상단 동영상
  * @property string|null $logo_image 상단 로고
+ * @property string|null $code_type 코드 타입
  * @property string|null $code_title 입장코드 라벨
  * @property string|null $code 입장코드 (있으면 비교, 없으면 입력 받기만)
  * @property string|null $code_placeholder 입장코드 입력란 placeholder
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $goal_distance_type 성공 조건 (goal/min)
  * @property array|null $goal_distances 참가하기 전 설정할 목표 거리 (km)
  * @property string|null $goal_distance_text 참가하기 전 설정할 목표 거리 접미사
+ * @property string|null $distance_placeholder
  * @property string|null $background_image 운동장 전체 fixed 배경 이미지
  * @property string $ground_title 운동장 탭 타이틀
  * @property string $record_title 내기록 탭 타이틀
@@ -40,6 +42,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $ground_box_users_count_title 운동장 탭 참가중인 유저 수 타이틀
  * @property string $ground_box_summary_text 운동장 탭 피드 수 텍스트
  * @property string $ground_box_summary_title 운동장 탭 피드 수 타이틀
+ * @property string|null $ground_banner_image
+ * @property string|null $ground_banner_type
+ * @property string|null $ground_banner_link
  * @property string $ground_users_type 운동장 탭 유저 목록 타입
  * @property string $ground_users_title 운동장 탭 유저 목록 타이틀
  * @property string $ground_users_text 운동장 탭 유저 목록 비었을 때 텍스트
@@ -61,11 +66,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $record_box_description 내기록 탭 박스 하단 설명
  * @property string $cert_subtitle 인증서 탭 인증서 타이틀
  * @property string|null $cert_description 인증서 탭 내용
- * @property string|null $cert_background_image 인증서 탭 인증서 배경이미지
+ * @property array|null $cert_background_image 인증서 탭 인증서 배경 이미지
+ * @property array|null $cert_custom_cert
  * @property array|null $cert_details 인증서 탭 인증서 상세내용
  * @property array|null $cert_images 인증서 탭 하단 이미지
  * @property string|null $cert_disabled_text 인증서 탭 비활성화 상태 멘트
  * @property int $cert_enabled_feeds_count 인증서 탭 인증서 활성화될 피드 수
+ * @property string|null $rank_subtitle 랭킹 탭 부제목
+ * @property string|null $rank_value_text 랭킹 탭 피드 수 포맷
  * @property string $feeds_filter_title 전체 피드 탭 필터 타이틀
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionCalendarVideo[] $calendar_videos
  * @property-read int|null $calendar_videos_count
@@ -74,6 +82,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround query()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereBackgroundImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertBackgroundImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertCustomCert($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertDetails($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCertDisabledText($value)
@@ -85,7 +94,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodePlaceholder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistancePlaceholder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereFeedsFilterTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereFeedsTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGoalDistanceText($value)
@@ -93,6 +104,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGoalDistanceType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGoalDistances($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBackgroundImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBannerImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBannerLink($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBannerType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxSummaryText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxSummaryTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxUsersCountText($value)
@@ -112,7 +126,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereIntroVideo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereLogoImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereMissionId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRankSubtitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRankTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRankValueText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBackgroundImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxCenterText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereRecordBoxCenterTitle($value)
@@ -141,6 +157,7 @@ class MissionGround extends Model
 
     protected $casts = [
         'created_at' => 'date:Y-m-d H:i:s',
+        'updated_at' => 'date:Y-m-d H:i:s',
         'goal_distances' => 'array',
         'record_progress_images' => 'array',
         'cert_background_image' => 'array',

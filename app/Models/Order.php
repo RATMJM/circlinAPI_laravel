@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\Order
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $order_no
  * @property int $user_id
@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property string|null $imp_id 결제 식별번호(아임포트 키)
  * @property string|null $merchant_id
+ * @property-read \App\Models\OrderDestination|null $destination
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderProduct[] $order_products
  * @property-read int|null $order_products_count
  * @method static \Illuminate\Database\Eloquent\Builder|Order newModelQuery()

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\ProductReviewImage
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $product_review_id
  * @property int|null $order

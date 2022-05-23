@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\CommonCode
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $ctg_lg
  * @property string|null $ctg_md

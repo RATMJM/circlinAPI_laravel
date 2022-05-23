@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
  * App\Models\User
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $email
  * @property string|null $email_verified_at 이메일 인증 일시
@@ -49,6 +49,7 @@ use Illuminate\Notifications\Notifiable;
  * @property int $agree_push 푸시알림 동의
  * @property int $agree_push_mission 미션알림 동의
  * @property int $agree_ad 광고수신 동의
+ * @property string|null $banner_hid_at 배너 보지않기 시점
  * @property string|null $invite_code 초대코드
  * @property int|null $recommend_user_id
  * @property string|null $recommend_updated_at
@@ -85,6 +86,7 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereAreaCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereAreaUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereBackgroundImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereBannerHidAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCurrentVersion($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereDeletedAt($value)

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\DeleteUser
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id 기존에는 user 삭제해서 fk 못검
  * @property string|null $reason 탈퇴사유

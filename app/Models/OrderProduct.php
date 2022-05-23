@@ -9,13 +9,15 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\OrderProduct
  *
  * @property int $id
- * @property mixed $created_at
+ * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property int $order_id
  * @property int|null $product_id 상품
  * @property int|null $brand_id 배송비
  * @property int|null $qty
  * @property int $price 구매 당시 단일 가격 or 배송비
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderProductOption[] $order_product_options
+ * @property-read int|null $order_product_options_count
  * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|OrderProduct query()

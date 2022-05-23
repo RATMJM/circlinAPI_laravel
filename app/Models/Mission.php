@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\Mission
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id 미션 제작자
  * @property int $mission_category_id
@@ -24,12 +24,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $ended_at 종료 일시
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property int $user_limit 최대 참여자 수(0은 무제한)
+ * @property int $product_limit 환급 챌린지 최대 구매 제품 수
  * @property int $success_count x회 인증 시 성공 팝업 (지금은 1,0으로 운영)
  * @property int $is_show 노출 여부
  * @property int $is_tutorial
  * @property bool $is_event 이벤트 여부
  * @property int $is_ground 운동장으로 입장 여부
  * @property int $is_ocr OCR 필요한 미션인지
+ * @property int $is_require_place 장소 인증 필수 여부
+ * @property int $is_not_duplicate_place 일일 장소 중복 인증 불가 여부
  * @property int|null $event_type ~5.0 미션룸 구분
  * @property int $event_order 이벤트 페이지 정렬
  * @property int $reward_point 이벤트 성공 보상
@@ -73,10 +76,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsEvent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsGround($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsNotDuplicatePlace($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsOcr($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsRequirePlace($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsShow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsTutorial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereMissionCategoryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Mission whereProductLimit($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereReserveEndedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereReserveStartedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereRewardPoint($value)

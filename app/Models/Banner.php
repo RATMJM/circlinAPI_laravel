@@ -10,13 +10,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\Banner
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $type 어디에 노출되는 광고인지 (float|shop|local)
  * @property int $sort_num 정렬 순서 (높을수록 우선)
  * @property string $name 배너명
  * @property string|null $description 배너 상세설명
- * @property string|null $started_at 배너 시작 일시
+ * @property string $started_at 배너 시작 일시
  * @property string|null $ended_at 배너 종료 일시
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property string $image 배너 이미지

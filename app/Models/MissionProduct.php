@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\MissionProduct
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $mission_id
  * @property string $type 내부상품인지 외부상품인지 (inside|outside)

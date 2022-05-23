@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\PushHistory
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $target_id 푸시 받은 사람
  * @property string|null $device_token

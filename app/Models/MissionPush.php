@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\MissionPush
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $mission_id
  * @property string $type 조건 (bookmark,feed_upload,first_feed_upload,users_count,feeds_count)

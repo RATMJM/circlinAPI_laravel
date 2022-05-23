@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\CartOption
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $cart_id
  * @property int $product_option_id

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\OutsideProduct
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $product_id 상품 고유 ID
  * @property string|null $brand

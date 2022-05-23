@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\MissionStat
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id
  * @property int $mission_id
  * @property \Illuminate\Support\Carbon|null $ended_at 미션 콤보 마지막 기록 일시
  * @property string|null $completed_at 이벤트 미션 성공 일시
  * @property string|null $code 이벤트 미션 참가할 때 입력한 코드
+ * @property int|null $entry_no 미션 참여 순번
  * @property float|null $goal_distance 이벤트 미션 목표 거리
  * @property string|null $certification_image 인증서에 업로드한 이미지
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedMission[] $feed_missions
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereCompletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereEndedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereEntryNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereGoalDistance($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionStat whereMissionId($value)

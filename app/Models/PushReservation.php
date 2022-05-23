@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * App\Models\PushReservation
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $target 푸시 대상
  * @property string|null $target_ids 구분자 : |
- * @property string $description 푸시 설명
+ * @property string|null $description 푸시 설명
  * @property string $title 푸시 타이틀
  * @property string $message 푸시 내용
  * @property string|null $send_date 발송 일자 (없으면 매일)

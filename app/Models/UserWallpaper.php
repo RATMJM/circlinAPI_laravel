@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\UserWallpaper
  *
  * @property int $id
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id
  * @property string|null $title 스킨 이름
