@@ -1066,8 +1066,10 @@ class MissionController extends Controller
             'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
                 ->where('follows.user_id', $user_id),
             DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+            DB::raw("COUNT(distinct feed_places.id) as feed_places_count"),
         ])
             ->join('feed_missions', 'feed_id', 'feeds.id')
+            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
             ->join('users', 'users.id', 'user_id')
             ->where('mission_id', $mission_id)
             ->groupBy('user_id')
