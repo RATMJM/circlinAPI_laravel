@@ -30,7 +30,6 @@ use Exception;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -105,9 +104,13 @@ class MissionController extends Controller
                         $query->where('user_id', $user_id);
                     },
                 ])
-                ->with(['place', 'content', 'images' => function ($query) {
-                    $query->orderBy('order')->orderBy('id');
-                }])
+                ->with([
+                    'place',
+                    'content',
+                    'images' => function ($query) {
+                        $query->orderBy('order')->orderBy('id');
+                    },
+                ])
                 ->orderBy('missions.id', 'desc');
             $count = $data->count();
             $data = $data->skip($page * $limit)->take($limit)->get();
@@ -123,7 +126,15 @@ class MissionController extends Controller
                     'followers',
                     'is_following',
                 ]);
-                $item['product'] = arr_group($item, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+                $item['product'] = arr_group($item, [
+                    'type',
+                    'id',
+                    'brand',
+                    'title',
+                    'image',
+                    'url',
+                    'price',
+                ], 'product_');
 
                 $item['images'] = $item->images->pluck('image');
                 $item['areas'] = mission_areas($item->id)->pluck('name');
@@ -742,6 +753,20 @@ class MissionController extends Controller
         ]);
     }
 
+    public function ground2($mission_id)
+    {
+        $user_id = token()->uid;
+
+        $data = MissionGround::select(selectMissionGround($user_id))
+            ->join('missions', function ($query) {
+                $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
+            })
+            ->where('missions.id', $mission_id)
+            ->firstOrFail();
+
+
+    }
+
     /**
      * 챌린지 운동장
      *
@@ -759,11 +784,20 @@ class MissionController extends Controller
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
             })
             ->select([
-                'mission_grounds.*',
                 'missions.is_ocr',
+                'missions.reserve_started_at',
+                'missions.reserve_ended_at',
                 'missions.started_at',
                 'missions.ended_at',
                 is_available(),
+                DB::raw("CASE WHEN
+                    (missions.started_at is null or missions.started_at <= now()) and
+                    (missions.ended_at is null or missions.ended_at >= now())
+                THEN 'ongoing'
+                WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
+                    (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
+                THEN 'reserve'
+                WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
                 'goal_distance' => MissionStat::select('goal_distance')
                     ->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)
@@ -779,8 +813,9 @@ class MissionController extends Controller
                     ->where('user_id', $user_id)
                     ->orderBy('id', 'desc')
                     ->take(1),
+                'mission_grounds.*',
             ])
-            ->first();
+            ->firstOrFail();
 
         if (is_null($data)) {
             return success(['result' => false, 'reason' => 'not exist data']);
@@ -1026,9 +1061,14 @@ class MissionController extends Controller
         $replaces = $replaces->toArray();
         #endregion
 
-        $data->ground_progress_present = round($replaces[$data->ground_progress_type] ?? 0, 1);
+        $data['ground_progress_present'] = round($replaces[$data->ground_progress_type] ?? 0, 1);
 
-        $data->record_progress_present = round($replaces[$data->record_progress_type] ?? 0);
+        if ($data['ground_progress_present'] >= $data->ground_progress_max) {
+            $data->ground_progress_background_image = $data->ground_progress_complete_image;
+            $data->ground_progress_image = $data->ground_progress_complete_image;
+        }
+
+        $data['record_progress_present'] = round($replaces[$data->record_progress_type] ?? 0);
 
         $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
             $query->where('mission_id', $mission_id);

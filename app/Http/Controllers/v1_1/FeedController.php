@@ -95,8 +95,8 @@ class FeedController extends Controller
         }
 
         $grounds = MissionGround::select([
-            'mission_grounds.goal_distance_type',
-            'mission_stats.goal_distance',
+            'mission_grounds.distance_min',
+            'mission_grounds.distance_max',
             'mission_grounds.goal_distance_text',
         ])
             ->join('mission_stats', 'mission_stats.mission_id', 'mission_grounds.mission_id')
@@ -104,11 +104,19 @@ class FeedController extends Controller
             ->get();
 
         foreach ($grounds as $ground) {
-            if ($ground->goal_distance_type === 'max_required') {
-                if ($distance > $ground->goal_distance) {
+            if (!is_null($ground->distance_min)) {
+                if ($distance < $ground->distance_min) {
                     return success([
                         'result' => false,
-                        'message' => "최대 $ground->goal_distance$ground->goal_distance_text 까지 입력이 가능합니다.",
+                        'message' => "최소 $ground->distance_min$ground->goal_distance_text 부터 입력이 가능합니다.",
+                    ]);
+                }
+            }
+            if (!is_null($ground->distance_max)) {
+                if ($distance > $ground->distance_max) {
+                    return success([
+                        'result' => false,
+                        'message' => "최대 $ground->distance_max$ground->goal_distance_text 까지 입력이 가능합니다.",
                     ]);
                 }
             }

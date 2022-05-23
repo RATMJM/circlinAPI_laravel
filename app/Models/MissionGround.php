@@ -23,7 +23,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $goal_distance_type 성공 조건 (goal/min)
  * @property array|null $goal_distances 참가하기 전 설정할 목표 거리 (km)
  * @property string|null $goal_distance_text 참가하기 전 설정할 목표 거리 접미사
- * @property string|null $distance_placeholder
+ * @property int|null $distance_min 인증 시 최소 거리
+ * @property int|null $distnace_max 인증 시 최대 거리
+ * @property string|null $distance_placeholder 입력란 placeholder
  * @property string|null $background_image 운동장 전체 fixed 배경 이미지
  * @property string $ground_title 운동장 탭 타이틀
  * @property string $record_title 내기록 탭 타이틀
@@ -36,6 +38,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $ground_progress_max 운동장 탭 진행상황 최대치
  * @property string|null $ground_progress_background_image 운동장 탭 진행상황 배경이미지
  * @property string|null $ground_progress_image 운동장 탭 진행상황 차오르는 이미지
+ * @property string|null $ground_progress_complete_image 운동장 탭 진행상황 완료됐을 때 이미지
  * @property string|null $ground_progress_title 운동장 탭 진행상황 타이틀
  * @property string $ground_progress_text 운동장 탭 진행상황 텍스트
  * @property string $ground_box_users_count_text 운동장 탭 참가중인 유저 수 텍스트
@@ -96,7 +99,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistanceMin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistancePlaceholder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistnaceMax($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereFeedsFilterTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereFeedsTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGoalDistanceText($value)
@@ -113,6 +118,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundBoxUsersCountTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundIsCalendar($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundProgressBackgroundImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundProgressCompleteImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundProgressImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundProgressMax($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGroundProgressText($value)
