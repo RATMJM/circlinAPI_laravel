@@ -348,6 +348,7 @@ class ScheduleController extends Controller
             'feeds.user_id',
             DB::raw("COUNT(distinct feeds.id) as feeds_count"),
             DB::raw("SUM(IFNULL(feeds.distance,0)) as summation"),
+            DB::raw("MAX(feeds.created_at) as c")
         ])
             ->join('feed_missions', 'mission_id', 'missions.id')
             ->join('feeds', fn($query) => $query->on('feeds.id', 'feed_id')->whereNull('feeds.deleted_at'))
@@ -357,6 +358,7 @@ class ScheduleController extends Controller
             ->groupBy(['missions.id', 'feeds.user_id'])
             ->orderBy('missions.id')
             ->orderBy('feeds_count', 'desc')
+            ->orderBy('c')
             ->get()
             ->groupBy('id');
 
