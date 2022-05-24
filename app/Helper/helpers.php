@@ -114,8 +114,8 @@ function code_replace($message, $replaces)
     $res[1] = array_unique($res[1]);
 
     foreach ($res[1] as $i => $key) {
-        $replace = $replaces instanceof Replace ? $replaces->get($key) : $replaces[$key];
-        $message = str_replace($res[0][$i], $replace ?? $res[3][$i], $message);
+        $replace = ($replaces instanceof Replace ? $replaces->get($key) : $replaces[$key]) ?? $res[3][$i];
+        $message = str_replace($res[0][$i], $replace, $message);
     }
     return $message;
 }
