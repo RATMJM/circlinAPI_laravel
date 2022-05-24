@@ -1265,6 +1265,12 @@ class MissionController extends Controller
             ->take($limit)
             ->get();
 
+        $rank_value_text = MissionGround::where('mission_id', $mission_id)->value('rank_value_text');
+
+        foreach ($data as $item) {
+            $item['feeds_count'] = code_replace($rank_value_text, ['feeds_count' => $item->feeds_count]);
+        }
+
         return success($data);
     }
 

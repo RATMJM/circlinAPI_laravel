@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $mission_rank_id
  * @property int $user_id
+ * @property int $rank
  * @property int $feeds_count
  * @property int $summation
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser newModelQuery()
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser whereFeedsCount($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser whereMissionRankId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser whereRank($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser whereSummation($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRankUser whereUserId($value)
  * @mixin \Eloquent
