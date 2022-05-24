@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\CommonCode;
 use App\Models\Feed;
 use App\Models\Follow;
-use App\Models\Log;
+use App\Models\Mission;
+use App\Models\MissionRank;
 use App\Models\MissionStat;
 use App\Models\PushReservation;
 use App\Models\SortUser;
 use App\Models\User;
 use App\Models\UserStat;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
@@ -305,7 +307,13 @@ class ScheduleController extends Controller
             $query->where('send_date', date('Y-m-d'))->orWhereNull('send_date');
         })
             ->where(DB::raw("DATE_FORMAT(send_time, '%H:%i')"), date('H:i'))
-            ->select(['target', 'target_ids', 'title', 'message', DB::raw("DATE_FORMAT(send_time, '%H:%i') as send_time")])
+            ->select([
+                'target',
+                'target_ids',
+                'title',
+                'message',
+                DB::raw("DATE_FORMAT(send_time, '%H:%i') as send_time"),
+            ])
             ->get();
 
         echo $data;
@@ -330,6 +338,34 @@ class ScheduleController extends Controller
                 }
             }
             PushController::gcm_notify($tmp, $item->title, $item->message, '');
+        }
+    }
+
+    public static function missionRanking()
+    {
+        $missions = Mission::select([
+            'missions.id',
+            'feeds.user_id',
+            DB::raw("COUNT(distinct feeds.id) as feeds_count"),
+            DB::raw("SUM(IFNULL(feeds.distance,0)) as summation"),
+        ])
+            ->join('feed_missions', 'mission_id', 'missions.id')
+            ->join('feeds', fn($query) => $query->on('feeds.id', 'feed_id')->whereNull('feeds.deleted_at'))
+            ->where('is_ground', true)
+            ->where(fn($query) => $query->where('missions.started_at', '<=', now())->orWhereNull('missions.started_at'))
+            ->where(fn($query) => $query->where('missions.ended_at', '>=', now())->orWhereNull('missions.ended_at'))
+            ->groupBy(['missions.id', 'feeds.user_id'])
+            ->orderBy('missions.id')
+            ->orderBy('feeds_count', 'desc')
+            ->get()
+            ->groupBy('id');
+
+        foreach ($missions as $id => $mission) {
+            $rank = MissionRank::create(['mission_id' => $id]);
+            $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+                $item->only(['user_id', 'feeds_count', 'summation']),
+                ['rank' => $i + 1],
+            ])));
         }
     }
 }

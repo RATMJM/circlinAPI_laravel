@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|null $goal_distances 참가하기 전 설정할 목표 거리 (km)
  * @property string|null $goal_distance_text 참가하기 전 설정할 목표 거리 접미사
  * @property int|null $distance_min 인증 시 최소 거리
- * @property int|null $distnace_max 인증 시 최대 거리
+ * @property int|null $distance_max 인증 시 최대 거리
  * @property string|null $distance_placeholder 입력란 placeholder
  * @property string|null $background_image 운동장 전체 fixed 배경 이미지
  * @property string $ground_title 운동장 탭 타이틀
@@ -99,9 +99,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCodeType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistanceMax($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistanceMin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistancePlaceholder($value)
- * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereDistnaceMax($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereFeedsFilterTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereFeedsTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionGround whereGoalDistanceText($value)

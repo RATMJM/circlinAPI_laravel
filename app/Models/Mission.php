@@ -62,6 +62,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Place[] $place
  * @property-read int|null $place_count
  * @property-read \App\Models\MissionProduct|null $product
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionRank[] $ranks
+ * @property-read int|null $ranks_count
  * @property-read \App\Models\MissionReward|null $reward
  * @method static \Illuminate\Database\Eloquent\Builder|Mission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Mission newQuery()
@@ -182,5 +184,10 @@ class Mission extends Model
     public function category()
     {
         return $this->belongsTo(MissionCategory::class, 'mission_category_id');
+    }
+
+    public function ranks()
+    {
+        return $this->hasMany(MissionRank::class);
     }
 }
