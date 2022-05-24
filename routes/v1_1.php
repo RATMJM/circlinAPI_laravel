@@ -104,8 +104,11 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::get('/feed', [v1_1\MissionController::class, 'feed'])->name('feed');
         Route::get('/place/{available?}', [v1_1\MissionController::class, 'place_available'])->name('place.available')
             ->where(['available' => 'available']);
+
         Route::get('/ground', [v1_1\MissionController::class, 'ground'])->name('ground');
         Route::get('/ground2', [v1_1\MissionController::class, 'ground2'])->name('ground2');
+        Route::get('/rank', [v1_1\MissionController::class, 'rank']);
+
         Route::get('/edit', [v1_1\MissionController::class, 'edit'])->name('edit');
         Route::patch('/', [v1_1\MissionController::class, 'update'])->name('update');
         Route::delete('/', [v1_1\MissionController::class, 'destroy'])->name('destroy');
