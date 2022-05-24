@@ -36,5 +36,6 @@ function selectMissionGround(int $user_id): array
             ->orderBy('id', 'desc')
             ->take(1),
         'mission_grounds.*',
+        'missions.id',
     ];
 }

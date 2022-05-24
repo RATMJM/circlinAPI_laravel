@@ -6,6 +6,7 @@ use App\Models\Feed;
 use App\Models\Mission;
 use App\Models\MissionArea;
 use App\Models\MissionStat;
+use App\Utils\Replace;
 use Firebase\JWT\JWT;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -57,7 +58,7 @@ function token()
 
         $key = env('JWT_SECRET');
 
-        return JWT::decode($token, $key, ['HS256']);
+        return JWT::decode($token, env('JWT_SECRET'), ['HS256']);
     } catch (Exception $e) {
         abort(403, '토큰이 없습니다.');
         return null;
@@ -113,7 +114,8 @@ function code_replace($message, $replaces)
     $res[1] = array_unique($res[1]);
 
     foreach ($res[1] as $i => $key) {
-        $message = str_replace($res[0][$i], $replaces[$key] ?? $res[3][$i], $message);
+        $replace = $replaces instanceof Replace ? $replaces->get($key) : $replaces[$key];
+        $message = str_replace($res[0][$i], $replace ?? $res[3][$i], $message);
     }
     return $message;
 }
