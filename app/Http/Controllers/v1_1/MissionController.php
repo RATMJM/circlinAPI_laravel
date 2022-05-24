@@ -842,7 +842,7 @@ class MissionController extends Controller
             $data[$i] = code_replace($item, $replaces);
         }
 
-        return $data;
+        return success($data);
     }
 
     /**
