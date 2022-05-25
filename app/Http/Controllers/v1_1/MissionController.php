@@ -1231,6 +1231,40 @@ class MissionController extends Controller
         return success($data);
     }
 
+    public function intro($mission_id): array
+    {
+        $user_id = token()->uid;
+
+        $data = Mission::select([
+            'missions.id',
+            'missions.title',
+            'missions.description',
+            'missions.user_id',
+            'mission_grounds.logo_image',
+        ])
+            ->join('mission_grounds', 'mission_id', 'missions.id')
+            ->where('missions.id', $mission_id)
+            ->with([
+                'images' => fn($query) => $query->select(['mission_id', 'type', 'image'])
+                    ->orderBy('order')
+                    ->orderBy('id'),
+                'owner' => fn($query) => $query->select([
+                    'id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area' => area_like(),
+                    'greeting',
+                    'is_following' => Follow::selectRaw("COUNT(1) > 0")
+                        ->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
+                ])
+                    ->withCount('followers'),
+            ])
+            ->firstOrFail();
+
+        return success($data);
+    }
+
     public function rank(Request $request, $mission_id): array
     {
         $user_id = token()->uid;

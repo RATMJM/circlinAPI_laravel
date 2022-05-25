@@ -110,10 +110,17 @@ class Mission extends Model
 
     protected $guarded = [];
 
+    protected $hidden = ['user_id'];
+
     protected $casts = [
         'is_event' => 'bool',
         'created_at' => 'date:Y-m-d H:i:s',
     ];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function mission_areas()
     {

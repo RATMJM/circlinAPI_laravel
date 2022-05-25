@@ -107,6 +107,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 
         Route::get('/ground', [v1_1\MissionController::class, 'ground'])->name('ground');
         Route::get('/ground2', [v1_1\MissionController::class, 'ground2'])->name('ground2');
+        Route::get('/intro', [v1_1\MissionController::class, 'intro']);
         Route::get('/rank', [v1_1\MissionController::class, 'rank']);
 
         Route::get('/edit', [v1_1\MissionController::class, 'edit'])->name('edit');

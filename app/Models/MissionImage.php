@@ -35,6 +35,8 @@ class MissionImage extends Model
 
     protected $guarded = [];
 
+    protected $hidden = ['mission_id'];
+
     protected $casts = [
         'created_at' => 'date:Y-m-d H:i:s',
     ];
