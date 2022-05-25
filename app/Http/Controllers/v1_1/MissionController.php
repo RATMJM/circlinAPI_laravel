@@ -13,6 +13,7 @@ use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
+use App\Models\MissionCache;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionGround;
@@ -768,18 +769,20 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
-        $data = MissionGround::where('missions.id', $mission_id)
-            ->join('missions', function ($query) {
-                $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
-            })
-            ->select([
-                'missions.is_ocr',
-                'missions.reserve_started_at',
-                'missions.reserve_ended_at',
-                'missions.started_at',
-                'missions.ended_at',
-                is_available(),
-                DB::raw("CASE WHEN
+        if (!$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
+            ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
+            $data = MissionGround::where('missions.id', $mission_id)
+                ->join('missions', function ($query) {
+                    $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
+                })
+                ->select([
+                    'missions.is_ocr',
+                    'missions.reserve_started_at',
+                    'missions.reserve_ended_at',
+                    'missions.started_at',
+                    'missions.ended_at',
+                    is_available(),
+                    DB::raw("CASE WHEN
                     (missions.started_at is null or missions.started_at <= now()) and
                     (missions.ended_at is null or missions.ended_at >= now())
                 THEN 'ongoing'
@@ -787,345 +790,331 @@ class MissionController extends Controller
                     (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
                 THEN 'reserve'
                 WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
-                'goal_distance' => MissionStat::select('goal_distance')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)
-                    ->orderBy('id', 'desc')
-                    ->take(1),
-                'code' => MissionStat::select('code')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)
-                    ->orderBy('id', 'desc')
-                    ->take(1),
-                'entry_no' => MissionStat::select('entry_no')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)
-                    ->orderBy('id', 'desc')
-                    ->take(1),
-                'mission_grounds.*',
+                    'goal_distance' => MissionStat::select('goal_distance')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id)
+                        ->orderBy('id', 'desc')
+                        ->take(1),
+                    'code' => MissionStat::select('code')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id)
+                        ->orderBy('id', 'desc')
+                        ->take(1),
+                    'entry_no' => MissionStat::select('entry_no')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id)
+                        ->orderBy('id', 'desc')
+                        ->take(1),
+                    'mission_grounds.*',
+                ])
+                ->firstOrFail();
+
+            if (is_null($data)) {
+                return success(['result' => false, 'reason' => 'not exist data']);
+            }
+
+            $date = date('Y-m-d');
+
+            if ($data->ground_is_calendar) {
+                $data['calendar_videos'] = $data->calendar_videos()->select([
+                    'day',
+                    'url',
+                    DB::raw("day <= '$date' as is_available"),
+                    DB::raw("day = '$date' as is_today"),
+                    'is_written' => Feed::selectRaw("COUNT(1) > 0")->where('mission_id', $mission_id)
+                        ->where('feeds.user_id', $user_id)
+                        ->whereColumn(DB::raw("CAST(feeds.created_at as DATE)"), 'day')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                ])->orderBy('day')->get();
+            }
+
+            $date = date('Y-m-d H:i:s');
+            $is_min = $data->goal_distance_type === 'min';
+
+            $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->d;
+
+            if ($data->is_available) {
+                $data->ground_d_day_title = '함께하는 중';
+                $data->ground_d_day_text = ($diff + 1) . "일차";
+            } elseif ($data->started_at > $date) {
+                $data->ground_d_day_title = '함께하기 전';
+                $data->ground_d_day_text = "D - $diff";
+            } else {
+                $data->ground_d_day_title = '종료';
+                $data->ground_d_day_text = "";
+            }
+
+            $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
+            $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
+                'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                    ->join('users', function ($query) {
+                        $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                    })
+                    ->orderBy('mission_stats.created_at', 'desc'),
+                'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                    ->whereNotNull('mission_stats.completed_at')
+                    ->join('users', function ($query) {
+                        $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                    })
+                    ->orderBy('mission_stats.completed_at', 'desc'),
+                'recent_feed' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->join('users', function ($query) {
+                        $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
+                    })
+                    ->where('mission_id', $mission_id)
+                    ->groupBy('users.id')
+                    ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+                'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                    ->join('users', function ($query) {
+                        $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
+                    })
+                    ->where('mission_id', $mission_id)
+                    ->groupBy('users.id')
+                    ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+                default => null,
+            })?->select([
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
+                    ->where('follows.user_id', $user_id),
+            ])->take(20)->get();
+
+            #region replaces
+            $replaces = Mission::where('missions.id', $mission_id)
+                ->select([
+                    #region info
+                    'users_count' => (!$data->is_available && strtotime($data->ended_at) <= now()->timestamp ? MissionStat::withTrashed() : MissionStat::query())
+                        ->selectRaw("COUNT(distinct user_id)")
+                        ->whereColumn('mission_id', 'missions.id'),
+                    #endregion
+
+                    #region feeds
+                    'feeds_count' => Feed::selectRaw("COUNT(1)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id),
+                    'all_feeds_count' => Feed::selectRaw("COUNT(1)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id'),
+                    'today_feeds_count' => Feed::selectRaw("COUNT(1)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('feeds.created_at', '>=', date('Y-m-d'))
+                        ->where('user_id', $user_id),
+                    'today_all_feeds_count' => Feed::selectRaw("COUNT(1)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('feeds.created_at', '>=', date('Y-m-d')),
+
+                    'feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
+                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
+                    ))")
+                        ->join('feed_places', 'feed_id', 'feeds.id')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id),
+                    'all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
+                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
+                    ))")
+                        ->join('feed_places', 'feed_id', 'feeds.id')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id'),
+                    'today_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
+                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
+                    ))")
+                        ->join('feed_places', 'feed_id', 'feeds.id')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('feeds.created_at', '>=', date('Y-m-d'))
+                        ->where('user_id', $user_id),
+                    'today_all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
+                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
+                    ))")
+                        ->join('feed_places', 'feed_id', 'feeds.id')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('feeds.created_at', '>=', date('Y-m-d')),
+                    #endregion
+
+                    #region distance
+                    'all_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                    'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('feeds.created_at', '>=', date('Y-m-d')),
+
+                    'total_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id),
+                    'today_total_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                        ->whereColumn('mission_id', 'missions.id')
+                        ->where('user_id', $user_id)
+                        ->where('feeds.created_at', '>=', date('Y-m-d')),
+                    #endregion
+
+                    'today_cert_count' => Feed::selectRaw("COUNT(distinct feeds.user_id)")
+                        ->where('feeds.created_at', '>=', date('Y-m-d'))
+                        ->join('feed_missions', function ($query) use ($mission_id) {
+                            $query->on('feed_missions.feed_id', 'feeds.id')
+                                ->where('feed_missions.mission_id', $mission_id);
+                        }),
+                ])
+                ->first();
+
+            $replaces->code = $data->code;
+            $replaces->entry_no = $data->entry_no;
+
+            $replaces->remaining_day = now()->setTime(0, 0)
+                ->diff((new Carbon($data->ended_at))->setTime(0, 0))->days;
+            $replaces->goal_distance = $data->goal_distance;
+
+            $replaces->all_complete_day = DB::query()->from(Feed::select([
+                DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
+                DB::raw("SUM(feeds.distance) as s"),
             ])
-            ->firstOrFail();
-
-        if (is_null($data)) {
-            return success(['result' => false, 'reason' => 'not exist data']);
-        }
-
-        $date = date('Y-m-d');
-
-        if ($data->ground_is_calendar) {
-            $data['calendar_videos'] = $data->calendar_videos()->select([
-                'day',
-                'url',
-                DB::raw("day <= '$date' as is_available"),
-                DB::raw("day = '$date' as is_today"),
-                'is_written' => Feed::selectRaw("COUNT(1) > 0")->where('mission_id', $mission_id)
-                    ->where('feeds.user_id', $user_id)
-                    ->whereColumn(DB::raw("CAST(feeds.created_at as DATE)"), 'day')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
-            ])->orderBy('day')->get();
-        }
-
-        $date = date('Y-m-d H:i:s');
-        $is_min = $data->goal_distance_type === 'min';
-
-        $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->d;
-
-        if ($data->is_available) {
-            $data->ground_d_day_title = '함께하는 중';
-            $data->ground_d_day_text = ($diff + 1) . "일차";
-        } elseif ($data->started_at > $date) {
-            $data->ground_d_day_title = '함께하기 전';
-            $data->ground_d_day_text = "D - $diff";
-        } else {
-            $data->ground_d_day_title = '종료';
-            $data->ground_d_day_text = "";
-        }
-
-        $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
-        $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
-            'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
-                ->join('users', function ($query) {
-                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
-                })
-                ->orderBy('mission_stats.created_at', 'desc'),
-            'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
-                ->whereNotNull('mission_stats.completed_at')
-                ->join('users', function ($query) {
-                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
-                })
-                ->orderBy('mission_stats.completed_at', 'desc'),
-            'recent_feed' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                ->join('users', function ($query) {
-                    $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
-                })
-                ->where('mission_id', $mission_id)
-                ->groupBy('users.id')
-                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
-            'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
-                ->join('users', function ($query) {
-                    $query->on('users.id', 'feeds.user_id')->whereNull('users.deleted_at');
-                })
-                ->where('mission_id', $mission_id)
-                ->groupBy('users.id')
-                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
-            default => null,
-        })?->select([
-            'users.id as user_id',
-            'users.nickname',
-            'users.profile_image',
-            'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-            'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
-                ->where('follows.user_id', $user_id),
-        ])->take(20)->get();
-
-        #region replaces
-        $replaces = Mission::where('missions.id', $mission_id)
-            ->select([
-                #region info
-                'users_count' => (!$data->is_available && strtotime($data->ended_at) <= now()->timestamp ? MissionStat::withTrashed() : MissionStat::query())
-                    ->selectRaw("COUNT(distinct user_id)")
-                    ->whereColumn('mission_id', 'missions.id'),
-                #endregion
-
-                #region feeds
-                'feeds_count' => Feed::selectRaw("COUNT(1)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id),
-                'all_feeds_count' => Feed::selectRaw("COUNT(1)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id'),
-                'today_feeds_count' => Feed::selectRaw("COUNT(1)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->where('user_id', $user_id),
-                'today_all_feeds_count' => Feed::selectRaw("COUNT(1)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('feeds.created_at', '>=', date('Y-m-d')),
-
-                'feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
-                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
-                    ))")
-                    ->join('feed_places', 'feed_id', 'feeds.id')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id),
-                'all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
-                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
-                    ))")
-                    ->join('feed_places', 'feed_id', 'feeds.id')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id'),
-                'today_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
-                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
-                    ))")
-                    ->join('feed_places', 'feed_id', 'feeds.id')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->where('user_id', $user_id),
-                'today_all_feed_places_count' => Feed::selectRaw("COUNT(distinct CONCAT(
-                        CAST(feeds.created_at as DATE), '|', user_id, '|', place_id
-                    ))")
-                    ->join('feed_places', 'feed_id', 'feeds.id')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('feeds.created_at', '>=', date('Y-m-d')),
-                #endregion
-
-                #region distance
-                'all_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
-                'today_all_distance' => Feed::selectRaw("CAST(IFNULL(SUM(distance),0) as signed)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('feeds.created_at', '>=', date('Y-m-d')),
-
-                'total_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id),
-                'today_total_distance' => Feed::selectRaw("IFNULL(SUM(distance),0)")
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)
-                    ->where('feeds.created_at', '>=', date('Y-m-d')),
-                #endregion
-
-                'today_cert_count' => Feed::selectRaw("COUNT(distinct feeds.user_id)")
-                    ->where('feeds.created_at', '>=', date('Y-m-d'))
-                    ->join('feed_missions', function ($query) use ($mission_id) {
-                        $query->on('feed_missions.feed_id', 'feeds.id')
-                            ->where('feed_missions.mission_id', $mission_id);
-                    }),
+                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+                ->where('mission_stats.mission_id', $mission_id)
+                ->groupBy(['c', 'mission_stats.goal_distance'])
+                ->when($data->goal_distance, function ($query, $goal_distance) {
+                    if ($goal_distance === 'min') {
+                        $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
+                    }
+                }))
+                ->count();
+            $replaces->total_complete_day = DB::query()->from(Feed::select([
+                DB::raw("CAST(feeds.created_at as DATE) as c"),
+                DB::raw("SUM(feeds.distance) as s"),
             ])
-            ->first();
+                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+                ->where('mission_stats.mission_id', $mission_id)
+                ->where('feeds.user_id', $user_id)
+                ->groupBy(['c', 'mission_stats.goal_distance'])
+                ->when($data->goal_distance, function ($query, $goal_distance) {
+                    if ($goal_distance === 'min') {
+                        $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
+                    }
+                }))
+                ->count();
 
-        $replaces->code = $data->code;
-        $replaces->entry_no = $data->entry_no;
+            $replaces->today_complete_count = Feed::select([
+                DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
+                DB::raw("SUM(feeds.distance) as s"),
+            ])
+                ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
+                ->where('mission_stats.mission_id', $mission_id)
+                ->where('feeds.created_at', '>=', date('Y-m-d'))
+                ->groupBy(['c', 'mission_stats.goal_distance'])
+                ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
+                ->count();
 
-        $replaces->remaining_day = now()->setTime(0, 0)
-            ->diff((new Carbon($data->ended_at))->setTime(0, 0))->days;
-        $replaces->goal_distance = $data->goal_distance;
+            $value = $replaces->all_distance / 10;
+            $replaces->all_distance_div10 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $replaces->all_complete_day = DB::query()->from(Feed::select([
-            DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
-            DB::raw("SUM(feeds.distance) as s"),
-        ])
-            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
-            ->where('mission_stats.mission_id', $mission_id)
-            ->groupBy(['c', 'mission_stats.goal_distance'])
-            ->when($data->goal_distance, function ($query, $goal_distance) {
-                if ($goal_distance === 'min') {
-                    $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
-                }
-            }))
-            ->count();
-        $replaces->total_complete_day = DB::query()->from(Feed::select([
-            DB::raw("CAST(feeds.created_at as DATE) as c"),
-            DB::raw("SUM(feeds.distance) as s"),
-        ])
-            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
-            ->where('mission_stats.mission_id', $mission_id)
-            ->where('feeds.user_id', $user_id)
-            ->groupBy(['c', 'mission_stats.goal_distance'])
-            ->when($data->goal_distance, function ($query, $goal_distance) {
-                if ($goal_distance === 'min') {
-                    $query->having('s', '>=', DB::raw("mission_stats.goal_distance"));
-                }
-            }))
-            ->count();
+            $value = ($replaces->all_distance - ($replaces->all_distance % 2)) * 50;
+            $replaces->all_distance_2_to_100 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $replaces->today_complete_count = Feed::select([
-            DB::raw("CONCAT(CAST(feeds.created_at as DATE),feeds.user_id) as c"),
-            DB::raw("SUM(feeds.distance) as s"),
-        ])
-            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-            ->join('mission_stats', 'mission_stats.id', 'feed_missions.mission_stat_id')
-            ->where('mission_stats.mission_id', $mission_id)
-            ->where('feeds.created_at', '>=', date('Y-m-d'))
-            ->groupBy(['c', 'mission_stats.goal_distance'])
-            ->having('s', '>=', DB::raw("mission_stats.goal_distance"))
-            ->count();
+            $value = $replaces->total_distance / 2;
+            $replaces->total_distance_div2 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $value = $replaces->all_distance / 10;
-        $replaces->all_distance_div10 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $value = $replaces->total_distance / 10;
+            $replaces->total_distance_div10 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $value = ($replaces->all_distance - ($replaces->all_distance % 2)) * 50;
-        $replaces->all_distance_2_to_100 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $value = ($replaces->total_distance - ($replaces->total_distance % 2)) * 50;
+            $replaces->total_distance_2_to_100 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $value = $replaces->total_distance / 2;
-        $replaces->total_distance_div2 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $replaces->all_complete_day_times100 = $replaces->all_complete_day * 100;
+            $replaces->total_complete_day_times100 = $replaces->total_complete_day * 100;
 
-        $value = $replaces->total_distance / 10;
-        $replaces->total_distance_div10 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $replaces->today_complete_count_times100 = $replaces->today_complete_count * 100;
 
-        $value = ($replaces->total_distance - ($replaces->total_distance % 2)) * 50;
-        $replaces->total_distance_2_to_100 = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $value = $replaces->all_distance;
+            $replaces->all_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $replaces->all_complete_day_times100 = $replaces->all_complete_day * 100;
-        $replaces->total_complete_day_times100 = $replaces->total_complete_day * 100;
+            $value = $replaces->total_distance;
+            $replaces->total_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
 
-        $replaces->today_complete_count_times100 = $replaces->today_complete_count * 100;
+            $replaces->feed_places_count_3 = $replaces->feed_places_count >= 3 ? '성공' : '도전 중';
+            $replaces->feed_places_count_6 = $replaces->feed_places_count >= 6 ? '성공' : '도전 중';
+            $replaces->feed_places_count_9 = $replaces->feed_places_count >= 9 ? '성공' : '도전 중';
 
-        $value = $replaces->all_distance;
-        $replaces->all_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $replaces->status_text = (
+                $replaces->feeds_count >= $data->record_progress_image_count &&
+                (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
+            ) ? '성공!' : '도전 중';
+            $replaces = $replaces->toArray();
+            #endregion
 
-        $value = $replaces->total_distance;
-        $replaces->total_distance = $value > 10 || $value <= 0 ? floor($value) : sprintf('%0.1f', $value);
+            $data['ground_progress_present'] = round($replaces[$data->ground_progress_type] ?? 0, 1);
 
-        $replaces->feed_places_count_3 = $replaces->feed_places_count >= 3 ? '성공' : '도전 중';
-        $replaces->feed_places_count_6 = $replaces->feed_places_count >= 6 ? '성공' : '도전 중';
-        $replaces->feed_places_count_9 = $replaces->feed_places_count >= 9 ? '성공' : '도전 중';
+            if ($data['ground_progress_present'] >= $data->ground_progress_max) {
+                $data->ground_progress_background_image = $data->ground_progress_complete_image;
+                $data->ground_progress_image = $data->ground_progress_complete_image;
+            }
 
-        $replaces->status_text = (
-            $replaces->feeds_count >= $data->record_progress_image_count &&
-            (is_null($replaces->goal_distance) || $replaces->total_distance >= $replaces->goal_distance)
-        ) ? '성공!' : '도전 중';
-        $replaces = $replaces->toArray();
-        #endregion
+            $data['record_progress_present'] = round($replaces[$data->record_progress_type] ?? 0);
 
-        $data['ground_progress_present'] = round($replaces[$data->ground_progress_type] ?? 0, 1);
+            $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })
+                ->where('user_id', $user_id)
+                ->select([
+                    'id as feed_id',
+                    'user_id',
+                    'image' => FeedImage::select('image')
+                        ->whereColumn('feed_id', 'feeds.id')
+                        ->orderBy('order')
+                        ->orderBy('id')
+                        ->limit(1),
+                    'type' => FeedImage::select('type')
+                        ->whereColumn('feed_id', 'feeds.id')
+                        ->orderBy('order')
+                        ->orderBy('id')
+                        ->limit(1),
+                    'content as top_text',
+                    'created_at as date',
+                    DB::raw("CONCAT(DATEDIFF(created_at,'$data->started_at')+1,'일차') as bottom_text"),
+                ])
+                ->orderBy('id', 'desc')
+                ->get();
 
-        if ($data['ground_progress_present'] >= $data->ground_progress_max) {
-            $data->ground_progress_background_image = $data->ground_progress_complete_image;
-            $data->ground_progress_image = $data->ground_progress_complete_image;
+            $data->cert_background_image = $data->cert_background_image ? $data->cert_background_image[min(
+                max($data->record_progress_present, 1), count($data->cert_background_image)
+            ) - 1] : null;
+
+            foreach ($data->toArray() as $i => $item) {
+                if (!is_string($item)) continue;
+                $data[$i] = code_replace($item, $replaces);
+            }
+
+            $tmp = $data->cert_details;
+            foreach ($data->cert_details ?? [] as $i => $item) {
+                $tmp[$i]['text'] = code_replace($item['text'], $replaces);
+            }
+            $data->cert_details = $tmp;
+
+            $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
+            $cert = [];
+            $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
+            $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
+
+            MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
         }
 
-        $data['record_progress_present'] = round($replaces[$data->record_progress_type] ?? 0);
-
-        $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
-            $query->where('mission_id', $mission_id);
-        })
-            ->where('user_id', $user_id)
-            ->select([
-                'id as feed_id',
-                'user_id',
-                'image' => FeedImage::select('image')
-                    ->whereColumn('feed_id', 'feeds.id')
-                    ->orderBy('order')
-                    ->orderBy('id')
-                    ->limit(1),
-                'type' => FeedImage::select('type')
-                    ->whereColumn('feed_id', 'feeds.id')
-                    ->orderBy('order')
-                    ->orderBy('id')
-                    ->limit(1),
-                'content as top_text',
-                'created_at as date',
-                DB::raw("CONCAT(DATEDIFF(created_at,'$data->started_at')+1,'일차') as bottom_text"),
-            ])
-            ->orderBy('id', 'desc')
-            ->get();
-
-        $data->cert_background_image = $data->cert_background_image ? $data->cert_background_image[min(
-            max($data->record_progress_present, 1), count($data->cert_background_image)
-        ) - 1] : null;
-
-        $rank = Feed::select([
-            'users.id as user_id',
-            'users.nickname',
-            'users.profile_image',
-            'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-            'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
-                ->where('follows.user_id', $user_id),
-            DB::raw("COUNT(distinct feeds.id) as feeds_count"),
-            DB::raw("COUNT(distinct feed_places.id) as feed_places_count"),
-        ])
-            ->join('feed_missions', 'feed_id', 'feeds.id')
-            ->leftJoin('feed_places', 'feed_places.feed_id', 'feeds.id')
-            ->join('users', 'users.id', 'user_id')
-            ->where('mission_id', $mission_id)
-            ->groupBy('user_id')
-            ->orderBy('feeds_count', 'desc')
-            ->take(50)
-            ->get();
+        $rank = $this->rank(request(), $mission_id)['data'];
 
         foreach ($rank as $item) {
             $item['feeds_count'] = code_replace($data->rank_value_text, $item->toArray());
         }
-
-        foreach ($data->toArray() as $i => $item) {
-            if (!is_string($item)) continue;
-            $data[$i] = code_replace($item, $replaces);
-        }
-
-        $tmp = $data->cert_details;
-        foreach ($data->cert_details ?? [] as $i => $item) {
-            $tmp[$i]['text'] = code_replace($item['text'], $replaces);
-        }
-        $data->cert_details = $tmp;
-
-        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
-        $cert = [];
-        $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
-        $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
         return success([
             'ground' => $data,
@@ -1144,95 +1133,100 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
-        $now = now();
+        if (!$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
+            ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
+            $now = now();
 
-        // DB 가져오기
-        $data = MissionGround::select(selectMissionGround($user_id))
-            ->join('missions', function ($query) {
-                $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
-            })
-            ->where('missions.id', $mission_id)
-            ->with('calendar_videos', fn($query) => $query->select([
-                'day',
-                'url',
-                DB::raw("day <= '$now' as is_available"),
-                DB::raw("day = '$now' as is_today"),
-                'is_written' => Feed::selectRaw("COUNT(1) > 0")->where('mission_id', $mission_id)
-                    ->where('feeds.user_id', $user_id)
-                    ->whereColumn(DB::raw("CAST(feeds.created_at as DATE)"), 'day')
-                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
-            ])->orderBy('day'))
-            ->firstOrFail();
-
-        // D-DAY 계산
-        $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->d;
-        if ($data->is_available) {
-            $data['ground_d_day_title'] = '함께하는 중';
-            $data['ground_d_day_text'] = ($diff + 1) . "일차";
-        } elseif ($data->started_at > $now) {
-            $data['ground_d_day_title'] = '함께하기 전';
-            $data['ground_d_day_text'] = "D - $diff";
-        } else {
-            $data['ground_d_day_title'] = '종료';
-            $data['ground_d_day_text'] = "";
-        }
-
-        $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
-        $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
-            'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
-                ->join('users', function ($query) {
-                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+            // DB 가져오기
+            $data = MissionGround::select(selectMissionGround($user_id))
+                ->join('missions', function ($query) {
+                    $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
                 })
-                ->orderBy('mission_stats.created_at', 'desc'),
-            'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
-                ->whereNotNull('mission_stats.completed_at')
-                ->join('users', fn($query) => $query->on('users.id', 'user_id')
-                    ->whereNull('users.deleted_at'))
-                ->orderBy('mission_stats.completed_at', 'desc'),
-            'recent_feed' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('users.deleted_at'))
+                ->where('missions.id', $mission_id)
+                ->with('calendar_videos', fn($query) => $query->select([
+                    'day',
+                    'url',
+                    DB::raw("day <= '$now' as is_available"),
+                    DB::raw("day = '$now' as is_today"),
+                    'is_written' => Feed::selectRaw("COUNT(1) > 0")->where('mission_id', $mission_id)
+                        ->where('feeds.user_id', $user_id)
+                        ->whereColumn(DB::raw("CAST(feeds.created_at as DATE)"), 'day')
+                        ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+                ])->orderBy('day'))
+                ->firstOrFail();
+
+            // D-DAY 계산
+            $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->d;
+            if ($data->is_available) {
+                $data['ground_d_day_title'] = '함께하는 중';
+                $data['ground_d_day_text'] = ($diff + 1) . "일차";
+            } elseif ($data->started_at > $now) {
+                $data['ground_d_day_title'] = '함께하기 전';
+                $data['ground_d_day_text'] = "D - $diff";
+            } else {
+                $data['ground_d_day_title'] = '종료';
+                $data['ground_d_day_text'] = "";
+            }
+
+            $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
+            $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
+                'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                    ->join('users', function ($query) {
+                        $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                    })
+                    ->orderBy('mission_stats.created_at', 'desc'),
+                'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                    ->whereNotNull('mission_stats.completed_at')
+                    ->join('users', fn($query) => $query->on('users.id', 'user_id')
+                        ->whereNull('users.deleted_at'))
+                    ->orderBy('mission_stats.completed_at', 'desc'),
+                'recent_feed' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('users.deleted_at'))
+                    ->where('mission_id', $mission_id)
+                    ->groupBy('users.id')
+                    ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+                'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                    ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                    ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('users.deleted_at'))
+                    ->where('mission_id', $mission_id)
+                    ->groupBy('users.id')
+                    ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+                default => null,
+            })?->select([
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'follower' => Follow::selectRaw("COUNT(distinct user_id)")->whereColumn('target_id', 'users.id'),
+                'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
+                    ->where('follows.user_id', $user_id),
+            ])->take(20)->get();
+
+            $replaces = new Replace($data, $data->status);
+
+            $data['ground_progress_present'] = round($replaces->get($data->ground_progress_type) ?? 0, 1);
+
+            if ($data->ground_progress_complete_image && $data['ground_progress_present'] >= $data->ground_progress_max) {
+                $data->ground_progress_background_image = $data->ground_progress_complete_image;
+                $data->ground_progress_image = $data->ground_progress_complete_image;
+            }
+
+            $data->cert_background_image = $data->cert_background_image ? $data->cert_background_image[min(
+                max($data->record_progress_present, 1), count($data->cert_background_image)
+            ) - 1] : null;
+
+            foreach ($data->toArray() as $i => $item) {
+                if (!is_string($item)) continue;
+                $data[$i] = code_replace($item, $replaces);
+            }
+
+            $data['my_rank'] = MissionRank::join('mission_rank_users', 'mission_rank_id', 'mission_ranks.id')
                 ->where('mission_id', $mission_id)
-                ->groupBy('users.id')
-                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
-            'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
-                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
-                ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('users.deleted_at'))
-                ->where('mission_id', $mission_id)
-                ->groupBy('users.id')
-                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
-            default => null,
-        })?->select([
-            'users.id as user_id',
-            'users.nickname',
-            'users.profile_image',
-            'follower' => Follow::selectRaw("COUNT(distinct user_id)")->whereColumn('target_id', 'users.id'),
-            'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
-                ->where('follows.user_id', $user_id),
-        ])->take(20)->get();
+                ->where('user_id', $user_id)
+                ->orderBy('mission_ranks.id', 'desc')
+                ->value('rank');
 
-        $replaces = new Replace($data, $data->status);
-
-        $data['ground_progress_present'] = round($replaces->get($data->ground_progress_type) ?? 0, 1);
-
-        if ($data->ground_progress_complete_image && $data['ground_progress_present'] >= $data->ground_progress_max) {
-            $data->ground_progress_background_image = $data->ground_progress_complete_image;
-            $data->ground_progress_image = $data->ground_progress_complete_image;
+            MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
         }
-
-        $data->cert_background_image = $data->cert_background_image ? $data->cert_background_image[min(
-            max($data->record_progress_present, 1), count($data->cert_background_image)
-        ) - 1] : null;
-
-        foreach ($data->toArray() as $i => $item) {
-            if (!is_string($item)) continue;
-            $data[$i] = code_replace($item, $replaces);
-        }
-
-        $data['my_rank'] = MissionRank::join('mission_rank_users', 'mission_rank_id', 'mission_ranks.id')
-            ->where('mission_id', $mission_id)
-            ->where('user_id', $user_id)
-            ->orderBy('mission_ranks.id', 'desc')
-            ->value('rank');
 
         return success($data);
     }
