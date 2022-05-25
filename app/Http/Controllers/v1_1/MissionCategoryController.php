@@ -22,33 +22,31 @@ class MissionCategoryController extends Controller
     {
         $user_id = token_option()?->uid;
         if ($town === 'town') {
-            $data = MissionCategory::whereNotNull('mission_categories.mission_category_id')
+            $data = MissionCategory::select([
+                'mission_categories.id',
+                DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
+                DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
+                'mission_categories.title',
+                'bookmark_total' => MissionStat::selectRaw("COUNT(distinct id)")
+                    ->where(Mission::select('mission_category_id')
+                        ->whereColumn('missions.id', 'mission_id'), DB::raw('mission_categories.id'))
+                    ->where('user_id', $user_id),
+                'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('mission_category_id', 'mission_categories.id')
+                    ->where('user_id', $user_id),
+            ])
+                ->whereNotNull('mission_categories.mission_category_id')
                 ->where(function ($query) use ($user_id) {
-                    // 관심카테고리
-                    $query->whereHas('favorite_category', function ($query) use ($user_id) {
-                        $query->where('user_id', $user_id);
-                    });
-                    // 북마크한 미션이 있는 카테고리
-                    $query->orWhereHas('missions', function ($query) use ($user_id) {
-                        $query->whereHas('mission_stats', function ($query) use ($user_id) {
-                            $query->where('user_id', $user_id);
-                        });
-                    });
+                    $query->whereIn('mission_categories.id',
+                        UserFavoriteCategory::select('mission_category_id')->where('user_id', $user_id)
+                    )
+                        ->orWhereIn('mission_categories.id',
+                            MissionStat::select('mission_category_id')
+                                ->join('missions', 'missions.id', 'mission_id')
+                                ->where('mission_stats.user_id', $user_id)
+                        )
+                        ->orWhere('mission_categories.id', 0);
                 })
-                ->select([
-                    'mission_categories.id',
-                    DB::raw("CAST(mission_categories.id as CHAR(20)) as `key`"),
-                    DB::raw("IFNULL(mission_categories.emoji, '') as emoji"),
-                    'mission_categories.title',
-                    'bookmark_total' => MissionStat::withTrashed()->selectRaw("COUNT(distinct mission_stats.user_id)")
-                        ->whereColumn('mission_id', 'missions.id')
-                        ->join('missions', function ($query) {
-                            $query->on('missions.id', 'mission_stats.mission_id')
-                                ->whereNull('missions.deleted_at');
-                        }),
-                    'is_favorite' => UserFavoriteCategory::selectRaw("COUNT(1) > 0")->where('user_id', $user_id)
-                        ->whereColumn('user_favorite_categories.mission_category_id', 'mission_categories.id'),
-                ])
                 ->groupBy('mission_categories.id')
                 ->orWhere('mission_categories.id', 0)
                 ->orderBy(DB::raw("mission_categories.id=0"), 'desc') // 이벤트 탭 맨 앞으로
