@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $ended_at 종료 일시
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property int $user_limit 최대 참여자 수(0은 무제한)
- * @property int $product_limit 환급 챌린지 최대 구매 제품 수
  * @property int $success_count x회 인증 시 성공 팝업 (지금은 1,0으로 운영)
  * @property int $is_show 노출 여부
  * @property int $is_tutorial
@@ -59,11 +58,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int|null $mission_place_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionStat[] $mission_stats
  * @property-read int|null $mission_stats_count
+ * @property-read \App\Models\User $owner
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Place[] $place
  * @property-read int|null $place_count
  * @property-read \App\Models\MissionProduct|null $product
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionRank[] $ranks
  * @property-read int|null $ranks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionRefundProduct[] $refundProducts
+ * @property-read int|null $refund_products_count
  * @property-read \App\Models\MissionReward|null $reward
  * @method static \Illuminate\Database\Eloquent\Builder|Mission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Mission newQuery()
@@ -84,7 +86,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsShow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsTutorial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereMissionCategoryId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Mission whereProductLimit($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereReserveEndedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereReserveStartedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereRewardPoint($value)
@@ -196,5 +197,10 @@ class Mission extends Model
     public function ranks()
     {
         return $this->hasMany(MissionRank::class);
+    }
+
+    public function refundProducts()
+    {
+        return $this->belongsToMany(Product::class, MissionRefundProduct::class);
     }
 }

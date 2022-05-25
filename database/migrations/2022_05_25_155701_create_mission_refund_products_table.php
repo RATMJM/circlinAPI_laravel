@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMissionRefundProductTable extends Migration
+class CreateMissionRefundProductsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateMissionRefundProductTable extends Migration
      */
     public function up()
     {
-        Schema::create('mission_refund_product', function (Blueprint $table) {
+        Schema::create('mission_refund_products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mission_id')->constrained();
             $table->foreignId('product_id')->constrained();

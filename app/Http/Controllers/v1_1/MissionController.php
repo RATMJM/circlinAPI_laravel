@@ -1258,6 +1258,15 @@ class MissionController extends Controller
                     'is_following' => Follow::selectRaw("COUNT(1) > 0")
                         ->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
                 ])->withCount('followers'),
+                'refundProducts' => fn($query) => $query->select([
+                    'products.id',
+                    'products.code',
+                    'products.name_ko',
+                    'products.thumbnail_image',
+                    'mission_refund_products.limit',
+                    'mission_refund_products.current',
+                    DB::raw("`limit` > `current` as `is_available`"),
+                ])
             ])
             ->firstOrFail();
 
