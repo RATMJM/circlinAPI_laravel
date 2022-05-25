@@ -5,8 +5,11 @@ namespace App\Utils;
 use App\Models\Feed;
 use App\Models\MissionStat;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class Replace
 {
@@ -23,7 +26,21 @@ class Replace
         $this->status = $status;
     }
 
-    public function get(string $key)
+    public function replace($array): array
+    {
+        if ($array instanceof Collection || $array instanceof Model) {
+            $array = $array->toArray();
+        }
+        $res = [];
+        foreach ($array as $key => $item) {
+            $res[$key] = Arr::accessible($item) || $item instanceof StdClass
+                ? $this->replace($item)
+                : (is_string($item) ? code_replace($item, $this) : $item);
+        }
+        return $res;
+    }
+
+    public function get(string|null $key)
     {
         if (Arr::has($this->data, $key)) return $this->data[$key];
 

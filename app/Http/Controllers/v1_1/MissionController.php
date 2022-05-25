@@ -1129,12 +1129,15 @@ class MissionController extends Controller
      *
      * @return array
      */
-    public function ground2($mission_id): array
+    public function ground2(Request $request, $mission_id): array
     {
         $user_id = token()->uid;
 
-        if (!$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
-            ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
+        if ($request->has('refresh') || !$data = MissionCache::where([
+                'mission_id' => $mission_id,
+                'user_id' => $user_id,
+            ])
+                ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
             $now = now();
 
             // DB 가져오기
@@ -1214,16 +1217,13 @@ class MissionController extends Controller
                 max($data->record_progress_present, 1), count($data->cert_background_image)
             ) - 1] : null;
 
-            foreach ($data->toArray() as $i => $item) {
-                if (!is_string($item)) continue;
-                $data[$i] = code_replace($item, $replaces);
-            }
-
             $data['my_rank'] = MissionRank::join('mission_rank_users', 'mission_rank_id', 'mission_ranks.id')
                 ->where('mission_id', $mission_id)
                 ->where('user_id', $user_id)
                 ->orderBy('mission_ranks.id', 'desc')
                 ->value('rank');
+
+            $data = $replaces->replace($data);
 
             MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
         }
@@ -1257,8 +1257,7 @@ class MissionController extends Controller
                     'greeting',
                     'is_following' => Follow::selectRaw("COUNT(1) > 0")
                         ->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
-                ])
-                    ->withCount('followers'),
+                ])->withCount('followers'),
             ])
             ->firstOrFail();
 
