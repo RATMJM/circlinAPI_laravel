@@ -769,8 +769,9 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
-        if (!$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
-            ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
+        // if (!$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
+        //     ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
+        if (1) {
             $data = MissionGround::where('missions.id', $mission_id)
                 ->join('missions', function ($query) {
                     $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
