@@ -1112,10 +1112,6 @@ class MissionController extends Controller
 
         $rank = $this->rank(request(), $mission_id)['data'];
 
-        foreach ($rank as $item) {
-            $item['feeds_count'] = code_replace($data->rank_value_text, $item->toArray());
-        }
-
         return success([
             'ground' => $data,
             'rank' => $rank,
