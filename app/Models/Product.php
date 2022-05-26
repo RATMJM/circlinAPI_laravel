@@ -61,6 +61,8 @@ class Product extends Model
 
     protected $guarded = [];
 
+    protected $hidden = ['pivot'];
+
     protected $casts = [
         'created_at' => 'date:Y-m-d H:i:s',
     ];

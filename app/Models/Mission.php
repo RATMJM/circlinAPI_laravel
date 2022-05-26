@@ -64,7 +64,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \App\Models\MissionProduct|null $product
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionRank[] $ranks
  * @property-read int|null $ranks_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionRefundProduct[] $refundProducts
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $refundProducts
  * @property-read int|null $refund_products_count
  * @property-read \App\Models\MissionReward|null $reward
  * @method static \Illuminate\Database\Eloquent\Builder|Mission newModelQuery()

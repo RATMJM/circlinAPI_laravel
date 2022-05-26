@@ -9,6 +9,7 @@ use App\Models\MissionStat;
 use App\Utils\Replace;
 use Firebase\JWT\JWT;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -253,20 +254,20 @@ function area_like($table = 'users')
         ->limit(1);
 }
 
-function is_available($as = true)
+function is_available(): Expression
 {
-    $time = date('Y-m-d H:i:s');
+    $now = date('Y-m-d H:i:s');
 
     return DB::raw(
-        "(missions.reserve_started_at > '$time') as is_reserve_before" .
+        "(missions.reserve_started_at > '$now') as is_reserve_before" .
         "," .
-        "(missions.reserve_started_at is null or missions.reserve_started_at<='$time') and
-        (missions.reserve_ended_at is null or missions.reserve_ended_at>'$time')" . ($as ? 'as is_reserve_available' : '') .
+        "(missions.reserve_started_at is null or missions.reserve_started_at<='$now') and
+        (missions.reserve_ended_at is null or missions.reserve_ended_at>'$now') as is_reserve_available" .
         "," .
-        "(missions.started_at is null or missions.started_at<='$time') and
-        (missions.ended_at is null or missions.ended_at>'$time')" . ($as ? 'as is_available' : '') .
+        "(missions.started_at is null or missions.started_at<='$now') and
+        (missions.ended_at is null or missions.ended_at>'$now') as is_available" .
         "," .
-        "(missions.ended_at < '$time') as is_ended"
+        "(missions.ended_at < '$now') as is_ended"
     );
 }
 
