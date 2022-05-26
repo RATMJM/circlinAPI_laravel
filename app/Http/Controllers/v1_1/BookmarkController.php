@@ -9,6 +9,7 @@ use App\Models\MissionComment;
 use App\Models\MissionGround;
 use App\Models\MissionPush;
 use App\Models\MissionStat;
+use App\Models\Order;
 use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -167,65 +168,64 @@ class BookmarkController extends Controller
     public function store(Request $request, $mission_id = null): array
     {
         $user_id = token()->uid;
-        $mission_id = $mission_id ?? $request->get('mission_id');
+        if (!$mission_id = $mission_id ?? $request->get('mission_id')) {
+            return success(['result' => false, 'reason' => 'not enough data']);
+        }
         $code = $request->get('code');
-        $goal_distance = $request->get('goal_distance');
+        $goal_distance = $request->get('goal_distance',
+            MissionGround::where('mission_id', $mission_id)->value('goal_distances')[0] ?? null);
+
         $goal_distance = $goal_distance ? preg_replace('/[^\d.]+/', '', $goal_distance) : null;
 
-        if (is_null($mission_id)) {
-            return success([
-                'result' => false,
-                'reason' => 'not enough data',
-            ]);
-        }
-
-        $date = date('Y-m-d H:i:s');
-        $mission = Mission::where('missions.id', $mission_id)
-            ->select([
-                DB::raw("(missions.reserve_started_at is null or missions.reserve_started_at<='" . $date . "') and
-                (missions.reserve_ended_at is null or missions.reserve_ended_at>'" . $date . "') or
-                (missions.started_at is null or missions.started_at<='" . $date . "') and
-                (missions.ended_at is null or missions.ended_at>'" . $date . "') as is_available"),
-                'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
-                'code_type' => MissionGround::select('code_type')
-                    ->whereColumn('mission_id', 'missions.id'),
-                'max_code' => MissionStat::selectRaw("IFNULL(MAX(CAST(code as signed)),0)")
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->orderBy('mission_stats.id', 'desc'),
-                'max_no' => MissionStat::selectRaw("IFNULL(MAX(entry_no),0)")
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->orderBy('mission_stats.id', 'desc'),
-            ])
+        $mission = Mission::select([
+            'missions.id',
+            is_available(),
+            'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
+            'code_type' => MissionGround::select('code_type')
+                ->whereColumn('mission_id', 'missions.id'),
+            'max_no' => MissionStat::selectRaw("IFNULL(MAX(entry_no),0)")
+                ->whereColumn('mission_id', 'missions.id')
+                ->orderBy('mission_stats.id', 'desc'),
+        ])
+            ->where('missions.id', $mission_id)
+            ->with('refundProducts', fn($query) => $query->select(['products.id']))
             ->first();
-        if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
-            return success(['result' => false, 'reason' => 'already bookmark']);
-        } elseif ($mission->is_available) {
-            if (is_null($mission->code) || $mission->code === $code) {
-                $data = MissionStat::create([
-                    'user_id' => $user_id,
-                    'mission_id' => $mission_id,
-                    'code' => $code,
-                    'entry_no' => $mission->max_no + 1,
-                    'goal_distance' => $goal_distance ??
-                        MissionGround::where('mission_id', $mission_id)->value('goal_distances')[0] ?? null,
-                ]);
 
-                // 조건별 푸시
-                $pushes = MissionPush::where('mission_id', $mission_id)->get();
-                if (count($pushes) > 0) {
-                    foreach ($pushes as $push) {
-                        if ($push->type === 'bookmark' && $push->value > 0) {
-                            PushController::send_mission_push($push, $user_id, $mission_id);
-                        }
-                    }
-                }
-                return success(['result' => (bool)$data]);
-            } else {
-                return success(['result' => false, 'message' => '참여코드가 틀렸습니다. 다시 확인해주세요.']);
-            }
-        } else {
-            return success(['result' => false]);
+        if (!$mission->is_available && !$mission->is_reserve_available) {
+            return success(['result' => false, 'message' => '참가 가능한 미션이 아닙니다.']);
         }
+        if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
+            return success(['result' => false, 'message' => '이미 참여 중인 미션입니다.']);
+        }
+        if (!is_null($mission->code) && $mission->code !== $code) {
+            return success(['result' => false, 'message' => '참여코드가 틀렸습니다. 다시 확인해주세요.']);
+        }
+        if ($mission->refundProducts->count() > 0) {
+            $paid = Order::join('order_products', 'order_id', 'orders.id')
+                ->where('user_id', $user_id)
+                ->whereIn('product_id', $mission->refundProducts->pluck('id'))
+                ->exists();
+            if (!$paid) return success(['result' => false, 'message' => '체험 제품을 먼저 주문해야 합니다.']);
+        }
+
+        $data = MissionStat::create([
+            'user_id' => $user_id,
+            'mission_id' => $mission_id,
+            'code' => $code,
+            'entry_no' => $mission->max_no + 1,
+            'goal_distance' => $goal_distance,
+        ]);
+
+        // 조건별 푸시
+        $pushes = MissionPush::where('mission_id', $mission_id)->get();
+        if (count($pushes) > 0) {
+            foreach ($pushes as $push) {
+                if ($push->type === 'bookmark' && $push->value > 0) {
+                    PushController::send_mission_push($push, $user_id, $mission_id);
+                }
+            }
+        }
+        return success(['result' => (bool)$data]);
     }
 
     public function destroy($id): array
