@@ -784,13 +784,13 @@ class MissionController extends Controller
                     'missions.ended_at',
                     is_available(),
                     DB::raw("CASE WHEN
-                    (missions.started_at is null or missions.started_at <= now()) and
-                    (missions.ended_at is null or missions.ended_at >= now())
-                THEN 'ongoing'
-                WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
-                    (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
-                THEN 'reserve'
-                WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
+                        (missions.started_at is null or missions.started_at <= now()) and
+                        (missions.ended_at is null or missions.ended_at >= now())
+                    THEN 'ongoing'
+                    WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
+                        (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
+                    THEN 'reserve'
+                    WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
                     'goal_distance' => MissionStat::select('goal_distance')
                         ->whereColumn('mission_id', 'missions.id')
                         ->where('user_id', $user_id)
@@ -1237,7 +1237,10 @@ class MissionController extends Controller
             'missions.title',
             'missions.description',
             'missions.user_id',
+            'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                ->whereColumn('mission_id', 'missions.id'),
             'mission_grounds.logo_image',
+            'mission_grounds.intro_video',
             DB::raw("CASE WHEN
                     (missions.started_at is null or missions.started_at <= now()) and
                     (missions.ended_at is null or missions.ended_at >= now())
@@ -1271,7 +1274,7 @@ class MissionController extends Controller
                     'mission_refund_products.limit',
                     'mission_refund_products.current',
                     DB::raw("`limit` > `current` as `is_available`"),
-                ])
+                ]),
             ])
             ->firstOrFail();
 
