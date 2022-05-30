@@ -25,6 +25,7 @@ use App\Models\MissionPush;
 use App\Models\MissionRank;
 use App\Models\MissionRankUser;
 use App\Models\MissionStat;
+use App\Models\Order;
 use App\Models\OutsideProduct;
 use App\Models\Place;
 use App\Models\User;
@@ -1276,7 +1277,9 @@ class MissionController extends Controller
                     'products.name_ko',
                     'products.thumbnail_image',
                     'mission_refund_products.limit',
-                    'mission_refund_products.current',
+                    'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                        ->join('order_products', 'order_id', 'orders.id')
+                        ->whereColumn('product_id', 'products.id'),
                     DB::raw("`limit` > `current` as `is_available`"),
                 ]),
             ])

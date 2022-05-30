@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int|null $missions_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProductOption[] $options
  * @property-read int|null $options_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
+ * @property-read int|null $orders_count
  * @method static \Illuminate\Database\Eloquent\Builder|Product newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Product newQuery()
  * @method static \Illuminate\Database\Query\Builder|Product onlyTrashed()
@@ -81,5 +83,10 @@ class Product extends Model
     {
         return $this->belongsToMany(Mission::class, MissionProduct::class)
             ->where('mission_products.type', 'inside');
+    }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, OrderProduct::class);
     }
 }
