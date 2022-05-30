@@ -760,16 +760,16 @@ class MissionController extends Controller
     /**
      * 챌린지 운동장
      *
+     * @param Request $request
      * @param $mission_id
      *
      * @return array
-     * @throws Exception
      */
-    public function ground($mission_id): array
+    public function ground(Request $request, $mission_id): array
     {
         $user_id = token()->uid;
 
-        // if (!$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
+        // if ($request->has('refresh') || !$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
         //     ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
         if (1) {
             $data = MissionGround::where('missions.id', $mission_id)
@@ -1237,6 +1237,10 @@ class MissionController extends Controller
             'missions.title',
             'missions.description',
             'missions.user_id',
+            'missions.reserve_started_at',
+            'missions.reserve_ended_at',
+            'missions.started_at',
+            'missions.ended_at',
             'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                 ->whereColumn('mission_id', 'missions.id'),
             'mission_grounds.logo_image',

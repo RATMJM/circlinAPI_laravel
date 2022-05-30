@@ -192,15 +192,12 @@ class BookmarkController extends Controller
             ->first();
 
         if (!$mission->is_available && !$mission->is_reserve_available) {
-            abort(403, '참가 가능한 미션이 아닙ㄴ디.');
             return success(['result' => false, 'message' => '참가 가능한 미션이 아닙니다.']);
         }
         if (MissionStat::where(['user_id' => $user_id, 'mission_id' => $mission_id])->exists()) {
-            abort(403, '이미 참여 중인 미션입니다.');
             return success(['result' => false, 'message' => '이미 참여 중인 미션입니다.']);
         }
         if (!is_null($mission->code) && $mission->code !== $code) {
-            abort(403, '참여코드가 틀렸습니다. 다시 확인해주세요.');
             return success(['result' => false, 'message' => '참여코드가 틀렸습니다. 다시 확인해주세요.']);
         }
         if ($mission->refundProducts->count() > 0) {
@@ -209,7 +206,6 @@ class BookmarkController extends Controller
                 ->whereIn('product_id', $mission->refundProducts->pluck('id'))
                 ->exists();
             if (!$paid) {
-                abort(403, '체험 제품을 먼저 주문해야 합니다.');
                 return success(['result' => false, 'message' => '체험 제품을 먼저 주문해야 합니다.']);
             }
         }

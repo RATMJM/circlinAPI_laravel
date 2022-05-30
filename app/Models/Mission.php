@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $is_tutorial
  * @property bool $is_event 이벤트 여부
  * @property int $is_ground 운동장으로 입장 여부
+ * @property int $is_refund 제품 체험 챌린지 여부
  * @property int $is_ocr OCR 필요한 미션인지
  * @property int $is_require_place 장소 인증 필수 여부
  * @property int $is_not_duplicate_place 일일 장소 중복 인증 불가 여부
@@ -82,6 +83,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsGround($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsNotDuplicatePlace($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsOcr($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsRefund($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsRequirePlace($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsShow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsTutorial($value)
