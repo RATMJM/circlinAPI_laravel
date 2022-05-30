@@ -772,7 +772,7 @@ class MissionController extends Controller
 
         // if ($request->has('refresh') || !$data = MissionCache::where(['mission_id' => $mission_id, 'user_id' => $user_id])
         //     ->where('updated_at', '>=', now()->subMinutes(10))->value('data')) {
-        if (1) {
+        if (0) {
             $data = MissionGround::where('missions.id', $mission_id)
                 ->join('missions', function ($query) {
                     $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
@@ -1110,6 +1110,8 @@ class MissionController extends Controller
             $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
             MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
+        } else {
+            $data = $this->ground2($request, $mission_id)['data'];
         }
 
         $rank = $this->rank(request(), $mission_id)['data'];
