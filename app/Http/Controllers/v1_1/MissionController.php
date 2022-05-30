@@ -1280,7 +1280,6 @@ class MissionController extends Controller
                     'current' => Order::selectRaw("COUNT(distinct orders.id)")
                         ->join('order_products', 'order_id', 'orders.id')
                         ->whereColumn('product_id', 'products.id'),
-                    DB::raw("`limit` > `current` as `is_available`"),
                 ]),
             ])
             ->firstOrFail();
