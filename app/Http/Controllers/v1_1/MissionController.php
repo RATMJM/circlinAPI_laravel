@@ -1132,7 +1132,7 @@ class MissionController extends Controller
                 ->get();
         }
 
-        $rank = $this->rank(request(), $mission_id)['data'];
+        $rank = $this->rank(request(), $mission_id)['data']['rank'];
 
         return success([
             'ground' => $data,
@@ -1332,10 +1332,10 @@ class MissionController extends Controller
             ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('deleted_at'))
             ->where('mission_rank_id', $mission_rank_id)
             ->where('rank', '<=', 100)
-            ->orderBy('rank')
-            ->skip($page * $limit)
-            ->take($limit)
-            ->get();
+            ->orderBy('rank');
+
+        $count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit)->get();
 
         $rank_value_text = MissionGround::where('mission_id', $mission_id)->value('rank_value_text');
 
@@ -1343,7 +1343,10 @@ class MissionController extends Controller
             $item['feeds_count'] = code_replace($rank_value_text, ['feeds_count' => $item->feeds_count]);
         }
 
-        return success($data);
+        return success([
+            'count' => $count,
+            'data' => $data,
+        ]);
     }
 
     public function edit($mission_id): array
