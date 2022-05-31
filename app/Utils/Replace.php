@@ -20,7 +20,7 @@ class Replace
 
     private array $data = [];
 
-    public function __construct(Mission|Collection $mission, string $status = 'ongoing', $replaces = [])
+    public function __construct($mission, string $status = 'ongoing', $replaces = [])
     {
         $this->user_id = token_option()?->uid;
         $this->mission = $mission;
