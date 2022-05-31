@@ -76,7 +76,7 @@ class Replace
                 ->where('mission_id', $this->mission->id)
                 ->distinct()
                 ->count('feeds.id'),
-            'all_today_feeds_count' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+            'today_all_feeds_count' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
                 ->where('mission_id', $this->mission->id)
                 ->where('feeds.created_at', '>=', date('Y-m-d'))
                 ->distinct()
@@ -102,7 +102,7 @@ class Replace
                 ->where('mission_id', $this->mission->id)
                 ->distinct()
                 ->count('feeds.id'),
-            'all_today_feed_places_count' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+            'today_all_feed_places_count' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
                 ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
                 ->where('mission_id', $this->mission->id)
                 ->where('feeds.created_at', '>=', date('Y-m-d'))
