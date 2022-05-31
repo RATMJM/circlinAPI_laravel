@@ -3,12 +3,12 @@
 namespace App\Utils;
 
 use App\Models\Feed;
-use App\Models\Mission;
 use App\Models\MissionStat;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -28,6 +28,11 @@ class Replace
         $this->data = array_merge($this->data, $replaces);
     }
 
+    /**
+     * @param $array
+     *
+     * @return array
+     */
     public function replace($array): array
     {
         if ($array instanceof Collection || $array instanceof Model) {
@@ -42,14 +47,30 @@ class Replace
         return $res;
     }
 
+    /**
+     * @param array $array
+     *
+     * @return void
+     */
     public function set(array $array): void
     {
         $this->data = array_merge($this->data, $array);
     }
 
+    /**
+     * @param string|null $key
+     *
+     * @return int|string|null
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
     public function get(string|null $key): int|string|null
     {
         if (Arr::has($this->data, $key)) return $this->data[$key];
+
+        if ($res = Cache::get($key)) {
+            $this->data[$key] = $res;
+            return $res;
+        }
 
         $res = match ($key) {
             default => null,
@@ -192,7 +213,9 @@ class Replace
                 ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->d,
         };
 
-        // $res = is_numeric($res) && ($res > 10 || $res <= 0) ? floor($res) : sprintf('%0.1f', $res);
+        if (str_contains($key, 'all')) {
+            Cache::set($key, $res, 600);
+        }
 
         $this->data[$key] = $res;
         return $res;
