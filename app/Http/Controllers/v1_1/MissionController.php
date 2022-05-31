@@ -1132,7 +1132,7 @@ class MissionController extends Controller
                 ->get();
         }
 
-        $rank = $this->rank(request(), $mission_id)['data']['rank'];
+        $rank = $this->rank(request(), $mission_id)['data']['data'];
 
         return success([
             'ground' => $data,
