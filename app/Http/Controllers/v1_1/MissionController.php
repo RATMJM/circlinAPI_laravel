@@ -1113,7 +1113,7 @@ class MissionController extends Controller
         } else {
             $data = $this->ground2($request, $mission_id)['data'];
 
-            $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+            $data['my_feeds'] = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
                 $query->where('mission_id', $mission_id);
             })
                 ->where('user_id', $user_id)
@@ -1132,7 +1132,7 @@ class MissionController extends Controller
                         ->limit(1),
                     'content as top_text',
                     'created_at as date',
-                    DB::raw("CONCAT(DATEDIFF(created_at,'$data->started_at')+1,'일차') as bottom_text"),
+                    DB::raw("CONCAT(DATEDIFF(created_at,'".$data['started_at']."')+1,'일차') as bottom_text"),
                 ])
                 ->orderBy('id', 'desc')
                 ->get();
