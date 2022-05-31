@@ -15,7 +15,11 @@ class CreateMissionNoticesTable extends Migration
     {
         Schema::create('mission_notices', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('mission_id')->constrained();
             $table->timestamps();
+            $table->string('title');
+            $table->text('body');
+            $table->softDeletes();
         });
     }
 

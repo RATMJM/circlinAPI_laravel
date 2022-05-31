@@ -15,7 +15,10 @@ class CreateMissionNoticeImagesTable extends Migration
     {
         Schema::create('mission_notice_images', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('mission_notice_id')->constrained();
             $table->timestamps();
+            $table->string('type')->comment('이미지인지 비디오인지 (image / video)');
+            $table->string('image');
         });
     }
 
