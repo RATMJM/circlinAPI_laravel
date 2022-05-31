@@ -1112,6 +1112,30 @@ class MissionController extends Controller
             // MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
         } else {
             $data = $this->ground2($request, $mission_id)['data'];
+
+            $data->my_feeds = Feed::whereHas('feed_missions', function ($query) use ($mission_id) {
+                $query->where('mission_id', $mission_id);
+            })
+                ->where('user_id', $user_id)
+                ->select([
+                    'id as feed_id',
+                    'user_id',
+                    'image' => FeedImage::select('image')
+                        ->whereColumn('feed_id', 'feeds.id')
+                        ->orderBy('order')
+                        ->orderBy('id')
+                        ->limit(1),
+                    'type' => FeedImage::select('type')
+                        ->whereColumn('feed_id', 'feeds.id')
+                        ->orderBy('order')
+                        ->orderBy('id')
+                        ->limit(1),
+                    'content as top_text',
+                    'created_at as date',
+                    DB::raw("CONCAT(DATEDIFF(created_at,'$data->started_at')+1,'일차') as bottom_text"),
+                ])
+                ->orderBy('id', 'desc')
+                ->get();
         }
 
         $rank = $this->rank(request(), $mission_id)['data'];
@@ -1223,7 +1247,6 @@ class MissionController extends Controller
         $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
         $data['ground_text'] = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data['is_available'], $mission_id, $user_id), $replaces) : null;
         $data['record_text'] = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data['is_available'], $mission_id, $user_id), $replaces) : null;
-
 
         return success($data);
     }
