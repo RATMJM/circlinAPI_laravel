@@ -1225,7 +1225,7 @@ class MissionController extends Controller
 
             $data = $replaces->replace($data);
 
-            MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
+            // MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
         }
 
         return success($data);

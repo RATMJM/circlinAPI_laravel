@@ -3,6 +3,7 @@
 namespace App\Utils;
 
 use App\Models\Feed;
+use App\Models\Mission;
 use App\Models\MissionStat;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -19,11 +20,12 @@ class Replace
 
     private array $data = [];
 
-    public function __construct($mission, string $status = 'ongoing')
+    public function __construct(Mission|Collection $mission, string $status = 'ongoing', $replaces = [])
     {
         $this->user_id = token_option()?->uid;
         $this->mission = $mission;
         $this->status = $status;
+        $this->data = array_merge($this->data, $replaces);
     }
 
     public function replace($array): array
@@ -40,7 +42,12 @@ class Replace
         return $res;
     }
 
-    public function get(string|null $key)
+    public function set(array $array): void
+    {
+        $this->data = array_merge($this->data, $array);
+    }
+
+    public function get(string|null $key): int|string|null
     {
         if (Arr::has($this->data, $key)) return $this->data[$key];
 
@@ -103,18 +110,39 @@ class Replace
                 ->count('feeds.id'),
             #endregion
 
-            #region complete_days_count
-            'all_complete_days_count' => Feed::select([
-                'feeds.user_id',
-                DB::raw("CAST(feeds.created_at as DATE) d"),
-                DB::raw("SUM(feeds.distance) as s"),
-            ])
-                ->join('feed_missions', 'feed_id', 'feeds.id')
+            #region feed_users : 피드 올린 유저 수
+            'feed_users_count' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
                 ->where('mission_id', $this->mission->id)
-                ->having('s', '>=', $this->mission->goal_distance ?? 0)
-                ->groupBy(DB::raw("CAST(feeds.created_at as DATE)"), 'feeds.user_id')
-                ->count(),
-            'complete_days_count' => Feed::select([
+                ->distinct()
+                ->count('feeds.user_id'),
+            'today_cert_count', 'today_feed_users_count' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('feeds.created_at', '>=', date('Y-m-d'))
+                ->distinct()
+                ->count('feeds.user_id'),
+            #endregion
+
+            #region distance
+            'total_distance', 'distance_summation' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('user_id', $this->user_id)
+                ->sum('distance'),
+            'all_distance', 'all_distance_summation' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->sum('distance'),
+            'today_total_distance', 'today_distance_summation' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('user_id', $this->user_id)
+                ->where('feeds.created_at', '>=', date('Y-m-d'))
+                ->sum('distance'),
+            'today_all_distance', 'today_all_distance_summation' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('feeds.created_at', '>=', date('Y-m-d'))
+                ->sum('distance'),
+            #endregion
+
+            #region complete_days_count
+            'total_complete_day', 'complete_days_count' => Feed::select([
                 'feeds.user_id',
                 DB::raw("CAST(feeds.created_at as DATE) d"),
                 DB::raw("SUM(feeds.distance) as s"),
@@ -125,6 +153,37 @@ class Replace
                 ->having('s', '>=', $this->mission->goal_distance ?? 0)
                 ->groupBy(DB::raw("CAST(feeds.created_at as DATE)"), 'feeds.user_id')
                 ->count(),
+            'all_complete_day', 'all_complete_days_count' => Feed::select([
+                'feeds.user_id',
+                DB::raw("CAST(feeds.created_at as DATE) d"),
+                DB::raw("SUM(feeds.distance) as s"),
+            ])
+                ->join('feed_missions', 'feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->having('s', '>=', $this->mission->goal_distance ?? 0)
+                ->groupBy(DB::raw("CAST(feeds.created_at as DATE)"), 'feeds.user_id')
+                ->count(),
+            #endregion
+
+            #region singular
+            'feed_places_count_3' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('user_id', $this->user_id)
+                ->distinct()
+                ->count('feeds.id') >= 3 ? '성공' : '도전 중',
+            'feed_places_count_6' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('user_id', $this->user_id)
+                ->distinct()
+                ->count('feeds.id') >= 6 ? '성공' : '도전 중',
+            'feed_places_count_9' => Feed::join('feed_missions', 'feed_id', 'feeds.id')
+                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                ->where('mission_id', $this->mission->id)
+                ->where('user_id', $this->user_id)
+                ->distinct()
+                ->count('feeds.id') >= 9 ? '성공' : '도전 중',
             #endregion
 
             'code' => $this->mission->code ?? null,
@@ -132,6 +191,8 @@ class Replace
             'remaining_day' => now()->setTime(0, 0)
                 ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->d,
         };
+
+        $res = $res > 10 || $res <= 0 ? floor($res) : sprintf('%0.1f', $res);
 
         $this->data[$key] = $res;
         return $res;
