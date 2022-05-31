@@ -192,7 +192,7 @@ class Replace
                 ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->d,
         };
 
-        $res = is_numeric($res) && ($res > 10 || $res <= 0) ? floor($res) : sprintf('%0.1f', $res);
+        // $res = is_numeric($res) && ($res > 10 || $res <= 0) ? floor($res) : sprintf('%0.1f', $res);
 
         $this->data[$key] = $res;
         return $res;
