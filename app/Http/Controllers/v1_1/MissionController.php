@@ -13,7 +13,6 @@ use App\Models\FeedPlace;
 use App\Models\FeedProduct;
 use App\Models\Follow;
 use App\Models\Mission;
-use App\Models\MissionCache;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionGround;
@@ -1132,7 +1131,7 @@ class MissionController extends Controller
                         ->limit(1),
                     'content as top_text',
                     'created_at as date',
-                    DB::raw("CONCAT(DATEDIFF(created_at,'".$data['started_at']."')+1,'일차') as bottom_text"),
+                    DB::raw("CONCAT(DATEDIFF(created_at,'" . $data['started_at'] . "')+1,'일차') as bottom_text"),
                 ])
                 ->orderBy('id', 'desc')
                 ->get();
@@ -1178,16 +1177,16 @@ class MissionController extends Controller
             ->firstOrFail();
 
         // D-DAY 계산
-        $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->d;
-        if ($data->is_available) {
+        $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->days;
+        if ($data->status === 'ongoing') {
             $data['ground_d_day_title'] = '함께하는 중';
             $data['ground_d_day_text'] = ($diff + 1) . "일차";
-        } elseif ($data->started_at > $now) {
-            $data['ground_d_day_title'] = '함께하기 전';
-            $data['ground_d_day_text'] = "D - $diff";
-        } else {
+        } elseif ($data->status === 'end') {
             $data['ground_d_day_title'] = '종료';
             $data['ground_d_day_text'] = "";
+        } else {
+            $data['ground_d_day_title'] = '함께하기 전';
+            $data['ground_d_day_text'] = "D - $diff";
         }
 
         $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
@@ -1225,15 +1224,19 @@ class MissionController extends Controller
 
         $replaces = new Replace($data, $data->status);
 
-        $data['ground_progress_present'] = round($replaces->get($data->ground_progress_type) ?? 0, 1);
+        $data['ground_progress_present'] =
+        $data['ground_progress_current'] = round($replaces->get($data->ground_progress_type) ?? 0, 1);
 
         if ($data->ground_progress_complete_image && $data['ground_progress_present'] >= $data->ground_progress_max) {
             $data->ground_progress_background_image = $data->ground_progress_complete_image;
             $data->ground_progress_image = $data->ground_progress_complete_image;
         }
 
+        $data['record_progress_present'] =
+        $data['record_progress_current'] = round($replaces->get($data->record_progress_type) ?? 0, 1);
+
         $data->cert_background_image = $data->cert_background_image ? $data->cert_background_image[min(
-            max($data->record_progress_present, 1), count($data->cert_background_image)
+            max($data['record_progress_present'], 1), count($data->cert_background_image)
         ) - 1] : null;
 
         $data['my_rank'] = MissionRank::join('mission_rank_users', 'mission_rank_id', 'mission_ranks.id')

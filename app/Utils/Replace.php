@@ -210,7 +210,7 @@ class Replace
             'code' => $this->mission->code ?? null,
             'entry_no' => $this->mission->entry_no ?? null,
             'remaining_day' => now()->setTime(0, 0)
-                ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->d,
+                ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->days,
         };
 
         if (str_contains($key, 'all')) {
