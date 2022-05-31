@@ -1109,7 +1109,7 @@ class MissionController extends Controller
             $data->ground_text = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
             $data->record_text = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data->is_available, $mission_id, $user_id), $replaces, $cert) : null;
 
-            MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
+            // MissionCache::updateOrCreate(['mission_id' => $mission_id, 'user_id' => $user_id], ['data' => $data]);
         } else {
             $data = $this->ground2($request, $mission_id)['data'];
         }
@@ -1219,6 +1219,11 @@ class MissionController extends Controller
             ->value('rank');
 
         $data = $replaces->replace($data);
+
+        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
+        $data['ground_text'] = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data['is_available'], $mission_id, $user_id), $replaces) : null;
+        $data['record_text'] = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data['is_available'], $mission_id, $user_id), $replaces) : null;
+
 
         return success($data);
     }
