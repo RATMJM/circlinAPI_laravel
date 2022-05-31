@@ -67,7 +67,7 @@ class Replace
     {
         if (Arr::has($this->data, $key)) return $this->data[$key];
 
-        if ($res = Cache::get($key)) {
+        if ($res = Cache::get($this->mission->id . $key)) {
             $this->data[$key] = $res;
             return $res;
         }
@@ -214,7 +214,7 @@ class Replace
         };
 
         if (str_contains($key, 'all')) {
-            Cache::set($key, $res, 600);
+            Cache::set($this->mission->id . $key, $res, 600);
         }
 
         $this->data[$key] = $res;
