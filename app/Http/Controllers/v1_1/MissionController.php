@@ -1133,7 +1133,7 @@ class MissionController extends Controller
     {
         $user_id = token()->uid;
 
-        if ($request->has('refresh') || !$data = MissionCache::where([
+        if (/*$request->has('refresh') ||*/ !$data = MissionCache::where([
                 'mission_id' => $mission_id,
                 'user_id' => $user_id,
             ])
