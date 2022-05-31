@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use Psr\SimpleCache\InvalidArgumentException;
 
 class MissionController extends Controller
 {
@@ -681,47 +682,41 @@ class MissionController extends Controller
 
         $place_id = $request->get('place_id');
 
-        $feeds = FeedMission::where('feed_missions.mission_id', $mission_id)
-            ->whereNull('feeds.deleted_at')
-            ->where(function ($query) use ($user_id) {
-                // $query->where('feeds.user_id', $user_id)->orWhere('feeds.is_hidden', false);
-            })
-            ->join('feeds', function ($query) use ($user_id) {
-                $query->on('feeds.id', 'feed_missions.feed_id')
-                    ->whereNull('feeds.deleted_at')
-                    ->where(function ($query) use ($user_id) {
-                        // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
-                    });
-            })
-            ->when($place_id, function ($query, $place_id) {
-                $query->join('feed_places', 'feed_places.feed_id', 'feeds.id')
-                    ->where('feed_places.place_id', $place_id);
-            })
+        $feeds = FeedMission::select([
+            'users.id as user_id',
+            'users.nickname',
+            'users.profile_image',
+            'feeds.id',
+            'feeds.created_at',
+            'feeds.content',
+            'feeds.is_hidden',
+            'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
+            'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
+            'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
+            'image_type' => FeedImage::select('type')
+                ->whereColumn('feed_id', 'feeds.id')
+                ->orderBy('order')
+                ->limit(1),
+            'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
+            'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+            'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
+            'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
+                ->where('user_id', token()->uid),
+            'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")
+                ->whereColumn('feed_comments.feed_id', 'feeds.id')
+                ->where('feed_comments.user_id', token()->uid),
+        ])
+            ->join('feeds', fn($query) => $query->on('feeds.id', 'feed_missions.feed_id')
+                ->whereNull('feeds.deleted_at'))
             ->join('users', 'users.id', 'feeds.user_id')
-            ->select([
-                'users.id as user_id',
-                'users.nickname',
-                'users.profile_image',
-                'feeds.id',
-                'feeds.created_at',
-                'feeds.content',
-                'feeds.is_hidden',
-                'has_images' => FeedImage::selectRaw("COUNT(1) > 1")->whereColumn('feed_id', 'feeds.id'), // 이미지 여러장인지
-                'has_product' => FeedProduct::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 상품 있는지
-                'has_place' => FeedPlace::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id'), // 위치 있는지
-                'image_type' => FeedImage::select('type')
-                    ->whereColumn('feed_id', 'feeds.id')
-                    ->orderBy('order')
-                    ->limit(1),
-                'image' => FeedImage::select('image')->whereColumn('feed_id', 'feeds.id')->orderBy('order')->limit(1),
-                'check_total' => FeedLike::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
-                'comment_total' => FeedComment::selectRaw("COUNT(1)")->whereColumn('feed_id', 'feeds.id'),
-                'has_check' => FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')
-                    ->where('user_id', token()->uid),
-                'has_comment' => FeedComment::selectRaw("COUNT(1) > 0")
-                    ->whereColumn('feed_comments.feed_id', 'feeds.id')
-                    ->where('feed_comments.user_id', token()->uid),
-            ])
+            ->where('feed_missions.mission_id', $mission_id)
+            ->whereNull('feeds.deleted_at')
+            ->when($request->has('my'), function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            })
+            ->when($place_id, fn($query, $place_id) => $query->join('feed_places', function ($query) use ($place_id) {
+                $query->on('feed_places.feed_id', 'feeds.id')->where('feed_places.place_id', $place_id);
+            }))
             ->orderBy('id', 'desc');
         $feeds_count = $feeds->count();
         $feeds = $feeds->skip($page * $limit)->take($limit)->get();
@@ -1148,9 +1143,11 @@ class MissionController extends Controller
     /**
      * GET /mission/{id}/ground2
      *
+     * @param Request $request
      * @param $mission_id
      *
      * @return array
+     * @throws InvalidArgumentException
      */
     public function ground2(Request $request, $mission_id): array
     {
