@@ -127,6 +127,7 @@ class BookmarkController extends Controller
                 'current' => Order::selectRaw("COUNT(distinct orders.id)")
                     ->join('order_products', 'order_id', 'orders.id')
                     ->whereColumn('product_id', 'products.id'),
+                'food_id',
             ]))
             ->orderBy('has_check')
             ->orderBy('is_event')
