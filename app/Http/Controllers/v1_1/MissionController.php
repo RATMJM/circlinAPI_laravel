@@ -1304,7 +1304,33 @@ class MissionController extends Controller
                     'current' => Order::selectRaw("COUNT(distinct orders.id)")
                         ->join('order_products', 'order_id', 'orders.id')
                         ->whereColumn('product_id', 'products.id'),
-                ]),
+
+                    'products.shipping_fee',
+                    'products.id as product_id',
+                    'brands.name_ko as brand_name',
+                    'products.name_ko as product_name',
+                    'products.price',
+                    'products.sale_price',
+                    'products.status',
+                    DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                    DB::raw("'N' as CART_YN"),
+                    DB::raw("1 as qty"),
+                    DB::raw("'' as opt_name1"),
+                    DB::raw("'' as opt_name2"),
+                    DB::raw("'' as opt_name3"),
+                    DB::raw("'' as opt_name4"),
+                    DB::raw("'' as opt_name5"),
+                    DB::raw("0 as opt_price1"),
+                    DB::raw("0 as opt_price2"),
+                    DB::raw("0 as opt_price3"),
+                    DB::raw("0 as opt_price4"),
+                    DB::raw("0 as opt_price5"),
+                    DB::raw("'' as opt1"),
+                    DB::raw("'' as opt2"),
+                    DB::raw("'' as opt3"),
+                    DB::raw("'' as opt4"),
+                    DB::raw("'' as opt5"),
+                ])->join('brands', 'brands.id', 'products.brand_id'),
             ])
             ->firstOrFail();
 
