@@ -23,12 +23,14 @@ class MissionNoticeController extends Controller
 
         $data = MissionNotice::select(['id', 'title', 'body'])
             ->where('mission_id', $mission_id)
-            ->orderBy('id', 'desc')
-            ->skip($page * $limit)
-            ->take($limit)
-            ->get();
+            ->orderBy('id', 'desc');
+        $count = $data->count();
+        $data = $data->skip($page * $limit)->take($limit)->get();
 
-        return success($data);
+        return success([
+            'count' => $count,
+            'data' => $data,
+        ]);
     }
 
     /**
