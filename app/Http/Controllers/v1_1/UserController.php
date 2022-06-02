@@ -1214,7 +1214,7 @@ class UserController extends Controller
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $uid)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 'mission_products.type as product_type',
                 //'mission_products.product_id', 'mission_products.outside_product_id',
@@ -1243,14 +1243,11 @@ class UserController extends Controller
                     ->orderBy('mission_places.id')->limit(1),
                 'feeds_count' => FeedMission::selectRaw("COUNT(distinct feeds.id)")
                     ->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', function ($query) use ($user_id) {
+                    ->join('feeds', function ($query) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
-                            ->whereNull('feeds.deleted_at')
-                            ->where(function ($query) use ($user_id) {
-                                // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
-                            });
+                            ->whereNull('feeds.deleted_at');
                     })
-                    ->where('user_id', $user_id),
+                    ->where('user_id', $uid),
             ])
             ->with('refundProducts', fn($query) => $query->select([
                 'products.id',
@@ -1289,9 +1286,9 @@ class UserController extends Controller
                 ]);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id, $user_id));
+                    $users = $users->union(mission_users($item->id, $uid));
                 } else {
-                    $users = mission_users($item->id, $user_id);
+                    $users = mission_users($item->id, $uid);
                 }
 
                 if ($areas) {
