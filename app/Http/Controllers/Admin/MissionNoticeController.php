@@ -80,7 +80,7 @@ class MissionNoticeController extends Controller
             ->where(['mission_id' => $mission_id, 'id' => $id])
             ->firstOrFail();
 
-        return view('admin.mission.notice.show', ['data' => $data]);
+        return view('admin.mission.notice.show', ['data' => $data, 'mission_id' => $mission_id]);
     }
 
     public function edit($mission_id, $id)
@@ -91,5 +91,12 @@ class MissionNoticeController extends Controller
     public function update(Request $request, $mission_id, $id)
     {
 
+    }
+
+    public function destroy($mission_id, $id)
+    {
+        MissionNotice::where(['mission_id' => $mission_id, 'id' => $id])->delete();
+
+        return redirect()->route('admin.mission.notice.index', ['mission_id' => $mission_id]);
     }
 }

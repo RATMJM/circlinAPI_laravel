@@ -4,15 +4,23 @@
 
 @section('content')
     <div class="grid">
-        <div class="item head">제목</div>
-        <div class="item">{{ $data['title'] }}</div>
-        <div class="item" style="grid-column: 2/-1">{{ $data['created_at'] }}</div>
-        <div class="item head">내용</div>
-        <div class="item">{{ $data['body'] }}</div>
-        <div class="item img-wrapper" style="grid-column: 1/-1">
+        <div class="item img-wrapper" style="grid-row: 1/6; grid-column: 3/span 1">
             @foreach($data['images'] as $image)
                 <img src="{{ $image->image }}" alt="">
             @endforeach
+        </div>
+        <div class="item head">제목</div>
+        <div class="item">{{ $data['title'] }}</div>
+        <div class="item" style="grid-column: 2/span 1">{{ $data['created_at'] }}</div>
+        <div class="item head">내용</div>
+        <div class="item">{{ $data['body'] }}</div>
+        <div class="item" style="grid-column: 2/span 1">
+            <form action="{{ route('admin.mission.notice.destroy', ['mission_id' => $mission_id, 'notice' => $data['id']]) }}"
+                method="POST" onsubmit="return confirm('정말로 삭제하시겠습니까?')">
+                @csrf
+                @method('DELETE')
+                <button class="btn">삭제</button>
+            </form>
         </div>
     </div>
     <br>
@@ -21,7 +29,7 @@
         .grid {
             display: grid;
             width: 1200px;
-            grid-template-columns: 1fr 3fr;
+            grid-template-columns: 1fr 3fr 2fr;
         }
 
         .item {
@@ -30,7 +38,6 @@
 
         .img-wrapper {
             display: grid;
-            grid-template-columns: 33%;
             gap: 8px;
             justify-content: center;
             align-items: center;
