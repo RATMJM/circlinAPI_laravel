@@ -65,6 +65,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/check', [v1_1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1_1\UserController::class, 'mission'])->name('mission');
         Route::get('/mission/created', [v1_1\UserController::class, 'created_mission'])->name('mission.created');
+        Route::get('/mission/created2', [v1_1\UserController::class, 'created_mission2'])->name('mission.created2');
         Route::get('/follower', [v1_1\UserController::class, 'follower'])->name('follower');
         Route::get('/following', [v1_1\UserController::class, 'following'])->name('following');
 
