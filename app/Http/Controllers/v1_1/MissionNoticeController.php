@@ -21,7 +21,7 @@ class MissionNoticeController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 10);
 
-        $data = MissionNotice::select(['id', 'title', 'body'])
+        $data = MissionNotice::select(['id', 'title', 'body', 'created_at'])
             ->where('mission_id', $mission_id)
             ->orderBy('id', 'desc');
         $count = $data->count();
@@ -43,7 +43,7 @@ class MissionNoticeController extends Controller
      */
     public function show($mission_id, $id): array
     {
-        $data = MissionNotice::select(['id', 'title', 'body'])
+        $data = MissionNotice::select(['id', 'title', 'body', 'created_at'])
             ->where('id', $id)
             ->where('mission_id', $mission_id)
             ->with('images', fn($query) => $query->select(['mission_notice_id', 'type', 'image']))
