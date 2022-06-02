@@ -1174,6 +1174,7 @@ class UserController extends Controller
             ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
                 'missions.id',
+                'missions.id as mission_id',
                 'missions.title',
                 'missions.description',
                 'missions.is_event',
