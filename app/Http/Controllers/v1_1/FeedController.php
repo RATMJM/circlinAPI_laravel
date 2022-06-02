@@ -205,6 +205,8 @@ class FeedController extends Controller
                         ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
                         ->count();
 
+                    $need_review = $mission->is_refund && $feeds_count === 0;
+
                     if ($mission->is_ground) {
                         if ($mission->success_count === 0 || $feeds_count >= $mission->success_count) {
                             $feeds_distance = Feed::where('feeds.user_id', $user_id)
@@ -433,6 +435,7 @@ class FeedController extends Controller
                 'product_reward' => $product_reward,
                 'place_reward' => $place_reward,
                 'treasure_reward' => $treasure_reward ?? 0,
+                'need_review' => $need_review ?? false,
             ]);
         } catch (Exception $e) {
             DB::rollBack();
