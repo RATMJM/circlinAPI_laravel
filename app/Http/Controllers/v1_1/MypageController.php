@@ -47,6 +47,10 @@ class MypageController extends Controller
     {
         return (new UserController())->created_mission($request, token()->uid);
     }
+    public function created_mission2(Request $request): array
+    {
+        return (new UserController())->created_mission2($request, token()->uid);
+    }
 
     /**
      * 나를 팔로우

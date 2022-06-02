@@ -49,4 +49,10 @@ class MissionCategory extends Model
     {
         return $this->hasMany('App\Models\Mission');
     }
+
+    public function refundProducts()
+    {
+        return $this->belongsToMany(Product::class, MissionRefundProduct::class,
+            'mission_id', 'product_id', 'mission_id', 'id');
+    }
 }

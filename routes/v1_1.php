@@ -180,6 +180,7 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/check', [v1_1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1_1\MypageController::class, 'mission'])->name('mission');
     Route::get('/mission/created', [v1_1\MypageController::class, 'created_mission'])->name('mission.created');
+    Route::get('/mission/created2', [v1_1\MypageController::class, 'created_mission2'])->name('mission.created2');
     Route::get('/follower', [v1_1\MypageController::class, 'follower'])->name('follower');
     Route::get('/following', [v1_1\MypageController::class, 'following'])->name('following');
 
