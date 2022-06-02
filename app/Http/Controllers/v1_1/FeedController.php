@@ -17,6 +17,7 @@ use App\Models\MissionGround;
 use App\Models\MissionPush;
 use App\Models\MissionStat;
 use App\Models\MissionTreasurePoint;
+use App\Models\Order;
 use App\Models\OutsideProduct;
 use App\Models\Place;
 use App\Models\PointHistory;
@@ -528,34 +529,68 @@ class FeedController extends Controller
 
         $feed['images'] = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
-        $feed['missions'] = $feed->feed_missions()
-            ->join('missions', 'missions.id', 'feed_missions.mission_id')
+        $feed['missions'] = $feed->missions()->select([
+            'missions.id',
+            'mission_categories.emoji',
+            'missions.title',
+            'missions.is_event',
+            DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+            'missions.event_type',
+            'missions.is_ground',
+            'missions.is_ocr',
+            'missions.started_at',
+            'missions.ended_at',
+            'missions.thumbnail_image',
+            'missions.success_count',
+            'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
+                ->where('user_id', $user_id),
+            'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
+                ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+            'mission_stat_user_id' => MissionStat::withTrashed()
+                ->select('user_id')
+                ->whereColumn('mission_id', 'missions.id')
+                ->where('user_id', $user_id)
+                ->orderBy('id', 'desc')
+                ->limit(1),
+            DB::raw("$user_id as mission_stat_user_id"),
+        ])
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
-            ->select([
-                'missions.id',
-                'mission_categories.emoji',
-                'missions.title',
-                'missions.is_event',
-                DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
-                'missions.event_type',
-                'missions.is_ground',
-                'missions.is_ocr',
-                'missions.started_at',
-                'missions.ended_at',
-                'missions.thumbnail_image',
-                'missions.success_count',
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id),
-                'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
-                'mission_stat_user_id' => MissionStat::withTrashed()
-                    ->select('user_id')
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)
-                    ->orderBy('id', 'desc')
-                    ->limit(1),
-                DB::raw("$user_id as mission_stat_user_id"),
-            ])
+            ->with('refundProducts', fn($query) => $query->select([
+                'products.id',
+                'products.code',
+                'products.name_ko',
+                'products.thumbnail_image',
+                'mission_refund_products.limit',
+                'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                    ->join('order_products', 'order_id', 'orders.id')
+                    ->whereColumn('product_id', 'products.id'),
+
+                'products.shipping_fee',
+                'products.id as product_id',
+                'brands.name_ko as brand_name',
+                'products.name_ko as product_name',
+                'products.price',
+                'products.sale_price',
+                'products.status',
+                DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                DB::raw("'N' as CART_YN"),
+                DB::raw("1 as qty"),
+                DB::raw("'' as opt_name1"),
+                DB::raw("'' as opt_name2"),
+                DB::raw("'' as opt_name3"),
+                DB::raw("'' as opt_name4"),
+                DB::raw("'' as opt_name5"),
+                DB::raw("0 as opt_price1"),
+                DB::raw("0 as opt_price2"),
+                DB::raw("0 as opt_price3"),
+                DB::raw("0 as opt_price4"),
+                DB::raw("0 as opt_price5"),
+                DB::raw("'' as opt1"),
+                DB::raw("'' as opt2"),
+                DB::raw("'' as opt3"),
+                DB::raw("'' as opt4"),
+                DB::raw("'' as opt5"),
+            ])->join('brands', 'brands.id', 'products.brand_id'))
             ->get();
 
         return success([
