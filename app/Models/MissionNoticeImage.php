@@ -29,5 +29,7 @@ class MissionNoticeImage extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+
     protected $hidden = ['mission_notice_id'];
 }
