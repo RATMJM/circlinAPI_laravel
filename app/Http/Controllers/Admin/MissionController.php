@@ -87,6 +87,7 @@ class MissionController extends Controller
             'title',
             'description',
             'thumbnail_image',
+            'is_event',
         ])
             ->where('id', $id)
             ->firstOrFail();

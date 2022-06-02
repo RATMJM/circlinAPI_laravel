@@ -9,9 +9,13 @@
         <div class="item">{{ $data['title'] }}</div>
         <div class="item head">내용</div>
         <div class="item">{{ $data['description'] }}</div>
-        <div class="item center" style="grid-column: 2/span 2">
-            <a href="{{ route('admin.mission.notice.index', ['mission_id' => $data['id']]) }}" class="btn">공지사항으로</a>
-        </div>
+        @if($data['is_event'])
+            <div class="item center" style="grid-column: 2/span 2">
+                <a href="{{ route('admin.mission.notice.index', ['mission_id' => $data['id']]) }}" class="btn">
+                    공지사항으로
+                </a>
+            </div>
+        @endif
     </div>
     <br>
 
