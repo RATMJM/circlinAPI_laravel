@@ -77,4 +77,10 @@ class MissionStat extends Model
         return $this->hasManyThrough(Feed::class, FeedMission::class,
             'mission_id', 'id', 'mission_id', 'feed_id');
     }
+
+    public function refundProducts()
+    {
+        return $this->belongsToMany(Product::class, MissionRefundProduct::class,
+            'mission_id', 'product_id', 'mission_id', 'id');
+    }
 }

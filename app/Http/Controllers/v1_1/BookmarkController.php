@@ -42,6 +42,7 @@ class BookmarkController extends Controller
                 'mission_categories.title as category_title',
                 'mission_categories.emoji',
                 'missions.id',
+                'mission_stats.mission_id',
                 'missions.title',
                 DB::raw("IFNULL(missions.description, '') as description"),
                 'missions.is_event',
@@ -117,6 +118,16 @@ class BookmarkController extends Controller
                     $query->where('user_id', $user_id);
                 },
             ])
+            ->with('refundProducts', fn($query) => $query->select([
+                'products.id',
+                'products.code',
+                'products.name_ko',
+                'products.thumbnail_image',
+                'mission_refund_products.limit',
+                'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                    ->join('order_products', 'order_id', 'orders.id')
+                    ->whereColumn('product_id', 'products.id'),
+            ]))
             ->orderBy('has_check')
             ->orderBy('is_event')
             ->orderBy('event_order')

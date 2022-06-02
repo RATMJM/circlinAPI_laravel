@@ -9,6 +9,7 @@ use App\Models\Mission;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
 use App\Models\MissionStat;
+use App\Models\Order;
 use App\Models\Place;
 use App\Models\User;
 use App\Models\UserFavoriteCategory;
@@ -251,6 +252,16 @@ class MissionCategoryController extends Controller
                     })
                     ->where('user_id', $user_id),
             ])
+            ->with('refundProducts', fn($query) => $query->select([
+                'products.id',
+                'products.code',
+                'products.name_ko',
+                'products.thumbnail_image',
+                'mission_refund_products.limit',
+                'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                    ->join('order_products', 'order_id', 'orders.id')
+                    ->whereColumn('product_id', 'products.id'),
+            ]))
             ->get();
 
         if (count($missions)) {
