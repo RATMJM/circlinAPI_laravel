@@ -9,15 +9,41 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class PointController extends Controller
 {
     /**
-     * 포인트 지급 / 차감 ($point 양수, 음수에 따라)
-     * @param string|null $type feed|order|mission|product_review
-     * @param integer|null $id type에 해당하는 id
+     * @param Request $request
+     *
+     * @return array
+     * @throws Throwable
      */
-    public static function change_point($user_id, $point, $reason, $type = null, $id = null): array
+    public function store(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        $data = $request->validate([
+            'point' => ['required', 'numeric', 'min:1'],
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        return self::change_point($user_id, $data['point'], $data['reason']);
+    }
+
+    /**
+     * 포인트 지급 / 차감 ($point 양수, 음수에 따라)
+     *
+     * @param int $user_id
+     * @param int $point
+     * @param string $reason
+     * @param string|null $type
+     * @param int|null $id
+     *
+     * @return array
+     * @throws Throwable
+     */
+    public static function change_point(int $user_id, int $point, string $reason, string $type = null, int $id = null): array
     {
         try {
             DB::beginTransaction();
