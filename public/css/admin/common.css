@@ -21,6 +21,7 @@ a {
 
 input, select, button {
     padding: 5px;
+    font-size: 12px;
 }
 
 img {
@@ -86,6 +87,16 @@ table > thead > tr > th {
     width: 100%;
     height: 50px;
     margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #000;
+    border-radius: 15px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
 }
 
 .container {

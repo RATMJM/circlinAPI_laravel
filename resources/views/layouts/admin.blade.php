@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ asset('css/admin/common.css?202206021938') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/board.css?202110081200') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/common.css?202206031548') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/board.css?202206031548') }}">
 
     <title>써클인 어드민 - @yield('title')</title>
 </head>
