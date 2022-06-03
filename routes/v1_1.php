@@ -266,6 +266,6 @@ Route::get('/mission_upload_point', function () {
     ]);
 });
 
-Route::post('/point', [v1_1\PointController::class, 'change_point']);
+Route::post('/point', [v1_1\PointController::class, 'store']);
 
 Route::get('/test', [v1_1\ScheduleController::class, 'missionRanking']);
