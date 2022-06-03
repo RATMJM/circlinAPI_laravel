@@ -26,9 +26,11 @@ class PointController extends Controller
         $data = $request->validate([
             'point' => ['required', 'numeric', 'min:1'],
             'reason' => ['required', 'string', 'max:255'],
+            'type' => ['in:feed,order,mission,product_review,food_rating'],
+            'id' => ['numeric'],
         ]);
 
-        return self::change_point($user_id, $data['point'], $data['reason']);
+        return self::change_point($user_id, $data['point'], $data['reason'], $data['type'] ?? null, $data['id'] ?? null);
     }
 
     /**
