@@ -17,7 +17,7 @@ class BlockController
             return success(['result' => false, 'reason' => '올바르지 않은 대상입니다.']);
         }
 
-        $is_blocked = Block::select('user_id', 'target_id')
+        $is_blocked = Block::select('id')
             ->where('user_id', $user_id)
             ->where('target_id', $target_id)
             ->get()->count();
