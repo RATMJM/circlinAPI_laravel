@@ -13,29 +13,29 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id 미션 제작자
- * @property int $mission_category_id
- * @property string|null $title
- * @property string|null $subtitle
- * @property string|null $description
+ * @property int $mission_category_id 카테고리
+ * @property string|null $title 이름
+ * @property string|null $description 상세 내용
  * @property string|null $thumbnail_image 썸네일
  * @property string|null $reserve_started_at 사전예약 시작 일시
  * @property string|null $reserve_ended_at 사전예약 종료 일시
  * @property string|null $started_at 시작 일시
  * @property string|null $ended_at 종료 일시
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property int $user_limit 최대 참여자 수(0은 무제한)
- * @property int $success_count x회 인증 시 성공 팝업 (지금은 1,0으로 운영)
  * @property int $is_show 노출 여부
- * @property int $is_tutorial
  * @property bool $is_event 이벤트 여부
  * @property int $is_ground 운동장으로 입장 여부
+ * @property string|null $subtitle 운동장 내부에 활용하는 짧은 이름
  * @property int $is_refund 제품 체험 챌린지 여부
  * @property int $is_ocr OCR 필요한 미션인지
  * @property int $is_require_place 장소 인증 필수 여부
  * @property int $is_not_duplicate_place 일일 장소 중복 인증 불가 여부
- * @property int|null $event_type ~5.0 미션룸 구분
+ * @property int $is_tutorial 맨 처음 가입 시 관심 카테고리로 설정하면 기본적으로 담길 미션 여부
  * @property int $event_order 이벤트 페이지 정렬
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $event_type ~5.0 미션룸 구분
  * @property int $reward_point 이벤트 성공 보상
+ * @property int $success_count x회 인증 시 성공 팝업 (지금은 1,0으로 운영)
+ * @property int $user_limit 최대 참여자 수(0은 무제한)
  * @property string|null $treasure_started_at 보물찾기 포인트 지급 시작일자
  * @property string|null $treasure_ended_at 보물찾기 포인트 지급 종료일자
  * @property int|null $week_duration 총 주차

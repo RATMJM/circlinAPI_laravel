@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\UserFavoriteCategory|null $favorite_category
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mission[] $missions
  * @property-read int|null $missions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $refundProducts
+ * @property-read int|null $refund_products_count
  * @method static \Illuminate\Database\Eloquent\Builder|MissionCategory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionCategory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionCategory query()

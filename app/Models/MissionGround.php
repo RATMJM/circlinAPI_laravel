@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $mission_id
  * @property string|null $intro_video 소개 페이지 상단 동영상
- * @property string|null $logo_image 상단 로고
+ * @property string|null $logo_image 상단 고정 로고
  * @property string|null $code_type 코드 타입
  * @property string|null $code_title 입장코드 라벨
  * @property string|null $code 입장코드 (있으면 비교, 없으면 입력 받기만)
@@ -45,9 +45,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $ground_box_users_count_title 운동장 탭 참가중인 유저 수 타이틀
  * @property string $ground_box_summary_text 운동장 탭 피드 수 텍스트
  * @property string $ground_box_summary_title 운동장 탭 피드 수 타이틀
- * @property string|null $ground_banner_image
- * @property string|null $ground_banner_type
- * @property string|null $ground_banner_link
+ * @property string|null $ground_banner_image 운동장 탭 배너 이미지 URL
+ * @property string|null $ground_banner_type 운동장 탭 배너 타입 (url)
+ * @property string|null $ground_banner_link 운동장 탭 배너 링크 URL
  * @property string $ground_users_type 운동장 탭 유저 목록 타입
  * @property string $ground_users_title 운동장 탭 유저 목록 타이틀
  * @property string $ground_users_text 운동장 탭 유저 목록 비었을 때 텍스트

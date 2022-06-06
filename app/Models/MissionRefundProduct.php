@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $mission_id
  * @property int $product_id
+ * @property int|null $food_id
  * @property int $limit 제품 최대 구매 수량
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct query()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct whereFoodId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct whereLimit($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct whereMissionId($value)

@@ -19,11 +19,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $order_id
  * @property int|null $mission_id
  * @property int|null $product_review_id
+ * @property int|null $food_rating_id
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory query()
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory whereFeedId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PointHistory whereFoodRatingId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory whereMissionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PointHistory whereOrderId($value)
