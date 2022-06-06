@@ -271,3 +271,6 @@ Route::post('/point', [v1_1\PointController::class, 'store']);
 Route::get('/test', [v1_1\ScheduleController::class, 'missionRanking']);
 
 Route::post('/report', [v1_1\ReportController::class, 'store']);
+
+Route::post('/block', [v1_1\BlockController::class, 'store']);
+Route::delete('/block', [v1_1\BlockController::class, 'destroy']);

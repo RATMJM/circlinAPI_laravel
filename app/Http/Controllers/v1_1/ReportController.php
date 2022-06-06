@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 class ReportController
 {
-
     public function store(Request $request):array
     {
         $user_id = token()->uid;
@@ -21,7 +20,7 @@ class ReportController
         $reason = $request->get('reason');
 
         $report_count = Report::select('id')
-            -> where('target_feed_comment_id', $target_feed_comment_id)
+            ->where('target_feed_comment_id', $target_feed_comment_id)
             ->where('target_mission_comment_id', $target_mission_comment_id)
             ->where('target_notice_comment_id', $target_notice_comment_id)
             ->where('target_feed_id', $target_feed_id)

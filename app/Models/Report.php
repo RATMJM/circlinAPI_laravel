@@ -11,14 +11,26 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property int|null $user_id
- * @property int $target_feed_id
- * @property int $target_user_id
- * @property int $target_mission_id
- * @property int $target_feed_comment_id
- * @property int $target_notice_comment_id
- * @property int $target_mission_comment_id
+ * @property int|null $user_id 신고자 user id
+ * @property int|null $target_feed_id 피드 신고 시 feed id값
+ * @property int|null $target_user_id 유저 신고 시 user id값
+ * @property int|null $target_mission_id 미션 신고 시 mission id값
+ * @property int|null $target_feed_comment_id 피드 댓글 신고 시 feed_comment id값
+ * @property int|null $target_notice_comment_id 공지사항 댓글 신고 시 notice_comment id값
+ * @property int|null $target_mission_comment_id 미션 댓글 신고 시 mission_comment id값
  * @property string|null $reason
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedComment[] $feed_comments
+ * @property-read int|null $feed_comments_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Feed[] $feeds
+ * @property-read int|null $feeds_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionComment[] $mission_comments
+ * @property-read int|null $mission_comments_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Mission[] $missions
+ * @property-read int|null $missions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\NoticeComment[] $notice_comments
+ * @property-read int|null $notice_comments_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read int|null $users_count
  * @method static \Illuminate\Database\Eloquent\Builder|Report newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Report newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Report query()
