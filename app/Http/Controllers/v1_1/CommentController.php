@@ -44,7 +44,7 @@ class CommentController extends Controller
                     // DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
                     "{$table}_comments.comment",
                     'users.id as user_id',
-                    'is_blocked' => Block::selectRaw('COUNT(1) > 0')->where('target_id', 'users.id')->where('user_id', $uid),
+                    'is_blocked' => Block::selectRaw('count(id)')->whereColumn('target_id', 'users.id')->where('user_id', $uid),
                     'users.nickname',
                     'users.profile_image',
                     'users.gender',

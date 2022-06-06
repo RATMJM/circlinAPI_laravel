@@ -135,7 +135,6 @@ class HomeController extends Controller
         // $data = $data//->where(FeedLike::selectRaw("COUNT(1) > 0")->whereColumn('feed_id', 'feeds.id')->where('user_id', token()->uid), false)
         //     ->skip($page * $limit)->take($limit);
 
-        // $is_blocked = Block::select('id')->where('target_id', 'users.id')->where('user_id', $user_id)->get()->count() > 0 ? true : false;
         $data = Feed::joinSub($data, 'f', function ($query) {
             $query->on('f.id', 'feeds.id');
         })
@@ -147,7 +146,7 @@ class HomeController extends Controller
             ->select([
                 'feeds.id',
                 'users.id as user_id',
-                'is_blocked' => Block::selectRaw('COUNT(1) > 0')->where('target_id', 'users.id')->where('user_id', $user_id),
+                'is_blocked' => Block::selectRaw('count(id)')->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
                 'users.nickname',
                 'users.profile_image',
                 'users.gender',
