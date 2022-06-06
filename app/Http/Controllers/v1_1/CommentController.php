@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Block;
 use App\Models\Feed;
 use App\Models\FeedComment;
 use App\Models\Mission;
@@ -29,6 +30,7 @@ class CommentController extends Controller
                 'notice' => new NoticeComment(),
                 'product_review' => new ProductReviewComment(),
             };
+            $uid = token()->uid;
 
             $query_comment = $query_comment->withTrashed()->where("{$table}_id", $id)
                 ->whereRaw("({$table}_comments.deleted_at is null or
@@ -42,6 +44,7 @@ class CommentController extends Controller
                     // DB::raw("IF({$table}_comments.deleted_at is null, {$table}_comments.comment, null) as comment"),
                     "{$table}_comments.comment",
                     'users.id as user_id',
+                    'is_blocked' => Block::selectRaw('COUNT(1) > 0')->where('target_id', 'users.id')->where('user_id', $uid),
                     'users.nickname',
                     'users.profile_image',
                     'users.gender',
