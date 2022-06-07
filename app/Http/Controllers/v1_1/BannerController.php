@@ -57,7 +57,8 @@ class BannerController extends Controller
                     'banners.image',
                     'banners.link_type',
                     'common_codes.content_ko as link',
-                    DB::raw("CASE WHEN link_type in ('mission','event_mission','event_mission_old') THEN mission_id
+                    DB::raw("CASE WHEN link_type in
+                        ('mission','event_mission','event_mission_intro','event_mission_old') THEN mission_id
                     WHEN link_type='product' THEN product_id
                     WHEN link_type='notice' THEN notice_id END as link_id"),
                     'banners.link_url',
@@ -69,7 +70,7 @@ class BannerController extends Controller
 
         foreach ($banners as $i => $banner) {
             $params = match ($banner->link_type) {
-                'event_mission', 'event_mission_old' => [
+                'event_mission', 'event_mission_old', 'event_mission_intro' => [
                     'id' => $banner->link_id,
                     'user_id' => token_option()?->uid,
                     'nickname' => User::where('id', token_option()?->uid)->value('nickname'),
