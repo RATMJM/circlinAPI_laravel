@@ -52,7 +52,7 @@ class BannerController extends Controller
                 ->leftJoin('common_codes', function ($query) use ($user_id) {
                     $query->on('common_codes.ctg_sm',
                         DB::raw("IF(link_type='event_mission' AND
-                        (select COUNT(1) from mission_stats where mission_id=banners.mission_id and user_id=$user_id)>0
+                        (select COUNT(1) from mission_stats where mission_id=banners.mission_id and user_id=$user_id)=00
                         , 'event_mission_intro',link_type)")
                     )
                         ->where('common_codes.ctg_lg', 'click_action');
