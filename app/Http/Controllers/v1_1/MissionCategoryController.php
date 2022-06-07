@@ -70,12 +70,12 @@ class MissionCategoryController extends Controller
     {
         $user_id = token()->uid;
 
-        if (!$category_id) {
+        /*if (!$category_id) {
             return success([
                 'result' => false,
                 'reason' => 'not enough data',
             ]);
-        }
+        }*/
 
         $category = MissionCategory::where('mission_categories.id', $category_id)
             ->select([
