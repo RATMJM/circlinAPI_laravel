@@ -15,9 +15,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $title
  * @property string $body
- * @property string|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionNoticeImage[] $images
+ * @property-read int|null $images_count
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice newQuery()
+ * @method static \Illuminate\Database\Query\Builder|MissionNotice onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice query()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice whereBody($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice whereCreatedAt($value)
@@ -26,6 +29,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice whereMissionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNotice whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|MissionNotice withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|MissionNotice withoutTrashed()
  * @mixin \Eloquent
  */
 class MissionNotice extends Model

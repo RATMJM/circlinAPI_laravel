@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1_1;
 use App\Http\Controllers\Controller;
 use App\Mail\FindPassword;
 use App\Models\Area;
+use App\Models\Block;
 use App\Models\ChatUser;
 use App\Models\Feed;
 use App\Models\FeedComment;
@@ -678,6 +679,10 @@ class UserController extends Controller
             })
             ->value('chat_users.is_block');
 
+        $is_blocked = (Block::select('id')
+            ->where('target_id', $user_id)
+            ->where('user_id', $uid)
+            ->get()->count()) > 0 ? true : false;
 
         $wallpapers = $this->wallpaper($user_id)['data']['wallpapers'];
 
@@ -686,6 +691,7 @@ class UserController extends Controller
             'user' => $data,
             'is_chat_block' => $is_chat_block,
             'wallpapers' => $wallpapers,
+            'is_blocked' => $is_blocked
         ]);
     }
 
@@ -791,6 +797,10 @@ class UserController extends Controller
             ->orderBy('feeds.id', 'desc');
         $feeds_count = $feeds->count();
         $feeds = $feeds->skip($page * $limit)->take($limit)->get();
+        $is_blocked = (Block::select('id')
+            ->where('target_id', $user_id)
+            ->where('user_id', $uid)
+            ->get()->count()) > 0 ? true : false;
 
         return success([
             'result' => true,
@@ -798,6 +808,7 @@ class UserController extends Controller
             'missions' => $missions,
             'feeds_count' => $feeds_count,
             'feeds' => $feeds,
+            'is_blocked' => $is_blocked
         ]);
     }
 

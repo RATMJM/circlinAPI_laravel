@@ -35,3 +35,8 @@ class SearchHistory extends Model
         'created_at' => 'date:Y-m-d H:i:s',
     ];
 }
+
+// id                        BIGINT UNSIGNED AUTO_INCREMENT
+//         PRIMARY KEY,
+//     created_at                TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+//     updated_at                TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP,

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $mission_notice_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $order
  * @property string $type 이미지인지 비디오인지 (image / video)
  * @property string $image
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage newModelQuery()
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage whereImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage whereMissionNoticeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionNoticeImage whereUpdatedAt($value)
  * @mixin \Eloquent

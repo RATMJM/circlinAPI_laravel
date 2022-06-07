@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Block;
 use App\Models\Content;
 use App\Models\Feed;
 use App\Models\FeedComment;
@@ -684,6 +685,7 @@ class MissionController extends Controller
 
         $feeds = FeedMission::select([
             'users.id as user_id',
+            'is_blocked' => Block::selectRaw('count(id)')->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
             'users.nickname',
             'users.profile_image',
             'feeds.id',
