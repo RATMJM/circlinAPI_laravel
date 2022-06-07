@@ -1221,7 +1221,7 @@ class MissionController extends Controller
 
         $replaces = new Replace($data, $data->status);
 
-        $data['my_feeds_count'] = $request->get('feeds_count');
+        $data['my_feeds_count'] = $replaces->get('feeds_count');
 
         $data['ground_progress_present'] =
         $data['ground_progress_current'] = round($replaces->get($data->ground_progress_type) ?? 0, 1);
