@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1_1;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\BannerLog;
+use App\Models\MissionStat;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -48,8 +49,12 @@ class BannerController extends Controller
                     $query->where('ended_at', '>', $now)
                         ->orWhereNull('ended_at');
                 })
-                ->leftJoin('common_codes', function ($query) {
-                    $query->on('common_codes.ctg_sm', 'banners.link_type')
+                ->leftJoin('common_codes', function ($query) use ($user_id) {
+                    $query->on('common_codes.ctg_sm',
+                        DB::raw("IF(link_type='event_mission' AND
+                        (select COUNT(1) from mission_stats where mission_id=banners.mission_id and user_id=$user_id)>0
+                        , 'event_mission_intro',link_type)")
+                    )
                         ->where('common_codes.ctg_lg', 'click_action');
                 })
                 ->select([
