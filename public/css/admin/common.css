@@ -1,6 +1,7 @@
 * {
     box-sizing: border-box;
     text-decoration: none;
+    outline: none;
 }
 
 html, body {
@@ -150,4 +151,36 @@ table > thead > tr > th {
     align-items: center;
     word-break: break-word;
     vertical-align: middle;
+}
+
+.bg-red {
+    background-color: #eb2924;
+}
+
+.bg-green {
+    background-color: #28a745;
+}
+
+.bg-blue {
+    background-color: #2a2a92;
+}
+
+.bg-gray {
+    background-color: #6c757d;
+}
+
+.color-red {
+    color: #eb2924;
+}
+
+.color-green {
+    color: #28a745;
+}
+
+.color-blue {
+    color: #2a2a92;
+}
+
+.color-gray {
+    color: #6c757d;
 }

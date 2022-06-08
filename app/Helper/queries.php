@@ -39,3 +39,25 @@ function selectMissionGround(int $user_id): array
         'missions.id',
     ];
 }
+
+function selectBanner(): array
+{
+    return [
+        'id',
+        'created_at',
+        'type',
+        'sort_num',
+        'name',
+        'description',
+        'started_at',
+        'ended_at',
+        DB::raw("(started_at is null OR started_at <= now()) AND (ended_at is null OR ended_at >= now()) as `is_available`"),
+        'image',
+        'link_type',
+        'mission_id',
+        'feed_id',
+        'product_id',
+        'notice_id',
+        'link_url',
+    ];
+}

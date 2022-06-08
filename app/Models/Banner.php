@@ -67,4 +67,24 @@ class Banner extends Model
     {
         return $this->hasMany(BannerLog::class);
     }
+
+    public function mission()
+    {
+        return $this->belongsTo(Mission::class);
+    }
+
+    public function feed()
+    {
+        return $this->belongsTo(Feed::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function notice()
+    {
+        return $this->belongsTo(Notice::class);
+    }
 }
