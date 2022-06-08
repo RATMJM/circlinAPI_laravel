@@ -22,7 +22,7 @@
                 </a>
             </div>
             <div class="right">
-                <button class="btn">적용</button>
+                <button class="btn bg-blue">적용</button>
             </div>
         </div>
         <br>
