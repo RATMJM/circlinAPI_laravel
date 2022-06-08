@@ -85,4 +85,10 @@ class MissionStat extends Model
         return $this->belongsToMany(Product::class, MissionRefundProduct::class,
             'mission_id', 'product_id', 'mission_id', 'id');
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, MissionProduct::class,
+            'mission_id', 'product_id', 'mission_id', 'id');
+    }
 }
