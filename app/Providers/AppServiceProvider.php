@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +26,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Paginator::defaultView('vendor.pagination.default');
+
+        if (env('FORCE_HTTPS', false)) {
+            URL::forceScheme('https');
+        }
     }
 }
