@@ -56,8 +56,13 @@
         </div>
         <br>
         <div class="item" style="grid-column: 2/-1; gap: 8px">
-            <a href="{{ route('admin.banner.edit', ['type' => $type,'id' => $data->id]) }}" class="btn">수정</a>
-            <a href="{{ route('admin.banner.destroy', ['type' => $type,'id' => $data->id]) }}" class="btn">삭제</a>
+            <a href="{{ route('admin.banner.edit', ['id' => $data->id]) }}" class="btn">수정</a>
+            <form action="{{ route('admin.banner.destroy', ['id' => $data->id]) }}" method="POST"
+                onsubmit="return confirm('정말로 삭제하시겠습니까?')">
+                @csrf
+                @method('delete')
+                <button href="" class="btn">삭제</button>
+            </form>
         </div>
     </div>
 

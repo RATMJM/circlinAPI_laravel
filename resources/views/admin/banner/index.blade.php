@@ -16,6 +16,7 @@
     <a href="{{ route('admin.banner.edit.all', Arr::collapse([request()->query(), ['type' => $type]])) }}" class="btn">
         배너 정렬 수정
     </a>
+    <a href="{{ route('admin.banner.create') }}" class="btn" style="float: right">작성</a>
     <br><br>
     <div class="table">
         <div class="row head">

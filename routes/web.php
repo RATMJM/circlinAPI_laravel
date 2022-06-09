@@ -43,13 +43,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         });
         Route::get('/feed', [Admin\FeedController::class, 'index'])->name('feed.index');
 
-        Route::get('/banner', fn() => redirect()->route('admin.banner.index', ['type' => 'float']))->name("banner");
         Route::get('/banner/log', [Admin\BannerLogController::class, 'index'])->name('banner.log.index');
         Route::get('/banner/log/{id}', [Admin\BannerLogController::class, 'show'])->name('banner.log.show');
-        Route::group(['prefix' => '/banner/{type}', 'as' => 'banner.'], function () {
+        Route::group(['prefix' => '/banner', 'as' => 'banner.'], function () {
             Route::get('/', [Admin\BannerController::class, 'index'])->name('index');
             Route::get('/edit', [Admin\BannerController::class, 'editAll'])->name('edit.all');
             Route::put('/', [Admin\BannerController::class, 'updateAll'])->name('update.all');
+            Route::get('/create', [Admin\BannerController::class, 'create'])->name('create');
+            Route::post('/', [Admin\BannerController::class, 'store'])->name('store');
             Route::get('/{id}', [Admin\BannerController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [Admin\BannerController::class, 'edit'])->name('edit');
             Route::put('/{id}', [Admin\BannerController::class, 'update'])->name('update');
