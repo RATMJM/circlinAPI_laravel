@@ -11,6 +11,7 @@ function selectMissionGround(int $user_id): array
         'missions.reserve_ended_at',
         'missions.started_at',
         'missions.ended_at',
+        'missions.late_bookmarkable',
         is_available(),
         DB::raw("CASE WHEN
                     (missions.started_at is null or missions.started_at <= now()) and
