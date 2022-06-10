@@ -211,7 +211,7 @@ class BookmarkController extends Controller
                 DB::raw("goal_distance_text is not null as `need_distance`"),
                 'distance_placeholder',
                 'ground_banner_link',
-                '건',
+                'cert_enabled_feeds_count',
             ])
             ->get();
 
