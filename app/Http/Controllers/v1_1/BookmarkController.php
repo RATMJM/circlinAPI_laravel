@@ -33,10 +33,10 @@ class BookmarkController extends Controller
             ->join('missions', 'missions.id', 'mission_stats.mission_id')
             ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
-            ->leftJoin('products', 'products.id', 'mission_products.product_id')
-            ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+            // ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            // ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            // ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
                 'mission_categories.id as category_id',
                 'mission_categories.title as category_title',
@@ -69,13 +69,13 @@ class BookmarkController extends Controller
                 'users.profile_image',
                 'users.gender',
                 'area' => area_like(),
-                'mission_products.type as product_type', //'mission_products.product_id',
-                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
-                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
-                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
-                'outside_products.url as product_url',
-                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                // 'mission_products.type as product_type', //'mission_products.product_id',
+                // DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
+                // DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                // DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                // DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                // 'outside_products.url as product_url',
+                // DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
