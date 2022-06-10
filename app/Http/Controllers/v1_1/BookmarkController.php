@@ -11,6 +11,7 @@ use App\Models\MissionPush;
 use App\Models\MissionStat;
 use App\Models\Order;
 use App\Models\Place;
+use App\Utils\Replace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -111,7 +112,7 @@ class BookmarkController extends Controller
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', init_today())
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1)
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
             ])
             ->withCount([
                 'feeds' => function ($query) use ($user_id) {
@@ -212,11 +213,14 @@ class BookmarkController extends Controller
                 'distance_placeholder',
                 'ground_banner_link',
                 'cert_enabled_feeds_count',
+                'record_progress_type',
             ])
             ->get();
 
         foreach ($grounds as $ground) {
-            $data->firstWhere('id', $ground->mission_id)->ground = $ground;
+            $mission = $data->firstWhere('id', $ground->mission_id);
+            $ground['cert_enabled_current'] = (new Replace($mission, 'ongoing'))->get($ground->record_progress_type);
+            $mission->ground = $ground;
         }
 
         if (!$category_id) {

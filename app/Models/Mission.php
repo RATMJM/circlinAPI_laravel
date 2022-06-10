@@ -22,8 +22,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $started_at 시작 일시
  * @property string|null $ended_at 종료 일시
  * @property int $is_show 노출 여부
- * @property bool $is_event 이벤트 여부
+ * @property bool $is_event 이벤트(스페셜 미션) 탭에 노출 여부
  * @property int $is_ground 운동장으로 입장 여부
+ * @property int $late_bookmarkable 도중 참여 가능 여부
  * @property string|null $subtitle 운동장 내부에 활용하는 짧은 이름
  * @property int $is_refund 제품 체험 챌린지 여부
  * @property int $is_ocr OCR 필요한 미션인지
@@ -63,6 +64,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Place[] $place
  * @property-read int|null $place_count
  * @property-read \App\Models\MissionProduct|null $product
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
+ * @property-read int|null $products_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MissionRank[] $ranks
  * @property-read int|null $ranks_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $refundProducts
@@ -87,6 +90,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsRequirePlace($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsShow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereIsTutorial($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Mission whereLateBookmarkable($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereMissionCategoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereReserveEndedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mission whereReserveStartedAt($value)

@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id
- * @property string|null $device_type
- * @property string $ip
- * @property string $type view/click
  * @property int $banner_id
+ * @property string|null $device_type 기기 구분
+ * @property string $ip 배너 불러온 IP
+ * @property string $type open/view/click
  * @method static \Illuminate\Database\Eloquent\Builder|BannerLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|BannerLog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|BannerLog query()

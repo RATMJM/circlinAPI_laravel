@@ -16,7 +16,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $user_id
  * @property int $total_price 결제금액
  * @property int $use_point 사용한 포인트
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at 주문 취소 시점(refund에 관한 테이블, 컬럼이 없어 현재는 이것이 refund 역할을 함)
+ * 주문 취소 시 주문 취소 커맨드를 입력하고(노션 '써클인 인수인계' 참조), 아임포트 어드민에서도 취소해줘야 한다.
  * @property string|null $imp_id 결제 식별번호(아임포트 키)
  * @property string|null $merchant_id
  * @property-read \App\Models\OrderDestination|null $destination

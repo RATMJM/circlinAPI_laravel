@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string $type 어디에 노출되는 광고인지 (float|shop|local)
+ * @property string $type 어디에 노출되는 광고인지 (float|local|shop)
  * @property int $sort_num 정렬 순서 (높을수록 우선)
  * @property string $name 배너명
  * @property string|null $description 배너 상세설명
@@ -26,8 +26,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $product_id
  * @property int|null $notice_id
  * @property string|null $link_url
+ * @property-read \App\Models\Feed|null $feed
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\BannerLog[] $logs
  * @property-read int|null $logs_count
+ * @property-read \App\Models\Mission|null $mission
+ * @property-read \App\Models\Notice|null $notice
+ * @property-read \App\Models\Product|null $product
  * @method static \Illuminate\Database\Eloquent\Builder|Banner newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Banner newQuery()
  * @method static \Illuminate\Database\Query\Builder|Banner onlyTrashed()

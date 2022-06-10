@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string $description
+ * @property string $description 설명
  * @property string $type (ip,user)
  * @property string|null $ip 허용할 IP 주소
  * @property int|null $user_id 허용할 유저 고유 ID

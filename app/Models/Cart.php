@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $user_id
  * @property int $product_id
- * @property int|null $product_option_id
  * @property int $qty
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CartOption[] $cart_options
  * @property-read int|null $cart_options_count
@@ -23,7 +22,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Cart whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cart whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cart whereProductId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cart whereProductOptionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cart whereQty($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cart whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cart whereUserId($value)

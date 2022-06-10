@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $cart_id
  * @property int $product_option_id
- * @property int $price
+ * @property int $price 옵션가로 보인다만 큰 의미는 없는 컬럼
  * @method static \Illuminate\Database\Eloquent\Builder|CartOption newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CartOption newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CartOption query()

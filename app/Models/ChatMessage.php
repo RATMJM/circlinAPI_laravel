@@ -14,10 +14,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $chat_room_id
  * @property int $user_id
- * @property string|null $type
- * @property string|null $message
+ * @property string|null $type 채팅 종류 (chat|chat_image|feed|feed_emojimission|mission_invite)
+ * @property string|null $message 메시지
  * @property string|null $image_type image/video
- * @property string|null $image
+ * @property string|null $image 이미지 url
  * @property int|null $feed_id 피드 공유 및 이모지
  * @property int|null $mission_id 미션 초대
  * @property \Illuminate\Support\Carbon|null $deleted_at

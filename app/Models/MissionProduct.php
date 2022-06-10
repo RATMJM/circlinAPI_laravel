@@ -15,10 +15,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $type 내부상품인지 외부상품인지 (inside|outside)
  * @property int|null $product_id
  * @property int|null $outside_product_id
+ * @property int|null $food_id
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct query()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct whereFoodId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct whereMissionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MissionProduct whereOutsideProductId($value)

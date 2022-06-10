@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_id 브랜드 소유자
- * @property string $name_ko
- * @property string|null $name_en
+ * @property string $name_ko 브랜드명
+ * @property string|null $name_en 브랜드명
  * @property string|null $image
  * @method static \Illuminate\Database\Eloquent\Builder|Brand newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Brand newQuery()

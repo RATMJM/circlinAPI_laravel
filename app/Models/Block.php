@@ -8,12 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * App\Models\Block
  *
+ * @property int $id
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
  * @property int|null $user_id 차단 요청자
  * @property int|null $target_id user_id에 해당하는 유저가 차단하고자하는 상대 유저
  * @method static \Illuminate\Database\Eloquent\Builder|Block newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Block newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Block query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Block whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Block whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Block whereTargetId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Block whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Block whereUserId($value)
  * @mixin \Eloquent
  */

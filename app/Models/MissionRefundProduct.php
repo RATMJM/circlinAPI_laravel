@@ -11,10 +11,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $mission_id
  * @property int $product_id
- * @property int|null $food_id
  * @property int $limit 제품 최대 구매 수량
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $food_id
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MissionRefundProduct query()
