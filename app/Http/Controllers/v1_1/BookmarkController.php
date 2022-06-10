@@ -111,7 +111,7 @@ class BookmarkController extends Controller
                 'feed_id' => FeedMission::select('feed_id')
                     ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
                     ->where('feeds.created_at', '>=', init_today())
-                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1),
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id')->limit(1)
             ])
             ->withCount([
                 'feeds' => function ($query) use ($user_id) {
@@ -210,6 +210,8 @@ class BookmarkController extends Controller
                 'goal_distance_text',
                 DB::raw("goal_distance_text is not null as `need_distance`"),
                 'distance_placeholder',
+                'ground_banner_link',
+                '건',
             ])
             ->get();
 
