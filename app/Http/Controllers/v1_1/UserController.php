@@ -567,15 +567,15 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
 
         $users = Follow::select([
-                'users.id',
-                'users.nickname',
-                'users.profile_image',
-                'users.gender',
-                'area' => area_like(),
-                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                    ->where('user_id', $uid),
-            ])
+            'users.id',
+            'users.nickname',
+            'users.profile_image',
+            'users.gender',
+            'area' => area_like(),
+            'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+            'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                ->where('user_id', $uid),
+        ])
             ->join('users', 'users.id', 'follows.user_id')
             ->where('follows.target_id', $user_id)
             ->when($keyword, function ($query, $keyword) {
@@ -603,15 +603,15 @@ class UserController extends Controller
         $limit = $request->get('limit', 20);
 
         $users = Follow::select([
-                'users.id',
-                'users.nickname',
-                'users.profile_image',
-                'users.gender',
-                'area' => area_like(),
-                'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                    ->where('user_id', $uid),
-            ])
+            'users.id',
+            'users.nickname',
+            'users.profile_image',
+            'users.gender',
+            'area' => area_like(),
+            'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+            'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                ->where('user_id', $uid),
+        ])
             ->join('users', 'users.id', 'follows.target_id')
             ->where('follows.user_id', $user_id)
             ->when($keyword, function ($query, $keyword) {
@@ -691,7 +691,7 @@ class UserController extends Controller
             'user' => $data,
             'is_chat_block' => $is_chat_block,
             'wallpapers' => $wallpapers,
-            'is_blocked' => $is_blocked
+            'is_blocked' => $is_blocked,
         ]);
     }
 
@@ -808,7 +808,7 @@ class UserController extends Controller
             'missions' => $missions,
             'feeds_count' => $feeds_count,
             'feeds' => $feeds,
-            'is_blocked' => $is_blocked
+            'is_blocked' => $is_blocked,
         ]);
     }
 
@@ -1179,10 +1179,10 @@ class UserController extends Controller
                     ->whereNull('missions.deleted_at');
             })
             ->join('users', 'users.id', 'missions.user_id') // 미션 제작자
-            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
-            ->leftJoin('products', 'products.id', 'mission_products.product_id')
-            ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+            // ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            // ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            // ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
                 'missions.id',
                 'missions.id as mission_id',
@@ -1227,14 +1227,14 @@ class UserController extends Controller
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $uid)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'mission_products.type as product_type',
+                // 'mission_products.type as product_type',
                 //'mission_products.product_id', 'mission_products.outside_product_id',
-                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
-                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
-                'outside_products.url as product_url',
-                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                // DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
+                // DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                // DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                // DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                // 'outside_products.url as product_url',
+                // DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -1269,6 +1269,39 @@ class UserController extends Controller
                 'current' => Order::selectRaw("COUNT(distinct orders.id)")
                     ->join('order_products', 'order_id', 'orders.id')
                     ->whereColumn('product_id', 'products.id'),
+
+                'products.shipping_fee',
+                'products.id as product_id',
+                'brands.name_ko as brand_name',
+                'products.name_ko as product_name',
+                'products.price',
+                'products.sale_price',
+                'products.status',
+                DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                DB::raw("'N' as CART_YN"),
+                DB::raw("1 as qty"),
+                DB::raw("'' as opt_name1"),
+                DB::raw("'' as opt_name2"),
+                DB::raw("'' as opt_name3"),
+                DB::raw("'' as opt_name4"),
+                DB::raw("'' as opt_name5"),
+                DB::raw("0 as opt_price1"),
+                DB::raw("0 as opt_price2"),
+                DB::raw("0 as opt_price3"),
+                DB::raw("0 as opt_price4"),
+                DB::raw("0 as opt_price5"),
+                DB::raw("'' as opt1"),
+                DB::raw("'' as opt2"),
+                DB::raw("'' as opt3"),
+                DB::raw("'' as opt4"),
+                DB::raw("'' as opt5"),
+            ])->join('brands', 'brands.id', 'products.brand_id'))
+            ->with('products', fn($query) => $query->select([
+                'products.id',
+                'products.code',
+                'products.name_ko',
+                'products.thumbnail_image',
+                'food_id',
 
                 'products.shipping_fee',
                 'products.id as product_id',
