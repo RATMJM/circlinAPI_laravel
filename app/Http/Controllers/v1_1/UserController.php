@@ -895,10 +895,10 @@ class UserController extends Controller
         $missions_count = $missions->count(DB::raw("distinct missions.id"));
 
         $missions = $missions->join('users', 'users.id', 'missions.user_id')
-            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
-            ->leftJoin('products', 'products.id', 'mission_products.product_id')
-            ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+            // ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            // ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            // ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
                 'missions.mission_category_id',
                 'mission_categories.title',
@@ -928,13 +928,13 @@ class UserController extends Controller
                 'users.profile_image',
                 'users.gender',
                 'area' => area_like(),
-                'mission_products.type as product_type', //'mission_products.product_id',
-                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
-                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
-                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
-                'outside_products.url as product_url',
-                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                // 'mission_products.type as product_type', //'mission_products.product_id',
+                // DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
+                // DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                // DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                // DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                // 'outside_products.url as product_url',
+                // DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -981,11 +981,43 @@ class UserController extends Controller
                     ->where('feeds.user_id', $user_id)
                     ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
-            ->groupBy('mission_categories.id', 'missions.id', 'users.id',
-                'mission_products.type', 'mission_products.product_id', 'mission_products.outside_product_id')
+            ->groupBy('mission_categories.id', 'missions.id', 'users.id',)
             ->when($user_id == $uid, function ($query) {
                 $query->orderBy('is_bookmark', 'desc');
             })
+            ->with('products', fn($query) => $query->select([
+                'products.id',
+                'products.code',
+                'products.name_ko',
+                'products.thumbnail_image',
+                'food_id',
+
+                'products.shipping_fee',
+                'products.id as product_id',
+                'brands.name_ko as brand_name',
+                'products.name_ko as product_name',
+                'products.price',
+                'products.sale_price',
+                'products.status',
+                DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                DB::raw("'N' as CART_YN"),
+                DB::raw("1 as qty"),
+                DB::raw("'' as opt_name1"),
+                DB::raw("'' as opt_name2"),
+                DB::raw("'' as opt_name3"),
+                DB::raw("'' as opt_name4"),
+                DB::raw("'' as opt_name5"),
+                DB::raw("0 as opt_price1"),
+                DB::raw("0 as opt_price2"),
+                DB::raw("0 as opt_price3"),
+                DB::raw("0 as opt_price4"),
+                DB::raw("0 as opt_price5"),
+                DB::raw("'' as opt1"),
+                DB::raw("'' as opt2"),
+                DB::raw("'' as opt3"),
+                DB::raw("'' as opt4"),
+                DB::raw("'' as opt5"),
+            ])->join('brands', 'brands.id', 'products.brand_id'))
             ->orderBy(DB::raw("MAX(mission_stats.id)"), 'desc')
             ->skip($page * $limit)->take($limit)->get();
 

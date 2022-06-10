@@ -146,6 +146,11 @@ class Mission extends Model
         return $this->hasOne(MissionProduct::class);
     }
 
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, MissionProduct::class);
+    }
+
     public function mission_place()
     {
         return $this->hasMany(MissionPlace::class);
