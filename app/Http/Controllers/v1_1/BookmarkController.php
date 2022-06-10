@@ -240,7 +240,7 @@ class BookmarkController extends Controller
     {
         $user_id = token()->uid;
         if (!$mission_id = $mission_id ?? $request->get('mission_id')) {
-            return success(['result' => false, 'reason' => 'not enough data']);
+            return success(['result' => false, 'reason' => 'not enough data', 'message' => '데이터가 부족합니다.']);
         }
         $code = $request->get('code');
         $goal_distance = $request->get('goal_distance',
@@ -250,6 +250,7 @@ class BookmarkController extends Controller
 
         $mission = Mission::select([
             'missions.id',
+            'late_bookmarkable',
             is_available(),
             'code' => MissionGround::select('code')->whereColumn('mission_id', 'missions.id'),
             'code_type' => MissionGround::select('code_type')
@@ -262,6 +263,9 @@ class BookmarkController extends Controller
             ->with('refundProducts', fn($query) => $query->select(['products.id']))
             ->first();
 
+        if (!$mission->late_bookmarkable && !$mission->is_reserve_available && $mission->is_available) {
+            return success(['result' => false, 'message' => '진행 도중에는 참여가 불가능합니다.']);
+        }
         if (!$mission->is_available && !$mission->is_reserve_available) {
             return success(['result' => false, 'message' => '참가 가능한 미션이 아닙니다.']);
         }
