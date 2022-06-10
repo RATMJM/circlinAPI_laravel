@@ -1270,6 +1270,7 @@ class MissionController extends Controller
             'missions.ended_at',
             'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
                 ->whereColumn('mission_id', 'missions.id'),
+            'missions.thumbnail_image',
             'mission_grounds.logo_image',
             'mission_grounds.intro_video',
             DB::raw("CASE WHEN
