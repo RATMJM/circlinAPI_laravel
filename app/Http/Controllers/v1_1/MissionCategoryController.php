@@ -170,10 +170,10 @@ class MissionCategoryController extends Controller
             $query->on('m.id', 'missions.id');
         })
             ->join('users', 'users.id', 'missions.user_id')
-            ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
-            ->leftJoin('products', 'products.id', 'mission_products.product_id')
-            ->leftJoin('brands', 'brands.id', 'products.brand_id')
-            ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
+            // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
+            // ->leftJoin('products', 'products.id', 'mission_products.product_id')
+            // ->leftJoin('brands', 'brands.id', 'products.brand_id')
+            // ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
                 'missions.id',
                 'missions.title',
@@ -216,14 +216,14 @@ class MissionCategoryController extends Controller
                     ->where('follows.user_id', $user_id),
                 'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                'mission_products.type as product_type',
+                // 'mission_products.type as product_type',
                 //'mission_products.product_id', 'mission_products.outside_product_id',
-                DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
-                DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
-                DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
-                'outside_products.url as product_url',
-                DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
+                // DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
+                // DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+                // DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+                // DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+                // 'outside_products.url as product_url',
+                // DB::raw("IF(mission_products.type='inside', products.price, outside_products.price) as product_price"),
                 'place_address' => Place::select('address')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
@@ -252,16 +252,39 @@ class MissionCategoryController extends Controller
                     })
                     ->where('user_id', $user_id),
             ])
-            ->with('refundProducts', fn($query) => $query->select([
+            ->with('products', fn($query) => $query->select([
                 'products.id',
                 'products.code',
                 'products.name_ko',
                 'products.thumbnail_image',
-                'mission_refund_products.limit',
-                'current' => Order::selectRaw("COUNT(distinct orders.id)")
-                    ->join('order_products', 'order_id', 'orders.id')
-                    ->whereColumn('product_id', 'products.id'),
-            ]))
+                'food_id',
+
+                'products.shipping_fee',
+                'products.id as product_id',
+                'brands.name_ko as brand_name',
+                'products.name_ko as product_name',
+                'products.price',
+                'products.sale_price',
+                'products.status',
+                DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                DB::raw("'N' as CART_YN"),
+                DB::raw("1 as qty"),
+                DB::raw("'' as opt_name1"),
+                DB::raw("'' as opt_name2"),
+                DB::raw("'' as opt_name3"),
+                DB::raw("'' as opt_name4"),
+                DB::raw("'' as opt_name5"),
+                DB::raw("0 as opt_price1"),
+                DB::raw("0 as opt_price2"),
+                DB::raw("0 as opt_price3"),
+                DB::raw("0 as opt_price4"),
+                DB::raw("0 as opt_price5"),
+                DB::raw("'' as opt1"),
+                DB::raw("'' as opt2"),
+                DB::raw("'' as opt3"),
+                DB::raw("'' as opt4"),
+                DB::raw("'' as opt5"),
+            ])->join('brands', 'brands.id', 'products.brand_id'))
             ->get();
 
         if (count($missions)) {
