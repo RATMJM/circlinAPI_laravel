@@ -22,13 +22,14 @@ class MissionNoticeController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 10);
 
-        $data = MissionNotice::select([
-            'id',
-            'title',
-            'body',
-            'created_at',
-            'images' => MissionNoticeImage::select(['id', 'image', 'type', 'order'])->where('id', 'missions.id'),
-        ])
+        // $data = MissionNotice::select([
+        //     'id',
+        //     'title',
+        //     'body',
+        //     'created_at',
+        //     'images' => MissionNoticeImage::select(['id', 'image', 'type', 'order'])->where('id', 'missions.id'),
+        // ])
+        $data = MissionNotice::select(['id', 'title', 'body', 'created_at'])
             ->where('mission_id', $mission_id)
             ->orderBy('id', 'desc');
         $count = $data->count();
