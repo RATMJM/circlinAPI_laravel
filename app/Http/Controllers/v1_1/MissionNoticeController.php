@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MissionNotice;
 use App\Models\MissionNoticeImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MissionNoticeController extends Controller
 {
@@ -22,14 +23,13 @@ class MissionNoticeController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 10);
 
-        // $data = MissionNotice::select([
-        //     'id',
-        //     'title',
-        //     'body',
-        //     'created_at',
-        //     'images' => MissionNoticeImage::select(['id', 'image', 'type', 'order'])->where('id', 'missions.id'),
-        // ])
-        $data = MissionNotice::select(['id', 'title', 'body', 'created_at'])
+        $data = MissionNotice::select([
+            'id',
+            'title',
+            'body',
+            'created_at',
+        ])
+            ->with('images', fn($query) => $query->select(['mission_notice_id', 'order', 'type', 'image']))
             ->where('mission_id', $mission_id)
             ->orderBy('id', 'desc');
         $count = $data->count();
