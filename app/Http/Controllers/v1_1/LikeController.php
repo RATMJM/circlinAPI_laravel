@@ -21,27 +21,107 @@ class LikeController extends Controller
             $user_id = token()->uid;
             $page = $request->get('page', 0);
             $limit = $request->get('limit', 20);
+            $keyword = $request->get('keyword', '');
 
             $query = match ($table) {
                 'feed' => new FeedLike(),
                 'mission' => new MissionLike(),
             };
 
-            $users = $query->where("{$table}_id", $id)
-                ->join('users', 'users.id', "{$table}_likes.user_id")
-                ->select([
-                    'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
-                    'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                    'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                        ->where('user_id', $user_id),
-                ])
-                ->orderBy("{$table}_id", 'desc')
-                ->skip($page * $limit)->take($limit)->get();
+            if ($keyword) {
+                $users = $query->where("{$table}_id", $id)
+                    ->join('users', 'users.id', "{$table}_likes.user_id")
+                    ->select([
+                        'users.id',
+                        'users.nickname',
+                        'users.profile_image',
+                        'users.gender',
+                        'area' => area_like(),
+                        'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('user_id', $user_id),
+                    ])
+                    ->where('nickname', 'like', '%' . $keyword . '%')
+                    ->orderBy("{$table}_id", 'desc')
+                    ->skip($page * $limit)->take($limit)->get();
 
-            return success([
-                'result' => true,
-                'users' => $users,
-            ]);
+                return success([
+                    'result' => true,
+                    'users' => $users,
+                ]);
+            } {
+                $users = $query->where("{$table}_id", $id)
+                    ->join('users', 'users.id', "{$table}_likes.user_id")
+                    ->select([
+                        'users.id',
+                        'users.nickname',
+                        'users.profile_image',
+                        'users.gender',
+                        'area' => area_like(),
+                        'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('user_id', $user_id),
+                    ])
+                    ->orderBy("{$table}_id", 'desc')
+                    ->skip($page * $limit)->take($limit)->get();
+
+                return success([
+                    'result' => true,
+                    'users' => $users,
+                ]);
+            }
+        } catch (Exception $e) {
+            return exceped($e);
+        }
+    }
+
+    public function index2(Request $request, $table, $id): array
+    {
+        try {
+            $user_id = token()->uid;
+            $page = $request->get('page', 0);
+            $limit = $request->get('limit', 20);
+            $keyword = $request->get('keyword', '');
+
+            $query = match ($table) {
+                'feed' => new FeedLike(),
+                'mission' => new MissionLike(),
+            };
+
+            if ($keyword) {
+                $users = $query->where("{$table}_id", $id)
+                    ->join('users', 'users.id', "{$table}_likes.user_id")
+                    ->select([
+                        'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                        'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('user_id', $user_id),
+                    ])
+                    ->where('nickname', 'like', '%'.$keyword.'%')
+                    ->orderBy("{$table}_id", 'desc')
+                    ->skip($page * $limit)->take($limit)->get();
+
+                return success([
+                    'result' => true,
+                    'users' => $users,
+                    ]);
+            } else {
+                $users = $query->where("{$table}_id", $id)
+                    ->join('users', 'users.id', "{$table}_likes.user_id")
+                    ->select([
+                        'users.id', 'users.nickname', 'users.profile_image', 'users.gender', 'area' => area_like(),
+                        'follower' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
+                        'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
+                            ->where('user_id', $user_id),
+                    ])
+                    ->orderBy("{$table}_id", 'desc')
+                    ->skip($page * $limit)->take($limit)->get();
+
+                return success([
+                    'result' => true,
+                    'users' => $users,
+                ]);
+            }
         } catch (Exception $e) {
             return exceped($e);
         }

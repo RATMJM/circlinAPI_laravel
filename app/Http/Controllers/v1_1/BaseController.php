@@ -102,8 +102,9 @@ class BaseController extends Controller
 
         $latest_version = Version::orderBy('id', 'desc')->value('version');
 
-        $is_force = Version::where('id', '>', Version::select('id')->where('version', $version)->value('id') ?? 0)
-            ->where('is_force', true)->exists();
+        $is_force = Version::where('id', '>', Version::select('id')
+                ->where('version', $version)->value('id') ?? 0)
+                ->where('is_force', true)->exists();
 
         if ($user_id) {
             User::where('id', $user_id)->update(['current_version' => $version]);

@@ -12,6 +12,12 @@ class FeedLikeController extends Controller
         return (new LikeController())->index($request, 'feed', $id);
     }
 
+    //like test
+    public function index2(Request $request, $id): array
+    {
+        return (new LikeController())->index2($request, 'feed', $id);
+    }
+
     public function store($id): array
     {
         return (new LikeController())->store('feed', $id);

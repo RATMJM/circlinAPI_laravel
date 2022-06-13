@@ -95,8 +95,9 @@ class BaseController extends Controller
     {
         $version = $request->get('version');
 
-        $is_force = Version::where('id', '>', Version::select('id')->where('version', $version)->value('id') ?? 0)
-            ->where('is_force', true)->exists();
+        $is_force = Version::where('id', '>', Version::select('id')
+                ->where('version', $version)->value('id') ?? 0)
+                ->where('is_force', true)->exists();
 
         return success([
             'result' => true,
