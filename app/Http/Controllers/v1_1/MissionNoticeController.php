@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1_1;
 
 use App\Http\Controllers\Controller;
 use App\Models\MissionNotice;
+use App\Models\MissionNoticeImage;
 use Illuminate\Http\Request;
 
 class MissionNoticeController extends Controller
@@ -21,7 +22,13 @@ class MissionNoticeController extends Controller
         $page = $request->get('page', 0);
         $limit = $request->get('limit', 10);
 
-        $data = MissionNotice::select(['id', 'title', 'body', 'created_at'])
+        $data = MissionNotice::select([
+            'id',
+            'title',
+            'body',
+            'created_at',
+            'images' => MissionNoticeImage::select(['id', 'image', 'type', 'order'])->where('id', 'missions.id'),
+        ])
             ->where('mission_id', $mission_id)
             ->orderBy('id', 'desc');
         $count = $data->count();

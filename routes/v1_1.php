@@ -166,7 +166,6 @@ Route::group(['prefix' => 'feed', 'feed.'], function () {
         Route::post('/hide', [v1_1\FeedController::class, 'hide_feed'])->name('hide');
         Route::delete('/', [v1_1\FeedController::class, 'destroy'])->name('destroy');
         Route::get('/like', [v1_1\FeedLikeController::class, 'index'])->name('like.index');
-        Route::get('/like2', [v1_1\FeedLikeController::class, 'index2'])->name('like.index2');
         Route::post('/like', [v1_1\FeedLikeController::class, 'store'])->name('like.store');
         Route::delete('/like', [v1_1\FeedLikeController::class, 'destroy'])->name('like.destroy');
         Route::get('/comment', [v1_1\FeedCommentController::class, 'index'])->name('comment.index');

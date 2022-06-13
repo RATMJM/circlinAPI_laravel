@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionNotice;
+use App\Models\MissionNoticeImage;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +20,12 @@ class MissionNoticeController extends Controller
             abort(404);
         }
 
-        $data = MissionNotice::select(['id', 'title', 'created_at'])
+        $data = MissionNotice::select([
+            'id',
+            'title',
+            'created_at',
+            'images' => MissionNoticeImage::select('image')->where('id', 'missions.id'),
+        ])
             ->where('mission_id', $mission_id)
             ->with('images', fn($query) => $query->orderBy('order')->take(1))
             ->orderBy('id', 'desc')
@@ -48,6 +54,7 @@ class MissionNoticeController extends Controller
 
         foreach ($files as $file) {
             $path = "/mission/$mission_id/notice/$data->id";
+            $order = $file['order']['value']; //test
             if (str_starts_with($file->getMimeType(), 'image/')) {
                 $type = 'image';
 
@@ -66,7 +73,7 @@ class MissionNoticeController extends Controller
                 continue;
             }
 
-            $data->images()->create(['type' => $type, 'image' => image_url($uploaded_file)]);
+            $data->images()->create(['type' => $type, 'image' => image_url($uploaded_file), 'order' => $order]);
         }
 
         return redirect()->route('admin.mission.notice.index', ['mission_id' => $mission_id]);
