@@ -475,6 +475,7 @@ class FeedController extends Controller
                 DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 DB::raw("IF(feed_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
                 'outside_products.url as product_url',
+                'outside_products.price as product_price',
                 'place_address' => Place::select('address')->whereColumn('feed_places.feed_id', 'feeds.id')
                     ->join('feed_places', 'feed_places.place_id', 'places.id')
                     ->orderBy('feed_places.id')->limit(1),

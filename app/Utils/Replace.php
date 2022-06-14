@@ -3,6 +3,7 @@
 namespace App\Utils;
 
 use App\Models\Feed;
+use App\Models\Mission;
 use App\Models\MissionStat;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -209,11 +210,24 @@ class Replace
                 ->count('feeds.id') >= 9 ? '성공' : '도전 중',
             #endregion
 
+            #region date
+            // 'mission_starts_at' => Mission::select('started_at')
+            //         ->where('id', $this->mission->id)
+            //         ->get(),
+            // 'mission_ends_at' => Mission::select('ended_at')
+            //     ->where('id', $this->mission->id)
+            //     ->get(),
+            'mission_dday_end' => now()->setTime(0, 0)
+                ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->days,
+
+            #endregion
             'code' => $this->mission->code ?? null,
             'entry_no' => $this->mission->entry_no ?? null,
             'remaining_day' => now()->setTime(0, 0)
                 ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->days,
         };
+
+
 
         if (str_contains($key, 'all')) {
             Cache::set($this->mission->id . $key, $res, 600);
