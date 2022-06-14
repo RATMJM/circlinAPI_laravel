@@ -149,6 +149,8 @@ class CommentController extends Controller
                 return success([
                     'result' => false,
                     'reason' => 'not access comment',
+                    'uid' => token()->uid,
+                    'user_id' => $data->user_id
                 ]);
             }
 
