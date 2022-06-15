@@ -39,7 +39,7 @@ class FeedController extends Controller
         $user_id = token()->uid;
 
         $files = $request->file('files');
-        $content = mb_convert_encoding($request->get('content'), 'UTF-8', 'UTF-8'); // 피드 POST, PATCH || 코멘트 POST, PATCH || DM POST, PATCH || 공지사항 || 검색 || 유저(닉네임, 프로필, ...)
+        $content = $request->get('content'); // 피드 POST, PATCH || 코멘트 POST, PATCH || DM POST, PATCH || 공지사항 || 검색 || 유저(닉네임, 프로필, ...)
         $missions = array_unique(Arr::wrap($request->get('missions')));
         $is_hidden = $request->get('is_hidden', 0);
         $distance = $request->get('distance');
