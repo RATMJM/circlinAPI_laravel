@@ -48,6 +48,7 @@ class BookmarkController extends Controller
                 DB::raw("IFNULL(missions.description, '') as description"),
                 'missions.is_event',
                 DB::raw("missions.id <= 1213 and missions.is_event = 1 as is_old_event"),
+                'missions.mission_type',
                 'missions.event_type',
                 'missions.is_ground',
                 'missions.is_ocr',
