@@ -253,6 +253,45 @@ class MissionCategoryController extends Controller
                     })
                     ->where('user_id', $user_id),
             ])
+            ->with('refundProducts', fn($query) => $query->select([
+                'products.id',
+                'products.code',
+                'products.name_ko',
+                'products.thumbnail_image',
+                'mission_refund_products.limit',
+                // 'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                //     ->join('order_products', 'order_id', 'orders.id')
+                //     ->whereColumn('product_id', 'products.id'),
+                'current' => Order::selectRaw("CAST(IFNULL(ANY_VALUE(mission_refund_products.limit) - COUNT(orders.id), 0) as unsigned)")
+                    ->join('order_products', 'order_id', 'orders.id')
+                    ->join('mission_refund_products', 'mission_refund_products.product_id', 'products.id')
+                    ->whereColumn('order_products.product_id', 'products.id'),
+                'products.shipping_fee',
+                'products.id as product_id',
+                'brands.name_ko as brand_name',
+                'products.name_ko as product_name',
+                'products.price',
+                'products.sale_price',
+                'products.status',
+                DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                DB::raw("'N' as CART_YN"),
+                DB::raw("1 as qty"),
+                DB::raw("'' as opt_name1"),
+                DB::raw("'' as opt_name2"),
+                DB::raw("'' as opt_name3"),
+                DB::raw("'' as opt_name4"),
+                DB::raw("'' as opt_name5"),
+                DB::raw("0 as opt_price1"),
+                DB::raw("0 as opt_price2"),
+                DB::raw("0 as opt_price3"),
+                DB::raw("0 as opt_price4"),
+                DB::raw("0 as opt_price5"),
+                DB::raw("'' as opt1"),
+                DB::raw("'' as opt2"),
+                DB::raw("'' as opt3"),
+                DB::raw("'' as opt4"),
+                DB::raw("'' as opt5"),
+            ])->join('brands', 'brands.id', 'products.brand_id'))
             ->with('products', fn($query) => $query->select([
                 'products.id',
                 'products.code',
@@ -286,7 +325,8 @@ class MissionCategoryController extends Controller
                 DB::raw("'' as opt4"),
                 DB::raw("'' as opt5"),
             ])->join('brands', 'brands.id', 'products.brand_id'))
-            ->get();
+            ->get()
+        ;
 
         if (count($missions)) {
             [$users, $areas] = null;
