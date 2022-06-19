@@ -211,12 +211,12 @@ class Replace
             #endregion
 
             #region date
-            // 'mission_starts_at' => Mission::select('started_at')
-            //         ->where('id', $this->mission->id)
-            //         ->get(),
-            // 'mission_ends_at' => Mission::select('ended_at')
-            //     ->where('id', $this->mission->id)
-            //     ->get(),
+            'mission_starts_at' => explode(' ', Mission::select('started_at')
+                    ->where('id', $this->mission->id)
+                    ->value('started_at'))[0],
+            'mission_ends_at' => Mission::select('ended_at')
+                ->where('id', $this->mission->id)
+                ->get(),
             'mission_dday_end' => now()->setTime(0, 0)
                 ->diff((new Carbon($this->mission->ended_at))->setTime(0, 0))->days,
 
