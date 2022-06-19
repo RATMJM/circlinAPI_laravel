@@ -126,10 +126,14 @@ class BookmarkController extends Controller
                 'products.name_ko',
                 'products.thumbnail_image',
                 'mission_refund_products.limit',
-                'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                // 'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                //     ->join('order_products', 'order_id', 'orders.id')
+                //     ->whereColumn('product_id', 'products.id'),
+                // DB::raw("null as `food_id`"),
+                'current' => Order::selectRaw("CAST(IFNULL(ANY_VALUE(mission_refund_products.limit) - COUNT(orders.id), 0) as unsigned)")
                     ->join('order_products', 'order_id', 'orders.id')
-                    ->whereColumn('product_id', 'products.id'),
-                DB::raw("null as `food_id`"),
+                    ->join('mission_refund_products', 'mission_refund_products.product_id', 'products.id')
+                    ->whereColumn('order_products.product_id', 'products.id'),
 
                 'products.shipping_fee',
                 'products.id as product_id',
