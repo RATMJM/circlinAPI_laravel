@@ -49,8 +49,8 @@ class BannerLogController extends Controller
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
             ->orderBy('banners.sort_num', 'desc')
-            ->orderBy('banners.id', 'desc')
-            ->paginate(20);
+            ->orderBy('banners.id', 'desc');
+            // ->paginate(20);
         $locals = Banner::where('banners.type', 'like', "local%")
             ->select([
                 'banners.id', 'banners.type', 'banners.name', 'banners.image', 'banners.started_at', 'banners.ended_at',
@@ -86,8 +86,8 @@ class BannerLogController extends Controller
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
             ->orderBy('banners.sort_num', 'desc')
-            ->orderBy('banners.id', 'desc')
-            ->paginate(20);
+            ->orderBy('banners.id', 'desc');
+            // ->paginate(20);
         $shops = Banner::where('banners.type', 'shop')
             ->select([
                 'banners.id', 'banners.type', 'banners.name', 'banners.image', 'banners.started_at', 'banners.ended_at',
@@ -123,8 +123,8 @@ class BannerLogController extends Controller
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
             ->orderBy('banners.sort_num', 'desc')
-            ->orderBy('banners.id', 'desc')
-            ->paginate(20);
+            ->orderBy('banners.id', 'desc');
+            // ->paginate(20);
 
         return view('admin.banner.log.index', [
             'floats' => $floats,
@@ -213,8 +213,8 @@ class BannerLogController extends Controller
                 }),
         ])
             ->groupBy('date')
-            ->orderBy('date', 'desc')
-            ->paginate(20);
+            ->orderBy('date', 'desc');
+            // ->paginate(20);
 
         return view('admin.banner.log.show', [
             'banner' => $banner,
