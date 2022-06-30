@@ -213,8 +213,8 @@ class BannerLogController extends Controller
                 }),
         ])
             ->groupBy('date')
-            ->orderBy('date', 'desc');
-            // ->paginate(20);
+            ->orderBy('date', 'desc')
+            ->paginate(20);
 
         return view('admin.banner.log.show', [
             'banner' => $banner,
