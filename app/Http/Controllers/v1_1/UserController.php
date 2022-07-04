@@ -1270,8 +1270,9 @@ class UserController extends Controller
                 'missions.ended_at',
                 is_available(),
                 DB::raw("CASE WHEN
-                    (missions.started_at is null or missions.started_at <= now()) and
-                    (missions.ended_at is null or missions.ended_at >= now())
+                    ((missions.started_at is null or missions.started_at <= now()) and
+                    (missions.ended_at is null or missions.ended_at >= now()))
+                    or ((missions.reserve_ended_at <= now()) and (missions.ended_at >= now()))
                 THEN 'ongoing'
                 WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
                     (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
