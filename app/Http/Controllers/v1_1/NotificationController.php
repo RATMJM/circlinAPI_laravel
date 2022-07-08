@@ -52,6 +52,9 @@ class NotificationController extends Controller
             'mission_like',
             'mission_comment',
             'mission_reply',
+            'board_like',
+            'board_comment',
+            'board_reply',
         ];
 
         $q = "'" . implode("','", $group) . "'";
@@ -69,10 +72,12 @@ class NotificationController extends Controller
                 DB::raw("MAX(feed_comment_id) as feed_comment_id"),
                 DB::raw("MAX(mission_id) as mission_id"),
                 DB::raw("MAX(mission_comment_id) as mission_comment_id"),
+                DB::raw("MAX(board_id) as board_id"),
+                DB::raw("MAX(board_comment_id) as board_comment_id"),
             ])
             ->groupBy(DB::raw("IF(type in ($q), type, IF(type in ('follow'), user_id, id))"),
                 DB::raw("CONCAT(YEAR(notifications.created_at),'|',MONTH(notifications.created_at),'|',DAY(notifications.created_at))"),
-                'notifications.feed_id', 'notifications.mission_id')
+                'notifications.feed_id', 'notifications.mission_id', 'notifications.board_id')
             ->orderBy(DB::raw('MAX(id)'), 'desc')
             ->skip($page * $limit)
             ->take($limit);
@@ -85,6 +90,8 @@ class NotificationController extends Controller
             ->leftJoin('feed_comments', 'feed_comments.id', 'n.feed_comment_id')
             ->leftJoin('missions', 'missions.id', 'n.mission_id')
             ->leftJoin('mission_comments', 'mission_comments.id', 'n.mission_comment_id')
+            ->leftJoin('boards', 'boards.id', 'n.board_id')
+            ->leftJoin('board_comments', 'board_comments.id', 'n.board_comment_id')
             ->leftJoin('common_codes', function ($query) use ($q) {
                 $query->on('common_codes.ctg_sm', DB::raw("IF(type in ($q) and count > 1, CONCAT(type,'_multi'), type)"))
                     ->where('common_codes.ctg_lg', 'notifications');
@@ -111,6 +118,7 @@ class NotificationController extends Controller
                 'missions.is_ground',
                 'feed_comments.comment as feed_comment',
                 'mission_comments.comment as mission_comment',
+                'board_comments.comment as board_comment',
                 'notifications.variables',
             ])
             ->orderBy('id', 'desc')
@@ -132,6 +140,7 @@ class NotificationController extends Controller
                 'mission' => $item->mission_emoji . ' ' . $item->mission_title,
                 'feed_comment' => $item->feed_comment,
                 'mission_comment' => $item->mission_comment,
+                'board_comment' => $item->board_comment,
             ];
             $replaces = Arr::collapse([$replaces, $item->variables]);
             if (array_key_exists('point', $replaces)) {
@@ -149,7 +158,7 @@ class NotificationController extends Controller
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
                 'challenge_reward_point', 'challenge_reward_point_old', 'mission_complete', 'mission_invite', 'earn_badge',
-                'mission_over', 'mission_expire'
+                'mission_over', 'mission_expire',
                 => code_replace($item->is_ground ? $action['event_mission'] : $action['mission'], [
                     'id' => $item->mission_id,
                     'comment_id' => $item->mission_comment_id,
@@ -158,6 +167,9 @@ class NotificationController extends Controller
                 'feed_check_reward', 'mission_treasure' => code_replace($action['point'], []),
 
                 'feed_emoji' => code_replace($action['chat'], ['id' => $item->user_id]),
+
+                'board_like', 'board_like_multi', 'board_comment', 'board_comment_multi', 'board_reply', 'board_reply_multi'
+                => code_replace($action['board'], ['id' => $item->board_id, 'comment_id' => $item->board_comment_id]),
                 default => null,
             };
             $item->link_left = match ($item->type) {
@@ -180,6 +192,9 @@ class NotificationController extends Controller
                     'id' => $item->mission_id,
                     'comment_id' => $item->mission_comment_id,
                 ]),
+
+                'board_like', 'board_like_multi', 'board_comment', 'board_comment_multi', 'board_reply', 'board_reply_multi'
+                => code_replace($action['board'], ['id' => $item->board_id, 'comment_id' => $item->board_comment_id]),
                 default => null,
             };
             $item->link_right = match ($item->type) {
@@ -202,6 +217,9 @@ class NotificationController extends Controller
                 'feed_check_reward', 'mission_treasure' => code_replace($action['point'], []),
 
                 'earn_badge' => code_replace($action['badge'], []),
+
+                'board_like', 'board_like_multi', 'board_comment', 'board_comment_multi', 'board_reply', 'board_reply_multi'
+                => code_replace($action['board'], ['id' => $item->board_id, 'comment_id' => $item->board_comment_id]),
                 default => null,
             };
         }
