@@ -72,6 +72,7 @@ class Replace
             $this->data[$key] = $res;
             return $res;
         }
+        $having_value = $this->mission->goal_distance ?? 0;
 
         $res = match ($key) {
             default => null,
@@ -172,8 +173,9 @@ class Replace
                 ->join('feed_missions', 'feed_id', 'feeds.id')
                 ->where('mission_id', $this->mission->id)
                 ->where('feeds.user_id', $this->user_id)
-                ->having('s', '>=', $this->mission->goal_distance ?? 0)
-                ->orHavingNull('s')
+                ->havingRaw("s is null or s >= {$having_value}")
+                // ->having('s', '>=', $this->mission->goal_distance ?? 0)
+                // ->orHavingNull('s')
                 ->groupBy(DB::raw("CAST(feeds.created_at as DATE)"), 'feeds.user_id')
                 ->count(),
             'all_complete_day', 'all_complete_days_count' => Feed::select([
@@ -183,8 +185,9 @@ class Replace
             ])
                 ->join('feed_missions', 'feed_id', 'feeds.id')
                 ->where('mission_id', $this->mission->id)
-                ->having('s', '>=', $this->mission->goal_distance ?? 0)
-                ->orHavingNull('s')
+                ->havingRaw("s is null or s >= {$having_value}")
+                // ->having('s', '>=', $this->mission->goal_distance ?? 0)
+                // ->orHavingNull('s')
                 ->groupBy(DB::raw("CAST(feeds.created_at as DATE)"), 'feeds.user_id')
                 ->count(),
             #endregion
