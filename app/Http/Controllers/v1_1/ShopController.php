@@ -255,16 +255,22 @@ class ShopController extends Controller
                 FROM
                 DUAL;', [$user_id, $user_id]);
 
-            $shopPointList = PointHistory::where('user_id', $user_id)
+            $shopPointList = PointHistory::where('point_histories.user_id', $user_id)
                 ->leftJoin('common_codes', function ($query) {
                     $query->on('common_codes.ctg_sm', 'point_histories.reason')
                         ->where('ctg_lg', 'point_histories');
+                })
+                ->leftJoin('missions', function($query) {
+                    $query->on('missions.id', 'point_histories.mission_id');
                 })
                 ->select([
                     'point_histories.created_at',
                     'point_histories.point',
                     'point_histories.user_id',
-                    'point_histories.reason',
+                    // 'point_histories.reason',
+                    // DB::raw('IF(point_histories.mission_id IS NULL, point_histories.reason, CONCAT(point_histories.reason, "|", missions.title)) AS reason'),
+                    DB::raw('IF(point_histories.mission_id IS NOT NULL AND missions.mission_type = "commercial_food", CONCAT(point_histories.reason, "|", missions.title), point_histories.reason) AS reason'),
+                    // DB::raw('IFNULL(point_histories.reason, CONCAT(point_histories.reason, "|", missions.title)) AS mission_title'),
                     'common_codes.content_ko as message',
                 ])
                 ->orderBy('point_histories.id', 'desc')
