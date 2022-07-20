@@ -52,6 +52,7 @@ class MissionCategoryController extends Controller
                 ->where('user_id', $user_id),
         ])
             ->whereNotNull('mission_categories.mission_category_id')
+            ->where('mission_categories.id', '>', 0)
             ->groupBy('mission_categories.id')
             ->orderBy(DB::raw("mission_categories.id=0"), 'desc') // 이벤트 탭 맨 앞으로
             ->orderBy(DB::raw("mission_categories.id=21")) // 기타 탭 맨 뒤으로
