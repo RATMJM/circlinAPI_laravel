@@ -52,28 +52,30 @@ class MissionNoticeController extends Controller
 
         $data = MissionNotice::create(array_merge(['mission_id' => $mission_id], $data));
 
-        foreach ($files as $file) {
-            $path = "/mission/$mission_id/notice/$data->id";
-            $order = $file['order']['value']; //test
-            if (str_starts_with($file->getMimeType(), 'image/')) {
-                $type = 'image';
+        if ($files != null) {
+            foreach ($files as $file) {
+                $path = "/mission/$mission_id/notice/$data->id";
+                $order = $file['order']['value']; //test
+                if (str_starts_with($file->getMimeType(), 'image/')) {
+                    $type = 'image';
 
-                $image = Image::make($file->getPathname());
+                    $image = Image::make($file->getPathname());
 
-                $image->orientate();
+                    $image->orientate();
 
-                $tmp_path = "{$file->getPath()}/" . Str::uuid() . ".{$file->extension()}";
-                $image->save($tmp_path);
-                $uploaded_file = Storage::disk('s3')->put($path, new File($tmp_path));
-                @unlink($tmp_path);
-            } elseif (str_starts_with($file->getMimeType(), 'video/')) {
-                $type = 'video';
-                $uploaded_file = Storage::disk('s3')->put($path, $file);
-            } else {
-                continue;
+                    $tmp_path = "{$file->getPath()}/" . Str::uuid() . ".{$file->extension()}";
+                    $image->save($tmp_path);
+                    $uploaded_file = Storage::disk('s3')->put($path, new File($tmp_path));
+                    @unlink($tmp_path);
+                } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                    $type = 'video';
+                    $uploaded_file = Storage::disk('s3')->put($path, $file);
+                } else {
+                    continue;
+                }
+
+                $data->images()->create(['type' => $type, 'image' => image_url($uploaded_file), 'order' => $order]);
             }
-
-            $data->images()->create(['type' => $type, 'image' => image_url($uploaded_file), 'order' => $order]);
         }
 
         return redirect()->route('admin.mission.notice.index', ['mission_id' => $mission_id]);
