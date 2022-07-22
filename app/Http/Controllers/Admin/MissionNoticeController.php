@@ -53,9 +53,9 @@ class MissionNoticeController extends Controller
         $data = MissionNotice::create(array_merge(['mission_id' => $mission_id], $data));
 
         if ($files != null) {
-            foreach ($files as $file) {
+            foreach ($files as $key => $file) {
                 $path = "/mission/$mission_id/notice/$data->id";
-                $order = $file['order']['value']; //test
+                $order = $key;
                 if (str_starts_with($file->getMimeType(), 'image/')) {
                     $type = 'image';
 
