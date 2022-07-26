@@ -326,7 +326,7 @@ function mission_ground_text($data, $is_available, $mission_id, $user_id, &$cert
                             $query->on('feed_missions.feed_id', 'feeds.id')
                                 ->where('feed_missions.mission_id', $mission_id);
                         })
-                        ->value(DB::raw("COUNT(1) > 0"));
+                        ->value(DB::raw("COUNT(*)"));
                 } elseif ($type === 'today_cert') {
                     $cert[$type] = Feed::where('feeds.user_id', $user_id)
                         ->where('feeds.created_at', '>=', date('Y-m-d'))
