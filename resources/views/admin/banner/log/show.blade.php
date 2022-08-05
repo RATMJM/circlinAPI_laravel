@@ -74,7 +74,12 @@
                     <p class="flex-center" style="flex: 1">전체</p>
                     <p class="flex-center" style="flex: 1">안드로이드</p>
                     <p class="flex-center" style="flex: 1">IOS</p>
-                    <p class="flex-center" style="flex: 1">그 외</p>
+                    <p class="flex-center" style="flex: 1">그 외 OS</p>
+                    <p class="flex-center" style="flex: 1">성별(남성)</p>
+                    <p class="flex-center" style="flex: 1">성별(여성)</p>
+                    <p class="flex-center" style="flex: 1">성별(성별 미입력자)</p>
+{{--                    <p class="flex-center" style="flex: 1">연령별(00대)</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">연령별(연령 미입력자)</p>--}}
                 </div>
             </div>
         </div>
@@ -98,6 +103,25 @@
                         {{ $item->etc_clicks_count }} / {{ $item->etc_views_count }}
                         <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}%
                     </p>
+
+
+                    {{-- 남성 --}}
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->male_clicks_count }} / {{ $item->male_views_count }}
+                        <br>{{ round($item->male_clicks_count / max($item->male_views_count, 1) * 100, 1) }}%
+                    </p>
+                    {{-- 여성 --}}
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->female_clicks_count }} / {{ $item->female_views_count }}
+                        <br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}%
+                    </p>
+                    {{-- 성별 미입력자 --}}
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->no_gender_clicks_count }} / {{ $item->no_gender_views_count }}
+                        <br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}%
+                    </p>
+
+
                 </div>
             </div>
         @empty

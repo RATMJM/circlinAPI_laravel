@@ -26,13 +26,16 @@
                 <th style="width: 150px" rowspan="2">배너 기간</th>
                 <th style="width: 150px" rowspan="2">링크 종류</th>
                 <th style="width: 350px" rowspan="2">링크 주소</th>
-                <th style="width: 400px" colspan="4">클릭 수 / 노출 수 / 클릭률</th>
+                <th style="width: 400px" colspan="7">클릭 수 / 노출 수 / 클릭률</th>
             </tr>
             <tr>
                 <th style="width: 100px">전체</th>
                 <th style="width: 100px">안드로이드</th>
                 <th style="width: 100px">IOS</th>
                 <th style="width: 100px">그 외</th>
+                <th style="width: 100px">성별(남성)</th>
+                <th style="width: 100px">성별(여성)</th>
+                <th style="width: 100px">성별(미입력자)</th>
             </tr>
             </thead>
             <tbody>
@@ -82,6 +85,26 @@
                         {{ $item->etc_clicks_count }}
                         / {{ $item->etc_views_count }}
                         <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+
+
+                    <td class="center">
+                        {{ $item->male_clicks_count }}
+                        / {{ $item->male_views_count }}
+                        <br>{{ round($item->male_clicks_count / max($item->male_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->female_clicks_count }}
+                        / {{ $item->female_views_count }}
+                        <br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->no_gender_clicks_count }}
+                        / {{ $item->no_gender_views_count }}
+                        <br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}
                         %
                     </td>
                 </tr>
