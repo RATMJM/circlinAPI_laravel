@@ -336,7 +336,6 @@ class BannerLogController extends Controller
                     // ->where(function ($query) {
                     //     $query->whereNotIn('users.gender', ['M', 'W']);
                     // }),
-
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -379,16 +378,19 @@ class BannerLogController extends Controller
 
 
             'male_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'view')
                 ->join('users', 'users.id', 'user_id')
                 ->where('users.gender', 'M'),
             'female_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'view')
                 ->join('users', 'users.id', 'user_id')
                 ->where('users.gender', 'W'),
             'no_gender_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'view')
                 ->join('users', 'users.id', 'user_id')
@@ -421,16 +423,19 @@ class BannerLogController extends Controller
 
 
             'male_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'click')
                 ->join('users', 'users.id', 'user_id')
                 ->where('users.gender', 'M'),
             'female_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'click')
                 ->join('users', 'users.id', 'user_id')
                 ->where('users.gender', 'W'),
             'no_gender_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->where('banner_logs.banner_id', $id)
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'click')
                 ->join('users', 'users.id', 'user_id')
