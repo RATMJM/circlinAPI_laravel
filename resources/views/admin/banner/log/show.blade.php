@@ -68,29 +68,55 @@
     <div id="table" class="flex-col">
         <div class="flex-row" id="head">
             <p class="flex-center" style="flex: 1">일자</p>
-            <div class="flex-col" style="flex: 4">
+            <div class="flex-col" style="flex: 7">
                 <p class="flex-center" style="flex: 1">클릭 수 / 노출 수 / 클릭률</p>
+
                 <div class="flex-row" style="flex: 1">
-                    <p class="flex-center" style="flex: 1">전체</p>
-                    <p class="flex-center" style="flex: 1">안드로이드</p>
-                    <p class="flex-center" style="flex: 1">IOS</p>
-                    <p class="flex-center" style="flex: 1">그 외 OS</p>
-                    <p class="flex-center" style="flex: 1">성별(남성)</p>
-                    <p class="flex-center" style="flex: 1">성별(여성)</p>
-                    <p class="flex-center" style="flex: 1">성별(성별 미입력자)</p>
+                    <div class="flex-col" style="flex: 1">
+                        <p class="flex-center" style="flex: 1">전체</p>
+                    </div>
+                    {{-- OS별 --}}
+                    <div class="flex-col" style="flex: 3">
+                        <p class="flex-center" style="flex: 1">OS별</p>
+                        <div class="flex-row" style="flex: 1">
+                            <p class="flex-center" style="flex: 1">안드로이드</p>
+                            <p class="flex-center" style="flex: 1">IOS</p>
+                            <p class="flex-center" style="flex: 1">그 외 OS</p>
+                        </div>
+                    </div>
+                    {{-- 성별 --}}
+                    <div class="flex-col" style="flex: 3">
+                        <p class="flex-center" style="flex: 1">성별</p>
+                        <div class="flex-row" style="flex: 1">
+                            <p class="flex-center" style="flex: 1">남성</p>
+                            <p class="flex-center" style="flex: 1">여성</p>
+                            <p class="flex-center" style="flex: 1">성별 미입력자</p>
+                        </div>
+                    </div>
+                </div>
+{{--                <div class="flex-row" style="flex: 1">--}}
+{{--                    <p class="flex-center" style="flex: 1">전체</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">안드로이드</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">IOS</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">그 외 OS</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">성별(남성)</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">성별(여성)</p>--}}
+{{--                    <p class="flex-center" style="flex: 1">성별(성별 미입력자)</p>--}}
 {{--                    <p class="flex-center" style="flex: 1">연령별(00대)</p>--}}
 {{--                    <p class="flex-center" style="flex: 1">연령별(연령 미입력자)</p>--}}
-                </div>
+{{--                </div>--}}
             </div>
         </div>
         @forelse($data as $item)
             <div class="flex-row">
                 <p class="flex-center" style="flex: 1"><span>{{ $item->date }}</span></p>
-                <div class="flex-row" style="flex: 4">
+                <div class="flex-row" style="flex: 7">
                     <p class="flex-center" style="flex: 1">
                         {{ $item->clicks_count }} / {{ $item->views_count }}
                         <br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}%
                     </p>
+
+                    {{-- OS별 통계 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->android_clicks_count }} / {{ $item->android_views_count }}
                         <br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}%
@@ -104,7 +130,7 @@
                         <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}%
                     </p>
 
-
+                    {{-- 성별 통계 --}}
                     {{-- 남성 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->male_clicks_count }} / {{ $item->male_views_count }}

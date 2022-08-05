@@ -19,24 +19,64 @@
             : <b>{{ number_format($data->total()) }}</b> 개</p>
         <table>
             <thead>
-            <tr>
-                <th style="width: 100px" rowspan="2">ID</th>
-                <th style="width: 300px" rowspan="2">이미지</th>
-                <th style="width: auto" rowspan="2">배너명</th>
-                <th style="width: 150px" rowspan="2">배너 기간</th>
-                <th style="width: 150px" rowspan="2">링크 종류</th>
-                <th style="width: 350px" rowspan="2">링크 주소</th>
-                <th style="width: 400px" colspan="7">클릭 수 / 노출 수 / 클릭률</th>
-            </tr>
-            <tr>
-                <th style="width: 100px">전체</th>
-                <th style="width: 100px">안드로이드</th>
-                <th style="width: 100px">IOS</th>
-                <th style="width: 100px">그 외</th>
-                <th style="width: 100px">성별(남성)</th>
-                <th style="width: 100px">성별(여성)</th>
-                <th style="width: 100px">성별(미입력자)</th>
-            </tr>
+                <tr>
+                    <th style="width: 100px" rowspan="3">ID</th>
+                    <th style="width: 300px" rowspan="3">이미지</th>
+                    <th style="width: auto" rowspan="3">배너명</th>
+                    <th style="width: 150px" rowspan="3">배너 기간</th>
+                    <th style="width: 100px" rowspan="3">링크 종류</th>
+                    <th style="width: 200px" rowspan="3">링크 주소</th>
+                    <th style="width: 600px" colspan="7">클릭 수 / 노출 수 / 클릭률</th>
+                    <tr>
+                        <th style="width: 100px" rowspan="2">전체</th>
+                        <th style="width: 250px" colspan="3">OS별</th>
+                        <th style="width: 250px" colspan="3">성별</th>
+{{--                        <th style="width: 200px" colspan="3">연령별</th>--}}
+                        <tr>
+                            <th style="width: 100px">안드로이드</th>
+                            <th style="width: 100px">IOS</th>
+                            <th style="width: 100px">그 외</th>
+                            <th style="width: 100px">남성</th>
+                            <th style="width: 100px">여성</th>
+                            <th style="width: 100px">미입력자</th>
+{{--                            <th style="width: 66px">20대</th>--}}
+{{--                            <th style="width: 66px">30대</th>--}}
+{{--                            <th style="width: 66px">40대</th>--}}
+{{--                            <th style="width: 66px">50대</th>--}}
+{{--                            <th style="width: 66px">그 이상</th>--}}
+                        </tr>
+                    </tr>
+                </tr>
+{{--                <tr>--}}
+{{--                    <tr>--}}
+{{--                        <th style="width: 100px" colspan="1">전체</th>--}}
+{{--                    </tr>--}}
+{{--                    <tr>--}}
+{{--                        <th style="width: 100px" colpan="3">OS별</th>--}}
+{{--                        <tr>--}}
+{{--                            <th style="width: 33px">안드로이드</th>--}}
+{{--                            <th style="width: 33px">IOS</th>--}}
+{{--                            <th style="width: 33px">그 외</th>--}}
+{{--                        </tr>--}}
+{{--                    </tr>--}}
+{{--                    <tr>--}}
+{{--                        <th style="width: 100px" colspan="3">성별</th>--}}
+{{--                        <tr>--}}
+{{--                            <th style="width: 33px">성별(남성)</th>--}}
+{{--                            <th style="width: 33px">성별(여성)</th>--}}
+{{--                            <th style="width: 33px">성별(미입력자)</th>--}}
+{{--                        </tr>--}}
+{{--                    </tr>--}}
+{{--                </tr>--}}
+{{--                <tr>--}}
+{{--                    <th style="width: 100px">전체</th>--}}
+{{--                    <th style="width: 100px">안드로이드</th>--}}
+{{--                    <th style="width: 100px">IOS</th>--}}
+{{--                    <th style="width: 100px">그 외</th>--}}
+{{--                    <th style="width: 100px">성별(남성)</th>--}}
+{{--                    <th style="width: 100px">성별(여성)</th>--}}
+{{--                    <th style="width: 100px">성별(미입력자)</th>--}}
+{{--                </tr>--}}
             </thead>
             <tbody>
             @forelse($data as $item)
