@@ -90,7 +90,7 @@
                         <div class="flex-row" style="flex: 1">
                             <p class="flex-center" style="flex: 1">남성</p>
                             <p class="flex-center" style="flex: 1">여성</p>
-                            <p class="flex-center" style="flex: 1">성별 미입력자</p>
+                            <p class="flex-center" style="flex: 1">성별 미상</p>
                         </div>
                     </div>
                 </div>
@@ -113,38 +113,38 @@
                 <div class="flex-row" style="flex: 7">
                     <p class="flex-center" style="flex: 1">
                         {{ $item->clicks_count }} / {{ $item->views_count }}
-                        <br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}%
                     </p>
 
                     {{-- OS별 통계 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->android_clicks_count }} / {{ $item->android_views_count }}
-                        <br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}%
                     </p>
                     <p class="flex-center" style="flex: 1">
                         {{ $item->ios_clicks_count }} / {{ $item->ios_views_count }}
-                        <br>{{ round($item->ios_clicks_count / max($item->ios_views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->ios_clicks_count / max($item->ios_views_count, 1) * 100, 1) }}%
                     </p>
                     <p class="flex-center" style="flex: 1">
                         {{ $item->etc_clicks_count }} / {{ $item->etc_views_count }}
-                        <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}%
                     </p>
 
                     {{-- 성별 통계 --}}
                     {{-- 남성 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->male_clicks_count }} / {{ $item->male_views_count }}
-                        <br>{{ round($item->male_clicks_count / max($item->male_views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->male_clicks_count / max($item->male_views_count, 1) * 100, 1) }}%
                     </p>
                     {{-- 여성 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->female_clicks_count }} / {{ $item->female_views_count }}
-                        <br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}%
                     </p>
                     {{-- 성별 미입력자 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->no_gender_clicks_count }} / {{ $item->no_gender_views_count }}
-                        <br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}%
+                        <br><br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}%
                     </p>
 
 

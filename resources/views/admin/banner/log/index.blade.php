@@ -20,30 +20,33 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 100px" rowspan="3">ID</th>
-                    <th style="width: 300px" rowspan="3">이미지</th>
-                    <th style="width: auto" rowspan="3">배너명</th>
-                    <th style="width: 150px" rowspan="3">배너 기간</th>
+                    <th style="width: 60px" rowspan="3">ID</th>
+                    <th style="width: 250px" rowspan="3">이미지</th>
+                    <th style="width: 200px" rowspan="3">배너명</th>
+                    <th style="width: 100px" rowspan="3">배너 기간</th>
                     <th style="width: 100px" rowspan="3">링크 종류</th>
                     <th style="width: 200px" rowspan="3">링크 주소</th>
-                    <th style="width: 600px" colspan="7">클릭 수 / 노출 수 / 클릭률</th>
+                    <th style="width: 600px" colspan="14">클릭 수 / 노출 수 / 클릭률</th>
                     <tr>
-                        <th style="width: 100px" rowspan="2">전체</th>
+                        <th style="width: 100px" colspan="1" rowspan="2">전체</th>
                         <th style="width: 250px" colspan="3">OS별</th>
                         <th style="width: 250px" colspan="3">성별</th>
-{{--                        <th style="width: 200px" colspan="3">연령별</th>--}}
+                        <th style="width: 300px" colspan="7">연령별</th>
                         <tr>
                             <th style="width: 100px">안드로이드</th>
                             <th style="width: 100px">IOS</th>
                             <th style="width: 100px">그 외</th>
                             <th style="width: 100px">남성</th>
                             <th style="width: 100px">여성</th>
-                            <th style="width: 100px">미입력자</th>
-{{--                            <th style="width: 66px">20대</th>--}}
-{{--                            <th style="width: 66px">30대</th>--}}
-{{--                            <th style="width: 66px">40대</th>--}}
-{{--                            <th style="width: 66px">50대</th>--}}
-{{--                            <th style="width: 66px">그 이상</th>--}}
+                            <th style="width: 100px">성별 미상</th>
+
+                            <th style="width: 66px">10대 이하</th>
+                            <th style="width: 66px">20대</th>
+                            <th style="width: 66px">30대</th>
+                            <th style="width: 66px">40대</th>
+                            <th style="width: 66px">50대</th>
+                            <th style="width: 66px">50대 초과</th>
+                            <th style="width: 66px">연령 미상</th>
                         </tr>
                     </tr>
                 </tr>
@@ -106,45 +109,90 @@
                     <td class="center">
                         {{ $item->clicks_count }}
                         / {{ $item->views_count }}
-                        <br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}
                         %
                     </td>
+                    {{-- OS별 --}}
                     <td class="center">
                         {{ $item->android_clicks_count }}
                         / {{ $item->android_views_count }}
-                        <br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->android_clicks_count / max($item->android_views_count, 1) * 100, 1) }}
                         %
                     </td>
                     <td class="center">
                         {{ $item->ios_clicks_count }}
                         / {{ $item->ios_views_count }}
-                        <br>{{ round($item->ios_clicks_count / max($item->ios_views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->ios_clicks_count / max($item->ios_views_count, 1) * 100, 1) }}
                         %
                     </td>
                     <td class="center">
                         {{ $item->etc_clicks_count }}
                         / {{ $item->etc_views_count }}
-                        <br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->etc_clicks_count / max($item->etc_views_count, 1) * 100, 1) }}
                         %
                     </td>
 
-
+                    {{-- 성별 --}}
                     <td class="center">
                         {{ $item->male_clicks_count }}
                         / {{ $item->male_views_count }}
-                        <br>{{ round($item->male_clicks_count / max($item->male_views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->male_clicks_count / max($item->male_views_count, 1) * 100, 1) }}
                         %
                     </td>
                     <td class="center">
                         {{ $item->female_clicks_count }}
                         / {{ $item->female_views_count }}
-                        <br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}
                         %
                     </td>
                     <td class="center">
                         {{ $item->no_gender_clicks_count }}
                         / {{ $item->no_gender_views_count }}
-                        <br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}
+                        <br><br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+
+                    {{-- 연령별 --}}
+                    <td class="center">
+                        {{ $item->age_10_clicks_count }}
+                        / {{ $item->age_10_views_count }}
+                        <br><br>{{ round($item->age_10_clicks_count / max($item->age_10_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->age_20_clicks_count }}
+                        / {{ $item->age_20_views_count }}
+                        <br><br>{{ round($item->age_20_clicks_count / max($item->age_20_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->age_30_clicks_count }}
+                        / {{ $item->age_30_views_count }}
+                        <br><br>{{ round($item->age_30_clicks_count / max($item->age_30_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->age_40_clicks_count }}
+                        / {{ $item->age_40_views_count }}
+                        <br><br>{{ round($item->age_40_clicks_count / max($item->age_40_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->age_50_clicks_count }}
+                        / {{ $item->age_50_views_count }}
+                        <br><br>{{ round($item->age_50_clicks_count / max($item->age_50_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->age_others_clicks_count }}
+                        / {{ $item->age_others_views_count }}
+                        <br><br>{{ round($item->age_others_clicks_count / max($item->age_others_views_count, 1) * 100, 1) }}
+                        %
+                    </td>
+                    <td class="center">
+                        {{ $item->age_unknown_clicks_count }}
+                        / {{ $item->age_unknown_views_count }}
+                        <br><br>{{ round($item->age_unknown_clicks_count / max($item->age_unknown_views_count, 1) * 100, 1) }}
                         %
                     </td>
                 </tr>

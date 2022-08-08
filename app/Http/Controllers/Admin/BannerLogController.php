@@ -53,6 +53,56 @@ class BannerLogController extends Controller
                 ->where('users.gender', null),
 
 
+            'age_10_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '<=', 10),
+            'age_20_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 20),
+            'age_30_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 30),
+            'age_40_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 40),
+            'age_50_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 50),
+            'age_others_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '>', 50),
+            'age_unknown_views_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'view')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->whereNull('user_stats.birthday'),
+
+
             'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                 ->where('banner_logs.type', 'click'),
             'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -80,7 +130,57 @@ class BannerLogController extends Controller
                 ->whereColumn('banner_id', 'banners.id')
                 ->where('banner_logs.type', 'click')
                 ->join('users', 'users.id', 'user_id')
-                ->where('users.gender', null)
+                ->where('users.gender', null),
+
+
+            'age_10_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '<=', 10),
+            'age_20_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 20),
+            'age_30_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 30),
+            'age_40_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 40),
+            'age_50_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 50),
+            'age_others_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->where('user_stats.birthday', '!=', null)
+                ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '>', 50),
+            'age_unknown_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                ->whereColumn('banner_id', 'banners.id')
+                ->where('banner_logs.type', 'click')
+                ->join('users', 'users.id', 'user_id')
+                ->join('user_stats', 'user_stats.user_id', 'users.id')
+                ->whereNull('user_stats.birthday'),
         ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -126,6 +226,56 @@ class BannerLogController extends Controller
                     ->where('users.gender', null),
 
 
+                'age_10_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '<=', 10),
+                'age_20_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 20),
+                'age_30_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 30),
+                'age_40_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 40),
+                'age_50_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 50),
+                'age_others_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '>', 50),
+                'age_unknown_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->whereNull('user_stats.birthday'),
+
+
                 'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click'),
                 'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -153,9 +303,57 @@ class BannerLogController extends Controller
                     ->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click')
                     ->join('users', 'users.id', 'user_id')
-                    ->where('users.gender', null)
+                    ->where('users.gender', null),
 
 
+                'age_10_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '<=', 10),
+                'age_20_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 20),
+                'age_30_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 30),
+                'age_40_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 40),
+                'age_50_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 50),
+                'age_others_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '>', 50),
+                'age_unknown_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->whereNull('user_stats.birthday'),
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -202,6 +400,56 @@ class BannerLogController extends Controller
                     ->where('users.gender', null),
 
 
+                'age_10_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '<=', 10),
+                'age_20_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 20),
+                'age_30_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 30),
+                'age_40_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 40),
+                'age_50_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 50),
+                'age_others_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '>', 50),
+                'age_unknown_views_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'view')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->whereNull('user_stats.birthday'),
+
+
                 'clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click'),
                 'android_clicks_count' => BannerLog::selectRaw("COUNT(1)")->whereColumn('banner_id', 'banners.id')
@@ -229,7 +477,57 @@ class BannerLogController extends Controller
                     ->whereColumn('banner_id', 'banners.id')
                     ->where('banner_logs.type', 'click')
                     ->join('users', 'users.id', 'user_id')
-                    ->where('users.gender', null)
+                    ->where('users.gender', null),
+
+
+                'age_10_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '<=', 10),
+                'age_20_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 20),
+                'age_30_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 30),
+                'age_40_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 40),
+                'age_50_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '=', 50),
+                'age_others_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->where('user_stats.birthday', '!=', null)
+                    ->where(DB::raw('(TRUNCATE( (TO_DAYS(NOW()) - TO_DAYS(user_stats.birthday)) / 365, -1) )'), '>', 50),
+                'age_unknown_clicks_count' => BannerLog::selectRaw("COUNT(1)")
+                    ->whereColumn('banner_id', 'banners.id')
+                    ->where('banner_logs.type', 'click')
+                    ->join('users', 'users.id', 'user_id')
+                    ->join('user_stats', 'user_stats.user_id', 'users.id')
+                    ->whereNull('user_stats.birthday'),
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -293,9 +591,6 @@ class BannerLogController extends Controller
                     ->where('banner_logs.type', 'view')
                     ->join('users', 'users.id', 'user_id')
                     ->where('users.gender', null),
-                    //     ->where(function ($query) {
-                    //         $query->whereNotIn('users.gender', ['M', 'W']);
-                    // }),
 
 
                 'clicks_count' => BannerLog::selectRaw("COUNT(1)")
@@ -333,9 +628,6 @@ class BannerLogController extends Controller
                     ->where('banner_logs.type', 'click')
                     ->join('users', 'users.id', 'user_id')
                     ->where('users.gender', null)
-                    // ->where(function ($query) {
-                    //     $query->whereNotIn('users.gender', ['M', 'W']);
-                    // }),
             ])
             ->groupBy('banners.id')
             ->orderBy('is_available', 'desc')
@@ -395,9 +687,7 @@ class BannerLogController extends Controller
                 ->where('banner_logs.type', 'view')
                 ->join('users', 'users.id', 'user_id')
                 ->where('users.gender', null),
-                // ->where(function ($query) {
-                //     $query->whereNotIn('users.gender', ['M', 'W']);
-                // }),
+
 
 
             'clicks_count' => BannerLog::selectRaw("COUNT(1)")
@@ -439,10 +729,7 @@ class BannerLogController extends Controller
                 ->whereColumn(DB::raw("CAST(banner_logs.created_at as DATE)"), 'date')
                 ->where('banner_logs.type', 'click')
                 ->join('users', 'users.id', 'user_id')
-                ->where('users.gender', null)
-                // ->where(function ($query) {
-                //     $query->whereNotIn('users.gender', ['M', 'W']);
-                // }),
+                ->where('users.gender', null),
         ])
             ->groupBy('date')
             ->orderBy('date', 'desc')
