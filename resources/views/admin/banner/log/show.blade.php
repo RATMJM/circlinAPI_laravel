@@ -68,7 +68,7 @@
     <div id="table" class="flex-col">
         <div class="flex-row" id="head">
             <p class="flex-center" style="flex: 1">일자</p>
-            <div class="flex-col" style="flex: 7">
+            <div class="flex-col" style="flex: 14">
                 <p class="flex-center" style="flex: 1">클릭 수 / 노출 수 / 클릭률</p>
 
                 <div class="flex-row" style="flex: 1">
@@ -93,6 +93,19 @@
                             <p class="flex-center" style="flex: 1">성별 미상</p>
                         </div>
                     </div>
+                    {{-- 연령별 --}}
+                    <div class="flex-col" style="flex: 7">
+                        <p class="flex-center" style="flex: 1">연령별</p>
+                        <div class="flex-row" style="flex: 1">
+                            <p class="flex-center" style="flex: 1">10대 이하</p>
+                            <p class="flex-center" style="flex: 1">20대</p>
+                            <p class="flex-center" style="flex: 1">30대</p>
+                            <p class="flex-center" style="flex: 1">40대</p>
+                            <p class="flex-center" style="flex: 1">50대</p>
+                            <p class="flex-center" style="flex: 1">50대 초과</p>
+                            <p class="flex-center" style="flex: 1">연령 미상</p>
+                        </div>
+                    </div>
                 </div>
 {{--                <div class="flex-row" style="flex: 1">--}}
 {{--                    <p class="flex-center" style="flex: 1">전체</p>--}}
@@ -110,7 +123,7 @@
         @forelse($data as $item)
             <div class="flex-row">
                 <p class="flex-center" style="flex: 1"><span>{{ $item->date }}</span></p>
-                <div class="flex-row" style="flex: 7">
+                <div class="flex-row" style="flex: 14">
                     <p class="flex-center" style="flex: 1">
                         {{ $item->clicks_count }} / {{ $item->views_count }}
                         <br><br>{{ round($item->clicks_count / max($item->views_count, 1) * 100, 1) }}%
@@ -141,13 +154,41 @@
                         {{ $item->female_clicks_count }} / {{ $item->female_views_count }}
                         <br><br>{{ round($item->female_clicks_count / max($item->female_views_count, 1) * 100, 1) }}%
                     </p>
-                    {{-- 성별 미입력자 --}}
+                    {{-- 성별 미상 --}}
                     <p class="flex-center" style="flex: 1">
                         {{ $item->no_gender_clicks_count }} / {{ $item->no_gender_views_count }}
                         <br><br>{{ round($item->no_gender_clicks_count / max($item->no_gender_views_count, 1) * 100, 1) }}%
                     </p>
 
-
+                    {{-- 연령 통계 --}}
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_10_clicks_count }} / {{ $item->age_10_views_count }}
+                        <br><br>{{ round($item->age_10_clicks_count / max($item->age_10_views_count, 1) * 100, 1) }}%
+                    </p>
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_20_clicks_count }} / {{ $item->age_20_views_count }}
+                        <br><br>{{ round($item->age_20_clicks_count / max($item->age_20_views_count, 1) * 100, 1) }}%
+                    </p>
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_30_clicks_count }} / {{ $item->age_30_views_count }}
+                        <br><br>{{ round($item->age_30_clicks_count / max($item->age_30_views_count, 1) * 100, 1) }}%
+                    </p>
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_40_clicks_count }} / {{ $item->age_40_views_count }}
+                        <br><br>{{ round($item->age_40_clicks_count / max($item->age_40_views_count, 1) * 100, 1) }}%
+                    </p>
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_50_clicks_count }} / {{ $item->age_50_views_count }}
+                        <br><br>{{ round($item->age_50_clicks_count / max($item->age_50_views_count, 1) * 100, 1) }}%
+                    </p>
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_others_clicks_count }} / {{ $item->age_others_views_count }}
+                        <br><br>{{ round($item->age_others_clicks_count / max($item->age_others_views_count, 1) * 100, 1) }}%
+                    </p>
+                    <p class="flex-center" style="flex: 1">
+                        {{ $item->age_unknown_clicks_count }} / {{ $item->age_unknown_views_count }}
+                        <br><br>{{ round($item->age_unknown_clicks_count / max($item->age_unknown_views_count, 1) * 100, 1) }}%
+                    </p>
                 </div>
             </div>
         @empty
