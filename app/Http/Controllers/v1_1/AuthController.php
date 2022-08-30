@@ -44,8 +44,11 @@ class AuthController extends Controller
     public function signup(Request $request, $sns = false): array
     {
         try {
-            $email = $request->get('email');
+            $email = $request->get('email');  // 기존에 '123456@F', '1234567@K'와 같이 SNS 플랫폼별 유저 ID값 + 플랫폼 첫 알파벳 대문자로 만들어지던 임의의 email값
+            $sns_email = $request->get('snsEmail');  // SNS 플랫폼별 유저의 제공동의 하에 주어지는, 'id@xxxx.com' 형태의 실제 email 주소값
             $password = $request->get('password');
+            $login_method = $request->get('loginMethod', 'email');
+            $phone = $request->get('phone');
             $agree1 = $request->get('agree1', false);
             $agree2 = $request->get('agree2', false);
             $agree3 = $request->get('agree3', false);
@@ -102,7 +105,10 @@ class AuthController extends Controller
                 /* 유저 기본 데이터 생성 */
                 $user = User::create([
                     'email' => $email,
+                    'sns_email' => $sns ? $sns_email : null,
                     'password' => $sns ? '' : Hash::make($password),
+                    'login_method' => $login_method,
+                    'phone' => $phone,
                     'agree1' => $agree1,
                     'agree2' => $agree2,
                     'agree3' => $agree3,
@@ -188,13 +194,24 @@ class AuthController extends Controller
     public function login_sns(Request $request): array
     {
         try {
-            $email = $request->get('email');
+            $email = $request->get('email'); // 기존에 '123456@F', '1234567@K'와 같이 SNS 플랫폼별 유저 ID값 + 플랫폼 첫 알파벳 대문자로 만들어지던 임의의 email값
+            $phone = $request->get('phone');
+            $sns_email = $request->get('snsEmail'); // SNS 플랫폼별 유저의 제공동의 하에 주어지는, 'id@xxxx.com' 형태의 실제 email 주소값
+            $login_method = $request->get('loginMethod');
 
             $user = User::where(['email' => $email])->first();
-            if (isset($user) && preg_match('/.+@[AKFN]/', $email)) {
+            if (isset($user)) {
+                // 기존 유저 // email, phone, loginMethod를 update해야 한다.
+                User::where(['email' => $email])
+                    ->update([
+                        'phone' => $phone,
+                        'sns_email' => $sns_email,
+                        'login_method' => $login_method,
+                    ]);
                 return $this->login_user($user);
             } else {
-                return success(['result' => false, 'token' => null, 'user' => null]);
+                // 신규 유저
+                return success(['result' => false, 'token' => null, 'user' => null, 'email' => $email, 'phone'=>$phone, 'snsEmail'=>$sns_email, 'loginMethod'=> $login_method]);
             }
         } catch (Exception $e) {
             return exceped($e);
