@@ -201,13 +201,40 @@ class AuthController extends Controller
 
             $user = User::where(['email' => $email])->first();
             if (isset($user)) {
-                // 기존 유저 // email, phone, loginMethod를 update해야 한다.
-                User::where(['email' => $email])
-                    ->update([
-                        'phone' => $phone,
-                        'sns_email' => $sns_email,
-                        'login_method' => $login_method,
-                    ]);
+                // 기존 유저 // email, phone, loginMethod를 update해야 한다. 단, sns_email과 phone은 아래와 같이 update 조건이 있다.
+                // (1) DB의 value가 null일 경우, 업데이트 한다.
+                // (2) DB의 value가 새로운 $sns_email과 불일치하면, 업데이트 한다. 단, $sns_email은 null이 아니어야 한다.
+
+                if ($phone == null & $sns_email == null) {
+                    null;
+                } else if ($phone == null & $sns_email != null){
+                    $user['sns_email'] != $sns_email
+                        ?
+                        User::where(['email' => $email])
+                            ->update([
+                                'phone' => $phone,
+                                'sns_email' => $sns_email,
+                                'login_method' => $login_method,
+                            ])
+                        : null;
+                } else if ($sns_email == null & $phone != null) {
+                    $user['phone'] != $phone
+                        ?
+                        User::where(['email' => $email])
+                            ->update([
+                                'phone' => $phone,
+                                'sns_email' => $sns_email,
+                                'login_method' => $login_method,
+                            ])
+                        : null;
+                } else {
+                    User::where(['email' => $email])
+                        ->update([
+                            'phone' => $phone,
+                            'sns_email' => $sns_email,
+                            'login_method' => $login_method,
+                        ]);
+                }
                 return $this->login_user($user);
             } else {
                 // 신규 유저
