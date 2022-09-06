@@ -366,25 +366,24 @@ class ScheduleController extends Controller
         foreach ($missions as $id => $mission) {
             $rank = MissionRank::create(['mission_id' => $id]);
 
-            if ($mission[0]['summation'] == 0 || $mission[0]['summation'] == null) {
-                // feeds_count로 정렬하는 경우
-                $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
-                    $item->only(['user_id', 'feeds_count', 'summation']),
-                    ['rank' => $i + 1],
-                ])));
-            } else {
-                // summation으로 정렬해야 하는 경우
-                $mission = $mission->orderBy('summation', 'desc');
-                $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
-                    $item->only(['user_id', 'feeds_count', 'summation']),
-                    ['rank' => $i + 1],
-                ])));
-            }
+            // if ($mission[0]['summation'] == 0 || $mission[0]['summation'] == null) {
+            //     // feeds_count로 정렬하는 경우
+            //     $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+            //         $item->only(['user_id', 'feeds_count', 'summation']),
+            //         ['rank' => $i + 1],
+            //     ])));
+            // } else {
+            //     // summation으로 정렬해야 하는 경우
+            //     $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+            //         $item->only(['user_id', 'feeds_count', 'summation']),
+            //         ['rank' => $i + 1],
+            //     ])));
+            // }
 
-            // $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
-            //     $item->only(['user_id', 'feeds_count', 'summation']),
-            //     ['rank' => $i + 1],
-            // ])));
+            $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+                $item->only(['user_id', 'feeds_count', 'summation']),
+                ['rank' => $i + 1],
+            ])));
         }
     }
 }
