@@ -233,7 +233,7 @@ class Replace
 
 
         if (str_contains($key, 'all')) {
-            Cache::set($this->mission->id . $key, $res, 600);
+            Cache::set($this->mission->id . $key, $res, 300);
         }
 
         $this->data[$key] = $res;
