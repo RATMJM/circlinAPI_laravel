@@ -284,7 +284,7 @@ class BookmarkController extends Controller
             return success(['result' => false, 'message' => '이미 참여 중인 미션입니다.']);
         }
         if (!is_null($mission->code) && $mission->code !== $code) {
-            return success(['result' => false, 'message' => '참여코드가 틀렸습니다. 다시 확인해주세요.']);
+            return success(['result' => false, 'message' => '참여코드가 틀렸습니다. 다시 입력해주세요.']);
         }
         if ($mission->refundProducts->count() > 0) {
             $paid = Order::join('order_products', 'order_id', 'orders.id')
