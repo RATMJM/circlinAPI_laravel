@@ -469,7 +469,7 @@ class FeedController extends Controller
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('user_id', $user_id),
-                'feed_products.type as product_type',
+                'feed_products.type as product_type',    // 식품 단일 선택 시의 코드
                 DB::raw("IF(feed_products.type='inside', feed_products.product_id, feed_products.outside_product_id) as product_id"),
                 DB::raw("IF(feed_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
@@ -527,8 +527,23 @@ class FeedController extends Controller
             ]);
         }
 
-        $feed['product'] = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_');
+        $feed['product'] = arr_group($feed, ['type', 'id', 'brand', 'title', 'image', 'url', 'price'], 'product_'); // 식품 단일 선택 시의 코드
         $feed['place'] = arr_group($feed, ['address', 'title', 'description', 'image', 'url'], 'place_');
+        // $feed['products'] = Feed::where('feeds.id', $id) // 식품 다중 선택 시의 코드
+        //     ->join('users', 'users.id', 'feeds.user_id')
+        //     ->leftJoin('feed_products', 'feed_products.feed_id', 'feeds.id')
+        //     ->leftJoin('products', 'products.id', 'feed_products.product_id')
+        //     ->leftJoin('brands', 'brands.id', 'products.brand_id')
+        //     ->leftJoin('outside_products', 'outside_products.id', 'feed_products.outside_product_id')
+        //     ->select([
+        //         'feed_products.type as product_type',
+        //         DB::raw("IF(feed_products.type='inside', feed_products.product_id, feed_products.outside_product_id) as product_id"),
+        //         DB::raw("IF(feed_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
+        //         DB::raw("IF(feed_products.type='inside', products.name_ko, outside_products.title) as product_title"),
+        //         DB::raw("IF(feed_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
+        //         'outside_products.url as product_url',
+        //         'outside_products.price as product_price',
+        //     ])->get();
 
         $feed['images'] = $feed->images()->select(['type', 'image'])->orderBy('order')->get();
 
