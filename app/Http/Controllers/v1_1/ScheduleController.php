@@ -374,7 +374,7 @@ class ScheduleController extends Controller
                 ])));
             } else {
                 // summation으로 정렬해야 하는 경우
-                $mission = $mission->orderByDesc('summation');
+                $mission = $mission->orderBy('summation', 'desc');
                 $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
                     $item->only(['user_id', 'feeds_count', 'summation']),
                     ['rank' => $i + 1],
