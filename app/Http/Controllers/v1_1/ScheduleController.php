@@ -358,16 +358,33 @@ class ScheduleController extends Controller
             ->groupBy(['missions.id', 'feeds.user_id'])
             ->orderBy('missions.id')
             ->orderBy('feeds_count', 'desc')
+            ->orderBy('summation', 'desc')
             ->orderBy('c')
             ->get()
             ->groupBy('id');
 
         foreach ($missions as $id => $mission) {
             $rank = MissionRank::create(['mission_id' => $id]);
-            $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
-                $item->only(['user_id', 'feeds_count', 'summation']),
-                ['rank' => $i + 1],
-            ])));
+
+            if ($rank[0]['summation'] == 0 || $rank[0]['summation'] == null) {
+                // feeds_count로 정렬하는 경우
+                $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+                    $item->only(['user_id', 'feeds_count', 'summation']),
+                    ['rank' => $i + 1],
+                ])));
+            } else {
+                // summation으로 정렬해야 하는 경우
+                $rank = $rank->orderBy('summation', 'desc');
+                $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+                    $item->only(['user_id', 'feeds_count', 'summation']),
+                    ['rank' => $i + 1],
+                ])));
+            }
+
+            // $rank->rankUsers()->createMany($mission->map(fn($item, $i) => Arr::collapse([
+            //     $item->only(['user_id', 'feeds_count', 'summation']),
+            //     ['rank' => $i + 1],
+            // ])));
         }
     }
 }
