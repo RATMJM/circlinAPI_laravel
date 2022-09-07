@@ -381,6 +381,8 @@ class ShopController extends Controller
 
             $cartList = Cart::where('carts.user_id', $user_id)
                 ->join('products', 'products.id', 'carts.product_id')
+                ->leftjoin('cart_options', 'carts.id', 'cart_options.cart_id')
+                ->leftjoin('product_options', 'product_options.id', 'cart_options.product_option_id')
                 ->join('brands', 'brands.id', 'products.brand_id')
                 ->select([
                     'carts.id as cart_id',
@@ -392,7 +394,18 @@ class ShopController extends Controller
                     'products.price as original_price',
                     'products.sale_price',
                     'carts.product_id',
-                    'products.status',
+                    DB::raw(
+                        "CASE
+                                    WHEN product_options.status IS NULL
+                                        THEN products.status
+                                    ELSE
+                                        CASE
+                                            WHEN products.status = 'sale' AND product_options.status = 'sale'
+                                                THEN 'sale'
+                                            ELSE 'soldout'
+                                        END
+                                END AS status"
+                    ),
                     'products.shipping_fee',
                     'products.brand_id',
                     DB::raw("ifnull((select name_ko from product_options x, cart_options y where x.id= y.product_option_id and carts.id=y.cart_id limit 0,1),'') as opt_name1"),
