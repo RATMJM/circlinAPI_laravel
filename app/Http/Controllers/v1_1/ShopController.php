@@ -815,9 +815,16 @@ class ShopController extends Controller
         try {
             DB::beginTransaction();
 
+            // $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as brand_name, a.name_ko as product_name , a.price, a.sale_price, a.status,
+            //     round((a.price-a.sale_price)/a.PRICE *100) as discount_rate,
+            //     (select CASE WHEN count(product_id) >0 THEN "N" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN,
+            //     from products a  left join  brands d on a.brand_id=d.id
+            //     where
+            //       a.id=?  ; ', [$user_id, $product_id, $product_id]);
+
             $product_info = DB::select('SELECT shipping_fee, a.id as product_id , a.thumbnail_image, d.name_ko as brand_name, a.name_ko as product_name , a.price, a.sale_price, a.status,
                 round((a.price-a.sale_price)/a.PRICE *100) as discount_rate,
-                (select CASE WHEN count(product_id) >0 THEN "N" ELSE "N" END  FROM  carts  WHERE user_id=? and product_id= ? ) AS CART_YN
+                CASE WHEN (SELECT COUNT(*) FROM carts WHERE user_id= ? AND product_id= ?) > 0 THEN "Y" ELSE "N" END AS CART_YN
                 from products a  left join  brands d on a.brand_id=d.id
                 where
                   a.id=?  ; ', [$user_id, $product_id, $product_id]);
