@@ -78,6 +78,8 @@ class LikeController extends Controller
     public function store($type, $id)
     {
         try {
+            // $user_id => 본인(피드를 체크한 사람)
+            // $target_id (= $data->user_id) => 상대방(피드를 작성한 사람)
             $user_id = token()->uid;
 
             [$table, $table_like] = match ($type) {
@@ -119,13 +121,19 @@ class LikeController extends Controller
                     ->where('feed_likes.created_at', '>=', init_today())
                     ->count();
 
-                if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist() &&
+                if (
+                    $table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
+                    &&
                     $table_like->withTrashed()->where('user_id', $user_id)
                         ->where('point', '>', 0)
                         ->where('feed_likes.created_at', '>=', init_today())
                         ->where($table->select('user_id')->whereColumn("{$type}s.id", "{$type}_likes.{$type}_id"), $data->user_id)
-                        ->doesntExist() &&
-                    PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
+                        ->doesntExist()
+                    &&
+                    PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000
+                    &&
+                    Feed::where('id', $id)->first()->created_at >= init_today()
+                ) {
                     $res = PointController::change_point($target_id, $point += 10, 'feed_check', 'feed', $id);
                     $paid_point = $res['success'] && $res['data']['result'];
 
@@ -152,8 +160,10 @@ class LikeController extends Controller
             };
 
             return success([
-                'result' => (bool)$data_like, 'paid_point' => $paid_point,
-                'paid_count' => $count ?? 0, 'take_point' => $take_point,
+                'paid_count' => $count ?? 0,
+                'paid_point' => $paid_point,
+                'result' => (bool)$data_like,
+                'take_point' => $take_point,
             ]);
         } catch (Exception $e) {
             DB::rollBack();
