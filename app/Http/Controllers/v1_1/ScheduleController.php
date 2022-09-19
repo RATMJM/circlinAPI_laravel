@@ -358,8 +358,8 @@ class ScheduleController extends Controller
             ->groupBy(['missions.id', 'feeds.user_id'])
             ->orderBy('missions.id')
             ->orderBy('feeds_count', 'desc')
-            ->orderBy('summation', 'desc')
             ->orderBy('c')
+            ->orderBy('summation', 'desc')
             ->get()
             ->groupBy('id');
 
