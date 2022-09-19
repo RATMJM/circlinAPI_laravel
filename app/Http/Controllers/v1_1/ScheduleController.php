@@ -357,9 +357,9 @@ class ScheduleController extends Controller
             ->where(fn($query) => $query->where('missions.ended_at', '>=', now())->orWhereNull('missions.ended_at'))
             ->groupBy(['missions.id', 'feeds.user_id'])
             ->orderBy('missions.id')
+            ->orderBy('summation', 'desc')
             ->orderBy('feeds_count', 'desc')
             ->orderBy('c')
-            ->orderBy('summation', 'desc')
             ->get()
             ->groupBy('id');
 
