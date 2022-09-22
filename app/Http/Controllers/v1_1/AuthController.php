@@ -48,7 +48,7 @@ class AuthController extends Controller
             $sns_email = $request->get('snsEmail');  // SNS 플랫폼별 유저의 제공동의 하에 주어지는, 'id@xxxx.com' 형태의 실제 email 주소값
             $password = $request->get('password');
             $login_method = $request->get('loginMethod', 'email');
-            $phone = $request->get('phone');
+            $phone = $request->get('phone') == 'null' ? null : $request->get('phone');
             $agree1 = $request->get('agree1', false);
             $agree2 = $request->get('agree2', false);
             $agree3 = $request->get('agree3', false);
@@ -195,7 +195,7 @@ class AuthController extends Controller
     {
         try {
             $email = $request->get('email'); // 기존에 '123456@F', '1234567@K'와 같이 SNS 플랫폼별 유저 ID값 + 플랫폼 첫 알파벳 대문자로 만들어지던 임의의 email값
-            $phone = $request->get('phone');
+            $phone = $request->get('phone') == 'null' ? null : $request->get('phone');
             $sns_email = $request->get('snsEmail'); // SNS 플랫폼별 유저의 제공동의 하에 주어지는, 'id@xxxx.com' 형태의 실제 email 주소값
             $login_method = $request->get('loginMethod');
 
