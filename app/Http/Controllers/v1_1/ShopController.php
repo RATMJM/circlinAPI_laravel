@@ -179,7 +179,7 @@ class ShopController extends Controller
             DB::rollBack();
             return exceped($e);
         }
-
+        // mypageMissionState, mypageFeedState, someonePageListState, someonePageMissionListState, someonePageFeedListState
 
         return success([
             'result' => true,
