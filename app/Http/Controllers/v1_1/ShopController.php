@@ -302,6 +302,77 @@ class ShopController extends Controller
 
     }
 
+    public function shop_point_list_page(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 20);
+
+        try {
+            DB::beginTransaction();
+
+            $pointInfo = DB::select('SELECT
+                (
+                select ifnull(sum(POINT),0)
+                from  point_histories
+                where user_id=? and point>0
+                and substr(created_at,1,10) BETWEEN  substr(date_add(sysdate(), interval -365 day ),1,10)  and  substr(date_add(sysdate(), interval 9 hour),1,10)
+                )  as YEAR_POINT
+                ,
+                (
+                SELECT ifnull(sum(POINT),0) as Y_POINT
+                from point_histories
+                where user_id=? and point>0
+                and substr(created_at,1,10) BETWEEN  substr(date_add(sysdate(), interval -7 day ),1,10)  and  substr(date_add(sysdate(), interval 9 hour),1,10)
+                )  as WEEK_POINT
+                FROM
+                DUAL;', [$user_id, $user_id]);
+
+            $shopPointList = PointHistory::where('point_histories.user_id', $user_id)
+                ->leftJoin('common_codes', function ($query) {
+                    $query->on('common_codes.ctg_sm', 'point_histories.reason')
+                        ->where('ctg_lg', 'point_histories');
+                })
+                ->leftJoin('missions', function($query) {
+                    $query->on('missions.id', 'point_histories.mission_id');
+                })
+                ->select([
+                    'point_histories.created_at',
+                    'point_histories.point',
+                    'point_histories.user_id',
+                    // 'point_histories.reason',
+                    // DB::raw('IF(point_histories.mission_id IS NULL, point_histories.reason, CONCAT(point_histories.reason, "|", missions.title)) AS reason'),
+                    DB::raw('IF(point_histories.mission_id IS NOT NULL AND missions.mission_type = "commercial_food", CONCAT(point_histories.reason, "|", missions.title), point_histories.reason) AS reason'),
+                    // DB::raw('IFNULL(point_histories.reason, CONCAT(point_histories.reason, "|", missions.title)) AS mission_title'),
+                    'common_codes.content_ko as message',
+                ])
+                ->orderBy('point_histories.id', 'desc')
+                ->skip($page * $limit)
+                ->take($limit)
+                ->get();
+
+            foreach ($shopPointList as $i => $item) {
+                $replaces = [
+                    // 'nickname' => $item->latest_nickname,
+                ];
+
+                $item->message = code_replace($item->message, $replaces);
+            }
+
+            return success([
+                'result' => true,
+                'pointInfo' => $pointInfo,
+                'shopPointList' => $shopPointList,
+
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+    }
+
     //구매내역 리스트 조회
     public function bought_product_list(Request $request): array
     {
