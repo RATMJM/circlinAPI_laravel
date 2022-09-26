@@ -68,7 +68,6 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/mission/created2', [v1_1\UserController::class, 'created_mission2'])->name('mission.created2');
         Route::get('/follower', [v1_1\UserController::class, 'follower'])->name('follower');
         Route::get('/following', [v1_1\UserController::class, 'following'])->name('following');
-
         Route::get('/wallpaper', [v1_1\UserController::class, 'wallpaper'])->name('wallpaper');
     });
 });
@@ -235,6 +234,7 @@ Route::get('/shop_category', [v1_1\ShopController::class, 'shop_category']);
 Route::post('/item_list', [v1_1\ShopController::class, 'item_list']);
 Route::post('/shop/product_detail', [v1_1\ShopController::class, 'product_detail']);
 Route::get('/shop/point', [v1_1\ShopController::class, 'shop_point_list']);
+Route::get('/shop/point_page', [v1_1\ShopController::class, 'shop_point_list_page']);
 Route::get('/shop/bought', [v1_1\ShopController::class, 'bought_product_list']);
 Route::get('/shop/cart_list', [v1_1\ShopController::class, 'cart_list']);
 Route::post('/shop/order', [v1_1\ShopController::class, 'order_product']);
