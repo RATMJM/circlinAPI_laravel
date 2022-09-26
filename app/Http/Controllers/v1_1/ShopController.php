@@ -235,8 +235,8 @@ class ShopController extends Controller
     {
         $user_id = token()->uid;
 
-        $page = $request->get('page', 0);
-        $limit = $request->get('limit', 20);
+        // $page = $request->get('page', 0);
+        // $limit = $request->get('limit', 20);
 
         try {
             DB::beginTransaction();
@@ -277,8 +277,8 @@ class ShopController extends Controller
                     'common_codes.content_ko as message',
                 ])
                 ->orderBy('point_histories.id', 'desc')
-                ->skip($page * $limit)
-                ->take($limit)
+                // ->skip($page * $limit)
+                // ->take($limit)
                 ->get();
 
             foreach ($shopPointList as $i => $item) {
