@@ -235,6 +235,7 @@ Route::post('/item_list', [v1_1\ShopController::class, 'item_list']);
 Route::post('/shop/product_detail', [v1_1\ShopController::class, 'product_detail']);
 Route::get('/shop/point', [v1_1\ShopController::class, 'shop_point_list']);
 Route::get('/shop/point_page', [v1_1\ShopController::class, 'shop_point_list_page']);
+Route::get('/shop/recent_point', [v1_1\ShopController::class, 'recent_point']);
 Route::get('/shop/bought', [v1_1\ShopController::class, 'bought_product_list']);
 Route::get('/shop/cart_list', [v1_1\ShopController::class, 'cart_list']);
 Route::post('/shop/order', [v1_1\ShopController::class, 'order_product']);

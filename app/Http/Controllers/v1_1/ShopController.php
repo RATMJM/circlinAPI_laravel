@@ -302,17 +302,14 @@ class ShopController extends Controller
 
     }
 
-    public function shop_point_list_page(Request $request): array
+    public function recent_point(Request $request): array
     {
         $user_id = token()->uid;
-
-        $page = $request->get('page', 0);
-        $limit = $request->get('limit', 20);
 
         try {
             DB::beginTransaction();
 
-            $pointInfo = DB::select('SELECT
+            $recent_point = DB::select('SELECT
                 (
                 select ifnull(sum(POINT),0)
                 from  point_histories
@@ -329,6 +326,26 @@ class ShopController extends Controller
                 FROM
                 DUAL;', [$user_id, $user_id]);
 
+            return success([
+                'result' => true,
+                'pointInfo' => $recent_point,
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+
+    }
+
+    public function shop_point_list_page(Request $request): array
+    {
+        $user_id = token()->uid;
+
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', 20);
+
+        try {
+            DB::beginTransaction();
             $shopPointList = PointHistory::where('point_histories.user_id', $user_id)
                 ->leftJoin('common_codes', function ($query) {
                     $query->on('common_codes.ctg_sm', 'point_histories.reason')
@@ -362,7 +379,6 @@ class ShopController extends Controller
 
             return success([
                 'result' => true,
-                'pointInfo' => $pointInfo,
                 'shopPointList' => $shopPointList,
 
             ]);
