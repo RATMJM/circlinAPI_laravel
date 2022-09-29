@@ -190,7 +190,8 @@ class NotificationController extends Controller
                 'feed_comment', 'feed_comment_multi', 'feed_reply', 'feed_reply_multi',
                 'mission_like', 'mission_like_multi',
                 'mission_comment', 'mission_comment_multi', 'mission_reply', 'mission_reply_multi',
-                'mission_invite',
+                'mission_invite'
+                => code_replace($action['user'], ['id' => $item->user_id]),
 
                 'feed_upload_place', 'feed_upload_product'
                 => code_replace($action['user'], ['id' => $user_id]),
