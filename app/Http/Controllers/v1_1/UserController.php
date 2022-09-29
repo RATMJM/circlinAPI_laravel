@@ -54,12 +54,14 @@ class UserController extends Controller
             ->get();
 
         $yesterday_point = PointHistory::where('user_id', $user_id)
-            ->where('created_at', '>=', init_today())
+            ->where('created_at', '<', init_today())
+            ->where('created_at', '>=', DB::Raw('SUBDATE(CURDATE(), 1)'))
             ->where('point', '>', 0)
             ->sum('point');
 
         $yesterday_check = Feed::where('feeds.user_id', $user_id)
-            ->where('feeds.created_at', '>=', init_today())
+            ->where('feeds.created_at', '<', init_today())
+            ->where('feeds.created_at', '>=', DB::Raw('SUBDATE(CURDATE(), 1)'))
             ->join('feed_likes', function ($query) {
                 $query->on('feed_likes.feed_id', 'feeds.id')->whereNull('feed_likes.deleted_at');
             })
@@ -70,7 +72,8 @@ class UserController extends Controller
 
         $yesterday_paid_count = FeedLike::withTrashed()->where('user_id', $user_id)
             ->where('point', '>', 0)
-            ->where('feed_likes.created_at', '>=', init_today(time() - 86400))
+            // ->where('feed_likes.created_at', '>=', init_today(time() - 86400))
+            ->where('feed_likes.created_at', '>=', DB::Raw('SUBDATE(CURDATE(), 1)'))
             ->where('feed_likes.created_at', '<', init_today())
             ->count();
 
@@ -91,11 +94,11 @@ class UserController extends Controller
             'result' => true,
             'user' => $user,
             'category' => $category,
-            'yesterday_point' => $yesterday_point,
-            'yesterday_check' => $yesterday_check,
-            'yesterday_feeds_count' => $yesterday_feeds_count,
-            'yesterday_paid_count' => $yesterday_paid_count,
-            'today_paid_count' => $today_paid_count,
+            'yesterday_point' => $yesterday_point !== null ? $yesterday_point : 0,
+            'yesterday_check' => $yesterday_check !== null ? $yesterday_check : 0,
+            'yesterday_feeds_count' => $yesterday_feeds_count !== null ? $yesterday_feeds_count : 0,
+            'yesterday_paid_count' => $yesterday_paid_count !== null ? $yesterday_paid_count : 0,
+            'today_paid_count' => $today_paid_count !== null ? $today_paid_count : 0,
             'badge' => $badge,
             'wallpapers' => $wallpapers,
         ]);
