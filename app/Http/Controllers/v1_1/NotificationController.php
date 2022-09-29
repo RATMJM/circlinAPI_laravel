@@ -9,6 +9,7 @@ use App\Models\FeedImage;
 use App\Models\Follow;
 use App\Models\MissionCategory;
 use App\Models\MissionComment;
+use App\Models\NoticeComment;
 use App\Models\Notification;
 use App\Models\User;
 use Exception;
