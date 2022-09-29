@@ -290,7 +290,6 @@ class NotificationController extends Controller
 
                 'notice_reply' => [
                     'user_id' => $user_id,
-                    // 'notice_id' => $parent_id = $id,
                     'notice_id' => $parent_id = NoticeComment::where('id', $id)->value('notice_id'),
                     'notice_comment_id' => $id,
                 ],
