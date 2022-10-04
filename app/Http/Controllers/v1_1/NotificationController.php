@@ -206,7 +206,8 @@ class NotificationController extends Controller
                 ]),
 
                 'board_like', 'board_like_multi', 'board_comment', 'board_comment_multi', 'board_reply', 'board_reply_multi'
-                => code_replace($action['board'], ['id' => $item->board_id, 'comment_id' => $item->board_comment_id]),
+                => code_replace($action['user'], ['id' => $user_id]),
+                // => code_replace($action['board'], ['id' => $item->board_id, 'comment_id' => $item->board_comment_id]),
 
                 'notice_comment', 'notice_comment_multi', 'notice_reply', 'notice_reply_multi',
                 => code_replace($action['user'], ['id' => $user_id]),
