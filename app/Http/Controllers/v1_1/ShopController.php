@@ -29,134 +29,363 @@ class ShopController extends Controller
             DB::beginTransaction();
             if ($category == '전체') {
                 if ($type == "hot") {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1']);
-
+                    $itemList = DB::select(
+                        'SELECT
+                                a.id AS product_id,
+                                CASE WHEN shipping_fee > 0 THEN "Y" ELSE "N" END AS SHIP_FREE_YN,
+                                code,
+                                thumbnail_image,
+                                b.name_ko,
+                                a.name_ko AS prod_name,
+                                price, sale_price,
+                                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) AS discount_rate,
+                                a.status
+                            FROM products a, brands b
+                            WHERE deleted_at IS NULL
+                                AND is_show= ?
+                                AND b.id=a.brand_id
+                            ORDER BY a.status="sale" DESC, a.`order` DESC, a.id DESC;',
+                        ['1']
+                    );
                 } elseif ($type == "high") {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                order by a.status="sale" desc, `order` desc, sale_price desc;', ['1']);
+                    $itemList = DB::select(
+                        'SELECT
+                                a.id AS product_id,
+                                CASE WHEN shipping_fee > 0 THEN "Y" ELSE "N" END AS SHIP_FREE_YN,
+                                code,
+                                thumbnail_image,
+                                b.name_ko,
+                                a.name_ko AS prod_name,
+                                price, sale_price,
+                                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) AS discount_rate,
+                                a.status
+                            FROM products a, brands b
+                            WHERE deleted_at IS NULL
+                                AND is_show= ?
+                                AND b.id=a.brand_id
+                            ORDER BY a.status="sale" DESC, `order` DESC, sale_price DESC;',
+                        ['1']
+                    );
                 } elseif ($type == "low") {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                order by a.status="sale" desc, `order` desc, sale_price ;', ['1']);
+                    $itemList = DB::select(
+                        'SELECT
+                                a.id AS product_id,
+                                CASE WHEN shipping_fee > 0 THEN "Y" ELSE "N" END AS SHIP_FREE_YN,
+                                code ,
+                                thumbnail_image,
+                                b.name_ko,
+                                a.name_ko AS prod_name,
+                                price, sale_price,
+                                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) AS discount_rate,
+                                a.status
+                            FROM products a, brands b
+                            WHERE deleted_at IS NULL
+                                AND is_show= ?
+                                AND b.id=a.brand_id
+                            ORDER BY a.status="sale" DESC, `order` DESC, sale_price ;',
+                        ['1']
+                    );
                 } else {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                order by a.status="sale" desc, `order` desc, a.id desc;', ['1']);
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    CASE WHEN shipping_fee > 0 THEN "Y" ELSE "N" END AS SHIP_FREE_YN,
+                                    code ,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                order by a.status="sale" desc, `order` desc, a.id desc;',
+                        ['1']
+                    );
                 }
             } else {// ㅋㅏ테고리 눌렀을떄
                 if ($type == "hot") {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and  a.product_category_id=?
-                and b.id=a.brand_id
-                order by a.status="sale" desc, a.`order` desc, a.id desc;', ['1', $category]);
-
-
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and  a.product_category_id=?
+                                    and b.id=a.brand_id
+                                order by a.status="sale" desc, a.`order` desc, a.id desc;',
+                        ['1', $category]
+                    );
                 } elseif ($type == "high") {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                and  a.product_category_id=?
-                order by a.status="sale" desc, `order` desc, sale_price desc;', ['1', $category]);
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                    and  a.product_category_id=?
+                                order by a.status="sale" desc, `order` desc, sale_price desc;',
+                        ['1', $category]
+                    );
                 } elseif ($type == "low") {
-
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                and  a.product_category_id=?
-                order by a.status="sale" desc, `order` desc, sale_price ;', ['1', $category]);
+                    $itemList = DB::select(
+                        'select
+                                a.id as product_id,
+                                case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                code ,
+                                thumbnail_image,
+                                b.name_ko,
+                                a.name_ko as prod_name,
+                                price, sale_price,
+                                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                a.status
+                            FROM products a, brands b
+                            WHERE  deleted_at is null
+                                and is_show= ?
+                                and b.id=a.brand_id
+                                and  a.product_category_id=?
+                            order by a.status="sale" desc, `order` desc, sale_price ;',
+                        ['1', $category]
+                    );
                 } else {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code ,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                    and  a.product_category_id=?
+                                order by a.status="sale" desc, `order` desc, a.id desc ;',
+                        ['1', $category]
+                    );
+                }
+            }
 
-                    $itemList = DB::select('select a.id as product_id, case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
-                code ,
-                thumbnail_image,
-                b.name_ko,
-                a.name_ko as prod_name,
-                price, sale_price,
-                round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
-                a.status
-                FROM products a, brands b
-                WHERE  deleted_at is null and
-                is_show= ?
-                and b.id=a.brand_id
-                and  a.product_category_id=?
-                order by a.status="sale" desc, `order` desc, a.id desc;', ['1', $category]);
+            return success([
+                'result' => true,
+                'itemList' => $itemList,
+                'user_id' => $user_id,
+                'category' => $category,
+                'type' => $type,
+            ]);
+
+            // else {
+            //     DB::rollBack();
+            //     return success([
+            //         'result' => false,
+            //         'reason' => 'not enough data',
+            //     ]);
+            // }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return exceped($e);
+        }
+        // mypageMissionState, mypageFeedState, someonePageListState, someonePageMissionListState, someonePageFeedListState
+
+        return success([
+            'result' => true,
+            'areas' => $areas,
+        ]);
+    }
+
+    // 샵 아이템리스트 조회
+    public function random_item_list(Request $request): array
+    {
+        //  $user_id = '4';//token()->uid;
+        //  $category = '2';//$request->get('category'); // 카테고리
+        //  $type = 'high';//$request->get('type'); // 필터값
+        $user_id = token()->uid;
+        $category = $request->get('category', '전체'); // 카테고리
+        $type = $request->get('type'); // 필터값
+        try {
+            DB::beginTransaction();
+            if ($category == '전체') {
+                if ($type == "hot") {
+                    $itemList = DB::select(
+                        'SELECT
+                                    a.id AS product_id,
+                                    CASE WHEN shipping_fee > 0 THEN "Y" ELSE "N" END AS SHIP_FREE_YN,
+                                    code,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE deleted_at IS NULL
+                                    AND is_show= ?
+                                    AND b.id=a.brand_id
+                                ORDER BY a.status="sale" DESC, a.`order` DESC, a.id DESC;',
+                        ['1']
+                    );
+                } elseif ($type == "high") {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                order by a.status="sale" desc, `order` desc, sale_price desc;',
+                        ['1']
+                    );
+                } elseif ($type == "low") {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code ,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                order by a.status="sale" desc, `order` desc, sale_price ;',
+                        ['1']
+                    );
+                } else {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code ,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                order by a.status="sale" desc, RAND(), `order` desc, a.id desc;',
+                        ['1']
+                    );
+                }
+            } else {// ㅋㅏ테고리 눌렀을떄
+                if ($type == "hot") {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and  a.product_category_id=?
+                                    and b.id=a.brand_id
+                                order by a.status="sale" desc, a.`order` desc, a.id desc;',
+                        ['1', $category]
+                    );
+                } elseif ($type == "high") {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                    and  a.product_category_id=?
+                                order by a.status="sale" desc, `order` desc, sale_price desc;',
+                        ['1', $category]
+                    );
+                } elseif ($type == "low") {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code ,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                    and  a.product_category_id=?
+                                order by a.status="sale" desc, `order` desc, sale_price ;',
+                        ['1', $category]
+                    );
+                } else {
+                    $itemList = DB::select(
+                        'select
+                                    a.id as product_id,
+                                    case when shipping_fee > 0 then "Y" else "N" end as SHIP_FREE_YN,
+                                    code ,
+                                    thumbnail_image,
+                                    b.name_ko,
+                                    a.name_ko as prod_name,
+                                    price, sale_price,
+                                    round((a.PRICE-a.sale_PRICE)/a.PRICE *100) as discount_rate,
+                                    a.status
+                                FROM products a, brands b
+                                WHERE  deleted_at is null
+                                    and is_show= ?
+                                    and b.id=a.brand_id
+                                    and  a.product_category_id=?
+                                order by a.status="sale" desc, RAND(), `order` desc, a.id desc ;',
+                        ['1', $category]
+                    );
                 }
             }
 
