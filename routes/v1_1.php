@@ -16,7 +16,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    v1_1\PushController::gcm_notify([64175], 'test', '11');
+    v1_1\PushController::gcm_notify(
+        [64477],
+        'test: push with image',
+        'push test5',
+       "https://circlin-app.s3.ap-northeast-2.amazonaws.com/SNS/4400/3wm7F1dW8yZRp7tX4F3TlhvC1oM8oopkuQRhie3d.jpg"
+//         'https://firebasestorage.googleapis.com/v0/b/circlinpushserver.appspot.com/o/yTxMrZFzeyR381fTQ5s21vhhQgjitCwS433Smsse.jpeg?alt=media&token=266c9383-4eac-49b3-8f57-81d09da61c1f'
+    );
     return ['success' => true];
 })->name('index');
 
@@ -232,6 +238,7 @@ Route::group(['prefix' => 'notice', 'as' => 'notice.'], function () {
 Route::get('/shop_banner', [v1_1\ShopController::class, 'shop_banner']);
 Route::get('/shop_category', [v1_1\ShopController::class, 'shop_category']);
 Route::post('/item_list', [v1_1\ShopController::class, 'item_list']);
+Route::get('/random_item_list', [v1_1\ShopController::class, 'random_item_list']);
 Route::post('/shop/product_detail', [v1_1\ShopController::class, 'product_detail']);
 Route::get('/shop/point', [v1_1\ShopController::class, 'shop_point_list']);
 Route::get('/shop/point_page', [v1_1\ShopController::class, 'shop_point_list_page']);
