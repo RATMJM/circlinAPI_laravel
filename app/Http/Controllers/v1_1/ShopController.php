@@ -12,6 +12,7 @@ use App\Models\ProductCategory;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ShopController extends Controller
@@ -225,6 +226,18 @@ class ShopController extends Controller
         $user_id = token()->uid;
         $category = $request->get('category', '전체'); // 카테고리
         $type = $request->get('type'); // 필터값
+
+        $cache_key = 'ramndom_item_list_'. $category;
+        if ($res = Cache::get($cache_key)) {
+            return success([
+                'result' => true,
+                'itemList' => $res,
+                'user_id' => $user_id,
+                'category' => $category,
+                'type' => $type,
+            ]);
+        }
+
         try {
             DB::beginTransaction();
             if ($category == '전체') {
@@ -389,6 +402,7 @@ class ShopController extends Controller
                 }
             }
 
+            Cache::set($cache_key, $itemList, 600);
             return success([
                 'result' => true,
                 'itemList' => $itemList,
