@@ -1026,20 +1026,28 @@ class ShopController extends Controller
     public function order_product(Request $request): array
     {
         $res = DB::transaction(function () use ($request) {
-            $user_id = token()->uid;
-            $phone = $request->get('receivePhone');
-            $comment = $request->get('request');
-            $post_code = $request->get('post_code');
-            $address = $request->get('address');
-            $address_detail = $request->get('address_detail'); //상세주소
-            $recipient_name = $request->get('recipient_name');  // 받는사람 이름
+            try {
+                $user_id = token()->uid;
+                $phone = $request->get('receivePhone');
+                $comment = $request->get('request');
+                $post_code = $request->get('post_code');
+                $address = $request->get('address');
+                $address_detail = $request->get('address_detail'); //상세주소
+                $recipient_name = $request->get('recipient_name');  // 받는사람 이름
 
-            $use_point = $request->get('used_point');// 사용한 포인트
+                $use_point = $request->get('used_point');// 사용한 포인트
 
-            $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
-            $merchant_id = $request->get('merchantuid');
+                $imp_id = $request->get('imp_id');  // 결제 식별번호(아임포트로부터 받은 결제 번호 이걸로 취소 할 수 있음
+                $merchant_id = $request->get('merchantuid');
 
-            $items = $request->get('items');  //option_id, price, product_id , qty
+                $items = $request->get('items');  //option_id, price, product_id , qty
+            } catch (Exception $e) {
+                return success([
+                    'result' => false,
+                    'exception' => exceped($e)
+                ]);
+            }
+
 
             // 주문 등록
             $order = Order::create([
