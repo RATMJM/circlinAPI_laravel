@@ -115,8 +115,10 @@ class CommentController extends Controller
                 $my_total_comment_reward = PointHistory::where([
                     "feed_id" => $id,
                     "user_id" => $user_id,
-                    "reason" => ['feed_comment_reward', 'feed_comment_withdraw']
-                ])->sum('point');
+                ])
+                ->where("reason", 'feed_check')
+                ->where("reason", 'feed_check_reward')
+                ->sum('point');
 
                 // 내 피드 여부 확인
                 if ($feed_writer_id == $user_id) {
