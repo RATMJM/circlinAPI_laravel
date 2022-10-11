@@ -10,6 +10,7 @@ use App\Models\Mission;
 use App\Models\MissionComment;
 use App\Models\Notice;
 use App\Models\NoticeComment;
+use App\Models\PointHistory;
 use App\Models\ProductReview;
 use App\Models\ProductReviewComment;
 use Exception;
@@ -106,6 +107,47 @@ class CommentController extends Controller
 
             $comment_target_id = $query_comment->where(["{$table}_id" => $id, 'group' => $group, 'depth' => 0])->value('user_id');
             $table_target_id = $table !== 'notice' ? $query->where('id', $id)->value('user_id') : null;
+
+
+            // feed comment 이벤트
+            if ($table == 'feed' && $user_id == 64477) {
+                $feed_writer_id = $query->where('id', $id)->value('user_id');
+                $my_total_comment_reward = PointHistory::where([
+                    "feed_id" => $id,
+                    "user_id" => $user_id,
+                    "reason" => ['feed_comment_reward', 'feed_comment_withdraw']
+                ])->sum('point');
+
+                // 내 피드 여부 확인
+                if ($feed_writer_id == $user_id) {
+                    // (1)타인이 작성한 댓글인지, (2)대댓글인지 확인
+                    if ($comment_target_id !== $user_id && $data->depth > 0) {
+                        // 댓글 또는 대댓글 남긴 이력 확인: 해당 피드에서의 댓글 이벤트 포인트 총합 > 0
+                        if ($my_total_comment_reward > 0 ) {
+                            $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
+                            if ($res->result === true) {
+                                PointHistory::where('id', $res->id)->update(['feed_id' => $id]);
+                            }
+                        } else {
+                            false;
+                        }
+                    } else {
+                        false;
+                    }
+                } else {
+                    // 댓글 또는 대댓글 남긴 이력 확인: 해당 피드에서의 댓글 이벤트 포인트 총합 > 0
+                    if ($my_total_comment_reward > 0 ) {
+                        $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
+                        if ($res->result === true) {
+                            PointHistory::where('id', $res->id)->update(['feed_id' => $id]);
+                        }
+                    } else {
+                        false;
+                    }
+                }
+
+            }
+
 
             // 답글인 경우 푸시
             if ($data->depth > 0 && $comment_target_id !== $user_id && $comment_target_id !== $table_target_id) {
