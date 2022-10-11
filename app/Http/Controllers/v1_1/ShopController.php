@@ -762,6 +762,7 @@ class ShopController extends Controller
                     DB::raw("ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and carts.id=y.cart_id limit 4,1),0) as price5"),
                     DB::raw("ifnull((select x.price from product_options x, cart_options y where x.id= y.product_option_id and carts.id=y.cart_id limit 5,1),0) as price"),
                 ])
+                ->groupBy('carts.id')
                 ->orderBy('carts.id', 'desc')
                 ->get();
 
