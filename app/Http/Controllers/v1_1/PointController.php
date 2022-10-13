@@ -79,7 +79,7 @@ class PointController extends Controller
 
             // feed comment 이벤트
             $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_withdraw', 'feed_check, feed_check_reward'];
-            if (in_array($reason, $reasons_with_daily_receive_limit)) {
+            if (in_array($reason, $reasons_with_daily_receive_limit) && $user_id=64477) {
 
                 $daily_limit = 500;
                 $current_point = PointHistory::where([
