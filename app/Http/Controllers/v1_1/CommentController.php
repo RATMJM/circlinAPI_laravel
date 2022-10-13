@@ -147,7 +147,6 @@ class CommentController extends Controller
                         false;
                     }
                 }
-
             }
 
 

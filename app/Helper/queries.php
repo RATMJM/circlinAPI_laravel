@@ -27,8 +27,8 @@ function selectMissionGround(int $user_id): array
                         missions.reserve_started_at >= now()
                     THEN 'before'
                     WHEN
-                        missions.reserve_started_at <= now() AND missions.reserve_ended_at < now()
-                    THEN 'before'
+                        missions.reserve_started_at <= now() AND missions.reserve_ended_at < now() AND missions.started_at > now()
+                    THEN 'before_start'
                     ELSE 'end'
                 END as `status`"),
         'goal_distance' => MissionStat::select('goal_distance')
