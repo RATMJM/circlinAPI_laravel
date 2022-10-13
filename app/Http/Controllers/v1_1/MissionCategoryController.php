@@ -190,15 +190,33 @@ class MissionCategoryController extends Controller
                 'missions.started_at',
                 'missions.ended_at',
                 is_available(),
-                DB::raw("CASE WHEN
-                    ((missions.started_at is null or missions.started_at <= now()) and
-                    (missions.ended_at is null or missions.ended_at >= now()))
-                    or ((missions.reserve_ended_at <= now()) and (missions.ended_at >= now()))
-                THEN 'ongoing'
-                WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
-                    (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
-                THEN 'reserve'
-                WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
+                DB::raw(
+                    "CASE
+                    WHEN
+                        (missions.started_at is null or missions.started_at <= now()) and
+                        (missions.ended_at is null or missions.ended_at >= now())
+                    THEN 'ongoing'
+                    WHEN
+                        (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
+                        (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
+                    THEN 'reserve'
+                    WHEN
+                        missions.reserve_started_at >= now()
+                    THEN 'before'
+                    WHEN
+                        missions.reserve_started_at <= now() AND missions.reserve_ended_at < now()
+                    THEN 'before'
+                    ELSE 'end'
+                END as `status`"),
+                // DB::raw("CASE WHEN
+                //     ((missions.started_at is null or missions.started_at <= now()) and
+                //     (missions.ended_at is null or missions.ended_at >= now()))
+                //     or ((missions.reserve_ended_at <= now()) and (missions.ended_at >= now()))
+                // THEN 'ongoing'
+                // WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
+                //     (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
+                // THEN 'reserve'
+                // WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
                 'missions.thumbnail_image',
                 'missions.success_count',
                 'm.bookmarks',
