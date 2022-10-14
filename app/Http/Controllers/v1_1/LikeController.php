@@ -131,6 +131,8 @@ class LikeController extends Controller
                         ->doesntExist()
                     &&
                     PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000
+                    &&
+                    Feed::where('id', $id)->first()->created_at >= init_today(time() - (86400))
                 ) {
                     $res = PointController::change_point($target_id, $point += 10, 'feed_check', 'feed', $id);
                     $paid_point = $res['success'] && $res['data']['result'];
