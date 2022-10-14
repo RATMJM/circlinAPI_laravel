@@ -317,8 +317,8 @@ class HomeController extends Controller
 
         return success([
             'result' => true,
-            'feeds_count' => $feeds_count,
-            'feeds' => $data,
+            'totalCount' => $feeds_count,
+            'data' => $data
         ]);
     }
 
