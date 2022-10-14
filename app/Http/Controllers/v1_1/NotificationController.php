@@ -54,8 +54,8 @@ class NotificationController extends Controller
             'mission_comment',
             'mission_reply',
             'board_like',
-            'board_comment',
-            'board_reply',
+            // 'board_comment',
+            // 'board_reply',
             'notice_comment',
             'notice_reply'
         ];
