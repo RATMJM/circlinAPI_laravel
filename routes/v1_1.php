@@ -94,6 +94,7 @@ Route::group(['prefix' => 'category', 'as' => 'category.'], function () {
     Route::get('/{town?}', [v1_1\MissionCategoryController::class, 'index'])->where(['town' => 'town'])->name('index');
     Route::get('/{category_id}', [v1_1\MissionCategoryController::class, 'show'])->name('show');
     Route::get('/{category_id}/mission', [v1_1\MissionCategoryController::class, 'mission'])->name('mission');
+    Route::get('/{category_id}/mission', [v1_1\MissionCategoryController::class, 'mission_v2'])->name('mission');
     Route::get('/{category_id}/user', [v1_1\MissionCategoryController::class, 'user'])->name('user');
 });
 Route::post('/event_mission_info', [v1_1\MissionController::class, 'event_mission_info']);
