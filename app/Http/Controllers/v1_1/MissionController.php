@@ -1268,6 +1268,110 @@ class MissionController extends Controller
         return success($data);
     }
 
+    public function ground2_v2(Request $request, $mission_id): array
+    {
+        $user_id = token()->uid;
+
+        $now = now();
+
+        // DB 가져오기
+        $data = MissionGround::select(selectMissionGround_v2($user_id))
+            ->join('missions', function ($query) {
+                $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
+            })
+            ->where('missions.id', $mission_id)
+            ->with('calendar_videos', fn($query) => $query->select([
+                'day',
+                'url',
+                DB::raw("day <= '$now' as is_available"),
+                DB::raw("day = '$now' as is_today"),
+                'is_written' => Feed::selectRaw("COUNT(1) > 0")->where('mission_id', $mission_id)
+                    ->where('feeds.user_id', $user_id)
+                    ->whereColumn(DB::raw("CAST(feeds.created_at as DATE)"), 'day')
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
+            ])->orderBy('day'))
+            ->firstOrFail();
+
+        // D-DAY 계산
+        $diff = now()->setTime(0, 0)->diff((new Carbon($data->started_at))->setTime(0, 0))->days;
+        if ($data->status === 'ongoing') {
+            $data['ground_d_day_title'] = '함께하는 중';
+            $data['ground_d_day_text'] = ($diff + 1) . "일차";
+        } elseif ($data->status === 'end') {
+            $data['ground_d_day_title'] = '종료';
+            $data['ground_d_day_text'] = "";
+        } else {
+            $data['ground_d_day_title'] = '함께하기 전';
+            $data['ground_d_day_text'] = "D - $diff";
+        }
+
+        $data->ground_users_title = $data->is_available ? $data->ground_users_title : '실시간 참여자';
+        $data['users'] = (match ($data->is_available ? $data->ground_users_type : 'recent_bookmark') {
+            'recent_bookmark' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                ->join('users', function ($query) {
+                    $query->on('users.id', 'mission_stats.user_id')->whereNull('users.deleted_at');
+                })
+                ->orderBy('mission_stats.created_at', 'desc'),
+            'recent_complete' => MissionStat::where('mission_stats.mission_id', $mission_id)
+                ->whereNotNull('mission_stats.completed_at')
+                ->join('users', fn($query) => $query->on('users.id', 'user_id')
+                    ->whereNull('users.deleted_at'))
+                ->orderBy('mission_stats.completed_at', 'desc'),
+            'recent_feed' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('users.deleted_at'))
+                ->where('mission_id', $mission_id)
+                ->groupBy('users.id')
+                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+            'recent_feed_place' => Feed::join('feed_missions', 'feed_missions.feed_id', 'feeds.id')
+                ->join('feed_places', 'feed_places.feed_id', 'feeds.id')
+                ->join('users', fn($query) => $query->on('users.id', 'user_id')->whereNull('users.deleted_at'))
+                ->where('mission_id', $mission_id)
+                ->groupBy('users.id')
+                ->orderBy(DB::raw("MAX(feeds.created_at)"), 'desc'),
+            default => null,
+        })?->select([
+            'users.id as user_id',
+            'users.nickname',
+            'users.profile_image',
+            'follower' => Follow::selectRaw("COUNT(distinct user_id)")->whereColumn('target_id', 'users.id'),
+            'is_follow' => Follow::selectRaw("COUNT(1)>0")->whereColumn('target_id', 'users.id')
+                ->where('follows.user_id', $user_id),
+        ])->take(20)->get();
+
+        $replaces = new Replace($data, $data->status);
+
+        $data['my_feeds_count'] = $replaces->get('feeds_count');
+
+        $data['ground_progress_present'] =
+        $data['ground_progress_current'] = round($replaces->get($data->ground_progress_type) ?? 0, 1);
+
+        if ($data->ground_progress_complete_image && $data['ground_progress_present'] >= $data->ground_progress_max) {
+            $data->ground_progress_background_image = $data->ground_progress_complete_image;
+            $data->ground_progress_image = $data->ground_progress_complete_image;
+        }
+
+        $data['record_progress_present'] =
+        $data['record_progress_current'] = round($replaces->get($data->record_progress_type) ?? 0, 1);
+
+        $data->cert_background_image = $data->cert_background_image ? $data->cert_background_image[min(
+            max($data['record_progress_present'], 1), count($data->cert_background_image)
+        ) - 1] : null;
+
+        $data['my_rank'] = MissionRank::join('mission_rank_users', 'mission_rank_id', 'mission_ranks.id')
+            ->where('mission_id', $mission_id)
+            ->where('user_id', $user_id)
+            ->orderBy('mission_ranks.id', 'desc')
+            ->value('rank');
+
+        $data = $replaces->replace($data);
+
+        $text = MissionGroundText::where('mission_id', $mission_id)->orderBy('order')->get()->groupBy('tab');
+        $data['ground_text'] = ($text['ground'] ?? false) ? code_replace(mission_ground_text($text['ground'], $data['is_available'], $mission_id, $user_id), $replaces) : null;
+        $data['record_text'] = ($text['record'] ?? false) ? code_replace(mission_ground_text($text['record'], $data['is_available'], $mission_id, $user_id), $replaces) : null;
+
+        return success($data);
+    }
+
     public function intro($mission_id): array
     {
         $user_id = token()->uid;
@@ -1304,16 +1408,6 @@ class MissionController extends Controller
                     THEN 'before'
                     ELSE 'end'
                 END as `status`"),
-            // DB::raw("CASE WHEN
-            //         ((missions.started_at is null or missions.started_at <= now()) and
-            //         (missions.ended_at is null or missions.ended_at >= now()))
-            //         or
-            //         ((missions.reserve_ended_at <= now()) and (missions.ended_at >= now()))
-            //     THEN 'ongoing'
-            //     WHEN (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
-            //         (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
-            //     THEN 'reserve'
-            //     WHEN missions.reserve_started_at >= now() THEN 'before' ELSE 'end' END as `status`"),
         ])
             ->join('mission_grounds', 'mission_id', 'missions.id')
             ->where('missions.id', $mission_id)
@@ -1377,6 +1471,143 @@ class MissionController extends Controller
 
         return success($data);
     }
+
+
+    public function intro_v2($mission_id): array
+    {
+        $user_id = token()->uid;
+
+        $data = Mission::select([
+            'missions.id',
+            'missions.title',
+            'missions.description',
+            'missions.user_id',
+            'missions.reserve_started_at',
+            'missions.reserve_ended_at',
+            'missions.started_at',
+            'missions.ended_at',
+            'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
+                ->whereColumn('mission_id', 'missions.id'),
+            'missions.thumbnail_image',
+            'mission_grounds.logo_image',
+            'mission_grounds.intro_video',
+            DB::raw(
+                "CASE
+                    WHEN
+                        (missions.reserve_started_at IS NULL) AND
+                        (missions.reserve_ended_at IS NULL)
+                    THEN
+                        CASE
+                            WHEN
+                                missions.started_at > NOW()
+                            THEN 'before_ongoing'
+                            WHEN
+                                (missions.started_at <= NOW()) AND (missions.ended_at > NOW())
+                            THEN 'ongoing'
+                            ELSE 'end'
+                        END
+                    ELSE
+                        CASE
+                            WHEN
+                                missions.reserve_started_at > NOW()
+                            THEN 'before_reserve'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.reserve_ended_at <= missions.started_at) AND
+                                (missions.reserve_started_at <= NOW()) AND
+                                (NOW() < missions.reserve_ended_at)
+                            THEN 'reserve'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.started_at <= missions.reserve_ended_at) AND
+                                (missions.reserve_started_at <= NOW()) AND
+                                (NOW() < missions.started_at)
+                            THEN 'reserve'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.reserve_ended_at < missions.started_at) AND
+                                (missions.reserve_ended_at <= NOW()) AND
+                                (NOW() < missions.started_at)
+                            THEN 'before_ongoing'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.reserve_ended_at <= missions.started_at) AND
+                                (missions.started_at <= NOW()) AND
+                                (NOW() < missions.ended_at)
+                            THEN 'ongoing'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.started_at <= missions.reserve_ended_at) AND
+                                (missions.started_at <= NOW()) AND
+                                (NOW() < missions.ended_at)
+                            THEN 'ongoing'
+                            ELSE 'end'
+                        END
+                END AS `status`"),
+        ])
+            ->join('mission_grounds', 'mission_id', 'missions.id')
+            ->where('missions.id', $mission_id)
+            ->with([
+                'images' => fn($query) => $query->select(['mission_id', 'type', 'image'])
+                    ->orderBy('order')
+                    ->orderBy('id'),
+                'owner' => fn($query) => $query->select([
+                    'id',
+                    'nickname',
+                    'profile_image',
+                    'gender',
+                    'area' => area_like(),
+                    'greeting',
+                    'is_following' => Follow::selectRaw("COUNT(1) > 0")
+                        ->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
+                ])->withCount('followers'),
+                'refundProducts' => fn($query) => $query->select([
+                    'products.id',
+                    'products.code',
+                    'products.name_ko',
+                    'products.thumbnail_image',
+                    'mission_refund_products.limit',
+                    // 'current' => Order::selectRaw("COUNT(distinct orders.id)")
+                    //     ->join('order_products', 'order_id', 'orders.id')
+                    //     ->whereColumn('product_id', 'products.id'),
+                    // // 'current' => Order::selectRaw("CAST(IFNULL(ANY_VALUE(mission_refund_products.limit) - COUNT(orders.id), 0) as unsigned)")
+                    'current' => Order::selectRaw("mission_refund_products.limit  - IF(COUNT(distinct orders.id) IS NULL, 0, COUNT(distinct orders.id))")
+                        ->join('order_products', 'order_id', 'orders.id')
+                        // ->join('mission_refund_products', 'mission_refund_products.product_id', 'order_products.product_id')
+                        ->whereColumn('order_products.product_id', 'products.id'),
+
+                    'products.shipping_fee',
+                    'products.id as product_id',
+                    'brands.name_ko as brand_name',
+                    'products.name_ko as product_name',
+                    'products.price',
+                    'products.sale_price',
+                    'products.status',
+                    DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
+                    DB::raw("'N' as CART_YN"),
+                    DB::raw("1 as qty"),
+                    DB::raw("'' as opt_name1"),
+                    DB::raw("'' as opt_name2"),
+                    DB::raw("'' as opt_name3"),
+                    DB::raw("'' as opt_name4"),
+                    DB::raw("'' as opt_name5"),
+                    DB::raw("0 as opt_price1"),
+                    DB::raw("0 as opt_price2"),
+                    DB::raw("0 as opt_price3"),
+                    DB::raw("0 as opt_price4"),
+                    DB::raw("0 as opt_price5"),
+                    DB::raw("'' as opt1"),
+                    DB::raw("'' as opt2"),
+                    DB::raw("'' as opt3"),
+                    DB::raw("'' as opt4"),
+                    DB::raw("'' as opt5"),
+                ])->join('brands', 'brands.id', 'products.brand_id'),
+            ])
+            ->firstOrFail();
+
+        return success($data);
+    }
+
 
     public function rank(Request $request, $mission_id): array
     {

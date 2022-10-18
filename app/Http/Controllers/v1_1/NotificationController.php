@@ -54,8 +54,8 @@ class NotificationController extends Controller
             'mission_comment',
             'mission_reply',
             'board_like',
-            // 'board_comment',
-            // 'board_reply',
+            // 'board_comment',  // 'OO님 외 N명이 내 게시글에 댓글을 남겼습니다' 형식으로 보이게 하려면 주석 해제
+            // 'board_reply',   // 'OO님 외 N명이 내 게시글에 댓글을 남겼습니다' 형식으로 보이게 하려면 주석 해제
             'notice_comment',
             'notice_reply'
         ];

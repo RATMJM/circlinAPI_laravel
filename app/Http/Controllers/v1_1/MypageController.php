@@ -40,6 +40,11 @@ class MypageController extends Controller
         return (new UserController())->mission($request, token()->uid);
     }
 
+    public function mission_v2(Request $request): array
+    {
+        return (new UserController())->mission_v2($request, token()->uid);
+    }
+
     /**
      * 내가 제작한 미션
      */
@@ -50,6 +55,10 @@ class MypageController extends Controller
     public function created_mission2(Request $request): array
     {
         return (new UserController())->created_mission2($request, token()->uid);
+    }
+    public function created_mission2_v2(Request $request): array
+    {
+        return (new UserController())->created_mission2_v2($request, token()->uid);
     }
 
     /**

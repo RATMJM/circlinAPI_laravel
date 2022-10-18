@@ -70,8 +70,10 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/feed', [v1_1\UserController::class, 'feed'])->name('feed');
         Route::get('/check', [v1_1\UserController::class, 'check'])->name('check');
         Route::get('/mission', [v1_1\UserController::class, 'mission'])->name('mission');
+        Route::get('/mission_v2', [v1_1\UserController::class, 'mission_v2'])->name('mission_v2');
         Route::get('/mission/created', [v1_1\UserController::class, 'created_mission'])->name('mission.created');
         Route::get('/mission/created2', [v1_1\UserController::class, 'created_mission2'])->name('mission.created2');
+        Route::get('/mission/created2_v2', [v1_1\UserController::class, 'created_mission2_v2'])->name('mission.created2_v2');
         Route::get('/follower', [v1_1\UserController::class, 'follower'])->name('follower');
         Route::get('/following', [v1_1\UserController::class, 'following'])->name('following');
         Route::get('/wallpaper', [v1_1\UserController::class, 'wallpaper'])->name('wallpaper');
@@ -126,7 +128,9 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
 
         Route::get('/ground', [v1_1\MissionController::class, 'ground'])->name('ground');
         Route::get('/ground2', [v1_1\MissionController::class, 'ground2'])->name('ground2');
+        Route::get('/ground2_v2', [v1_1\MissionController::class, 'ground2_v2'])->name('ground2_v2');
         Route::get('/intro', [v1_1\MissionController::class, 'intro']);
+        Route::get('/intro_v2', [v1_1\MissionController::class, 'intro_v2']);
         Route::get('/rank', [v1_1\MissionController::class, 'rank']);
 
         Route::group(['prefix' => '/notice'], function () {
@@ -185,8 +189,10 @@ Route::group(['prefix' => 'mypage', 'as' => 'mypage.'], function () {
     Route::get('/feed', [v1_1\MypageController::class, 'feed'])->name('feed');
     Route::get('/check', [v1_1\MypageController::class, 'check'])->name('check');
     Route::get('/mission', [v1_1\MypageController::class, 'mission'])->name('mission');
+    Route::get('/mission_v2', [v1_1\MypageController::class, 'mission_v2'])->name('mission_v2');
     Route::get('/mission/created', [v1_1\MypageController::class, 'created_mission'])->name('mission.created');
     Route::get('/mission/created2', [v1_1\MypageController::class, 'created_mission2'])->name('mission.created2');
+    Route::get('/mission/created2_v2', [v1_1\MypageController::class, 'created_mission2_v2'])->name('mission.created2_v2');
     Route::get('/follower', [v1_1\MypageController::class, 'follower'])->name('follower');
     Route::get('/following', [v1_1\MypageController::class, 'following'])->name('following');
 
