@@ -259,15 +259,15 @@ function is_available(): Expression
     $now = date('Y-m-d H:i:s');
 
     return DB::raw(
-        "(missions.reserve_started_at > '$now') as is_reserve_before" .
+        "(missions.reserve_started_at > '$now') AS is_reserve_before" .
         "," .
-        "(missions.reserve_started_at is null or missions.reserve_started_at<='$now') and
-        (missions.reserve_ended_at is null or missions.reserve_ended_at>'$now') as is_reserve_available" .
+        "(missions.reserve_started_at IS NOT NULL AND missions.reserve_started_at <= '$now') AND
+        (missions.reserve_ended_at IS NOT NULL AND missions.reserve_ended_at > '$now') AS is_reserve_available" .
         "," .
-        "(missions.started_at is null or missions.started_at<='$now') and
-        (missions.ended_at is null or missions.ended_at>'$now') as is_available" .
+        "(missions.started_at IS NULL OR missions.started_at <= '$now') AND
+        (missions.ended_at IS NULL OR missions.ended_at > '$now') AS is_available" .
         "," .
-        "(missions.ended_at < '$now') as is_ended"
+        "(missions.ended_at < '$now') AS is_ended"
     );
 }
 
