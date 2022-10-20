@@ -40,7 +40,7 @@ class MypageController extends Controller
         return (new UserController())->mission($request, token()->uid);
     }
 
-    public function mission_v2(Request $request): array
+    public function challenge(Request $request): array
     {
         return (new UserController())->mission_v2($request, token()->uid);
     }
@@ -56,9 +56,9 @@ class MypageController extends Controller
     {
         return (new UserController())->created_mission2($request, token()->uid);
     }
-    public function created_mission2_v2(Request $request): array
+    public function created_challenge(Request $request): array
     {
-        return (new UserController())->created_mission2_v2($request, token()->uid);
+        return (new UserController())->created_challenge($request, token()->uid);
     }
 
     /**

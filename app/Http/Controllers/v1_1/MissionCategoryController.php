@@ -384,7 +384,7 @@ class MissionCategoryController extends Controller
         ]);
     }
 
-    public function mission_v2(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
+    public function challenge(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
         $user_id = token()->uid;
 

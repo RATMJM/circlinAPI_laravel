@@ -1108,7 +1108,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function mission_v2(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
+    public function challenge(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
     {
         $user_id = token()->uid;
 
@@ -1771,7 +1771,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function created_mission2_v2(Request $request, $user_id, $limit = null): array
+    public function created_challenge(Request $request, $user_id, $limit = null): array
     {
         $uid = token()->uid;
 

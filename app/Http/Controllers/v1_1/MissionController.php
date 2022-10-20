@@ -1268,7 +1268,7 @@ class MissionController extends Controller
         return success($data);
     }
 
-    public function ground2_v2(Request $request, $mission_id): array
+    public function playground(Request $request, $mission_id): array
     {
         $user_id = token()->uid;
 
@@ -1473,7 +1473,7 @@ class MissionController extends Controller
     }
 
 
-    public function intro_v2($mission_id): array
+    public function introduce($mission_id): array
     {
         $user_id = token()->uid;
 
