@@ -108,7 +108,7 @@ class MissionCategoryController extends Controller
 
         $banners = (new BannerController())->category_banner($request, $category_id);
         $mission_total = Mission::where('mission_category_id', $category_id)->count();
-        $missions = $this->mission($request, $category_id, 3)['data']['missions'];
+        $missions = $this->challenge($request, $category_id, 3)['data']['missions'];
 
         return success([
             'result' => true,
