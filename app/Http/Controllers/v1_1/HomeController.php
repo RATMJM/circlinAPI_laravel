@@ -94,7 +94,7 @@ class HomeController extends Controller
             }
 
             // $tmp = $id === 0 ? $category_id : $id;
-            $missions = (new MissionCategoryController())->mission($request, $id, 3)['data'];
+            $missions = (new MissionCategoryController())->challenge($request, $id, 3)['data'];
             $tabs[$id] = [
                 'bookmark' => (new BookmarkController())->index($request, $id, 3)['data']['missions'],
                 'banners' => (new BannerController())->category_banner($request, $id),

@@ -1192,14 +1192,12 @@ class UserController extends Controller
                                 missions.reserve_started_at > NOW()
                             THEN 'before_reserve'
                             WHEN
-                                (missions.reserve_started_at IS NOT NULL AND missions.reserve_ended_at IS NOT NULL) AND
                                 (missions.reserve_started_at < missions.reserve_ended_at) AND
                                 (missions.reserve_ended_at <= missions.started_at) AND
                                 (missions.reserve_started_at <= NOW()) AND
                                 (NOW() < missions.reserve_ended_at)
                             THEN 'reserve'
                             WHEN
-                                (missions.reserve_started_at IS NOT NULL AND missions.reserve_ended_at IS NOT NULL) AND
                                 (missions.reserve_started_at < missions.reserve_ended_at) AND
                                 (missions.started_at <= missions.reserve_ended_at) AND
                                 (missions.reserve_started_at <= NOW()) AND
@@ -1838,14 +1836,12 @@ class UserController extends Controller
                                 missions.reserve_started_at > NOW()
                             THEN 'before_reserve'
                             WHEN
-                                (missions.reserve_started_at IS NOT NULL AND missions.reserve_ended_at IS NOT NULL) AND
                                 (missions.reserve_started_at < missions.reserve_ended_at) AND
                                 (missions.reserve_ended_at <= missions.started_at) AND
                                 (missions.reserve_started_at <= NOW()) AND
                                 (NOW() < missions.reserve_ended_at)
                             THEN 'reserve'
                             WHEN
-                                (missions.reserve_started_at IS NOT NULL AND missions.reserve_ended_at IS NOT NULL) AND
                                 (missions.reserve_started_at < missions.reserve_ended_at) AND
                                 (missions.started_at <= missions.reserve_ended_at) AND
                                 (missions.reserve_started_at <= NOW()) AND
