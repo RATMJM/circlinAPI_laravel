@@ -1108,63 +1108,54 @@ class UserController extends Controller
         ]);
     }
 
-    public function challenge(Request $request, $id = null, $limit = null, $page = null, $sort = null): array
+    public function challenge(Request $request, $user_id): array
     {
-        $user_id = token()->uid;
+        $uid = token()->uid;
 
+        $category_id = $request->get('category_id');
         $limit = $limit ?? $request->get('limit', 20);
-        $page = $page ?? $request->get('page', 0);
-        $sort = $sort ?? $request->get('sort', SORT_RECENT);
+        $page = $request->get('page', 0);
 
-        $local = $request->get('local');
-
-        $missions = Mission::where('is_show', true)
-            ->when($id, function ($query, $id) {
-                $query->whereIn('missions.mission_category_id', Arr::wrap($id))
-                    ->where('is_event', 0);
+        $missions = Mission::whereNotNull('mission_categories.mission_category_id')
+            ->where(function ($query) {
+                $query->where(function ($query) {
+                    $query->whereNull('mission_stats.ended_at')
+                        ->orWhere(Feed::selectRaw("COUNT(1)")->whereColumn('feeds.user_id', 'mission_stats.user_id')
+                            ->whereColumn('feed_missions.mission_id', 'missions.id')
+                            ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'), '>', 0);
+                });
             })
-            ->when($id == 0, function ($query) {
-                $query->where('is_event', 1);
-                /*->orderBy(DB::raw("#(missions.started_at is null or missions.started_at<=now()) and
-                    (missions.ended_at is null or missions.ended_at>now())"), 'desc')*/
-            })
-            ->when($local, function ($query) use ($user_id) {
-                $query->where(User::select('area_code')
-                    ->where('id', $user_id), 'like', DB::raw("CONCAT(mission_areas.area_code,'%')"));
-            })
-            ->leftJoin('mission_areas', 'mission_areas.mission_id', 'missions.id')
-            ->select('missions.id')
-            ->groupBy('missions.id');
+            ->join('mission_categories', 'mission_categories.id', 'missions.mission_category_id')
+            ->join('mission_stats', function ($query) use ($user_id) {
+                $query->on('mission_stats.mission_id', 'missions.id')
+                    ->where('mission_stats.user_id', $user_id);
+            });
 
-        $missions_count = DB::table($missions)->count();
+        $categories = $missions->select([
+            'mission_categories.id',
+            'mission_categories.title',
+            'mission_categories.emoji',
+        ])
+            ->groupBy('mission_categories.id')
+            ->get();
 
-        $missions->select([
-            'missions.id',
-            'bookmarks' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
-                ->whereColumn('mission_id', 'missions.id'),
-        ]);
+        $missions->getQuery()->groups = null;
 
-        if ($sort == SORT_POPULAR) {
-            $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
-        } elseif ($sort == SORT_RECENT) {
-            $missions->orderBy('event_order', 'desc')->orderBy('id', 'desc');
-        } elseif ($sort == SORT_USER) {
-            $missions->orderBy('bookmarks', 'desc')->orderBy('missions.id', 'desc');
-        } elseif ($sort == SORT_COMMENT) {
-            $missions->orderBy(MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'), 'desc');
-        }
+        $missions->when($category_id, function ($query, $category_id) {
+            $query->whereIn('missions.mission_category_id', Arr::wrap($category_id));
+        });
 
-        $missions = $missions->skip($page * $limit)->take($limit);
+        $missions_count = $missions->count(DB::raw("distinct missions.id"));
 
-        $missions = Mission::joinSub($missions, 'm', function ($query) {
-            $query->on('m.id', 'missions.id');
-        })
-            ->join('users', 'users.id', 'missions.user_id')
+        $missions = $missions->join('users', 'users.id', 'missions.user_id')
             // ->leftJoin('mission_products', 'mission_products.mission_id', 'missions.id')
             // ->leftJoin('products', 'products.id', 'mission_products.product_id')
             // ->leftJoin('brands', 'brands.id', 'products.brand_id')
             // ->leftJoin('outside_products', 'outside_products.id', 'mission_products.outside_product_id')
             ->select([
+                'missions.mission_category_id',
+                'mission_categories.title',
+                'mission_categories.emoji',
                 'missions.id',
                 'missions.title',
                 'missions.description',
@@ -1176,69 +1167,8 @@ class UserController extends Controller
                 'missions.is_ocr',
                 'missions.started_at',
                 'missions.ended_at',
-                is_available(),
-                DB::raw(
-                    "CASE
-                    WHEN
-                        (missions.reserve_started_at IS NULL) AND
-                        (missions.reserve_ended_at IS NULL)
-                    THEN
-                        CASE
-                            WHEN
-                                missions.started_at > NOW()
-                            THEN 'before_ongoing'
-                            WHEN
-                                (missions.started_at <= NOW()) AND (missions.ended_at > NOW())
-                            THEN 'ongoing'
-                            ELSE 'end'
-                        END
-                    ELSE
-                        CASE
-                            WHEN
-                                missions.reserve_started_at > NOW()
-                            THEN 'before_reserve'
-                            WHEN
-                                (missions.reserve_started_at < missions.reserve_ended_at) AND
-                                (missions.reserve_ended_at <= missions.started_at) AND
-                                (missions.reserve_started_at <= NOW()) AND
-                                (NOW() < missions.reserve_ended_at)
-                            THEN 'reserve'
-                            WHEN
-                                (missions.reserve_started_at < missions.reserve_ended_at) AND
-                                (missions.started_at <= missions.reserve_ended_at) AND
-                                (missions.reserve_started_at <= NOW()) AND
-                                (NOW() < missions.started_at)
-                            THEN 'reserve'
-                            WHEN
-                                (missions.reserve_started_at < missions.reserve_ended_at) AND
-                                (missions.reserve_ended_at < missions.started_at) AND
-                                (missions.reserve_ended_at <= NOW()) AND
-                                (NOW() < missions.started_at)
-                            THEN 'before_ongoing'
-                            WHEN
-                                (missions.reserve_started_at < missions.reserve_ended_at) AND
-                                (missions.reserve_ended_at <= missions.started_at) AND
-                                (missions.started_at <= NOW()) AND
-                                (NOW() < missions.ended_at)
-                            THEN 'ongoing'
-                            WHEN
-                                (missions.reserve_started_at < missions.reserve_ended_at) AND
-                                (missions.started_at <= missions.reserve_ended_at) AND
-                                (missions.started_at <= NOW()) AND
-                                (NOW() < missions.ended_at)
-                            THEN 'ongoing'
-                            ELSE 'end'
-                        END
-                END AS `status`"),
                 'missions.thumbnail_image',
                 'missions.success_count',
-                'm.bookmarks',
-                'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
-                'users.id as user_id',
-                'users.nickname',
-                'users.profile_image',
-                'users.gender',
-                'area' => area_like(),
                 'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
                     ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
                 'mission_stat_user_id' => MissionStat::withTrashed()
@@ -1247,14 +1177,13 @@ class UserController extends Controller
                     ->where('user_id', $user_id)
                     ->orderBy('id', 'desc')
                     ->limit(1),
-                'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
-                'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
-                    ->where('follows.user_id', $user_id),
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
-                    ->whereColumn('mission_stats.mission_id', 'missions.id'),
-                // 'mission_products.type as product_type',
-                //'mission_products.product_id', 'mission_products.outside_product_id',
-                // DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_brand"),
+                'users.id as user_id',
+                'users.nickname',
+                'users.profile_image',
+                'users.gender',
+                'area' => area_like(),
+                // 'mission_products.type as product_type', //'mission_products.product_id',
+                // DB::raw("IF(mission_products.type='inside', mission_products.product_id, mission_products.outside_product_id) as product_id"),
                 // DB::raw("IF(mission_products.type='inside', brands.name_ko, outside_products.brand) as product_brand"),
                 // DB::raw("IF(mission_products.type='inside', products.name_ko, outside_products.title) as product_title"),
                 // DB::raw("IF(mission_products.type='inside', products.thumbnail_image, outside_products.image) as product_image"),
@@ -1277,17 +1206,39 @@ class UserController extends Controller
                 'place_url' => Place::select('url')->whereColumn('mission_places.mission_id', 'missions.id')
                     ->join('mission_places', 'mission_places.place_id', 'places.id')
                     ->orderBy('mission_places.id')->limit(1),
-                'feeds_count' => FeedMission::selectRaw("COUNT(distinct feeds.id)")
-                    ->whereColumn('mission_id', 'missions.id')
-                    ->join('feeds', function ($query) use ($user_id) {
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $uid)
+                    ->whereColumn('mission_id', 'missions.id'),
+                'today_upload' => FeedMission::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', init_today())
+                    ->whereNull('feeds.deleted_at')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
+                'bookmarks' => MissionStat::withTrashed()->selectRaw("COUNT(distinct user_id)")
+                    ->whereColumn('mission_id', 'missions.id'),
+                'comments' => MissionComment::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id'),
+                'has_check' => FeedMission::selectRaw("COUNT(1) > 0")
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', init_today())
+                    ->whereNull('feeds.deleted_at')
+                    ->join('feeds', 'feeds.id', 'feed_missions.feed_id'),
+                'feed_id' => FeedMission::select('feed_id')
+                    ->whereColumn('feed_missions.mission_id', 'missions.id')->where('feeds.user_id', $user_id)
+                    ->where('feeds.created_at', '>=', init_today())
+                    ->join('feeds', function ($query) use ($uid) {
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at')
-                            ->where(function ($query) use ($user_id) {
-                                // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $user_id);
+                            ->where(function ($query) use ($uid) {
+                                // $query->where('feeds.is_hidden', 0)->orWhere('feeds.user_id', $uid);
                             });
-                    })
-                    ->where('user_id', $user_id),
+                    })->limit(1),
+                'feeds_count' => Feed::selectRaw("COUNT(1)")->whereColumn('mission_id', 'missions.id')
+                    ->where('feeds.user_id', $user_id)
+                    ->join('feed_missions', 'feed_missions.feed_id', 'feeds.id'),
             ])
+            ->groupBy('mission_categories.id', 'missions.id', 'users.id',)
+            ->when($user_id == $uid, function ($query) {
+                $query->orderBy('is_bookmark', 'desc');
+            })
             ->with('refundProducts', fn($query) => $query->select([
                 'products.id',
                 'products.code',
@@ -1360,13 +1311,13 @@ class UserController extends Controller
                 DB::raw("'' as opt4"),
                 DB::raw("'' as opt5"),
             ])->join('brands', 'brands.id', 'products.brand_id'))
-            ->get()
-        ;
+            ->orderBy(DB::raw("MAX(mission_stats.id)"), 'desc')
+            ->skip($page * $limit)->take($limit)->get();
 
         if (count($missions)) {
             [$users, $areas] = null;
-            foreach ($missions as $i => $item) {
-                $item->owner = arr_group($item, [
+            foreach ($missions as $i => $mission) {
+                $mission->owner = arr_group($mission, [
                     'user_id',
                     'nickname',
                     'profile_image',
@@ -1377,33 +1328,33 @@ class UserController extends Controller
                 ]);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id, $user_id));
+                    $users = $users->union(mission_users($mission->id, $uid));
                 } else {
-                    $users = mission_users($item->id, $user_id);
+                    $users = mission_users($mission->id, $uid);
                 }
 
                 if ($areas) {
-                    $areas = $areas->union(mission_areas($item->id));
+                    $areas = $areas->union(mission_areas($mission->id));
                 } else {
-                    $areas = mission_areas($item->id);
+                    $areas = mission_areas($mission->id);
                 }
             }
             $keys = $missions->pluck('id')->toArray();
             $users = $users->get();
-            foreach ($users->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->users = $item;
+            foreach ($users->groupBy('mission_id') as $i => $mission) {
+                $missions[array_search($i, $keys)]->users = $mission;
             }
             $areas = $areas->get();
-            foreach ($areas->groupBy('mission_id') as $i => $item) {
-                $missions[array_search($i, $keys)]->areas = $item->pluck('name');
+            foreach ($areas->groupBy('mission_id') as $i => $mission) {
+                $missions[array_search($i, $keys)]->areas = $mission->pluck('name');
             }
         }
 
         return success([
             'result' => true,
+            'categories' => $categories,
             'missions_count' => $missions_count,
             'missions' => $missions,
-            'user_id' => $user_id
         ]);
     }
 
