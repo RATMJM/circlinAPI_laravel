@@ -1403,6 +1403,7 @@ class UserController extends Controller
             'result' => true,
             'missions_count' => $missions_count,
             'missions' => $missions,
+            'user_id' => $user_id
         ]);
     }
 
