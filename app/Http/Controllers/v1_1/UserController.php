@@ -1171,6 +1171,9 @@ class UserController extends Controller
                 DB::raw(
                     "CASE
                     WHEN
+                        missions.ended_at IS NULL
+                    THEN 'ongoing'
+                    WHEN
                         (missions.reserve_started_at IS NULL) AND
                         (missions.reserve_ended_at IS NULL)
                     THEN
@@ -1811,6 +1814,9 @@ class UserController extends Controller
                 is_available(),
                 DB::raw(
                     "CASE
+                    WHEN
+                        missions.ended_at IS NULL
+                    THEN 'ongoing'
                     WHEN
                         (missions.reserve_started_at IS NULL) AND
                         (missions.reserve_ended_at IS NULL)
