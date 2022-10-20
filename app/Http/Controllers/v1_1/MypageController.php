@@ -42,7 +42,7 @@ class MypageController extends Controller
 
     public function challenge(Request $request): array
     {
-        return (new UserController())->mission_v2($request, token()->uid);
+        return (new UserController())->challenge($request, token()->uid);
     }
 
     /**

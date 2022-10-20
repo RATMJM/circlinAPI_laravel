@@ -51,7 +51,7 @@ function selectMissionGround(int $user_id): array
     ];
 }
 
-function selectMissionGround_v2(int $user_id): array
+function selectMissionPlayground(int $user_id): array
 {
     return [
         'missions.is_ocr',

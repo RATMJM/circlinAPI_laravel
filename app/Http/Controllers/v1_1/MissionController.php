@@ -1275,7 +1275,7 @@ class MissionController extends Controller
         $now = now();
 
         // DB 가져오기
-        $data = MissionGround::select(selectMissionGround_v2($user_id))
+        $data = MissionGround::select(selectMissionPlayground($user_id))
             ->join('missions', function ($query) {
                 $query->on('missions.id', 'mission_grounds.mission_id')->whereNull('deleted_at');
             })
