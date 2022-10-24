@@ -130,7 +130,7 @@ Route::group(['prefix' => 'mission', 'as' => 'mission.'], function () {
         Route::get('/ground2', [v1_1\MissionController::class, 'ground2'])->name('ground2');
         Route::get('/playground', [v1_1\MissionController::class, 'playground'])->name('playground');
         Route::get('/intro', [v1_1\MissionController::class, 'intro']);
-        Route::get('/introduce', [v1_1\MissionController::class, 'introduce']);
+        Route::get('/introduce', [v1_1\MissionController::class, 'introduce'])->name('introduce');
         Route::get('/rank', [v1_1\MissionController::class, 'rank']);
 
         Route::group(['prefix' => '/notice'], function () {
