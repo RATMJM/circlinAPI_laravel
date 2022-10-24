@@ -1494,21 +1494,59 @@ class MissionController extends Controller
             DB::raw(
                 "CASE
                     WHEN
-                        (missions.started_at is null or missions.started_at <= now()) and
-                        (missions.ended_at is null or missions.ended_at >= now())
+                        missions.ended_at IS NULL
                     THEN 'ongoing'
                     WHEN
-                        (missions.reserve_started_at is null or missions.reserve_started_at <= now()) and
-                        (missions.reserve_ended_at is null or missions.reserve_ended_at >= now())
-                    THEN 'reserve'
-                    WHEN
-                        missions.reserve_started_at >= now()
-                    THEN 'before'
-                    WHEN
-                        missions.reserve_started_at <= now() AND missions.reserve_ended_at < now() AND missions.started_at > now()
-                    THEN 'before'
-                    ELSE 'end'
-                END as `status`"),
+                        (missions.reserve_started_at IS NULL) AND
+                        (missions.reserve_ended_at IS NULL)
+                    THEN
+                        CASE
+                            WHEN
+                                missions.started_at > NOW()
+                            THEN 'before_ongoing'
+                            WHEN
+                                (missions.started_at <= NOW()) AND (missions.ended_at > NOW())
+                            THEN 'ongoing'
+                            ELSE 'end'
+                        END
+                    ELSE
+                        CASE
+                            WHEN
+                                missions.reserve_started_at > NOW()
+                            THEN 'before_reserve'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.reserve_ended_at <= missions.started_at) AND
+                                (missions.reserve_started_at <= NOW()) AND
+                                (NOW() < missions.reserve_ended_at)
+                            THEN 'reserve'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.started_at <= missions.reserve_ended_at) AND
+                                (missions.reserve_started_at <= NOW()) AND
+                                (NOW() < missions.started_at)
+                            THEN 'reserve'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.reserve_ended_at < missions.started_at) AND
+                                (missions.reserve_ended_at <= NOW()) AND
+                                (NOW() < missions.started_at)
+                            THEN 'before_ongoing'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.reserve_ended_at <= missions.started_at) AND
+                                (missions.started_at <= NOW()) AND
+                                (NOW() < missions.ended_at)
+                            THEN 'ongoing'
+                            WHEN
+                                (missions.reserve_started_at < missions.reserve_ended_at) AND
+                                (missions.started_at <= missions.reserve_ended_at) AND
+                                (missions.started_at <= NOW()) AND
+                                (NOW() < missions.ended_at)
+                            THEN 'ongoing'
+                            ELSE 'end'
+                        END
+                END AS `status`"),
         ])
             ->join('mission_grounds', 'mission_id', 'missions.id')
             ->where('missions.id', $mission_id)
@@ -1568,147 +1606,10 @@ class MissionController extends Controller
                     DB::raw("'' as opt5"),
                 ])->join('brands', 'brands.id', 'products.brand_id'),
             ])
-            ->firstOrFail();
+            ->first();
 
         return success($data);
     }
-
-    // {
-    //     $user_id = token()->uid;
-    //
-    //     $data = Mission::select([
-    //         'missions.id',
-    //         'missions.title',
-    //         'missions.description',
-    //         'missions.user_id',
-    //         'missions.reserve_started_at',
-    //         'missions.reserve_ended_at',
-    //         'missions.started_at',
-    //         'missions.ended_at',
-    //         'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('mission_stats.user_id', $user_id)
-    //             ->whereColumn('mission_id', 'missions.id'),
-    //         'missions.thumbnail_image',
-    //         'mission_grounds.logo_image',
-    //         'mission_grounds.intro_video',
-    //         DB::raw(
-    //             "CASE
-    //                 WHEN
-    //                     missions.ended_at IS NULL
-    //                 THEN 'ongoing'
-    //                 WHEN
-    //                     (missions.reserve_started_at IS NULL) AND
-    //                     (missions.reserve_ended_at IS NULL)
-    //                 THEN
-    //                     CASE
-    //                         WHEN
-    //                             missions.started_at > NOW()
-    //                         THEN 'before_ongoing'
-    //                         WHEN
-    //                             (missions.started_at <= NOW()) AND (missions.ended_at > NOW())
-    //                         THEN 'ongoing'
-    //                         ELSE 'end'
-    //                     END
-    //                 ELSE
-    //                     CASE
-    //                         WHEN
-    //                             missions.reserve_started_at > NOW()
-    //                         THEN 'before_reserve'
-    //                         WHEN
-    //                             (missions.reserve_started_at < missions.reserve_ended_at) AND
-    //                             (missions.reserve_ended_at <= missions.started_at) AND
-    //                             (missions.reserve_started_at <= NOW()) AND
-    //                             (NOW() < missions.reserve_ended_at)
-    //                         THEN 'reserve'
-    //                         WHEN
-    //                             (missions.reserve_started_at < missions.reserve_ended_at) AND
-    //                             (missions.started_at <= missions.reserve_ended_at) AND
-    //                             (missions.reserve_started_at <= NOW()) AND
-    //                             (NOW() < missions.started_at)
-    //                         THEN 'reserve'
-    //                         WHEN
-    //                             (missions.reserve_started_at < missions.reserve_ended_at) AND
-    //                             (missions.reserve_ended_at < missions.started_at) AND
-    //                             (missions.reserve_ended_at <= NOW()) AND
-    //                             (NOW() < missions.started_at)
-    //                         THEN 'before_ongoing'
-    //                         WHEN
-    //                             (missions.reserve_started_at < missions.reserve_ended_at) AND
-    //                             (missions.reserve_ended_at <= missions.started_at) AND
-    //                             (missions.started_at <= NOW()) AND
-    //                             (NOW() < missions.ended_at)
-    //                         THEN 'ongoing'
-    //                         WHEN
-    //                             (missions.reserve_started_at < missions.reserve_ended_at) AND
-    //                             (missions.started_at <= missions.reserve_ended_at) AND
-    //                             (missions.started_at <= NOW()) AND
-    //                             (NOW() < missions.ended_at)
-    //                         THEN 'ongoing'
-    //                         ELSE 'end'
-    //                     END
-    //             END AS `status`"),
-    //     ])
-    //         ->join('mission_grounds', 'mission_id', 'missions.id')
-    //         ->where('missions.id', $mission_id)
-    //         ->with([
-    //             'images' => fn($query) => $query->select(['mission_id', 'type', 'image'])
-    //                 ->orderBy('order')
-    //                 ->orderBy('id'),
-    //             'owner' => fn($query) => $query->select([
-    //                 'id',
-    //                 'nickname',
-    //                 'profile_image',
-    //                 'gender',
-    //                 'area' => area_like(),
-    //                 'greeting',
-    //                 'is_following' => Follow::selectRaw("COUNT(1) > 0")
-    //                     ->whereColumn('target_id', 'users.id')->where('user_id', $user_id),
-    //             ])->withCount('followers'),
-    //             'refundProducts' => fn($query) => $query->select([
-    //                 'products.id',
-    //                 'products.code',
-    //                 'products.name_ko',
-    //                 'products.thumbnail_image',
-    //                 'mission_refund_products.limit',
-    //                 // 'current' => Order::selectRaw("COUNT(distinct orders.id)")
-    //                 //     ->join('order_products', 'order_id', 'orders.id')
-    //                 //     ->whereColumn('product_id', 'products.id'),
-    //                 // // 'current' => Order::selectRaw("CAST(IFNULL(ANY_VALUE(mission_refund_products.limit) - COUNT(orders.id), 0) as unsigned)")
-    //                 'current' => Order::selectRaw("mission_refund_products.limit  - IF(COUNT(distinct orders.id) IS NULL, 0, COUNT(distinct orders.id))")
-    //                     ->join('order_products', 'order_id', 'orders.id')
-    //                     // ->join('mission_refund_products', 'mission_refund_products.product_id', 'order_products.product_id')
-    //                     ->whereColumn('order_products.product_id', 'products.id'),
-    //
-    //                 'products.shipping_fee',
-    //                 'products.id as product_id',
-    //                 'brands.name_ko as brand_name',
-    //                 'products.name_ko as product_name',
-    //                 'products.price',
-    //                 'products.sale_price',
-    //                 'products.status',
-    //                 DB::raw("CAST(100 - ROUND(products.sale_price / products.price * 100) as char) as discount_rate"),
-    //                 DB::raw("'N' as CART_YN"),
-    //                 DB::raw("1 as qty"),
-    //                 DB::raw("'' as opt_name1"),
-    //                 DB::raw("'' as opt_name2"),
-    //                 DB::raw("'' as opt_name3"),
-    //                 DB::raw("'' as opt_name4"),
-    //                 DB::raw("'' as opt_name5"),
-    //                 DB::raw("0 as opt_price1"),
-    //                 DB::raw("0 as opt_price2"),
-    //                 DB::raw("0 as opt_price3"),
-    //                 DB::raw("0 as opt_price4"),
-    //                 DB::raw("0 as opt_price5"),
-    //                 DB::raw("'' as opt1"),
-    //                 DB::raw("'' as opt2"),
-    //                 DB::raw("'' as opt3"),
-    //                 DB::raw("'' as opt4"),
-    //                 DB::raw("'' as opt5"),
-    //             ])->join('brands', 'brands.id', 'products.brand_id'),
-    //         ])
-    //         ->firstOrFail();
-    //
-    //     return success($data);
-    // }
 
 
     public function rank(Request $request, $mission_id): array
