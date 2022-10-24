@@ -1607,8 +1607,12 @@ class UserController extends Controller
                 'users.profile_image',
                 'users.gender',
                 'area' => area_like(),
-                'mission_stat_id' => MissionStat::withTrashed()->select('id')->whereColumn('mission_id', 'missions.id')
-                    ->where('user_id', $user_id)->orderBy('id', 'desc')->limit(1),
+                'mission_stat_id' => MissionStat::withTrashed()
+                    ->select('id')
+                    ->whereColumn('mission_id', 'missions.id')
+                    ->where('user_id', $user_id)
+                    ->orderBy('id', 'desc')
+                    ->limit(1),
                 'mission_stat_user_id' => MissionStat::withTrashed()
                     ->select('user_id')
                     ->whereColumn('mission_id', 'missions.id')
