@@ -166,7 +166,7 @@ class CommentController extends Controller
 
             DB::commit();
 
-            return success(['result' => true, 'my_total_comment_reward'=>$my_total_comment_reward]);
+            return success(['result' => true, 'id'=>$id, 'my_total_comment_reward'=>$my_total_comment_reward]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);

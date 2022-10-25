@@ -59,24 +59,6 @@ class PointController extends Controller
                 ]);
             }
 
-            // if ($type === 'feed') {
-            //     if ($table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist()
-            //         && PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000) {
-            //         $res = PointController::change_point($target_id, $point += 10, 'feed_check', 'feed', $id);
-            //         $paid_point = $res['success'] && $res['data']['result'];
-            //
-            //         // 지금이 10번째 피드체크 && 100회까지만 지급
-            //         if ($count % 10 === 9 && $count < 100) {
-            //             $res = PointController::change_point($user_id, 10, 'feed_check_reward');
-            //             NotificationController::send($user_id, 'feed_check_reward', null, null, false,
-            //                 ['point' => 10, 'point2' => 100 - ($count+1)]);
-            //             $take_point = $res['success'] && $res['data']['result'];
-            //         }
-            //
-            //         $count += 1;
-            //     }
-            // }
-
             // feed comment 이벤트
             $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_delete', 'feed_check, feed_check_reward'];
             if (in_array($reason, $reasons_with_daily_receive_limit) && $user_id == 61361) {
