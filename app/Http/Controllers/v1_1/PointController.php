@@ -72,7 +72,7 @@ class PointController extends Controller
                 ->orWhere('reason', 'feed_comment_delete')
                 ->orWhere('reason', 'feed_check')
                 ->orWhere('reason', 'feed_check_reward')
-                ->sum('point') ?? 0;
+                ->sum('point');
                 $current_point = (int)$current_point;
 
                 if ($current_point < $daily_limit) {
