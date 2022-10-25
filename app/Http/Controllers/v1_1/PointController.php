@@ -65,12 +65,13 @@ class PointController extends Controller
 
                 $daily_limit = 500;
                 $current_point = PointHistory::where("user_id", $user_id)
-                ->where('created_at', '>=', init_today())
-                ->where('reason', 'feed_comment_reward')
-                ->orWhere('reason', 'feed_comment_delete')
-                ->orWhere('reason', 'feed_check')
-                ->orWhere('reason', 'feed_check_reward')
-                ->sum('point')['point'] ?? 0;
+                    ->where(function($query) {
+                        $query->where('created_at', '>=', init_today())
+                            ->where('reason', 'feed_comment_reward')
+                            ->orWhere('reason', 'feed_comment_delete')
+                            ->orWhere('reason', 'feed_check')
+                            ->orWhere('reason', 'feed_check_reward');
+                    })->sum('point') ?? 0;
                 $current_point = (int)$current_point;
 
                 if ($current_point < $daily_limit) {
