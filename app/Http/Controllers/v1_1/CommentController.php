@@ -136,7 +136,7 @@ class CommentController extends Controller
                             if ($res['data']['result'] === true) {
                                 PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
                             } else {
-                                return success(['fail'=>$res['data']['result']]);
+                                false;
                             }
                         }
                     } else {
@@ -152,7 +152,7 @@ class CommentController extends Controller
                         if ($res['data']['result'] === true) {
                             PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
                         } else {
-                            return success(['fail'=>$res['data']['result']]);
+                            false;
                         }
                     }
                 }
