@@ -133,6 +133,8 @@ class CommentController extends Controller
                             $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
                             if ($res['data']['result'] === true) {
                                 PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
+                            } else {
+                                return success(['fail'=>$res['data']['result']]);
                             }
                         }
                     } else {
@@ -147,6 +149,8 @@ class CommentController extends Controller
 
                         if ($res['data']['result'] === true) {
                             PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
+                        } else {
+                            return success(['fail'=>$res['data']['result']]);
                         }
                     }
                 }

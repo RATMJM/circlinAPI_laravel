@@ -64,9 +64,7 @@ class PointController extends Controller
             if (in_array($reason, $reasons_with_daily_receive_limit) && $user_id == 61361) {
 
                 $daily_limit = 500;
-                $current_point = PointHistory::where([
-                    "user_id" => $user_id,
-                ])
+                $current_point = PointHistory::where("user_id", $user_id)
                 ->where('created_at', '>=', init_today())
                 ->where('reason', 'feed_comment_reward')
                 ->orWhere('reason', 'feed_comment_delete')
