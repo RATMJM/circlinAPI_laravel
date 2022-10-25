@@ -110,21 +110,21 @@ class CommentController extends Controller
 
 
             // feed comment 이벤트
-            if ($table == 'feed' && $user_id == 64477) {
+            if ($table == 'feed' && $user_id == 61361) {
                 $feed_writer_id = $query->where('id', $id)->value('user_id');
                 $my_total_comment_reward = PointHistory::where([
                     "feed_id" => $id,
                     "user_id" => $user_id,
                 ])
                 ->where("reason", 'feed_check')
-                ->where("reason", 'feed_check_reward')
-                ->sum('point');
+                ->orWhere("reason", 'feed_check_reward')
+                ->sum('point') ?? 0;
 
                 // 내 피드 여부 확인
                 if ($feed_writer_id == $user_id) {
-                    // (1)타인이 작성한 댓글인지, (2)대댓글인지 확인
+                    // 내 피드에 댓글을 다는 경우 (1)답글인지 확인, (2)타인이 작성한 댓글에 답글을 남기는 중인지
                     if ($comment_target_id !== $user_id && $data->depth > 0) {
-                        // 댓글 또는 대댓글 남긴 이력 확인: 해당 피드에서의 댓글 이벤트 포인트 총합 > 0
+                        // 댓글 or 답글 남긴 이력 확인: 해당 피드에서의 댓글 이벤트 포인트 총합 > 0
                         if ($my_total_comment_reward > 0 ) {
                             $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
                             if ($res->result === true) {
