@@ -117,7 +117,7 @@ class CommentController extends Controller
                     "user_id" => $user_id,
                 ])
                 ->where("reason", 'feed_comment_reward')
-                ->orWhere("reason", 'feed_comment_withdraw')
+                ->orWhere("reason", 'feed_comment_delete')
                 ->sum('point') ?? 0;
                 $my_total_comment_reward = (int)$my_total_comment_reward;
 
