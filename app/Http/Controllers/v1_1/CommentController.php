@@ -108,7 +108,7 @@ class CommentController extends Controller
             $comment_target_id = $query_comment->where(["{$table}_id" => $id, 'group' => $group, 'depth' => 0])->value('user_id');
             $table_target_id = $table !== 'notice' ? $query->where('id', $id)->value('user_id') : null;
 
-
+            $comment_id = $data['id'];
             // feed comment 이벤트
             if ($table == 'feed' && $user_id == 61361) {
                 $feed_writer_id = $query->where('id', $id)->value('user_id');
@@ -116,9 +116,10 @@ class CommentController extends Controller
                     "feed_id" => $id,
                     "user_id" => $user_id,
                 ])
-                ->where("reason", 'feed_check')
-                ->orWhere("reason", 'feed_check_reward')
+                ->where("reason", 'feed_comment_reward')
+                ->orWhere("reason", 'feed_comment_withdraw')
                 ->sum('point') ?? 0;
+                $my_total_comment_reward = (int)$my_total_comment_reward;
 
                 // 내 피드 여부 확인
                 if ($feed_writer_id == $user_id) {
@@ -126,12 +127,12 @@ class CommentController extends Controller
                     if ($comment_target_id !== $user_id && $data->depth > 0) {
                         // 댓글 or 답글 남긴 이력 확인: 해당 피드에서의 댓글 이벤트 포인트 총합 > 0
                         if ($my_total_comment_reward > 0 ) {
-                            $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
-                            if ($res->result === true) {
-                                PointHistory::where('id', $res->id)->update(['feed_id' => $id]);
-                            }
-                        } else {
                             false;
+                        } else {
+                            $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
+                            if ($res['data']['result'] === true) {
+                                PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
+                            }
                         }
                     } else {
                         false;
@@ -139,12 +140,13 @@ class CommentController extends Controller
                 } else {
                     // 댓글 또는 대댓글 남긴 이력 확인: 해당 피드에서의 댓글 이벤트 포인트 총합 > 0
                     if ($my_total_comment_reward > 0 ) {
-                        $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
-                        if ($res->result === true) {
-                            PointHistory::where('id', $res->id)->update(['feed_id' => $id]);
-                        }
-                    } else {
                         false;
+                    } else {
+                        $res = PointController::change_point($user_id, 1, 'feed_comment_reward', 'feed_comment');
+
+                        if ($res['data']['result'] === true) {
+                            PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
+                        }
                     }
                 }
             }
@@ -164,7 +166,7 @@ class CommentController extends Controller
 
             DB::commit();
 
-            return success(['result' => true]);
+            return success(['result' => true, 'my_total_comment_reward'=>$my_total_comment_reward]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
@@ -173,6 +175,8 @@ class CommentController extends Controller
 
     public function destroy($table, $id, $comment_id)
     {
+        $user_id = token()->uid;
+
         try {
             $data = match ($table) {
                 'feed' => FeedComment::where(['id' => $comment_id, "{$table}_id" => $id])->first(),
@@ -195,6 +199,18 @@ class CommentController extends Controller
                     'uid' => token()->uid,
                     'user_id' => $data->user_id
                 ]);
+            }
+
+            // feed comment 이벤트
+            if ($table == 'feed' && $user_id == 61361) {
+                $rewarded_history = PointHistory::where(['feed_id'=>$id, 'feed_comment_id'=>$comment_id, 'user_id'=>$user_id])->select('id')->get();
+                // return success(['rewarded_history'=> $rewarded_history]);
+                if (count($rewarded_history) > 0) {
+                    $res = PointController::change_point($user_id, -1, 'feed_comment_delete', 'feed_comment');
+                    if ($res['data']['result'] === true) {
+                        PointHistory::where('id', $res['data']['id'])->update(['feed_id' => $id, 'feed_comment_id'=>$comment_id]);
+                    }
+                }
             }
 
             $data->delete();

@@ -78,8 +78,8 @@ class PointController extends Controller
             // }
 
             // feed comment 이벤트
-            $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_withdraw', 'feed_check, feed_check_reward'];
-            if (in_array($reason, $reasons_with_daily_receive_limit) && $user_id=61361) {
+            $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_delete', 'feed_check, feed_check_reward'];
+            if (in_array($reason, $reasons_with_daily_receive_limit)) {
 
                 $daily_limit = 500;
                 $current_point = PointHistory::where([
@@ -88,6 +88,7 @@ class PointController extends Controller
                 ])
                 ->where('created_at', '>=', init_today())
                 ->sum('point');
+                $current_point = (int)$current_point;
 
                 if ($current_point < $daily_limit) {
                     // 일 획득 총합이 500 미만이라면 추가 지급 가능
@@ -100,7 +101,7 @@ class PointController extends Controller
                     }
                 } else {
                     // 일 획득 총합이 500 이상이므로 더 이상 포인트 지급 불가
-                    return success(['result' => true]);
+                    return success(['result' => false]);
                 }
             }
 
@@ -118,7 +119,7 @@ class PointController extends Controller
                 $data = Arr::collapse([$data, ["{$type}_id" => $id]]);
             }
 
-            $inserted_point_history_id = PointHistory::create($data);
+            $inserted_point_history_id = PointHistory::create($data)['id'];
 
             DB::commit();
 
