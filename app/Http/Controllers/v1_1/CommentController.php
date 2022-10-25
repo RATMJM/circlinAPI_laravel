@@ -118,7 +118,8 @@ class CommentController extends Controller
                 ])
                 ->where("reason", 'feed_comment_reward')
                 ->orWhere("reason", 'feed_comment_delete')
-                ->sum('point');
+                ->sum('point')['point'] ?? 0;
+                // return success(['my_total_comment_reward'=> $my_total_comment_reward]);
                 $my_total_comment_reward = (int)$my_total_comment_reward;
 
                 // 내 피드 여부 확인
