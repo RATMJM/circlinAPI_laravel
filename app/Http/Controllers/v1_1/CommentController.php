@@ -111,6 +111,7 @@ class CommentController extends Controller
             $table_target_id = $table !== 'notice' ? $query->where('id', $id)->value('user_id') : null;
 
             $comment_id = $data['id'];
+            $comment_event_reward_approved = false;
             // feed comment 이벤트
             if ($table == 'feed' && $user_id == 61361) {
                 $feed_writer_id = $query->where('id', $id)->value('user_id');
@@ -139,6 +140,7 @@ class CommentController extends Controller
                                         'feed_comment_id'=>$comment_id
                                     ]);
                             }
+                            $comment_event_reward_approved = true;
                         }
                     }
                 } else {
@@ -151,6 +153,7 @@ class CommentController extends Controller
                                     'feed_id' => $id,
                                     'feed_comment_id'=>$comment_id
                                 ]);
+                            $comment_event_reward_approved = true;
                         }
                     }
                 }
@@ -170,7 +173,7 @@ class CommentController extends Controller
 
             DB::commit();
 
-            return success(['result' => true, 'comment_id'=>$comment_id]);
+            return success(['result' => true, '$comment_event_reward_approved'=>$comment_event_reward_approved]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
