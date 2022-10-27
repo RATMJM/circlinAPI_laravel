@@ -173,7 +173,14 @@ class CommentController extends Controller
 
             DB::commit();
 
-            return success(['result' => true, '$comment_event_reward_approved'=>$comment_event_reward_approved]);
+            $today_gathered_point = PointController::today_gatherable_point($user_id)['today_gathered_point'];
+
+
+            return success([
+                'result' => true,
+                'comment_event_reward_approved' => $comment_event_reward_approved,
+                'today_gathered_point' => $today_gathered_point
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
