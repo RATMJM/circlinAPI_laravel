@@ -163,6 +163,8 @@ class LikeController extends Controller
                             ['point' => $real_gathered_point, 'point2' => $gatherable_point]); // ['point' => 10, 'point2' => 100 - ($count + 1)]);
                         $take_point = $res['success'] && $res['data']['result'];
                     }
+                    $real_gathered_point = 0;
+                    $real_gave_point = 0;
                     $count += 1;
                 }
 
