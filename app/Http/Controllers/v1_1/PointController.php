@@ -34,6 +34,30 @@ class PointController extends Controller
     }
 
     /**
+     * 오늘 모은 포인트 확인
+     *
+     * @param int $user_id
+     *
+     * @return array
+     */
+    public function today_gatherable_point(int $user_id): array
+    {
+        $today_gathered_point = PointHistory::where("user_id", $user_id)
+                ->where(function($query) {
+                    $query->where('created_at', '>=', init_today())
+                        ->where('reason', 'feed_comment_reward')
+                        ->orWhere('reason', 'feed_comment_delete')
+                        ->orWhere('reason', 'feed_check')
+                        ->orWhere('reason', 'feed_check_reward');
+                })
+                ->sum('point') ?? 0;
+        $today_gathered_point = (int)$today_gathered_point;
+        $daily_limit = 500;
+
+        return ['daily_limit' => $daily_limit, 'today_gathered_point' => $today_gathered_point];
+    }
+
+    /**
      * 포인트 지급 / 차감 ($point 양수, 음수에 따라)
      *
      * @param int $user_id
@@ -63,22 +87,14 @@ class PointController extends Controller
             $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_delete', 'feed_check, feed_check_reward'];
             if (in_array($reason, $reasons_with_daily_receive_limit) && $user_id == 61361) {
 
-                $daily_limit = 500;
-                $current_point = PointHistory::where("user_id", $user_id)
-                    ->where(function($query) {
-                        $query->where('created_at', '>=', init_today())
-                            ->where('reason', 'feed_comment_reward')
-                            ->orWhere('reason', 'feed_comment_delete')
-                            ->orWhere('reason', 'feed_check')
-                            ->orWhere('reason', 'feed_check_reward');
-                    })->sum('point') ?? 0;
-                $current_point = (int)$current_point;
+                $daily_limit = (new PointController)-> today_gatherable_point($user_id)['daily_limit'];
+                $today_gathered_point = (new PointController)-> today_gatherable_point($user_id)['today_gathered_point'];
 
-                if ($current_point < $daily_limit) {
+                if ($today_gathered_point < $daily_limit) {
                     // 일 획득 총합이 500 미만이라면 추가 지급 가능
-                    if ($current_point + $point > $daily_limit) {
+                    if ($today_gathered_point + $point > $daily_limit) {
                         // 이번 요청의 $point 금액을 더한 일 획득 총합이 500 초과가 되면 안됨. 이번 요청의 $point 금액을 더한 결과가 500이 되도록 $point 액수를 조정
-                        $point = $daily_limit - $current_point;
+                        $point = $daily_limit - $today_gathered_point;
                     } else {
                         // Do nothing
                         false;

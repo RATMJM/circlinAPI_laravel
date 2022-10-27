@@ -173,7 +173,7 @@ class CommentController extends Controller
 
             DB::commit();
 
-            $today_gathered_point = PointController::today_gatherable_point($user_id)['today_gathered_point'];
+            $today_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
 
 
             return success([

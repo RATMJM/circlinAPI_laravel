@@ -167,7 +167,7 @@ class LikeController extends Controller
                     // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
                     default => null,
                 };
-                $today_gathered_point = PointController::today_gatherable_point($user_id)['today_gathered_point'];
+                $today_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
 
                 return success([
                     'paid_count' => $count ?? 0,
