@@ -43,12 +43,13 @@ class PointController extends Controller
     public function today_gatherable_point(int $user_id): array
     {
         $today_gathered_point = PointHistory::where("user_id", $user_id)
+                ->where('created_at', '>=', init_today())
                 ->where(function($query) {
-                    $query->where('created_at', '>=', init_today())
-                        ->where('reason', 'feed_comment_reward')
+                    $query->where('reason', 'feed_comment_reward')
                         ->orWhere('reason', 'feed_comment_delete')
                         ->orWhere('reason', 'feed_check')
-                        ->orWhere('reason', 'feed_check_reward');
+                        ->orWhere('reason', 'feed_check_reward')
+                    ;
                 })
                 ->sum('point') ?? 0;
         $today_gathered_point = (int)$today_gathered_point;
