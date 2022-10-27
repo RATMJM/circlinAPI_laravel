@@ -179,6 +179,7 @@ class CommentController extends Controller
             return success([
                 'result' => true,
                 'comment_event_reward_approved' => $comment_event_reward_approved,
+                'real_gathered_point' => $comment_event_reward_approved ? 1 : 0,
                 'today_gathered_point' => $today_gathered_point
             ]);
         } catch (Exception $e) {

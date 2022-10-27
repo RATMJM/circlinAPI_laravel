@@ -134,11 +134,12 @@ class LikeController extends Controller
                 if (
                     $table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist() // 해당 피드를 좋아요 하지 않은 상태이고
                     &&
-                    $table_like->withTrashed()->where('user_id', $user_id)
+                    $table_like->withTrashed()
+                        ->where('user_id', $user_id)
                         ->where('point', '>', 0)
                         ->where('feed_likes.created_at', '>=', init_today())
                         ->where($table->select('user_id')->whereColumn("{$type}s.id", "{$type}_likes.{$type}_id"), $data->user_id)
-                        ->doesntExist() // 오늘 좋아요 누른 것들의
+                        ->doesntExist()
                     &&
                     $targets_current_gathered_point > 0
                     // PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000
@@ -219,7 +220,8 @@ class LikeController extends Controller
                             ['point' => 10, 'point2' => 100 - ($count+1)]);
                         $take_point = $res['success'] && $res['data']['result'];
                     }
-
+                    $real_gathered_point = 0;
+                    $real_gave_point = 0;
                     $count += 1;
                 }
 
@@ -227,7 +229,7 @@ class LikeController extends Controller
 
                 $res = match ($type) {
                     'feed' => $paid_point ?
-                        NotificationController::send($data->user_id, 'feed_check', $user_id, $id, true, ['point' => $real_gave_point])
+                        NotificationController::send($data->user_id, 'feed_check', $user_id, $id, true, ['point' => $point])
                         : null,
                     // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
                     default => null,
