@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     v1_1\PushController::gcm_notify(
-        [64477],
+        [4340],
         'test: push with image',
-        'push test5',
+        'push test25',
        "https://circlin-app.s3.ap-northeast-2.amazonaws.com/SNS/4400/3wm7F1dW8yZRp7tX4F3TlhvC1oM8oopkuQRhie3d.jpg"
 //         'https://firebasestorage.googleapis.com/v0/b/circlinpushserver.appspot.com/o/yTxMrZFzeyR381fTQ5s21vhhQgjitCwS433Smsse.jpeg?alt=media&token=266c9383-4eac-49b3-8f57-81d09da61c1f'
     );

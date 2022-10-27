@@ -115,14 +115,44 @@ class LikeController extends Controller
             $paid_point = false; // 대상에게 포인트 줬는지
             $take_point = false; // 10번 체크해서 포인트 받았는지
 
-            if ($user_id == 61361) {
-                // 일 수취 가능 한도 1000P(100회 체크카운트) 제한을 해제한 코드
+            // 일 수취 가능 한도 1000P(100회 체크카운트) 제한을 해제한 코드
+            if ($user_id == 61361 && $type === 'feed') {
+                $count = FeedLike::withTrashed()
+                    ->where('user_id', $user_id)
+                    ->where('point', '>', 0)
+                    ->where('feed_likes.created_at', '>=', init_today())
+                    ->count(); // 좋아요 한 횟수(취소한 것들은 제외)
+                $daily_point_limit = (new PointController)->today_gatherable_point($user_id)['daily_limit'];
+                $current_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
+                $gatherable_point = $daily_point_limit - $current_gathered_point;
 
+                if (
+                    $table_like->withTrashed()->where(["{$type}_id" => $id, 'user_id' => $user_id])->doesntExist() // 해당 피드를 좋아요 하지 않은 상태이고
+                    &&
+                    $table_like->withTrashed()->where('user_id', $user_id)
+                        ->where('point', '>', 0)
+                        ->where('feed_likes.created_at', '>=', init_today())
+                        ->where($table->select('user_id')->whereColumn("{$type}s.id", "{$type}_likes.{$type}_id"), $data->user_id)
+                        // ->where(Feed() ->
+                        ->doesntExist() // 오늘 좋아요 누른 것들의
+                    &&
+                    PointHistory::where(["{$type}_id" => $id, 'reason' => 'feed_check'])->sum('point') < 1000
+                    &&
+                    Feed::where('id', $id)->first()->created_at >= init_today(time() - (86400))
+                ) {
+                    $res = PointController::change_point($target_id, $point += 10, 'feed_check', 'feed', $id);
+                    $paid_point = $res['success'] && $res['data']['result'];
 
-
-
+                    // 지금이 10번째 피드체크 && 오늘 하루 획득한 액수가 획득 가능한 포인트 상한선보다 낮을 경우만 지급
+                    if ($count % 10 === 9 && $gatherable_point > 0) {
+                        $res = PointController::change_point($user_id, 10, 'feed_check_reward');
+                        NotificationController::send($user_id, 'feed_check_reward', null, null, false,
+                            ['point' => 10, 'point2' => $gatherable_point]); // ['point' => 10, 'point2' => 100 - ($count + 1)]);
+                        $take_point = $res['success'] && $res['data']['result'];
+                    }
+                    $count += 1;
+                }
             } else {
-                if ($type === 'feed') {
                     $count = FeedLike::withTrashed()
                         ->where('user_id', $user_id)
                         ->where('point', '>', 0)
@@ -156,27 +186,26 @@ class LikeController extends Controller
 
                         $count += 1;
                     }
-                }
-
-                $data_like = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
-
-                $res = match ($type) {
-                    'feed' => $paid_point ?
-                        NotificationController::send($data->user_id, 'feed_check', $user_id, $id, true, ['point' => 10])
-                        : null,
-                    // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
-                    default => null,
-                };
-                $today_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
-
-                return success([
-                    'paid_count' => $count ?? 0,
-                    'paid_point' => $paid_point,
-                    'result' => (bool)$data_like,
-                    'take_point' => $take_point,
-                    'today_gathered_point' => $today_gathered_point
-                ]);
             }
+
+            $data_like = $table_like->create(["{$type}_id" => $id, 'user_id' => $user_id, 'point' => $point]);
+
+            $res = match ($type) {
+                'feed' => $paid_point ?
+                    NotificationController::send($data->user_id, 'feed_check', $user_id, $id, true, ['point' => 10])
+                    : null,
+                // 'mission' => NotificationController::send($data->user_id, 'mission_like', $user_id, $id, true),
+                default => null,
+            };
+            $today_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
+
+            return success([
+                'paid_count' => $count ?? 0,
+                'paid_point' => $paid_point,
+                'result' => (bool)$data_like,
+                'take_point' => $take_point,
+                'today_gathered_point' => $today_gathered_point
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);

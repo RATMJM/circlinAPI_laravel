@@ -49,7 +49,7 @@ class PushController extends Controller
                 $users_group = $users->groupBy('device_type');
                 foreach ($users_group as $i => $users) {
                     $res = self::send_gcm_notify($i, $users->pluck('device_token')->toArray(), $title, $message, $tag, $id, $image);
-
+                    // send_gcm_notify($type, $reg_id, $title, $message, $tag, $id, $image = '')
                     $res['json'] = Arr::except($res['json'], 'registration_ids');
 
                     foreach ($users as $j => $user) {
@@ -99,7 +99,8 @@ class PushController extends Controller
         $arrayToSend = ['registration_ids' => $reg_id, 'notification' => $notification, 'priority' => 'high', 'data' => $data];
 
         $headers = [
-            'Authorization: key=AAAALKBQqQQ:APA91bHBUnrkt4QVKuO6FR0ZikkWMQ2zvr_2k7JCkIo4DVBUOB3HUZTK5pH-Rug8ygfgtjzb2lES3SaqQ9Iq8YhmU-HwdbADN5dvDdbq0IjrOPKzqNZ2tTFDWgMQ9ckPVQiBj63q9pGq',
+            // 'Authorization: key=AAAALKBQqQQ:APA91bHBUnrkt4QVKuO6FR0ZikkWMQ2zvr_2k7JCkIo4DVBUOB3HUZTK5pH-Rug8ygfgtjzb2lES3SaqQ9Iq8YhmU-HwdbADN5dvDdbq0IjrOPKzqNZ2tTFDWgMQ9ckPVQiBj63q9pGq',
+            'Authorization: key=AAAALKBQqQQ:APA91bG5bgZMIG-HLGbq17sgWqT8ltsBtQ_qE48XyI_DGBZ83VA1SxjKR_Umj-X8tkigQ1pDJ7IIoPcbCiWn4cdTqovFAgfBnILp4lwD2sJNfmpTu-GFyfzzR21rDqmyzwa6NpQpIL_k',
             'Content-Type: application/json',
         ];
         $ch = curl_init();
