@@ -146,13 +146,15 @@ class LikeController extends Controller
                     // 지금이 10번째 피드체크 && 오늘 하루 획득한 액수가 획득 가능한 포인트 상한선보다 낮을 경우만 지급
                     if ($count % 10 === 9 && $gatherable_point > 0) {
                         $res = PointController::change_point($user_id, 10, 'feed_check_reward');
+                        // 위에서 10p 지급을 요청했지만, 실제로는 획득 가능한 포인트 액수를 따르므로 그보다 적을수 있다.
+                        $real_paid_point_to_myself = $res['point'];
+
                         $daily_point_limit = (new PointController)->today_gatherable_point($user_id)['daily_limit'];
                         $current_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
                         $gatherable_point = $daily_point_limit - $current_gathered_point;
 
-
                         NotificationController::send($user_id, 'feed_check_reward', null, null, false,
-                            ['point' => 10, 'point2' => $gatherable_point]); // ['point' => 10, 'point2' => 100 - ($count + 1)]);
+                            ['point' => $real_paid_point_to_myself, 'point2' => $gatherable_point]); // ['point' => 10, 'point2' => 100 - ($count + 1)]);
                         $take_point = $res['success'] && $res['data']['result'];
                     }
                     $count += 1;
@@ -183,6 +185,7 @@ class LikeController extends Controller
                         // 지금이 10번째 피드체크 && 100회까지만 지급
                         if ($count % 10 === 9 && $count < 100) {
                             $res = PointController::change_point($user_id, 10, 'feed_check_reward');
+
                             NotificationController::send($user_id, 'feed_check_reward', null, null, false,
                                 ['point' => 10, 'point2' => 100 - ($count+1)]);
                             $take_point = $res['success'] && $res['data']['result'];

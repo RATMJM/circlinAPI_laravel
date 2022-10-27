@@ -124,7 +124,7 @@ class PointController extends Controller
 
             DB::commit();
 
-            return success(['result' => true, 'id' => $inserted_point_history_id]);
+            return success(['result' => true, 'id' => $inserted_point_history_id, 'point' => $point]);
         } catch (Exception $e) {
             DB::rollBack();
             return exceped($e);
