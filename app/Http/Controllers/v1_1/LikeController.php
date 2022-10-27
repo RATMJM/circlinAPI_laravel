@@ -146,14 +146,14 @@ class LikeController extends Controller
                     Feed::where('id', $id)->first()->created_at >= init_today(time() - (86400))
                 ) {
                     $res = PointController::change_point($target_id, $real_gave_point, 'feed_check', 'feed', $id);
-                    $real_gave_point = $res['point'];
                     $paid_point = $res['success'] && $res['data']['result'];
+                    $real_gave_point = $paid_point ? $res['data']['point'] : 0;  //$res['point']
 
                     // 지금이 10번째 피드체크 && 오늘 하루 획득한 액수가 획득 가능한 포인트 상한선보다 낮을 경우만 지급
                     if ($count % 10 === 9 && $my_gatherable_point > 0) {
                         $res = PointController::change_point($user_id, $real_gathered_point, 'feed_check_reward');
                         // 위에서 10p 지급을 요청했지만, 실제로는 획득 가능한 포인트 액수를 따르므로 그보다 적을수 있다.
-                        $real_gathered_point = $res['point'];
+                        $real_gathered_point = $res['data']['result'] ? $res['data']['point'] : 0;
 
                         $daily_point_limit = (new PointController)->today_gatherable_point($user_id)['daily_limit'];
                         $current_gathered_point = (new PointController)->today_gatherable_point($user_id)['today_gathered_point'];
