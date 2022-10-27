@@ -47,7 +47,7 @@ class PointController extends Controller
                 ->where(function($query) {
                     $query->where('reason', 'feed_comment_reward')
                         ->orWhere('reason', 'feed_comment_delete')
-                        // ->orWhere('reason', 'feed_check')
+                        ->orWhere('reason', 'feed_check')
                         ->orWhere('reason', 'feed_check_reward')
                     ;
                 })
@@ -85,7 +85,7 @@ class PointController extends Controller
             }
 
             // feed comment 이벤트
-            $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_delete', 'feed_check_reward']; // feed_check?
+            $reasons_with_daily_receive_limit = ['feed_comment_reward', 'feed_comment_delete', 'feed_check', 'feed_check_reward']; // feed_check?
             if (in_array($reason, $reasons_with_daily_receive_limit) && $user_id == 61361) {
 
                 $daily_limit = (new PointController)-> today_gatherable_point($user_id)['daily_limit'];
