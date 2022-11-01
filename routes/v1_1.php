@@ -72,7 +72,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/challenge', [v1_1\UserController::class, 'challenge'])->name('challenge');
         Route::get('/mission/created', [v1_1\UserController::class, 'created_mission'])->name('mission.created');
         Route::get('/mission/created2', [v1_1\UserController::class, 'created_mission2'])->name('mission.created2');
-        Route::get('/challenge/created', [v1_1\MypageController::class, 'created_challenge'])->name('challenge.created');
+        Route::get('/challenge/created', [v1_1\UserController::class, 'created_challenge'])->name('challenge.created');
         Route::get('/follower', [v1_1\UserController::class, 'follower'])->name('follower');
         Route::get('/following', [v1_1\UserController::class, 'following'])->name('following');
         Route::get('/wallpaper', [v1_1\UserController::class, 'wallpaper'])->name('wallpaper');

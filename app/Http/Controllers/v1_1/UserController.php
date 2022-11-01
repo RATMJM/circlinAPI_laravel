@@ -1786,7 +1786,7 @@ class UserController extends Controller
 
     public function created_challenge(Request $request, $user_id, $limit = null): array
     {
-        $uid = token()->uid;
+        // $uid = token()->uid;
 
         $limit = $limit ?? $request->get('limit', 20);
         $page = $request->get('page', 0);
@@ -1893,7 +1893,7 @@ class UserController extends Controller
                 'followers' => Follow::selectRaw("COUNT(1)")->whereColumn('target_id', 'users.id'),
                 'is_following' => Follow::selectRaw("COUNT(1) > 0")->whereColumn('target_id', 'users.id')
                     ->where('follows.user_id', $user_id),
-                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $uid)
+                'is_bookmark' => MissionStat::selectRaw('COUNT(1) > 0')->where('user_id', $user_id)
                     ->whereColumn('mission_stats.mission_id', 'missions.id'),
                 // 'mission_products.type as product_type',
                 //'mission_products.product_id', 'mission_products.outside_product_id',
@@ -1926,7 +1926,7 @@ class UserController extends Controller
                         $query->on('feeds.id', 'feed_missions.feed_id')
                             ->whereNull('feeds.deleted_at');
                     })
-                    ->where('user_id', $uid),
+                    ->where('user_id', $user_id),
             ])
             ->with('refundProducts', fn($query) => $query->select([
                 'products.id',
@@ -2027,9 +2027,9 @@ class UserController extends Controller
                 ]);
 
                 if ($users) {
-                    $users = $users->union(mission_users($item->id, $uid));
+                    $users = $users->union(mission_users($item->id, $user_id));
                 } else {
-                    $users = mission_users($item->id, $uid);
+                    $users = mission_users($item->id, $user_id);
                 }
 
                 if ($areas) {
