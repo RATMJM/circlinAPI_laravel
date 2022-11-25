@@ -140,7 +140,7 @@ class FeedController extends Controller
             // 이미지 및 동영상 업로드
             if ($files) {
                 foreach (Arr::wrap($files) as $i => $file) {
-                    $uploaded_thumbnail = '';
+                    // $uploaded_thumbnail = '';
                     if (str_starts_with($file->getMimeType(), 'image/')) {
                         $type = 'image';
 
@@ -166,16 +166,16 @@ class FeedController extends Controller
                         $type = 'video';
                         $uploaded_file = Storage::disk('s3')->put("/SNS/$user_id", $file);
 
-                        $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
+                        // $thumbnail = "Image/SNS/$user_id/thumb_" . $file->hashName();
 
-                        $host = config('filesystems.disks.ftp3.host');
-                        $username = config('filesystems.disks.ftp3.username');
-                        $password = config('filesystems.disks.ftp3.password');
-                        $url = image_url($uploaded_file);
-                        $url2 = image_url($thumbnail);
-                        if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $feed->id)) {
-                            $uploaded_thumbnail = $thumbnail;
-                        }
+                        // $host = config('filesystems.disks.ftp3.host');
+                        // $username = config('filesystems.disks.ftp3.username');
+                        // $password = config('filesystems.disks.ftp3.password');
+                        // $url = image_url($uploaded_file);
+                        // $url2 = image_url($thumbnail);
+                        // if (uploadVideoResizing($user_id, $host, $username, $password, $url, $url2, $feed->id)) {
+                        //     $uploaded_thumbnail = $thumbnail;
+                        // }
                     } else {
                         continue;
                     }
@@ -185,7 +185,7 @@ class FeedController extends Controller
                         'order' => $i,
                         'type' => $type,
                         'image' => image_url($uploaded_file),
-                        'thumbnail_image' => image_url($uploaded_thumbnail ?: $uploaded_file),
+                        // 'thumbnail_image' => image_url($uploaded_thumbnail ?: $uploaded_file),
                     ]);
                 }
             }
