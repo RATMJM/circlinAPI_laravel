@@ -198,6 +198,7 @@ class AuthController extends Controller
             $phone = $request->get('phone') == 'null' ? null : $request->get('phone');
             $sns_email = $request->get('snsEmail'); // SNS 플랫폼별 유저의 제공동의 하에 주어지는, 'id@xxxx.com' 형태의 실제 email 주소값
             $login_method = $request->get('loginMethod');
+            $device_type = $request->get('deviceType');
 
             $user = User::where(['email' => $email])->first();
             if (isset($user)) {
@@ -215,6 +216,7 @@ class AuthController extends Controller
                                 'phone' => $phone,
                                 'sns_email' => $sns_email,
                                 'login_method' => $login_method,
+                                'device_type' => $device_type
                             ])
                         : null;
                 } else if ($sns_email == null & $phone != null) {
@@ -225,6 +227,7 @@ class AuthController extends Controller
                                 'phone' => $phone,
                                 'sns_email' => $sns_email,
                                 'login_method' => $login_method,
+                                'device_type' => $device_type
                             ])
                         : null;
                 } else {
@@ -233,12 +236,22 @@ class AuthController extends Controller
                             'phone' => $phone,
                             'sns_email' => $sns_email,
                             'login_method' => $login_method,
+                            'device_type' => $device_type
                         ]);
                 }
                 return $this->login_user($user);
             } else {
                 // 신규 유저
-                return success(['result' => false, 'token' => null, 'user' => null, 'email' => $email, 'phone'=>$phone, 'snsEmail'=>$sns_email, 'loginMethod'=> $login_method]);
+                return success([
+                    'result' => false,
+                    'token' => null,
+                    'user' => null,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'snsEmail' => $sns_email,
+                    'loginMethod'=> $login_method,
+                    'device_type' => $device_type
+                ]);
             }
         } catch (Exception $e) {
             return exceped($e);
