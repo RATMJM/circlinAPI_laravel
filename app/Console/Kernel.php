@@ -29,24 +29,24 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // 유저 추천 랜덤정렬
-        $schedule->call([ScheduleController::class, 'sort_users'])->dailyAt('04:35')->name('유저 추천 랜덤정렬');
+        // $schedule->call([ScheduleController::class, 'sort_users'])->dailyAt('04:35')->name('유저 추천 랜덤정렬');
 
         // 전일 팔로워 피드 전체 수 기록
         $schedule->call([ScheduleController::class, 'yesterday_feeds_count'])->dailyAt('00:00')->name('전일 팔로워 피드 전체 수 기록');
 
         // 기간 끝난 미션들 종료처리
-        $schedule->call([ScheduleController::class, 'mission_over'])->dailyAt('00:00')->name('기간 끝난 미션들 종료처리');
+        // $schedule->call([ScheduleController::class, 'mission_over'])->dailyAt('00:00')->name('기간 끝난 미션들 종료처리');
 
         // 이벤트 미션 랭킹 갱신
-        $schedule->call([ScheduleController::class, 'missionRanking'])->everyTenMinutes()->name('이벤트 미션 랭킹 갱신'); // before: everyTenMinutes()
+        // $schedule->call([ScheduleController::class, 'missionRanking'])->everyTenMinutes()->name('이벤트 미션 랭킹 갱신'); // before: everyTenMinutes()
 
         // 미션 인증 알림
-        $schedule->call([ScheduleController::class, 'mission_expire_warning_am'])->dailyAt('08:00')->name('1차 미션 인증 알림');
-        $schedule->call([ScheduleController::class, 'mission_expire_warning_pm'])->dailyAt('20:00')->name('2차 미션 인증 알림');
+        // $schedule->call([ScheduleController::class, 'mission_expire_warning_am'])->dailyAt('08:00')->name('1차 미션 인증 알림');
+        // $schedule->call([ScheduleController::class, 'mission_expire_warning_pm'])->dailyAt('20:00')->name('2차 미션 인증 알림');
 
-        $schedule->command('telescope:prune --hours=72')->daily();
+        // $schedule->command('telescope:prune --hours=72')->daily();
 
-        $schedule->call([ScheduleController::class, 'sendReservedPush'])->everyMinute()->name('예약된 푸시 발송');
+        // $schedule->call([ScheduleController::class, 'sendReservedPush'])->everyMinute()->name('예약된 푸시 발송');
     }
 
     /**
