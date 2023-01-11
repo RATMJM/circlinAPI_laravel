@@ -35,10 +35,10 @@ class Kernel extends ConsoleKernel
         $schedule->call([ScheduleController::class, 'yesterday_feeds_count'])->dailyAt('00:00')->name('전일 팔로워 피드 전체 수 기록');
 
         // 기간 끝난 미션들 종료처리
-        // $schedule->call([ScheduleController::class, 'mission_over'])->dailyAt('00:00')->name('기간 끝난 미션들 종료처리');
+        $schedule->call([ScheduleController::class, 'mission_over'])->dailyAt('00:00')->name('기간 끝난 미션들 종료처리');
 
         // 이벤트 미션 랭킹 갱신
-        // $schedule->call([ScheduleController::class, 'missionRanking'])->everyTenMinutes()->name('이벤트 미션 랭킹 갱신'); // before: everyTenMinutes()
+        $schedule->call([ScheduleController::class, 'missionRanking'])->everyTenMinutes()->name('이벤트 미션 랭킹 갱신'); // before: everyTenMinutes()
 
         // 미션 인증 알림
         // $schedule->call([ScheduleController::class, 'mission_expire_warning_am'])->dailyAt('08:00')->name('1차 미션 인증 알림');
