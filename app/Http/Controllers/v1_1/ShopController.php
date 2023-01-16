@@ -9,8 +9,10 @@ use App\Models\Order;
 use App\Models\PointHistory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -1074,7 +1076,7 @@ class ShopController extends Controller
 
             // 배송비 추가한 브랜드 목록
             $ship_brands = [];
-
+            $product_arr = array();
             // 주문 데이터 입력
             foreach ($items as $item) {
                 // 해당 상품 조회
@@ -1115,10 +1117,20 @@ class ShopController extends Controller
                     $item['opt6'] ?? null,
                 ];
 
+                $product_arr[$product["name_ko"]] = array(
+                    'id' => $item['product_id'],
+                    'quantity' => $item['qty'],
+                    'option' => ''
+                );
+
                 // 주문한 옵션 입력
                 foreach ($option_ids as $option_id) {
                     // 현재 옵션 조회
                     $option = $product->options->firstWhere('id', $option_id);
+
+                    $product_arr[$product["name_ko"]]["option"] = $option_id
+                        ? $product_arr[$product["name_ko"]]["option"] . $option['name_ko'] . ' | '
+                        : $product_arr[$product["name_ko"]]["option"] . '';
 
                     if (is_null($option)) {
                         if (isset($option_id)) {
@@ -1137,6 +1149,11 @@ class ShopController extends Controller
 
                     $order->total_price += $option->price * $item['qty'];
                 }
+
+                $product_arr[$product["name_ko"]]["option"] =
+                    substr($product_arr[$product["name_ko"]]["option"], 0, -2) != '' || substr($product_arr[$product["name_ko"]]["option"], 0, -2) != null
+                        ? substr($product_arr[$product["name_ko"]]["option"], 0, -2)
+                        : "옵션 없음";
 
                 if (Arr::has($item, 'cart_id')) {
                     $cart = Cart::where('id', $item['cart_id'])->first();
@@ -1157,6 +1174,30 @@ class ShopController extends Controller
                 ->delete();
             Cart::where('user_id', $user_id)->delete();
 
+            // slack real-time order notification
+            $user = User::find($user_id);
+            $product_texts = '';
+            foreach ($product_arr as $key => $value) {
+                $product_texts = $product_texts . "제품: {$key} \n옵션: {$value['option']} \n수량: {$value["quantity"]}" . "\n\n";
+            }
+
+            $content = "*주문/결제 알림*
+- 닉네임 (ID) : `{$user?->nickname} ({$user?->id})`
+- 구매내역 :
+```
+주문번호: {$order->id}
+----------------------------------------
+{$product_texts}
+```";
+            $response = Http::post(
+                "https://hooks.slack.com/services/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",
+                array(
+                    "channel" => "#circlin-order-log",
+                    "username" => "써클인 구매알림",
+                    "icon_url" => "https://www.circlin.co.kr/new/assets/favicon/apple-icon-180x180.png",
+                    "text" => $content
+                )
+            );
             return ['result' => true];
         });
 
