@@ -229,16 +229,16 @@ class ShopController extends Controller
         $category = $request->get('category', '전체'); // 카테고리
         $type = $request->get('type'); // 필터값
 
-        $cache_key = 'ramndom_item_list_'. $category;
-        if ($res = Cache::get($cache_key)) {
-            return success([
-                'result' => true,
-                'itemList' => $res,
-                'user_id' => $user_id,
-                'category' => $category,
-                'type' => $type,
-            ]);
-        }
+        // $cache_key = 'ramndom_item_list_'. $category;
+        // if ($res = Cache::get($cache_key)) {
+        //     return success([
+        //         'result' => true,
+        //         'itemList' => $res,
+        //         'user_id' => $user_id,
+        //         'category' => $category,
+        //         'type' => $type,
+        //     ]);
+        // }
 
         try {
             DB::beginTransaction();
@@ -404,7 +404,7 @@ class ShopController extends Controller
                 }
             }
 
-            Cache::set($cache_key, $itemList, 600);
+            // Cache::set($cache_key, $itemList, 600);
             return success([
                 'result' => true,
                 'itemList' => $itemList,
